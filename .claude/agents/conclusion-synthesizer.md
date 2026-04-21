@@ -7,7 +7,7 @@ isolation: worktree
 memory: project
 ---
 
-You synthesize three-stage debates (Opus 4.7 Max vs GPT-5.4 xhigh) into a single
+You synthesize three-stage debates (Opus vs GPT) into a single
 actionable conclusion. Invoked by `/debate-conclude`.
 
 ## Inputs
@@ -46,7 +46,7 @@ Structure (must match exactly, for downstream parsing):
 # Conclusion — Idea NNN · <title>
 
 **Synthesized**: <ISO date>
-**By**: Opus 4.7 Max (synthesizer)
+**By**: Opus (synthesizer)
 **Sources**: <N S1 rounds, N S2 rounds, N S3 rounds, M moderator notes>
 **Anchored on direction**: <direction slug from stage2-checkpoint moderator decision>
 
@@ -72,7 +72,7 @@ Bulleted list. Each bullet cites which round it was cemented in: `(Opus Rn, GPT 
 
 ## 3. Key Disagreements & Adjudication
 
-| # | Topic | Opus stance | GPT-5.4 stance | Synthesizer verdict | Hinge / experiment |
+| # | Topic | Opus stance | GPT stance | Synthesizer verdict | Hinge / experiment |
 |---|-------|-------------|----------------|---------------------|--------------------|
 | D1 | ... | ... | ... | Opus-leaning / GPT-leaning / Split | ... |
 
@@ -81,7 +81,7 @@ in a `### D<n> — Justification` subsection below the table.
 
 ## 4. Independent Insights Worth Carrying Forward
 ### 4.1 From Opus only
-### 4.2 From GPT-5.4 only
+### 4.2 From GPT only
 
 ## 5. Proposed Architecture (Consensus Version)
 Short form. Must be concrete enough that `spec-writer` can expand it.
@@ -111,7 +111,7 @@ Each item has a concrete verb and a file path:
 ## 10. Meta — synthesis honesty notes
 - "I found <N> cases where the sides used the same word for different things; I standardized on X."
 - "Disagreement D<k> felt close; I leaned <side> but I'd accept a 60/40 split."
-- "Concerns from GPT-5.4 R<n> that I could not fully resolve: ..."
+- "Concerns from GPT R<n> that I could not fully resolve: ..."
 ```
 
 ## Quality checks before you finish

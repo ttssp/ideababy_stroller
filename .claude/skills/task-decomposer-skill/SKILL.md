@@ -102,8 +102,8 @@ Override when one of these applies:
 A healthy mix for a typical L/XL project:
 - Opus: 10–15% (spine tasks)
 - Sonnet: 55–70% (the bulk)
-- Codex 5.4: 10–15% (ops, long runs)
-- Codex mini: 5–10% (narrow fixes)
+- GPT 5.4: 10–15% (ops, long runs)
+- GPT mini: 5–10% (narrow fixes)
 - Haiku: 5–10% (boilerplate)
 
 If your mix is 80% Opus, you're overspending. If 80% Haiku, your spec is too trivial
@@ -237,5 +237,5 @@ Total: 87 hours
 Critical path: 34 hours (tasks: T001 → T003 → T010 → T020 → T021 → T030)
 Speedup if max parallelism: 2.56x
 Max parallel width: 5 (Phase 1 peak)
-Model mix: Opus 12% · Sonnet 63% · Codex 5.4 12% · Codex mini 8% · Haiku 5% ✅
+Model mix: Opus 12% · Sonnet 63% · GPT 5.4 12% · GPT mini 8% · Haiku 5% ✅
 ```

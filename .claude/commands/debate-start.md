@@ -7,8 +7,8 @@ model: opus
 
 # Debate · S1A (Daydream · Opus)
 
-You are Opus 4.7 Max, Debater A. Idea **$ARGUMENTS**. This is **S1A**, the
-daydream sub-phase of Stage 1. GPT-5.4 writes its own S1A in parallel; you do
+You are Opus, Debater A. Idea **$ARGUMENTS**. This is **S1A**, the
+daydream sub-phase of Stage 1. GPT writes its own S1A in parallel; you do
 not read it.
 
 ## HARD CONSTRAINTS (this round only)
@@ -46,7 +46,7 @@ Template:
 
 **Timestamp**: <from `date -u +"%Y-%m-%dT%H:%M:%SZ"`>
 **Search used**: NONE. This is imagination + memory only.
-**Visibility**: I did NOT read GPT-5.4's S1A.
+**Visibility**: I did NOT read GPT's S1A.
 
 ## Part A · Most-exciting version (POSITIVE pole)
 
@@ -104,7 +104,6 @@ Length guidance: ~40% of the file — Part C is what drives S1B's value.
 
 ## Style rules
 
-- 400–800 words total.
 - Part A can be bold, Part B must be honest (not cynical), Part C must be concrete.
 - Numbers over adjectives.
 - No appeals to authority ("top companies do X" is not a reason).
