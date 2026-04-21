@@ -1,0 +1,53 @@
+# Claude Code worktrees (ephemeral)
+.claude/worktrees/
+
+# Agent status files (ephemeral)
+.agent-status/
+
+# Local-only settings
+.claude/settings.local.json
+
+# Secrets (NEVER commit)
+.env
+.env.*
+!.env.example
+*.secrets
+*.key
+*.pem
+credentials.json
+
+# Dependency artifacts
+node_modules/
+.pnpm-store/
+__pycache__/
+*.pyc
+.venv/
+.uv/
+target/
+.build/
+DerivedData/
+
+# Build artifacts
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+
+# Test/coverage
+coverage/
+.nyc_output/
+.pytest_cache/
+htmlcov/

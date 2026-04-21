@@ -1,0 +1,22 @@
+# Project-level Codex config. Overrides ~/.codex/config.toml values.
+# Codex only honors this when the project directory is trusted — run `codex`
+# once in this directory and accept the trust prompt.
+
+model = "gpt-5.4"
+reasoning_effort = "high"
+
+[features]
+# Use cached web search by default to save tokens; explicitly opt in to live via --web-search live
+web_search = "cached"
+unified_exec = true
+
+[approvals]
+# "workspace-write" lets Codex edit files under this repo without asking per-file,
+# but still asks before running arbitrary shell commands or touching outside the repo.
+sandbox_policy = "workspace-write"
+
+# Notes for operator:
+# - For debate work, switch to xhigh with: codex --model gpt-5.4 -c reasoning_effort=xhigh
+# - For long autonomous runs, xhigh is worth it. For review, high is enough.
+# - Spark is available with: codex --model gpt-5.3-codex-spark (ChatGPT Pro only)
+# - To see what Codex considers relevant: codex features list

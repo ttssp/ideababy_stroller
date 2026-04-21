@@ -1,0 +1,10 @@
+# Files to copy into every new worktree Claude Code creates.
+# Uses .gitignore syntax. Only files matching a pattern AND in .gitignore
+# will be copied (so committed files are never duplicated).
+
+.env
+.env.local
+.env.*.local
+*.secrets
+credentials.json
+config/master.key
