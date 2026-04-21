@@ -34,28 +34,28 @@ claude
 > /propose
 # (interactive — captures idea into proposals/proposals.md as **NNN**)
 
-# 4. Debate it (run these in separate terminals)
-# Terminal A (Claude Code) — Opus takes POSITIVE pole in S1R1
+# 4. Debate it (separate terminals, parallel)
+# Terminal A (Claude Code) — Opus runs S1A: Daydream, NO search, triple-section A+B+C
 > /debate-start 001
-# Terminal B (Codex) — GPT takes NEGATIVE pole; paste S1R1 kickoff from discussion/PROTOCOL.md
+# Terminal B (Codex) — GPT runs S1A in parallel; paste S1A kickoff from discussion/PROTOCOL.md
 codex --model gpt-5.4 -c reasoning_effort=xhigh
 
-# 5. Round 2 — POLES SWITCH. Both sides steelman the opposite.
+# 5. S1B — read each other + search for evidence
 # Terminal A:
-> /debate-next 001 1 2
-# Terminal B: paste S1R2 kickoff
+> /debate-next 001 1 B
+# Terminal B: paste S1B kickoff
 
-# 6. Advance to Stage 2 when you've seen enough
+# 6. Advance to Stage 2 when ready
 > /debate-advance-stage 001 2
-# stage1-synthesizer writes a synthesis doc; both sides then run S2 rounds (cooperative)
-> /debate-next 001 2 1       # Opus S2R1
+# stage1-synthesizer produces a synthesis that preserves imagination vs evidence
+> /debate-next 001 2 1       # Opus S2R1 (cooperative)
 # Codex: paste S2R1 kickoff
 
 # 7. Advance to Stage 3 — MODERATOR DECISION GATE
 > /debate-advance-stage 001 3
-# stage2-checkpoint presents a menu: Advance (pick direction) / Fork / Park / Abandon
-# Record your choice in moderator-notes. Only if you chose Advance:
-> /debate-next 001 3 1       # Opus S3R1 engineering mode
+# stage2-checkpoint presents the menu: Advance / Fork / Park / Abandon
+# Record your choice in moderator-notes. If Advance:
+> /debate-next 001 3 1       # Opus S3R1 (engineering mode)
 # Codex: paste S3R1 kickoff
 
 # 8. Finalize and conclude
@@ -129,9 +129,9 @@ idea-incubator/
 | Command | Use when |
 |---|---|
 | `/propose` | Starting a new idea |
-| `/debate-start <NNN>` | Launching Opus's S1R1 (POSITIVE pole) |
-| `/debate-next <NNN> <stage> <round>` | Opus's next round. Pole auto-switches at S1R2. |
-| `/debate-advance-stage <NNN> <target>` | Move from S1→S2 or S2→S3. S2→S3 is a moderator decision gate. |
+| `/debate-start <NNN>` | Launch S1A (Daydream, no search, triple-section A+B+C) |
+| `/debate-next <NNN> <stage> <sub>` | Next round. S1: use `1 B` for Ground. S2/S3: use numeric rounds. |
+| `/debate-advance-stage <NNN> <target>` | Move S1→S2 or S2→S3. S2→S3 is moderator decision gate. |
 | `/debate-inject <NNN> <tag>` | Inject a constraint/question both sides must address |
 | `/debate-finalize <NNN>` | Opus writes its standalone final |
 | `/debate-conclude <NNN>` | Synthesize the full debate |

@@ -270,13 +270,18 @@ idea-incubator/
 
 这是整个流水线的**核心创新**。不是所有 idea 都值得建造——有些已经被做过，有些已经失败过，有些太模糊。**三阶段辩论的第一任务是判断"要不要建"，第二任务才是"怎么建"。**
 
-### 3.1 为什么是三阶段
+### 3.1 为什么是三阶段（Stage 1 内还有两个子阶段）
 
-| 阶段 | 名字 | 目的 | 姿态 | 最少来源/轮 |
-|---|---|---|---|---|
-| **S1** | Explore 发散 | 找先例、找失败案例、建立假设空间 | 对立（Opus 乐观 vs GPT 悲观，R2 互换） | 5 个 web 来源 |
-| **S2** | Position 立场 | 在证据上收敛，产出 2–4 个方向菜单 | 协作 | 2 个来源 |
-| **S3** | Converge 方案 | 架构与 MVP（仅在主持人批准后进入） | 工程师姿态 | 0（可选） |
+| 阶段 | 子阶段 | 名字 | 目的 | 姿态 | Search |
+|---|---|---|---|---|---|
+| **S1** | S1A | Daydream 空想 | 各自独立想象，写 Part A（正）+ B（反）+ C（自省） | 关门想 | **禁止** |
+| **S1** | S1B | Ground 落地 | 读对方 S1A，带着问题清单去搜证 | 对照现实 | **≥5 来源** |
+| **S2** | — | Position 立场 | 基于证据收敛，产出 2–4 个方向菜单 | 协作 | ≥2 来源 |
+| **S3** | — | Converge 方案 | 架构与 MVP（仅在主持人批准后进入） | 工程师姿态 | 可选 |
+
+**先空想，再 search 的顺序是故意的**。如果先让模型 search，它会被既有方案框住，很难再跳出来想"如果从完全不同的切法呢"。S1A 让每个 debater 先把想象力充分放开——最乐观的版本是什么、最悲观的版本是什么、我到底知道什么不知道什么——然后 S1B 再去对照现实。
+
+**Part B 要诚实，不要夸张**。放飞的悲观（cynical takedown）会扼杀真正有潜力的 idea。Part B 的标准是"我会这样对一个真诚请教我的 founder 说"——有理有据地提醒致命风险，不是抖机灵。
 
 **关键**：S2 结束时是**强制主持人决策点**，四选一：
 - **Advance** — 选一个方向进入 S3
@@ -291,14 +296,14 @@ idea-incubator/
 | 原则 | 说明 |
 |---|---|
 | **文件即通讯总线** | 两个 AI 不直接通信，只读写 `discussion/NNN/` 下的 markdown。人类（你）做 router。 |
-| **R1 独立** | S1R1 双方并行写，互不读。R2+ 必须先读对方。 |
-| **S1 必须 search** | 每轮 ≥5 次 web search，引用 URL。不允许凭记忆说话。 |
-| **S1R2 必须换极** | 正方变反方、反方变正方。强迫真正的 steelman。 |
+| **S1A 关门想** | 每个 debater 独立写 S1A，**不准 search**，也不读对方的 S1A。想象空间先于验证空间。 |
+| **S1A 三段式** | Part A（正方）+ Part B（独立反方，诚实不刻薄）+ Part C（自省，列出 S1B 要查的问题）。 |
+| **S1B 必须搜索** | 读对方 S1A + 合并 Part C 问题清单 + ≥5 次 web search，引用 URL。 |
 | **S2 必须出菜单** | 每轮产出 2–4 个候选方向作为对等选项，**不许替人类选**。 |
 | **主持人可注入** | 随时往 `moderator-notes.md` 加约束，下一轮双方必须回应。 |
 | **阶段切换由主持人触发** | `/debate-advance-stage`，不是自动的。 |
 
-### 3.3 启动 Stage 1（`/debate-start 001`）
+### 3.3 启动 S1A 空想（`/debate-start 001`）
 
 ```bash
 cd idea-incubator
@@ -308,50 +313,76 @@ claude
 
 这个命令会：
 1. 创建 `discussion/001/` 目录并复制 PROTOCOL.md
-2. 让 Opus 以**正方姿态**写 S1R1（把最好的可能性讲出来）
-3. 强制调用 web_search ≥5 次，找先例与成功/失败信号
-4. 输出到 `discussion/001/001-Opus47Max-S1R1.md`
+2. 让 Opus **关起门来**写 S1A（**禁止 search**、也不读对方 S1A）
+3. 输出 `discussion/001/001-Opus47Max-S1A.md`，包含三段：
+   - **Part A** 最激动人心的版本（正方想象）
+   - **Part B** 最致命的版本（独立反方，诚实不刻薄）
+   - **Part C** 认识论自省（我到底知道什么、需要查什么）
 
-**同时**在另一个终端启动 Codex（**反方姿态**）：
+**同时**在另一个终端启动 Codex，也写 S1A（也不准 search、也不读对方）：
 
 ```bash
 cd idea-incubator
 codex --model gpt-5.4 -c reasoning_effort=xhigh
 ```
 
-粘贴（完整模板见 `discussion/001/PROTOCOL.md` §"Codex-side kickoffs"）：
+粘贴（完整模板见 `discussion/001/PROTOCOL.md` §"Codex-side kickoffs · S1A"）：
 
 ```
-You are GPT-5.4 xhigh, Debater B, Stage 1 Round 1 on idea 001.
-Your pole: NEGATIVE. Argue why this dies / is already done / is hard.
-Mandatory: ≥5 web searches. Cite URLs.
-Read: proposals/proposals.md (001), discussion/001/PROTOCOL.md, AGENTS.md.
-DO NOT read discussion/001/001-Opus47Max-S1R1.md (parallel independence).
-Write to discussion/001/001-GPT54xHigh-S1R1.md using the S1R1 template.
+You are GPT-5.4 xhigh, Debater B, S1A on idea 001.
+
+HARD CONSTRAINT: Do NOT run any web search this round. No WebSearch, no WebFetch.
+Write from your own model knowledge and imagination only.
+
+Do NOT read discussion/001/001-Opus47Max-S1A.md (parallel independence).
+
+Read: proposals/proposals.md (001), discussion/001/PROTOCOL.md, AGENTS.md
+
+Write discussion/001/001-GPT54xHigh-S1A.md using the S1A triple-section template:
+  Part A · most-exciting version (POSITIVE)
+  Part B · most-damning version (independent NEGATIVE, honest not cynical)
+  Part C · epistemic honesty — 5 search-shaped questions for S1B
+
+400–800 words. Bold in A, truthful in B, rigorous in C.
 ```
 
-### 3.4 Stage 1 Round 2 —— **换极**（`/debate-next 001 1 2`）
+两边并行写，互不影响。S1A 想象空间最大化。
 
-这一步是 Stage 1 的灵魂。原本的正方现在必须 steelman 反方，反之亦然。
+### 3.4 S1B 落地验证（`/debate-next 001 1 B`）
+
+S1A 完成后，进入 Stage 1 第二子阶段。这一步把两份 daydream 拿去和世界对照。
 
 ```
-/debate-next 001 1 2
+/debate-next 001 1 B
 ```
 
-Opus（原 S1R1 正方）现在变成反方，读 GPT 的 S1R1（原反方），再跑 ≥5 次新的 web search，写 S1R2。
+Opus 会：
+1. 读自己 S1A + 对方 S1A（全部三段）
+2. 合并两边 Part C 的问题清单，去重
+3. 跑 ≥5 次 web search（必须）
+4. 判决每条 S1A 主张：被证据加强 / 被削弱 / 仍未知
+5. 输出 `discussion/001/001-Opus47Max-S1B.md`（§1-§8）
 
 Codex 侧粘贴：
 
 ```
-You are GPT-5.4 xhigh, S1R2 on idea 001. Your pole is now POSITIVE (switched).
-Genuinely steelman the opportunity given what you now see.
-Read: PROTOCOL.md, moderator-notes.md (if exists), Opus's S1R1 and S1R2,
-  your own S1R1.
-≥5 new web searches (no repeats).
-Write to discussion/001/001-GPT54xHigh-S1R2.md using the S1R2+ template.
+You are GPT-5.4 xhigh, S1B on idea 001. This is the grounding round.
+
+Read in order:
+  discussion/001/PROTOCOL.md
+  discussion/001/001-moderator-notes.md (if exists; binding)
+  discussion/001/001-Opus47Max-S1A.md (opponent's daydream — ALL three parts)
+  your own S1A
+
+Merge your Part C questions with opponent's Part C questions. De-duplicate.
+Run ≥5 web searches driven by merged list. Diverse sources. Include prior
+failure cases if obvious candidates exist.
+
+Write discussion/001/001-GPT54xHigh-S1B.md using the S1B template (§1 through §8).
+500–1000 words.
 ```
 
-**如果 S1 只跑 2 轮就感觉证据够了**，进 Stage 2。如果还有核心问题没答（prior art 不清、失败原因没摸透），继续 S1R3/R4（主持人自由指定极性，或让双方挑自己更弱的那极）。
+S1B 的关键价值：**"shared imagination"（两边独立想象里的共识）是一种信号**，但它可能正确、也可能是两个模型共享的训练偏差。只有 S1B 搜证以后，你才知道哪些共识经得起现实检验、哪些是幻觉。
 
 ### 3.5 Stage 1 → Stage 2 切换（`/debate-advance-stage 001 2`）
 
@@ -360,11 +391,11 @@ Write to discussion/001/001-GPT54xHigh-S1R2.md using the S1R2+ template.
 ```
 
 这个命令会：
-1. 检查 Stage 1 质量门（每边 ≥2 轮、至少换过一次极、累计 ≥10 个独立 URL）
+1. 检查 Stage 1 质量门（每边都有 S1A + S1B、S1A 三段齐全、S1B 各 ≥5 URL）
 2. 调用 `stage1-synthesizer` 子智能体，产出 `discussion/001/001-stage1-synthesis.md`
-3. 这份 synthesis **是 Stage 2 双方的共同起点**——里面有 prior art 目录、失败模式、假设空间
+3. 这份 synthesis **保留了"想象 vs 证据"的边界**——§1-§3 是 daydream、§5-§7 是 evidence，Stage 2 双方能看到哪些信念经受了检验、哪些没有
 
-**你必须亲自读这份 synthesis**。它就是"我们学到了什么"的总结。如果里面的结论让你感觉不对（例如漏掉了你知道的某个竞品），写到 moderator-notes 并回头跑 S1R3。
+**你必须亲自读这份 synthesis**。如果里面的结论让你感觉不对（例如漏掉了你知道的某个竞品），写到 moderator-notes，让双方带着你的 injection 再跑一次 S1B。
 
 ### 3.6 Stage 2 —— 协作收敛（`/debate-next 001 2 1`）
 
@@ -488,26 +519,31 @@ Write discussion/001/001-GPT54xHigh-final.md per the Finals template:
 
 ```
 T+0h    /propose                                  # 10 分钟写完 proposal 001
-T+0h15  /debate-start 001                         # Opus 跑 S1R1 正方 ~20min
-        (另开 Codex 终端粘贴 S1R1 反方 kickoff)     # 并行，~20min
-T+1h    /debate-next 001 1 2                      # Opus 换反方 S1R2
-        (Codex 换正方 S1R2)
-T+2h    /debate-advance-stage 001 2               # 生成 stage1-synthesis
-        (读 synthesis，5 分钟)
-T+2h15  /debate-next 001 2 1                      # Opus S2R1 协作
+T+0h15  /debate-start 001                         # Opus 跑 S1A 空想(无 search) ~15min
+        (另开 Codex 终端粘贴 S1A kickoff)           # 并行,~15min
+T+0h45  /debate-next 001 1 B                      # Opus 读对方 S1A + search,写 S1B ~25min
+        (Codex 同步写 S1B)
+T+1h30  /debate-advance-stage 001 2               # 生成 stage1-synthesis
+        (读 synthesis,10 分钟,区分 imagination vs evidence)
+T+1h45  /debate-next 001 2 1                      # Opus S2R1 协作
         (Codex S2R1)
-T+3h    /debate-advance-stage 001 3               # ★ 决策点
-        (读 checkpoint，做决定：比如 Advance + 方向 B)
-                                                   # 或此处 Park/Abandon，流程结束
-T+3h30  /debate-next 001 3 1                      # Opus S3R1 工程
+T+2h45  /debate-advance-stage 001 3               # ★ 决策点(Advance/Fork/Park/Abandon)
+        (读 checkpoint,10-20 分钟做决定)
+                                                   # 如选 Park/Abandon,流程到此结束
+T+3h15  /debate-next 001 3 1                      # Opus S3R1 工程(仅选 Advance 后)
         (Codex S3R1)
-T+4h30  /debate-next 001 3 2                      # 如需继续
-T+5h    /debate-finalize 001                      # Opus 写 final
+T+4h15  /debate-next 001 3 2                      # 如需继续
+T+4h45  /debate-finalize 001                      # Opus 写 final
         (Codex 写 final)
-T+5h30  /debate-conclude 001                      # 综合结论
+T+5h15  /debate-conclude 001                      # 综合结论
 ```
 
-一个 M 级 idea 完整走完辩论流程大约 5–8 小时纯机器时间，你的人类干预时间约 45–90 分钟（读 synthesis/checkpoint/conclusion + 做决策）。如果 S2 就 Park 或 Abandon，总时间 3 小时内结束。
+一个 M 级 idea 完整走完辩论约 5–7 小时纯机器时间,人类干预约 45–90 分钟。如果 S2 就 Park 或 Abandon,总时间 3 小时内结束。
+
+**相比 v2.0 的时间变化**:
+- S1 阶段从"两轮都 search"变成"一轮不 search + 一轮 search",总 search 次数从 ~20 降到 ~10,**每个 idea 省约 15 分钟 + 一些 token**
+- S1A 无搜索,Opus/Codex 几乎只是在"想",速度比有搜索的 S1B 快约 30%
+- 其余阶段不变
 
 ---
 

@@ -18,20 +18,24 @@ ls discussion/$1/*.md | sort
 
 ### If $2 == 2 (advancing from Stage 1 to Stage 2)
 Verify Stage 1 quality bar (from PROTOCOL.md §"Quality bars"):
-- ≥2 S1 rounds per side (`$1-Opus47Max-S1R1.md` and `-S1R2.md` both present; same for GPT)
-- Both sides have switched poles at least once (check pole header in each file)
-- ≥10 distinct source URLs cited across all S1 rounds
+- Both debaters wrote **S1A** (daydream): `$1-Opus47Max-S1A.md` AND `$1-GPT54xHigh-S1A.md`
+- Both debaters wrote **S1B** (ground): `$1-Opus47Max-S1B.md` AND `$1-GPT54xHigh-S1B.md`
+- Each S1A contains all three parts (A, B, C) — grep for `## Part A`, `## Part B`, `## Part C`
+- Each S1B cites ≥5 distinct URLs — grep for `http` occurrences
 
-If any fails: **stop** and tell the moderator what's missing. Example:
-> "Cannot advance — Opus has S1R1 but not S1R2 (pole never switched). Run `/debate-next $1 1 2` first."
+If any fails: **stop** and tell the moderator what's missing. Examples:
+> "Cannot advance — Opus S1A missing Part C. Rerun `/debate-start $1` with the full triple-section."
+> "Cannot advance — GPT S1B cites only 3 URLs (needs ≥5). Have Codex run more searches."
 
 If all pass: invoke **`stage1-synthesizer`** subagent:
-> "Use stage1-synthesizer on idea $1. Output file: `discussion/$1/$1-stage1-synthesis.md`."
+> "Use stage1-synthesizer on idea $1. Output: `discussion/$1/$1-stage1-synthesis.md`."
 
 After it returns, print to the moderator:
 > "Stage 1 synthesis complete at discussion/$1/$1-stage1-synthesis.md.
-> Review it. When ready, both debaters will run S2R1 (cooperative mode).
-> Opus: `/debate-next $1 2 1`. Codex: paste S2R1 kickoff from PROTOCOL.md."
+> Read it — it preserves the imagination vs evidence distinction.
+> When ready for Stage 2:
+>   - Opus: `/debate-next $1 2 1`
+>   - Codex: paste S2R1 kickoff from PROTOCOL.md"
 
 ### If $2 == 3 (advancing from Stage 2 to Stage 3)
 Verify Stage 2 quality bar:
