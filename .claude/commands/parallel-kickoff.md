@@ -84,7 +84,7 @@ Propose the implementation plan. Wait for my approval before executing.
 
 ## Step 5 — Offer Codex parallel option
 
-Check if any tasks are tagged `recommended-model: gpt-5.4` in their frontmatter.
+Check if any tasks are tagged `recommended-model: codex-5.4` in their frontmatter.
 If so, additionally print:
 
 ```markdown
@@ -104,7 +104,7 @@ Read AGENTS.md and specs/$1-*/tasks/T007.md. Enter plan mode.
 Print:
 ```
 Parallel kickoff prepared for idea $1.
-Tasks: T003 (Sonnet), T004 (GPT), T008 (Sonnet)
+Tasks: T003 (Sonnet), T004 (Codex 5.4), T008 (Sonnet)
 File domains verified disjoint.
 Dependencies OK.
 

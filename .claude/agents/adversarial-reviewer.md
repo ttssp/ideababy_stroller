@@ -3,7 +3,7 @@ name: adversarial-reviewer
 description: Hostile code reviewer that inhabits three adversarial personas (Saboteur, New Hire, Security Auditor). Each persona MUST find at least one issue — no "LGTM" escapes. Use before merging high-stakes code, after completing a feature, or when the user says "review this hard" / "adversarial review" / "break this".
 tools: Read, Grep, Glob, Bash
 model: opus
-effort: max
+effort: high
 permissionMode: default
 ---
 

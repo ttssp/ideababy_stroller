@@ -1,167 +1,190 @@
-# Idea Incubator
+# Idea Incubator · v3.0
 
 A single-operator, AI-team pipeline from raw idea to commercial-grade software.
 
-## How it works
+## Core philosophy
 
-```
-┌──────────┐   ┌─────────┐   ┌───────────┐   ┌──────┐   ┌───────┐   ┌──────┐
-│ Proposal │──▶│ Debate  │──▶│Conclusion │──▶│ Spec │──▶│ Build │──▶│ Ship │
-│          │   │ Opus +  │   │ synthesis │   │ SDD  │   │ //    │   │ 10   │
-│ 10 min   │   │ GPT-5.4 │   │ (Opus)    │   │      │   │ work  │   │ gates│
-│          │   │ 3-5 rds │   │           │   │      │   │ trees │   │      │
-└──────────┘   └─────────┘   └───────────┘   └──────┘   └───────┘   └──────┘
-   You           2 AIs          1 AI         1 AI       N AIs      You+AIs
-```
+Your idea is a **seed**. The pipeline is a **tree** that branches at every layer.
+Every branch (fork) is a sibling, not nested. Every layer's output is
+independently valuable — even ideas that get parked or abandoned leave behind
+exploration documents worth keeping.
 
-The pipeline is defined in [PLAYBOOK.md](./PLAYBOOK.md). Don't skip that file.
+## The four layers
+
+| Layer | Discusses | Search? | Human density |
+|---|---|---|---|
+| **L1 Inspire** | What inspired directions does this seed grow? Value, novelty, utility — NO tech | Value-validation only (in R2) | Low (let models fly) |
+| **L2 Explore** | One chosen idea, deeply: novelty, utility, extensions, limits | Value-validation only (in R2) | Medium (give signals) |
+| **L3 Scope** | Real requirements, what to build, what NOT to build | Free | High (your real needs) |
+| **L4 Plan** | Spec, architecture, tasks, build, ship | Free | Medium (approve key calls) |
 
 ## Quick start
 
 ```bash
-# 1. First-time setup (once per machine) — see PLAYBOOK.md §0
-npm install -g @anthropic-ai/claude-code @openai/codex
-brew install ripgrep tmux gh    # macOS
-claude auth login
-codex auth login
+# 1. Setup (once)
+mkdir my-incubator && cd my-incubator
+tar xzf ~/Downloads/idea-incubator-v3.0-stage1.tar.gz
+bash install.sh
+bash scripts/codex-inbox-init.sh
 
-# 2. Inside Claude Code in this directory
+# 2. Configure Codex alias (once, in ~/.zshrc or ~/.bashrc)
+alias cdx-run='codex "read .codex-inbox/latest.md and execute exactly what it says, then write a corresponding .codex-outbox/<same-filename>.md confirming what you did"'
+source ~/.zshrc
+
+# 3. Drop an idea (one paragraph minimum)
 claude
-> /plugin marketplace add openai/codex-plugin-cc
-> /plugin install codex@openai-codex
-
-# 3. Drop an idea
 > /propose
-# (interactive — captures idea into proposals/proposals.md as **NNN**)
 
-# 4. Debate it (separate terminals, parallel)
-# Terminal A (Claude Code) — Opus runs S1A: Daydream, NO search, triple-section A+B+C
-> /debate-start 001
-# Terminal B (Codex) — GPT runs S1A in parallel; paste S1A kickoff from discussion/PROTOCOL.md
-codex --model gpt-5.4 -c reasoning_effort=xhigh
+# 4. L1 Inspire — let models break your cognitive limits
+> /inspire-start 001
+# (you'll see a menu when Opus done; choose [1] to send Codex)
+# in Codex terminal:  cdx-run
+# back in Claude Code:
+> /inspire-next 001
+# in Codex terminal:  cdx-run
+> /inspire-advance 001
+# read the L1 menu; pick a direction:
+> /fork 001 from-L1 direction-3 as 001a
 
-# 5. S1B — read each other + search for evidence
-# Terminal A:
-> /debate-next 001 1 B
-# Terminal B: paste S1B kickoff
-
-# 6. Advance to Stage 2 when ready
-> /debate-advance-stage 001 2
-# stage1-synthesizer produces a synthesis that preserves imagination vs evidence
-> /debate-next 001 2 1       # Opus S2R1 (cooperative)
-# Codex: paste S2R1 kickoff
-
-# 7. Advance to Stage 3 — MODERATOR DECISION GATE
-> /debate-advance-stage 001 3
-# stage2-checkpoint presents the menu: Advance / Fork / Park / Abandon
-# Record your choice in moderator-notes. If Advance:
-> /debate-next 001 3 1       # Opus S3R1 (engineering mode)
-# Codex: paste S3R1 kickoff
-
-# 8. Finalize and conclude
-> /debate-finalize 001
-# Terminal B: paste Finals kickoff
-> /debate-conclude 001
-
-# 9. Review conclusion; if approved, generate spec
-> /spec-from-conclusion 001
-
-# 10. Parallel build
-> /parallel-kickoff 001 T003,T004,T008
-
-# 11. Before merging
-> /quality-gate 001
+# 5. L2 Explore — deep unpack the chosen direction
+> /explore-start 001a
+# in Codex terminal:  cdx-run
+> /explore-next 001a
+# in Codex terminal:  cdx-run
+> /explore-advance 001a
+# read the explore report; if good:
+> /scope-start 001a       # (L3 — coming in v3.0-stage2)
 ```
 
-## Directory map
+## Anywhere in the flow
 
-```
-idea-incubator/
-├── CLAUDE.md                    # Project constitution (loaded every session)
-├── AGENTS.md → CLAUDE.md        # Symlink for Codex compatibility
-├── PLAYBOOK.md                  # Full operator manual
-├── README.md                    # You're here
-├── .claude/
-│   ├── settings.json            # Project-level Claude Code config
-│   ├── commands/                # Slash commands
-│   ├── agents/                  # Subagent definitions
-│   ├── skills/                  # Reusable skill packages
-│   └── rules/                   # Path-scoped rules (lazy-loaded)
-├── .codex/
-│   └── config.toml              # Codex project config
-├── .worktreeinclude             # Files copied into each new worktree
-├── .gitignore
-│
-├── proposals/
-│   └── proposals.md             # Every idea lives here as **NNN**
-│
-├── discussion/
-│   ├── PROTOCOL.md              # Debate rules template
-│   └── NNN/                     # One folder per idea
-│       ├── NNN-Opus47Max-R1.md
-│       ├── NNN-GPT54xHigh-R1.md
-│       ├── ... R2, R3 ...
-│       ├── NNN-moderator-notes.md
-│       └── NNN-*-final.md
-│
-├── conc/
-│   └── NNN-Opus47Max-GPT54xHigh-byOpus47Max-YYMMDD.md
-│
-├── specs/
-│   └── NNN-<project-name>/
-│       ├── PRD.md
-│       ├── spec.md              # The 6-element contract
-│       ├── architecture.md
-│       ├── tech-stack.md
-│       ├── SLA.md
-│       ├── risks.md
-│       ├── non-goals.md
-│       ├── dependency-graph.mmd
-│       └── tasks/
-│           ├── T001.md … TNNN.md
-│
-└── projects/
-    └── NNN-<project-name>/      # Real code — usually a git submodule
+```bash
+> /status                  # see all ideas + active forks
+> /status 001              # see this idea's full tree
+> /status 001a             # see one fork's state
+> /fork 001 from-L1 direction-7 as 001b   # historical retrospective fork
+> /park 001a               # preserve, decide later
 ```
 
-## One-page cheat sheet
+## Command reference (v3.0-stage1)
 
-| Command | Use when |
+### Pipeline commands (per layer)
+| Command | When |
 |---|---|
-| `/propose` | Starting a new idea |
-| `/debate-start <NNN>` | Launch S1A (Daydream, no search, triple-section A+B+C) |
-| `/debate-next <NNN> <stage> <sub>` | Next round. S1: use `1 B` for Ground. S2/S3: use numeric rounds. |
-| `/debate-advance-stage <NNN> <target>` | Move S1→S2 or S2→S3. S2→S3 is moderator decision gate. |
-| `/debate-inject <NNN> <tag>` | Inject a constraint/question both sides must address |
-| `/debate-finalize <NNN>` | Opus writes its standalone final |
-| `/debate-conclude <NNN>` | Synthesize the full debate |
-| `/spec-from-conclusion <NNN>` | Turn conclusion into SDD package |
-| `/parallel-kickoff <NNN> <task-ids>` | Prep worktrees for parallel build |
-| `/quality-gate <NNN>` | Pre-ship check (10 gates) |
-| `/codex:review` | Quick Codex review of diff |
-| `/codex:adversarial-review` | Hostile Codex review with focus text |
-| `/codex:rescue` | Hand a stuck task to Codex |
+| `/propose` | Drop a one-paragraph idea seed |
+| `/inspire-start <NNN> [--mode=full\|narrow\|skip]` | Start L1 R1 (Daydream, no search) |
+| `/inspire-next <NNN>` | L1 R2 (cross-read + value-validation search) |
+| `/inspire-advance <NNN>` | Close L1, produce inspired menu |
+| `/explore-start <fork-id>` | Start L2 R1 (Daydream, no search) |
+| `/explore-next <fork-id>` | L2 R2 (cross-read + value-validation search) |
+| `/explore-advance <fork-id>` | Close L2, produce explore report |
+| `/scope-start <fork-id>` | Start L3 (coming in v3.0-stage2) |
+| `/plan-start <fork-id>` | Start L4 (coming in v3.0-stage2; uses preserved v2.1 SDD assets) |
 
-## Subagents available
+### Tree management
+| Command | When |
+|---|---|
+| `/fork <src> from-L<n> <candidate> as <new-id>` | Branch any layer's stage doc, anytime (incl. retrospective) |
+| `/status [<id>]` | See full tree state + suggested next step |
+| `/park <id>` | Preserve, set revival condition |
+| `/abandon <id>` | Close out, write lesson doc (coming in v3.0-stage2) |
 
-| Agent | Purpose | Model |
-|---|---|---|
-| `stage1-synthesizer` | Digest Stage 1 rounds before S2 starts | Opus |
-| `stage2-checkpoint` | Build moderator decision doc after S2 | Opus |
-| `conclusion-synthesizer` | Fold full debate into conclusion doc | Opus |
-| `spec-writer` | Build SDD package from conclusion | Opus |
-| `task-decomposer` | Spec → task DAG | Opus |
-| `parallel-builder` | Execute one task in own worktree | Sonnet |
-| `security-auditor` | OWASP audit | Opus (effort: high) |
-| `adversarial-reviewer` | 3-persona hostile review | Opus (effort: high) |
-| `code-reviewer` | Constructive PR review | Sonnet |
-| `debate-facilitator` | Meta-observer of ongoing debate | Opus |
+## Decision-menu UX
 
-## Philosophy
+Every command ends with a numbered menu. Reply with a digit or free text.
 
-- Specs are the only thing that turns multi-model output into production software
-- Two AI debaters find 3x the issues one does
-- Worktrees are the only way to run 5 AIs without stepping on each other
-- Commercial quality comes from adversarial review loops, not clever prompts
-- The operator's time is best spent on spec review, debate moderation, and user
-  research — not writing code
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ <what just happened>
+   <key facts in 2-4 lines>
+
+📋 Next steps:
+
+[1] <most likely action — usually "send Codex via inbox">
+[2] <second option — usually "inject a note">
+[3] <show me what was just written>
+[4] <fork or branch>
+[5] <park or stop>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reply 1-5 or describe.
+```
+
+## Codex inbox/outbox
+
+You **never copy-paste a long prompt** between terminals. Claude Code writes a
+self-contained task to `.codex-inbox/latest.md`; you run `cdx-run` in Codex;
+Codex reads the file, executes, writes confirmation to `.codex-outbox/`. See
+`.codex-inbox/README.md` for full details.
+
+## Directory structure
+
+```
+my-incubator/
+├── CLAUDE.md                    # constitution
+├── PLAYBOOK.md                  # operator manual (full design rationale)
+├── README.md                    # you're here
+│
+├── .claude/
+│   ├── settings.json
+│   ├── commands/                # slash commands (see table above)
+│   ├── agents/                  # subagents (inspire-synthesizer, explore-synthesizer, ...)
+│   ├── skills/                  # protocol skills (inspire-protocol, explore-protocol, ...)
+│   └── rules/                   # path-scoped rules
+│
+├── .codex-inbox/                # Claude→Codex tasks (cdx-run reads latest.md)
+├── .codex-outbox/               # Codex→Claude confirmations
+├── .codex/config.toml           # Codex project config
+│
+├── proposals/proposals.md       # idea seeds (one-paragraph minimum)
+│
+└── discussion/                  # the tree
+    └── 001/                     # idea root
+        ├── L1/                  # Inspire layer
+        │   ├── L1R1-Opus47Max.md
+        │   ├── L1R1-GPT54xHigh.md
+        │   ├── L1R2-*.md
+        │   ├── L1-moderator-notes.md
+        │   └── stage-L1-inspire.md       # the inspired menu
+        │
+        ├── 001a/                # forked from L1 #3
+        │   ├── FORK-ORIGIN.md   # lineage
+        │   └── L2/
+        │       ├── L2R1-*.md
+        │       ├── L2R2-*.md
+        │       └── stage-L2-explore-001a.md
+        │
+        ├── 001b/                # forked from L1 #5 (parallel sibling)
+        │   └── ...
+        │
+        └── 001c/                # forked retrospectively, weeks later
+            └── ...
+```
+
+## What's in v3.0-stage1 vs stage2
+
+**stage1 (this release)**:
+- L1 Inspire: full + narrow + skip modes
+- L2 Explore
+- Tree management: status / fork / park
+- Codex inbox/outbox bus
+- Updated proposal template (one-paragraph minimum)
+
+**stage2 (next release)**:
+- L3 Scope (with `scope-protocol` skill, `/scope-*` commands, `scope-synthesizer`)
+- L4 entry glue (connects L3 PRD output to preserved v2.1 SDD assets:
+  spec-writer, task-decomposer, parallel-builder, code-reviewer,
+  adversarial-reviewer, security-auditor, quality-gate)
+- `/abandon` command
+- Full PLAYBOOK.md rewrite for 4-layer model
+
+If you need L3/L4 today, the v2.1 commands (`/debate-*`, `/spec-from-conclusion`,
+`/parallel-kickoff`, `/quality-gate`) still work and are preserved in this package.
+You can use v3.0's L1+L2 to land on a clear PRD-equivalent, then drop into
+v2.1's flow for spec→build→ship until v3.0-stage2 ships proper L3+L4 commands.
+
+## Apps that complement this workflow
+
+- Claude Code (this repo's home)
+- Codex CLI (the second-debater terminal)
+- Optional: Claude Desktop (for reading long stage docs in a nice UI)

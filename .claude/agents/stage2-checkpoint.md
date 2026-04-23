@@ -58,7 +58,7 @@ Both sides wrote Y/N with conditions in their S2 rounds. Surface these:
 **Prepared for moderator**: decision required before Stage 3.
 **Debaters' honest verdicts on "build or not"**:
 - Opus: <Y/N with 1-line condition>
-- GPT: <Y/N with 1-line condition>
+- GPT-5.4: <Y/N with 1-line condition>
 - Agreement: <yes/no/qualified>
 
 ## 1. Unified direction catalog (<N> candidates)

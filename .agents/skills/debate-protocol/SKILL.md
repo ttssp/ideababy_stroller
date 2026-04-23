@@ -1,6 +1,6 @@
 ---
 name: debate-protocol
-description: Three-stage debate protocol for Opus vs GPT. Stage 1 has two sub-phases — S1A (Daydream, no search, A+B+C triple-section per debater) then S1B (Ground, read opponent + search). Stage 2 cooperative with direction menu. Stage 3 engineering. Load when starting, continuing, or transitioning a debate in discussion/.
+description: Three-stage debate protocol for Opus 4.7 vs GPT-5.4 xhigh. Stage 1 has two sub-phases — S1A (Daydream, no search, A+B+C triple-section per debater) then S1B (Ground, read opponent + search). Stage 2 cooperative with direction menu. Stage 3 engineering. Load when starting, continuing, or transitioning a debate in discussion/.
 disable-model-invocation: false
 ---
 
@@ -290,7 +290,7 @@ Standalone, 300–700 lines:
 
 ### S1A (GPT, no search)
 ```
-You are GPT, Debater B, S1A on idea NNN.
+You are GPT-5.4 xhigh, Debater B, S1A on idea NNN.
 
 HARD CONSTRAINT: Do NOT run any web search this round. No WebSearch, no WebFetch,
 no external lookups. Write from your own model knowledge and imagination only.
@@ -309,7 +309,7 @@ Write discussion/NNN/NNN-GPT54xHigh-S1A.md using the S1A triple-section template
 
 ### S1B (GPT, read opponent + search)
 ```
-You are GPT, S1B on idea NNN. This is the grounding round.
+You are GPT-5.4 xhigh, S1B on idea NNN. This is the grounding round.
 
 Read in order:
   discussion/NNN/PROTOCOL.md
@@ -327,7 +327,7 @@ Write discussion/NNN/NNN-GPT54xHigh-S1B.md using the S1B template (§1 through �
 
 ### S2R1 (cooperative)
 ```
-You are GPT, S2R1 on idea NNN. Stage 2 is cooperative, not adversarial.
+You are GPT-5.4 xhigh, S2R1 on idea NNN. Stage 2 is cooperative, not adversarial.
 
 Read first: discussion/NNN/NNN-stage1-synthesis.md
 Then: PROTOCOL.md, all Stage 1 files (both sides' S1A and S1B), moderator-notes.md
@@ -338,7 +338,7 @@ the S2R1+ template. Give 2–4 candidate directions as peers — do NOT pick one
 
 ### S3R1 (engineering — only if moderator chose Advance)
 ```
-You are GPT, S3R1 on idea NNN. Direction: <X>.
+You are GPT-5.4 xhigh, S3R1 on idea NNN. Direction: <X>.
 
 Pole assignments don't apply — engineering mode.
 
@@ -351,7 +351,7 @@ MVP IN/OUT, top 3 risks, 3 decision questions, self-critique.
 
 ### Finals
 ```
-You are GPT writing FINAL POSITION on idea NNN.
+You are GPT-5.4 xhigh writing FINAL POSITION on idea NNN.
 Read every *.md in discussion/NNN/.
 Write discussion/NNN/NNN-GPT54xHigh-final.md per the Finals template.
 300–700 lines. Consolidate; no new speculation.
