@@ -99,7 +99,7 @@
 ## **001**: Research Radar
 
 **提出日期 / Proposed**: 2026-04-22
-**状态 / Status**: draft
+**状态 / Status**: exploring (L2 进行中，基于原 proposal；L1 menu 的 13 条 directions 保留作为灵感库，以后可随时 `/fork` 任意一条。历史 park 记录见 [PARK-RECORD](../discussion/001/PARK-RECORD.md)）
 **初始野心等级 / Ambition**: M
 **成熟度 / Idea maturity**: direction-clear
 

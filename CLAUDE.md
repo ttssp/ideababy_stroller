@@ -40,15 +40,7 @@ of thinking that's worth keeping. Park is normal; Abandon comes with a lesson do
 - **Cross-model review mandatory** for v1.0 paths (L4 quality gate).
 - **Specs are immutable from build workers** — only operator + spec-writer touch them.
 - **Every command outputs a next-step menu** — human never has to guess what's next.
-
-## Model routing (adhere strictly)
-
-- L1 Inspire / L2 Explore: **Opus 4.7 + GPT-5.4 xhigh** (creativity + breadth)
-- L3 Scope: Opus 4.7 plan mode
-- L4 spec / hard architecture: Opus 4.7 extended thinking
-- L4 review: GPT-5.4 (via codex-plugin-cc)
-- L4 build: Sonnet 4.6 (default) or GPT-5.3-Codex
-- L4 boilerplate: Haiku 4.5 / GPT-5.4-mini
+- output in Chinese
 
 ## Codex inbox/outbox bus
 
@@ -96,5 +88,3 @@ copy-pasting kickoffs needed.
 - Per-project details (`projects/<fork-id>/CLAUDE.md`)
 - Personal preferences (`~/.claude/CLAUDE.md`)
 - Path-scoped rules (`.claude/rules/*.md` with `paths:` frontmatter)
-
-Keep this file under 150 lines.
