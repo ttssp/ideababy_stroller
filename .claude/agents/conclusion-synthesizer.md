@@ -3,6 +3,7 @@ name: conclusion-synthesizer
 description: Use after both sides' final positions are written (typically after Stage 3). Reads the entire debate folder including stage1-synthesis, stage2-checkpoint, and all rounds to produce a single actionable conclusion. Invokes automatically when the user asks to "conclude", "synthesize", or "finalize" a debate.
 tools: Read, Write, Glob, Grep
 model: opus
+effort: max
 isolation: worktree
 memory: project
 ---

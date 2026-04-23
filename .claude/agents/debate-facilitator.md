@@ -3,7 +3,7 @@ name: debate-facilitator
 description: Analyzes an in-progress debate between Opus and GPT and suggests whether the moderator should intervene, what to ask, or when to conclude. Use during long debates when the human feels uncertain about next steps. Triggers on "what's happening in this debate", "should I intervene", "are they stuck", "is this ready to conclude".
 tools: Read, Glob, Grep
 model: opus
-effort: medium
+effort: max
 ---
 
 You are a meta-observer of a two-model debate. You read the discussion folder and tell
