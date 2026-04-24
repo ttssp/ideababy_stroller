@@ -153,45 +153,18 @@ Karpathy最近的autoresearch让我印象深刻，那个项目是给定一个任
 
 
 ---
-
-## **003**: 基于多智能体的自动研究
-
-**提出日期**: 2026-04-24
-**状态**: L1 done · 3 forks in L2 pending
-**初始野心等级**: L
-**成熟度**: vague
-
-### 想法
-让多个智能体相互讨论、协作进行AI算法的研究；最小化复刻Anthropic的研究 https://alignment.anthropic.com/2026/automated-w2s-researcher/ 
-
-### 我已知的相邻方案/竞品
-Karpathy的auto research
-
-### 我已经想过的角度
-请参见 ref_docs/003_init.md
-
-### 我的倾向
-基于个人的Claude code就可以实现
-
----
-## **004**: 基于多智能体的自动研究
+## **003**: PARS · 并行自动化研究智能体系统
 
 **提出日期**: 2026-04-24
-**状态**: L1 done · 3 forks in L2 pending
-**初始野心等级**: L
-**成熟度**: vague
+**状态**: L3-scoping-existing-design
 
-### 想法
-让多个智能体相互讨论、协作进行AI算法的研究；最小化复刻Anthropic的研究 https://alignment.anthropic.com/2026/automated-w2s-researcher/ 
+### 想法 
+已有成熟 L4 级设计(discussion/003/L2/stage-L2-explore-003.md)。对抗审
+已完成(discussion/003/L3/moderator-notes.md)。现在通过 L3 Scope 层,让模型独立产出 scope candidates,和现有设计对比,
+看是否漏了别的切法。独立产出后，审视当前"14 周 × 6 人 × 这个范围"是不是最好切法,产出候选 scope 菜单对比现有设计。
 
 ### 我已知的相邻方案/竞品
-Karpathy的auto research
-
-### 我已经想过的角度
-请参见 ref_docs/003_init.md
-
-### 我的倾向
-基于个人的Claude code就可以实现
+Karpathy的autoresearch
 
 ---
 
