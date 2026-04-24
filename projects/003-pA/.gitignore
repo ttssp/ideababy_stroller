@@ -1,0 +1,44 @@
+# Python 常规
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# uv / 虚拟环境
+.venv/
+venv/
+env/
+.python-version.bak
+
+# 测试缓存
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# 本项目特有：训练运行产出
+runs/
+checkpoints/
+
+# Git worktree 目录（本项目 RecallKit 管理的 worker worktrees）
+.worktrees/
+
+# 环境变量文件（含 API key，绝不 commit）
+.env
+.env.*
+*.env
+
+# worker Claude Code 配置缓存
+worker_claude_dir/.cache/
+
+# 系统文件
+.DS_Store
+Thumbs.db
