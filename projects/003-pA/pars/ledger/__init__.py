@@ -40,6 +40,18 @@ from pars.ledger.state import (
     write_state,
 )
 
+# T008: metrics.jsonl append + 读取工具
+from pars.ledger.metrics import (
+    MetricKind,
+    MetricPhase,
+    MetricRecord,
+    append_metric,
+    count_metrics,
+    get_metrics_path,
+    last_metric,
+    read_metrics,
+)
+
 __all__ = [
     # T006: schema models
     "BudgetConfig",
@@ -65,4 +77,13 @@ __all__ = [
     "read_state",
     "update_state",
     "write_state",
+    # T008: metrics
+    "MetricRecord",
+    "MetricPhase",
+    "MetricKind",
+    "append_metric",
+    "read_metrics",
+    "count_metrics",
+    "last_metric",
+    "get_metrics_path",
 ]
