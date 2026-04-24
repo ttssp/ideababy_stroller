@@ -1,0 +1,40 @@
+{
+  "version": "0.1",
+  "permissions": {
+    "allow": [
+      "Read(*)",
+      "Write(.worktrees/**)",
+      "Write(runs/**)",
+      "Write(checkpoints/**)",
+      "Bash(python:*)",
+      "Bash(uv:*)",
+      "Bash(pip install -r requirements-locked.txt --require-hashes)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(cat:*.env*)",
+      "Read(*.env)",
+      "Read(*.pem)",
+      "Read(*.key)",
+      "Bash(chmod:*)",
+      "Bash(chflags:*)",
+      "Bash(chattr:*)",
+      "Bash(sudo:*)",
+      "Write(.claude/**)",
+      "Edit(.claude/**)"
+    ]
+  },
+  "hooks": {
+    "preToolUse": [
+      "./hooks/pre_tool_use.sh",
+      "./hooks/pre_pip_install.sh"
+    ]
+  },
+  "deny_tools": ["WebFetch", "WebSearch"],
+  "require_explicit_confirm": ["Bash"],
+  "project_type": "recallkit-worker",
+  "recallkit_role": "lora_sft_executor"
+}
