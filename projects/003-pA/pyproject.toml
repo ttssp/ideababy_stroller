@@ -29,6 +29,7 @@ dependencies = [
     "datasets==3.6.0",
     "lm-eval==0.4.5",
     "typer==0.12.5",
+    "click>=8.1,<8.2",  # typer 0.12.5 兼容性：click 8.2+ 改变 make_metavar() 签名导致 rich help 渲染崩溃
     "rich==13.7.1",
     "jinja2==3.1.6",
     "deepdiff==7.0.1",
@@ -51,9 +52,9 @@ dev = [
 ]
 
 [project.scripts]
-# CLI 入口：T006 负责实现 pars.cli.main:app
-# 此时 entry point 已声明但 pars.cli.main 尚未实现，`pars --help` 会 fail（预期）
-pars = "pars.cli.main:app"
+# CLI 入口：pars.cli.main:cli 为预构建的 click Group（含 --version 注入）
+# 注意：不用 app（Typer 实例），因为 --version 是通过 click Group 注入的（绕过 Typer 0.12 is_eager bug）
+pars = "pars.cli.main:cli"
 
 [build-system]
 requires = ["hatchling"]
