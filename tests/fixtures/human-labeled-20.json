@@ -18,421 +18,577 @@
       "id": "f1",
       "candidate": {
         "arxivId": "2305.18290",
+        "url": "https://arxiv.org/abs/2305.18290",
         "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "While large-scale unsupervised language models (LMs) learn broad world knowledge and some reasoning skills, achieving precise control of their behavior is difficult due to the completely unsupervised nature of their training. Existing methods for gaining such steerability collect human labels of the relative quality of model generations and fine-tune the unsupervised LM to align with these preferences, often with reinforcement learning from human feedback (RLHF). However, RLHF is a complex and often unstable procedure, first fitting a reward model that reflects the human preferences, and then fine-tuning the large unsupervised LM using reinforcement learning to maximize this estimated reward without drifting too far from the original model. In this paper we introduce a new parameterization of the reward model in RLHF that enables extraction of the corresponding optimal policy in closed form, allowing us to solve the standard RLHF problem with only a simple classification loss. The resulting algorithm, which we call Direct Preference Optimization (DPO), is stable, performant, and computationally lightweight, eliminating the need for sampling from the LM during fine-tuning or performing significant hyperparameter tuning. Our experiments show that DPO can fine-tune LMs to align with human preferences as well as or better than existing methods. Notably, fine-tuning with DPO exceeds PPO-based RLHF in ability to control sentiment of generations, and matches or improves response quality in summarization and single-turn dialogue while being substantially simpler to implement and train."
       },
       "anchor": {
         "arxivId": "2203.02155",
+        "url": "https://arxiv.org/abs/2203.02155",
         "title": "Training language models to follow instructions with human feedback",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "abstract": "Making language models bigger does not inherently make them better at following a user's intent. For example, large language models can generate outputs that are untruthful, toxic, or simply not helpful to the user. In other words, these models are not aligned with their users. In this paper, we show an avenue for aligning language models with user intent on a wide range of tasks by fine-tuning with human feedback. Starting with a set of labeler-written prompts and prompts submitted through the OpenAI API, we collect a dataset of labeler demonstrations of the desired model behavior, which we use to fine-tune GPT-3 using supervised learning. We then collect a dataset of rankings of model outputs, which we use to further fine-tune this supervised model using reinforcement learning from human feedback. We call the resulting models InstructGPT. In human evaluations on our prompt distribution, outputs from the 1.3B parameter InstructGPT model are preferred to outputs from the 175B GPT-3, despite having 100x fewer parameters. Moreover, InstructGPT models show improvements in truthfulness and reductions in toxic output generation while having minimal performance regressions on public NLP datasets. Even though InstructGPT still makes simple mistakes, our results show that fine-tuning with human feedback is a promising direction for aligning language models with human intent.",
         "paperId": 1
       },
       "topic": {
         "id": 1,
         "name": "RLHF / alignment",
-        "keywords": ["RLHF", "preference learning", "reward model"]
+        "keywords": [
+          "RLHF",
+          "preference learning",
+          "reward model"
+        ]
       },
       "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:DPO 用闭式优化绕过 reward model + PPO 三步流程,直接颠覆 InstructGPT 的 RLHF pipeline,是 alignment topic 的明确 state shift"
+      "rationale": "DPO replaces the reward-model-plus-RLHF pipeline used by InstructGPT with a direct preference optimization objective formulated as a simple classification loss. This changes the core alignment training route rather than merely improving an existing RLHF implementation."
     },
     {
-      "id": "f2",
       "candidate": {
         "arxivId": "2312.00752",
+        "url": "https://arxiv.org/abs/2312.00752",
         "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "Foundation models, now powering most of the exciting applications in deep learning, are almost universally based on the Transformer architecture and its core attention module. Many subquadratic-time architectures such as linear attention, gated convolution and recurrent models, and structured state space models (SSMs) have been developed to address Transformers' computational inefficiency on long sequences, but they have not performed as well as attention on important modalities such as language. We identify that a key weakness of such models is their inability to perform content-based reasoning, and make several improvements. First, simply letting the SSM parameters be functions of the input addresses their weakness with discrete modalities, allowing the model to selectively propagate or forget information along the sequence length dimension depending on the current token. Second, even though this change prevents the use of efficient convolutions, we design a hardware-aware parallel algorithm in recurrent mode. We integrate these selective SSMs into a simplified end-to-end neural network architecture without attention or even MLP blocks (Mamba). Mamba enjoys fast inference (5$\\times$ higher throughput than Transformers) and linear scaling in sequence length, and its performance improves on real data up to million-length sequences. As a general sequence model backbone, Mamba achieves state-of-the-art performance across several modalities such as language, audio, and genomics. On language modeling, our Mamba-3B model outperforms Transformers of the same size and matches Transformers twice its size, both in pretraining and downstream evaluation.",
+        "publishedAt": "2023-12-01T18:01:34Z"
       },
       "anchor": {
         "arxivId": "1706.03762",
+        "url": "https://arxiv.org/abs/1706.03762",
         "title": "Attention Is All You Need",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 2
+        "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.",
+        "paperId": 2,
+        "publishedAt": "2017-06-12T17:57:34Z"
       },
+      "humanVerdict": "shift",
+      "rationale": "Mamba replaces Transformer attention blocks with selective state-space modeling and a hardware-aware linear-time sequence algorithm. Relative to the Transformer baseline, it challenges the default attention-centric architecture for long-sequence modeling rather than making a small implementation tweak.",
+      "id": "f2",
       "topic": {
         "id": 2,
         "name": "state-space-models",
-        "keywords": ["SSM", "Mamba", "long-sequence", "selective scan"]
-      },
-      "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:Mamba 在长序列任务上以线性复杂度匹敌/超越 Transformer,挑战 attention is all you need 的统治地位"
+        "keywords": [
+          "SSM",
+          "Mamba",
+          "long-sequence",
+          "selective scan"
+        ]
+      }
     },
     {
       "id": "f3",
       "candidate": {
         "arxivId": "2303.15343",
+        "url": "https://arxiv.org/abs/2303.15343",
         "title": "Sigmoid Loss for Language Image Pre-Training",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "We propose a simple pairwise Sigmoid loss for Language-Image Pre-training (SigLIP). Unlike standard contrastive learning with softmax normalization, the sigmoid loss operates solely on image-text pairs and does not require a global view of the pairwise similarities for normalization. The sigmoid loss simultaneously allows further scaling up the batch size, while also performing better at smaller batch sizes. Combined with Locked-image Tuning, with only four TPUv4 chips, we train a SigLiT model that achieves 84.5% ImageNet zero-shot accuracy in two days. The disentanglement of the batch size from the loss further allows us to study the impact of examples vs pairs and negative to positive ratio. Finally, we push the batch size to the extreme, up to one million, and find that the benefits of growing batch size quickly diminish, with a more reasonable batch size of 32k being sufficient. We release our models at this https URL and hope our research motivates further explorations in improving the quality and efficiency of language-image pre-training."
       },
       "anchor": {
         "arxivId": "2103.00020",
+        "url": "https://arxiv.org/abs/2103.00020",
         "title": "Learning Transferable Visual Models From Natural Language Supervision",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "abstract": "State-of-the-art computer vision systems are trained to predict a fixed set of predetermined object categories. This restricted form of supervision limits their generality and usability since additional labeled data is needed to specify any other visual concept. Learning directly from raw text about images is a promising alternative which leverages a much broader source of supervision. We demonstrate that the simple pre-training task of predicting which caption goes with which image is an efficient and scalable way to learn SOTA image representations from scratch on a dataset of 400 million (image, text) pairs collected from the internet. After pre-training, natural language is used to reference learned visual concepts (or describe new ones) enabling zero-shot transfer of the model to downstream tasks. We study the performance of this approach by benchmarking on over 30 different existing computer vision datasets, spanning tasks such as OCR, action recognition in videos, geo-localization, and many types of fine-grained object classification. The model transfers non-trivially to most tasks and is often competitive with a fully supervised baseline without the need for any dataset specific training. For instance, we match the accuracy of the original ResNet-50 on ImageNet zero-shot without needing to use any of the 1.28 million training examples it was trained on. We release our code and pre-trained model weights at this https URL.",
         "paperId": 3
       },
       "topic": {
         "id": 3,
         "name": "vision-language pretraining",
-        "keywords": ["CLIP", "SigLIP", "contrastive", "sigmoid loss"]
+        "keywords": [
+          "CLIP",
+          "SigLIP",
+          "contrastive",
+          "sigmoid loss"
+        ]
       },
       "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:SigLIP 用 sigmoid loss 替换 softmax,允许小 batch 训练并改善 scaling,改变了 CLIP 的对比学习范式"
+      "rationale": "Shift, People think that SigLIP replaces CLIP-style softmax contrastive normalization with a pairwise sigmoid loss that removes the need for global pairwise normalization. This changes the core training objective for language-image pre-training. I kind of agree. However, the idea to project image and text modality to a common space is the real deal, whatever loss it NOT interesting to me."
     },
     {
-      "id": "f4",
       "candidate": {
         "arxivId": "2401.04088",
+        "url": "https://arxiv.org/abs/2401.04088",
         "title": "Mixtral of Experts",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "We introduce Mixtral 8x7B, a Sparse Mixture of Experts (SMoE) language model. Mixtral has the same architecture as Mistral 7B, with the difference that each layer is composed of 8 feedforward blocks (i.e. experts). For every token, at each layer, a router network selects two experts to process the current state and combine their outputs. Even though each token only sees two experts, the selected experts can be different at each timestep. As a result, each token has access to 47B parameters, but only uses 13B active parameters during inference. Mixtral was trained with a context size of 32k tokens and it outperforms or matches Llama 2 70B and GPT-3.5 across all evaluated benchmarks. In particular, Mixtral vastly outperforms Llama 2 70B on mathematics, code generation, and multilingual benchmarks. We also provide a model fine-tuned to follow instructions, Mixtral 8x7B - Instruct, that surpasses GPT-3.5 Turbo, Claude-2.1, Gemini Pro, and Llama 2 70B - chat model on human benchmarks. Both the base and instruct models are released under the Apache 2.0 license.",
+        "publishedAt": "2024-01-08T18:47:34Z"
       },
       "anchor": {
-        "arxivId": "2101.03961",
-        "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 4
+        "arxivId": "2302.13971",
+        "url": "https://arxiv.org/abs/2302.13971",
+        "title": "LLaMA: Open and Efficient Foundation Language Models",
+        "abstract": "We introduce LLaMA, a collection of foundation language models ranging from 7B to 65B parameters. We train our models on trillions of tokens, and show that it is possible to train state-of-the-art models using publicly available datasets exclusively, without resorting to proprietary and inaccessible datasets. In particular, LLaMA-13B outperforms GPT-3 (175B) on most benchmarks, and LLaMA-65B is competitive with the best models, Chinchilla-70B and PaLM-540B. We release all our models to the research community.",
+        "paperId": 4,
+        "publishedAt": "2023-02-27T17:11:15Z"
       },
+      "humanVerdict": "shift",
+      "rationale": "Mixtral makes sparse MoE a practical open-weight LLM alternative to dense models, using only a subset of experts per token while matching or surpassing much larger dense baselines. I therefore treat it as a shift from dense scaling toward sparse expert scaling.",
+      "id": "f4",
       "topic": {
         "id": 4,
         "name": "mixture-of-experts",
-        "keywords": ["MoE", "Mixtral", "sparse", "experts"]
-      },
-      "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:Mixtral 把 MoE 从 research-toy 推到 production-ready dense 替代品,引发开源 LLM 主流转向稀疏架构"
+        "keywords": [
+          "MoE",
+          "sparse",
+          "Mixtral",
+          "expert routing"
+        ]
+      }
     },
     {
-      "id": "f5",
       "candidate": {
         "arxivId": "2106.09685",
+        "url": "https://arxiv.org/abs/2106.09685",
         "title": "LoRA: Low-Rank Adaptation of Large Language Models",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "An important paradigm of natural language processing consists of large-scale pre-training on general domain data and adaptation to particular tasks or domains. As we pre-train larger models, full fine-tuning, which retrains all model parameters, becomes less feasible. Using GPT-3 175B as an example -- deploying independent instances of fine-tuned models, each with 175B parameters, is prohibitively expensive. We propose Low-Rank Adaptation, or LoRA, which freezes the pre-trained model weights and injects trainable rank decomposition matrices into each layer of the Transformer architecture, greatly reducing the number of trainable parameters for downstream tasks. Compared to GPT-3 175B fine-tuned with Adam, LoRA can reduce the number of trainable parameters by 10,000 times and the GPU memory requirement by 3 times. LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters, a higher training throughput, and, unlike adapters, no additional inference latency. We also provide an empirical investigation into rank-deficiency in language model adaptation, which sheds light on the efficacy of LoRA. We release a package that facilitates the integration of LoRA with PyTorch models and provide our implementations and model checkpoints for RoBERTa, DeBERTa, and GPT-2 at https://github.com/microsoft/LoRA.",
+        "publishedAt": "2021-06-17T17:37:18Z"
       },
       "anchor": {
-        "arxivId": "PLACEHOLDER-full-finetune-anchor",
-        "title": "PLACEHOLDER: representative full-finetune baseline (operator verify arxivId, e.g. BERT-fullfinetune or GPT-3 finetune paper)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 5
-      },
-      "topic": {
-        "id": 5,
-        "name": "parameter-efficient finetuning",
-        "keywords": ["LoRA", "PEFT", "adapter", "rank decomposition"]
+        "arxivId": "1810.04805",
+        "url": "https://arxiv.org/abs/1810.04805",
+        "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+        "abstract": "We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language representation models, BERT is designed to pre-train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers. As a result, the pre-trained BERT model can be fine-tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task-specific architecture modifications.\n  BERT is conceptually simple and empirically powerful. It obtains new state-of-the-art results on eleven natural language processing tasks, including pushing the GLUE score to 80.5% (7.7% point absolute improvement), MultiNLI accuracy to 86.7% (4.6% absolute improvement), SQuAD v1.1 question answering Test F1 to 93.2 (1.5 point absolute improvement) and SQuAD v2.0 Test F1 to 83.1 (5.1 point absolute improvement).",
+        "paperId": 5,
+        "publishedAt": "2018-10-11T00:50:01Z"
       },
       "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:LoRA 用低秩矩阵把 finetune 成本降两个数量级,变成事实标准,取代 full finetune 的默认实践"
+      "rationale": "BERT-style adaptation fine-tunes the full pretrained model for downstream tasks, while LoRA freezes the base model and trains low-rank update matrices. This changes the default adaptation practice from full fine-tuning to parameter-efficient fine-tuning.",
+      "id": "f5",
+      "topic": {
+        "id": 5,
+        "name": "parameter-efficient-finetuning",
+        "keywords": [
+          "LoRA",
+          "PEFT",
+          "adapter"
+        ]
+      }
     },
     {
-      "id": "f6",
       "candidate": {
-        "arxivId": "PLACEHOLDER-alphafold2",
-        "title": "Highly accurate protein structure prediction with AlphaFold (operator verify arxivId; AlphaFold 2 is Nature 2021, not arXiv)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv (or Nature deposited preprint)"
+        "arxivId": "2111.06340",
+        "url": "https://arxiv.org/abs/2111.06340",
+        "title": "ParaFold: Paralleling AlphaFold for Large-Scale Predictions",
+        "abstract": "AlphaFold predicts protein structures from the amino acid sequence at or near experimental resolution, solving the 50-year-old protein folding challenge, leading to progress by transforming large-scale genomics data into protein structures. AlphaFold will also greatly change the scientific research model from low-throughput to high-throughput manner. The AlphaFold framework is a mixture of two types of workloads: MSA construction based on CPUs and model inference on GPUs. The first CPU stage dominates the overall runtime, taking hours for a single protein due to the large database sizes and I/O bottlenecks. However, GPUs in this CPU stage remain idle, resulting in low GPU utilization and restricting the capacity of large-scale structure predictions. Therefore, we proposed ParaFold, an open-source parallel version of AlphaFold for high throughput protein structure predictions. ParaFold separates the CPU and GPU parts to enable large-scale structure predictions. ParaFold also effectively reduces the CPU and GPU runtime with two optimizations without compromising the quality of prediction results: using multi-threaded parallelism on CPUs and using optimized JAX compilation on GPUs. We evaluated ParaFold with three datasets of different size and protein lengths. We evaluated the accuracy and efficiency of optimizations on CPUs and GPUs, and showed the large-scale prediction capability by running ParaFold inferences of 19,704 small proteins in five hours on one NVIDIA DGX-2. Using the JAX compile optimization, ParaFold attained a 13.8X average speedup over AlphaFold. ParaFold offers a rapid and effective approach for high-throughput structure predictions, leveraging the predictive power by running on supercomputers, with shorter time, and at a lower cost. The development of ParaFold will greatly speed up high-throughput studies and render the protein \"structure-omics\" feasible.",
+        "publishedAt": "2021-11-11T17:53:37Z"
       },
       "anchor": {
-        "arxivId": "PLACEHOLDER-homology-modeling-anchor",
-        "title": "PLACEHOLDER: representative homology modeling / Rosetta-era baseline (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 6
+        "arxivId": "1811.03481",
+        "url": "https://arxiv.org/abs/1811.03481",
+        "title": "Distance-based Protein Folding Powered by Deep Learning",
+        "abstract": "Contact-assisted protein folding has made very good progress, but two challenges remain. One is accurate contact prediction for proteins lack of many sequence homologs and the other is that time-consuming folding simulation is often needed to predict good 3D models from predicted contacts. We show that protein distance matrix can be predicted well by deep learning and then directly used to construct 3D models without folding simulation at all. Using distance geometry to construct 3D models from our predicted distance matrices, we successfully folded 21 of the 37 CASP12 hard targets with a median family size of 58 effective sequence homologs within 4 hours on a Linux computer of 20 CPUs. In contrast, contacts predicted by direct coupling analysis (DCA) cannot fold any of them in the absence of folding simulation and the best CASP12 group folded 11 of them by integrating predicted contacts into complex, fragment-based folding simulation. The rigorous experimental validation on 15 CASP13 targets show that among the 3 hardest targets of new fold our distance-based folding servers successfully folded 2 large ones with <150 sequence homologs while the other servers failed on all three, and that our ab initio folding server also predicted the best, high-quality 3D model for a large homology modeling target. Further experimental validation in CAMEO shows that our ab initio folding server predicted correct fold for a membrane protein of new fold with 200 residues and 229 sequence homologs while all the other servers failed. These results imply that deep learning offers an efficient and accurate solution for ab initio folding on a personal computer.",
+        "paperId": 6,
+        "publishedAt": "2018-11-08T15:08:19Z"
       },
+      "humanVerdict": "shift",
+      "rationale": "This uses an arXiv-accessible AlphaFold-line proxy because the original AlphaFold2 Nature paper has no official arXiv entry. Relative to distance/contact-guided folding pipelines, the AlphaFold line moved protein structure prediction toward near-experimental, end-to-end large-scale prediction.",
+      "id": "f6",
       "topic": {
         "id": 6,
         "name": "protein-structure-prediction",
-        "keywords": ["AlphaFold", "protein folding", "structure"]
-      },
-      "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:AlphaFold 2 用 attention + structure module 实现接近实验精度的折叠,终结手工 homology modeling 主流地位"
+        "keywords": [
+          "AlphaFold",
+          "homology",
+          "protein folding"
+        ]
+      }
     },
     {
-      "id": "f7",
       "candidate": {
         "arxivId": "2212.09748",
+        "url": "https://arxiv.org/abs/2212.09748",
         "title": "Scalable Diffusion Models with Transformers",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "We explore a new class of diffusion models based on the transformer architecture. We train latent diffusion models of images, replacing the commonly-used U-Net backbone with a transformer that operates on latent patches. We analyze the scalability of our Diffusion Transformers (DiTs) through the lens of forward pass complexity as measured by Gflops. We find that DiTs with higher Gflops -- through increased transformer depth/width or increased number of input tokens -- consistently have lower FID. In addition to possessing good scalability properties, our largest DiT-XL/2 models outperform all prior diffusion models on the class-conditional ImageNet 512x512 and 256x256 benchmarks, achieving a state-of-the-art FID of 2.27 on the latter.",
+        "publishedAt": "2022-12-19T18:59:58Z"
       },
       "anchor": {
         "arxivId": "2112.10752",
+        "url": "https://arxiv.org/abs/2112.10752",
         "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 7
+        "abstract": "By decomposing the image formation process into a sequential application of denoising autoencoders, diffusion models (DMs) achieve state-of-the-art synthesis results on image data and beyond. Additionally, their formulation allows for a guiding mechanism to control the image generation process without retraining. However, since these models typically operate directly in pixel space, optimization of powerful DMs often consumes hundreds of GPU days and inference is expensive due to sequential evaluations. To enable DM training on limited computational resources while retaining their quality and flexibility, we apply them in the latent space of powerful pretrained autoencoders. In contrast to previous work, training diffusion models on such a representation allows for the first time to reach a near-optimal point between complexity reduction and detail preservation, greatly boosting visual fidelity. By introducing cross-attention layers into the model architecture, we turn diffusion models into powerful and flexible generators for general conditioning inputs such as text or bounding boxes and high-resolution synthesis becomes possible in a convolutional manner. Our latent diffusion models (LDMs) achieve a new state of the art for image inpainting and highly competitive performance on various tasks, including unconditional image generation, semantic scene synthesis, and super-resolution, while significantly reducing computational requirements compared to pixel-based DMs. Code is available at https://github.com/CompVis/latent-diffusion .",
+        "paperId": 7,
+        "publishedAt": "2021-12-20T18:55:25Z"
       },
+      "humanVerdict": "shift",
+      "rationale": "DiT replaces the commonly used U-Net-style diffusion backbone with a Transformer operating on latent patches and studies scaling through model compute. Relative to latent diffusion's established architecture, this is a backbone-level shift rather than a minor diffusion training tweak.",
+      "id": "f7",
       "topic": {
         "id": 7,
         "name": "diffusion-architecture",
-        "keywords": ["DiT", "diffusion transformer", "U-Net", "LDM"]
-      },
-      "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:DiT 把 U-Net 替换为 Transformer backbone,SD3/Sora 都跟进,改写 diffusion 架构默认"
+        "keywords": [
+          "DiT",
+          "diffusion",
+          "U-Net",
+          "transformer"
+        ]
+      }
     },
     {
-      "id": "f8",
       "candidate": {
         "arxivId": "2205.14135",
+        "url": "https://arxiv.org/abs/2205.14135",
         "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "Transformers are slow and memory-hungry on long sequences, since the time and memory complexity of self-attention are quadratic in sequence length. Approximate attention methods have attempted to address this problem by trading off model quality to reduce the compute complexity, but often do not achieve wall-clock speedup. We argue that a missing principle is making attention algorithms IO-aware -- accounting for reads and writes between levels of GPU memory. We propose FlashAttention, an IO-aware exact attention algorithm that uses tiling to reduce the number of memory reads/writes between GPU high bandwidth memory (HBM) and GPU on-chip SRAM. We analyze the IO complexity of FlashAttention, showing that it requires fewer HBM accesses than standard attention, and is optimal for a range of SRAM sizes. We also extend FlashAttention to block-sparse attention, yielding an approximate attention algorithm that is faster than any existing approximate attention method. FlashAttention trains Transformers faster than existing baselines: 15% end-to-end wall-clock speedup on BERT-large (seq. length 512) compared to the MLPerf 1.1 training speed record, 3$\\times$ speedup on GPT-2 (seq. length 1K), and 2.4$\\times$ speedup on long-range arena (seq. length 1K-4K). FlashAttention and block-sparse FlashAttention enable longer context in Transformers, yielding higher quality models (0.7 better perplexity on GPT-2 and 6.4 points of lift on long-document classification) and entirely new capabilities: the first Transformers to achieve better-than-chance performance on the Path-X challenge (seq. length 16K, 61.4% accuracy) and Path-256 (seq. length 64K, 63.1% accuracy).",
+        "publishedAt": "2022-05-27T17:53:09Z"
       },
       "anchor": {
         "arxivId": "1706.03762",
+        "url": "https://arxiv.org/abs/1706.03762",
         "title": "Attention Is All You Need",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 8
+        "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.",
+        "paperId": 8,
+        "publishedAt": "2017-06-12T17:57:34Z"
       },
+      "humanVerdict": "shift",
+      "rationale": "FlashAttention does not change the mathematical attention operation, but it changes the practical implementation regime by making exact attention IO-aware, faster, and memory efficient. I mark it as shift because it displaced many approximate-attention workarounds and became a new default implementation path.",
+      "id": "f8",
       "topic": {
         "id": 8,
         "name": "attention-efficiency",
-        "keywords": ["FlashAttention", "IO-aware", "tiling", "exact attention"]
-      },
-      "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:FlashAttention 用 IO-aware tiling 让 exact attention 在长序列上比近似法更快,几乎取代所有近似 attention 实现"
+        "keywords": [
+          "FlashAttention",
+          "IO-aware",
+          "memory-efficient"
+        ]
+      }
     },
     {
-      "id": "f9",
       "candidate": {
         "arxivId": "2212.08073",
+        "url": "https://arxiv.org/abs/2212.08073",
         "title": "Constitutional AI: Harmlessness from AI Feedback",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "abstract": "As AI systems become more capable, we would like to enlist their help to supervise other AIs. We experiment with methods for training a harmless AI assistant through self-improvement, without any human labels identifying harmful outputs. The only human oversight is provided through a list of rules or principles, and so we refer to the method as 'Constitutional AI'. The process involves both a supervised learning and a reinforcement learning phase. In the supervised phase we sample from an initial model, then generate self-critiques and revisions, and then finetune the original model on revised responses. In the RL phase, we sample from the finetuned model, use a model to evaluate which of the two samples is better, and then train a preference model from this dataset of AI preferences. We then train with RL using the preference model as the reward signal, i.e. we use 'RL from AI Feedback' (RLAIF). As a result we are able to train a harmless but non-evasive AI assistant that engages with harmful queries by explaining its objections to them. Both the SL and RL methods can leverage chain-of-thought style reasoning to improve the human-judged performance and transparency of AI decision making. These methods make it possible to control AI behavior more precisely and with far fewer human labels.",
+        "publishedAt": "2022-12-15T06:19:23Z"
       },
       "anchor": {
         "arxivId": "2203.02155",
+        "url": "https://arxiv.org/abs/2203.02155",
         "title": "Training language models to follow instructions with human feedback",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 9
-      },
-      "topic": {
-        "id": 9,
-        "name": "alignment non-RLHF",
-        "keywords": ["Constitutional AI", "RLAIF", "self-critique"]
+        "abstract": "Making language models bigger does not inherently make them better at following a user's intent. For example, large language models can generate outputs that are untruthful, toxic, or simply not helpful to the user. In other words, these models are not aligned with their users. In this paper, we show an avenue for aligning language models with user intent on a wide range of tasks by fine-tuning with human feedback. Starting with a set of labeler-written prompts and prompts submitted through the OpenAI API, we collect a dataset of labeler demonstrations of the desired model behavior, which we use to fine-tune GPT-3 using supervised learning. We then collect a dataset of rankings of model outputs, which we use to further fine-tune this supervised model using reinforcement learning from human feedback. We call the resulting models InstructGPT. In human evaluations on our prompt distribution, outputs from the 1.3B parameter InstructGPT model are preferred to outputs from the 175B GPT-3, despite having 100x fewer parameters. Moreover, InstructGPT models show improvements in truthfulness and reductions in toxic output generation while having minimal performance regressions on public NLP datasets. Even though InstructGPT still makes simple mistakes, our results show that fine-tuning with human feedback is a promising direction for aligning language models with human intent.",
+        "paperId": 9,
+        "publishedAt": "2022-03-04T07:04:42Z"
       },
       "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:Constitutional AI 用 AI feedback + 自我批评取代纯人类标注 RLHF,开启 RLAIF 主流路线"
+      "rationale": "InstructGPT relies on human demonstrations and human preference rankings, while Constitutional AI uses rule-guided self-critique and AI feedback to reduce reliance on human labels for harmlessness. This changes the supervision source for alignment, so I mark it as shift.",
+      "id": "f9",
+      "topic": {
+        "id": 9,
+        "name": "alignment-non-RLHF",
+        "keywords": [
+          "Constitutional AI",
+          "RLAIF",
+          "self-critique"
+        ]
+      }
     },
     {
       "id": "f10",
       "candidate": {
-        "arxivId": "PLACEHOLDER-gpt4-tech-report",
-        "title": "GPT-4 Technical Report (operator verify arxivId 2303.08774)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2303.08774",
+        "url": "https://arxiv.org/abs/2303.08774",
+        "title": "GPT-4 Technical Report",
+        "abstract": "We report the development of GPT-4, a large-scale, multimodal model which can accept image and text inputs and produce text outputs. While less capable than humans in many real-world scenarios, GPT-4 exhibits human-level performance on various professional and academic benchmarks, including passing a simulated bar exam with a score around the top 10% of test takers. GPT-4 is a Transformer-based model pre-trained to predict the next token in a document. The post-training alignment process results in improved performance on measures of factuality and adherence to desired behavior. A core component of this project was developing infrastructure and optimization methods that behave predictably across a wide range of scales. This allowed us to accurately predict some aspects of GPT-4's performance based on models trained with no more than 1/1,000th the compute of GPT-4."
       },
       "anchor": {
-        "arxivId": "PLACEHOLDER-gpt35-or-instructgpt",
-        "title": "PLACEHOLDER: GPT-3.5 / InstructGPT baseline (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "arxivId": "2005.14165",
+        "url": "https://arxiv.org/abs/2005.14165",
+        "title": "Language Models are Few-Shot Learners",
+        "abstract": "Recent work has demonstrated substantial gains on many NLP tasks and benchmarks by pre-training on a large corpus of text followed by fine-tuning on a specific task. While typically task-agnostic in architecture, this method still requires task-specific fine-tuning datasets of thousands or tens of thousands of examples. By contrast, humans can generally perform a new language task from only a few examples or from simple instructions - something which current NLP systems still largely struggle to do. Here we show that scaling up language models greatly improves task-agnostic, few-shot performance, sometimes even reaching competitiveness with prior state-of-the-art fine-tuning approaches. Specifically, we train GPT-3, an autoregressive language model with 175 billion parameters, 10x more than any previous non-sparse language model, and test its performance in the few-shot setting. For all tasks, GPT-3 is applied without any gradient updates or fine-tuning, with tasks and few-shot demonstrations specified purely via text interaction with the model. GPT-3 achieves strong performance on many NLP datasets, including translation, question-answering, and cloze tasks, as well as several tasks that require on-the-fly reasoning or domain adaptation, such as unscrambling words, using a novel word in a sentence, or performing 3-digit arithmetic. At the same time, we also identify some datasets where GPT-3's few-shot learning still struggles, as well as some datasets where GPT-3 faces methodological issues related to training on large web corpora. Finally, we find that GPT-3 can generate samples of news articles which human evaluators have difficulty distinguishing from articles written by humans. We discuss broader societal impacts of this finding and of GPT-3 in general.",
         "paperId": 10
       },
       "topic": {
         "id": 1,
         "name": "RLHF / alignment",
-        "keywords": ["GPT-4", "multimodal", "RLHF scaling"]
+        "keywords": [
+          "GPT-4",
+          "multimodal",
+          "RLHF scaling"
+        ]
       },
       "humanVerdict": "shift",
-      "rationale": "operator 后续替换;草稿:GPT-4 引入多模态 + 大幅提升的 reasoning,成为 LLM scaling 与 alignment 实践的新 anchor"
+      "rationale": "GPT-4 extends the GPT-3 scaling line into a large-scale multimodal model with human-level performance on many professional benchmarks and improved post-training alignment. I mark it as shift because the capability jump and multimodal interface changed the practical state of foundation-model deployment, even though the model remains Transformer-based."
     },
     {
       "id": "f11",
       "candidate": {
-        "arxivId": "PLACEHOLDER-dpo-followup",
-        "title": "PLACEHOLDER: DPO follow-up paper · benchmark +1-2% (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2310.12036",
+        "url": "https://arxiv.org/abs/2310.12036",
+        "title": "A General Theoretical Paradigm to Understand Learning from Human Preferences",
+        "abstract": "The prevalent deployment of learning from human preferences through reinforcement learning (RLHF) relies on two important approximations: the first assumes that pairwise preferences can be substituted with pointwise rewards. The second assumes that a reward model trained on these pointwise rewards can generalize from collected data to out-of-distribution data sampled by the policy. Recently, Direct Preference Optimisation (DPO) has been proposed as an approach that bypasses the second approximation and learn directly a policy from collected data without the reward modelling stage. However, this method still heavily relies on the first approximation.\nIn this paper we try to gain a deeper theoretical understanding of these practical algorithms. In particular we derive a new general objective called $\\Psi$PO for learning from human preferences that is expressed in terms of pairwise preferences and therefore bypasses both approximations. This new general objective allows us to perform an in-depth analysis of the behavior of RLHF and DPO (as special cases of $\\Psi$PO) and to identify their potential pitfalls. We then consider another special case for $\\Psi$PO by setting $\\Psi$ simply to Identity, for which we can derive an efficient optimisation procedure, prove performance guarantees and demonstrate its empirical superiority to DPO on some illustrative examples."
       },
       "anchor": {
-        "arxivId": "2305.18290",
-        "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "arxivId": "2203.02155",
+        "url": "https://arxiv.org/abs/2203.02155",
+        "title": "Training language models to follow instructions with human feedback",
+        "abstract": "Making language models bigger does not inherently make them better at following a user's intent. For example, large language models can generate outputs that are untruthful, toxic, or simply not helpful to the user. In other words, these models are not aligned with their users. In this paper, we show an avenue for aligning language models with user intent on a wide range of tasks by fine-tuning with human feedback. Starting with a set of labeler-written prompts and prompts submitted through the OpenAI API, we collect a dataset of labeler demonstrations of the desired model behavior, which we use to fine-tune GPT-3 using supervised learning. We then collect a dataset of rankings of model outputs, which we use to further fine-tune this supervised model using reinforcement learning from human feedback. We call the resulting models InstructGPT. In human evaluations on our prompt distribution, outputs from the 1.3B parameter InstructGPT model are preferred to outputs from the 175B GPT-3, despite having 100x fewer parameters. Moreover, InstructGPT models show improvements in truthfulness and reductions in toxic output generation while having minimal performance regressions on public NLP datasets. Even though InstructGPT still makes simple mistakes, our results show that fine-tuning with human feedback is a promising direction for aligning language models with human intent.",
         "paperId": 11
       },
       "topic": {
         "id": 1,
         "name": "RLHF / alignment",
-        "keywords": ["DPO", "preference learning", "follow-up"]
+        "keywords": [
+          "IPO",
+          "preference learning",
+          "follow-up"
+        ]
       },
       "humanVerdict": "incremental",
-      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(同 DPO 框架,benchmark 微涨)"
+      "rationale": "IPO/InstructGPT studies the same learning-from-human-preferences setting as RLHF and DPO, providing a theoretical generalization and improved objective. It deepens the preference-optimization line but does not clearly introduce a new paradigm."
     },
     {
-      "id": "f12",
       "candidate": {
-        "arxivId": "PLACEHOLDER-mamba-variant",
-        "title": "PLACEHOLDER: Mamba variant / extension paper (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2405.21060",
+        "url": "https://arxiv.org/abs/2405.21060",
+        "title": "Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality",
+        "abstract": "While Transformers have been the main architecture behind deep learning's success in language modeling, state-space models (SSMs) such as Mamba have recently been shown to match or outperform Transformers at small to medium scale. We show that these families of models are actually quite closely related, and develop a rich framework of theoretical connections between SSMs and variants of attention, connected through various decompositions of a well-studied class of structured semiseparable matrices. Our state space duality (SSD) framework allows us to design a new architecture (Mamba-2) whose core layer is an a refinement of Mamba's selective SSM that is 2-8X faster, while continuing to be competitive with Transformers on language modeling.",
+        "publishedAt": "2024-05-31T17:50:01Z"
       },
       "anchor": {
         "arxivId": "2312.00752",
+        "url": "https://arxiv.org/abs/2312.00752",
         "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 12
+        "abstract": "Foundation models, now powering most of the exciting applications in deep learning, are almost universally based on the Transformer architecture and its core attention module. Many subquadratic-time architectures such as linear attention, gated convolution and recurrent models, and structured state space models (SSMs) have been developed to address Transformers' computational inefficiency on long sequences, but they have not performed as well as attention on important modalities such as language. We identify that a key weakness of such models is their inability to perform content-based reasoning, and make several improvements. First, simply letting the SSM parameters be functions of the input addresses their weakness with discrete modalities, allowing the model to selectively propagate or forget information along the sequence length dimension depending on the current token. Second, even though this change prevents the use of efficient convolutions, we design a hardware-aware parallel algorithm in recurrent mode. We integrate these selective SSMs into a simplified end-to-end neural network architecture without attention or even MLP blocks (Mamba). Mamba enjoys fast inference (5$\\times$ higher throughput than Transformers) and linear scaling in sequence length, and its performance improves on real data up to million-length sequences. As a general sequence model backbone, Mamba achieves state-of-the-art performance across several modalities such as language, audio, and genomics. On language modeling, our Mamba-3B model outperforms Transformers of the same size and matches Transformers twice its size, both in pretraining and downstream evaluation.",
+        "paperId": 12,
+        "publishedAt": "2023-12-01T18:01:34Z"
       },
+      "humanVerdict": "incremental",
+      "rationale": "This paper develops the Mamba/SSM line further by connecting SSMs and attention through structured state-space duality and deriving Mamba-2. It is a meaningful follow-up within the same SSM direction, not a new state shift away from Mamba.",
+      "id": "f12",
       "topic": {
         "id": 2,
         "name": "state-space-models",
-        "keywords": ["Mamba", "SSM", "follow-up"]
-      },
-      "humanVerdict": "incremental",
-      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(在 Mamba 上做层归一化或调度优化的 incremental work)"
+        "keywords": [
+          "SSM",
+          "Mamba",
+          "long-sequence",
+          "selective scan"
+        ]
+      }
     },
     {
-      "id": "f13",
       "candidate": {
-        "arxivId": "PLACEHOLDER-clip-followup",
-        "title": "PLACEHOLDER: CLIP/SigLIP family follow-up (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2212.00794",
+        "url": "https://arxiv.org/abs/2212.00794",
+        "title": "Scaling Language-Image Pre-training via Masking",
+        "abstract": "We present Fast Language-Image Pre-training (FLIP), a simple and more efficient method for training CLIP. Our method randomly masks out and removes a large portion of image patches during training. Masking allows us to learn from more image-text pairs given the same wall-clock time and contrast more samples per iteration with similar memory footprint. It leads to a favorable trade-off between accuracy and training time. In our experiments on 400 million image-text pairs, FLIP improves both accuracy and speed over the no-masking baseline. On a large diversity of downstream tasks, FLIP dominantly outperforms the CLIP counterparts trained on the same data. Facilitated by the speedup, we explore the scaling behavior of increasing the model size, data size, or training length, and report encouraging results and comparisons. We hope that our work will foster future research on scaling vision-language learning.",
+        "publishedAt": "2022-12-01T18:59:57Z"
       },
       "anchor": {
         "arxivId": "2103.00020",
+        "url": "https://arxiv.org/abs/2103.00020",
         "title": "Learning Transferable Visual Models From Natural Language Supervision",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 13
+        "abstract": "State-of-the-art computer vision systems are trained to predict a fixed set of predetermined object categories. This restricted form of supervision limits their generality and usability since additional labeled data is needed to specify any other visual concept. Learning directly from raw text about images is a promising alternative which leverages a much broader source of supervision. We demonstrate that the simple pre-training task of predicting which caption goes with which image is an efficient and scalable way to learn SOTA image representations from scratch on a dataset of 400 million (image, text) pairs collected from the internet. After pre-training, natural language is used to reference learned visual concepts (or describe new ones) enabling zero-shot transfer of the model to downstream tasks. We study the performance of this approach by benchmarking on over 30 different existing computer vision datasets, spanning tasks such as OCR, action recognition in videos, geo-localization, and many types of fine-grained object classification. The model transfers non-trivially to most tasks and is often competitive with a fully supervised baseline without the need for any dataset specific training. For instance, we match the accuracy of the original ResNet-50 on ImageNet zero-shot without needing to use any of the 1.28 million training examples it was trained on. We release our code and pre-trained model weights at https://github.com/OpenAI/CLIP.",
+        "paperId": 13,
+        "publishedAt": "2021-02-26T19:04:58Z"
       },
+      "humanVerdict": "incremental",
+      "rationale": "FLIP keeps the CLIP-style language-image pretraining setup and improves efficiency by masking image patches during training. It is an efficiency/scaling improvement to the same CLIP paradigm rather than a fundamentally different vision-language pretraining route.",
+      "id": "f13",
       "topic": {
         "id": 3,
         "name": "vision-language pretraining",
-        "keywords": ["CLIP", "follow-up", "zero-shot"]
-      },
-      "humanVerdict": "incremental",
-      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(扩 dataset 或换 backbone 的标准 CLIP 改良)"
+        "keywords": [
+          "CLIP",
+          "SigLIP",
+          "contrastive",
+          "sigmoid loss"
+        ]
+      }
     },
     {
-      "id": "f14",
       "candidate": {
-        "arxivId": "PLACEHOLDER-moe-followup",
-        "title": "PLACEHOLDER: MoE routing improvement paper (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2401.06066",
+        "url": "https://arxiv.org/abs/2401.06066",
+        "title": "DeepSeekMoE: Towards Ultimate Expert Specialization in Mixture-of-Experts Language Models",
+        "abstract": "In the era of large language models, Mixture-of-Experts (MoE) is a promising architecture for managing computational costs when scaling up model parameters. However, conventional MoE architectures like GShard, which activate the top-$K$ out of $N$ experts, face challenges in ensuring expert specialization, i.e. each expert acquires non-overlapping and focused knowledge. In response, we propose the DeepSeekMoE architecture towards ultimate expert specialization. It involves two principal strategies: (1) finely segmenting the experts into $mN$ ones and activating $mK$ from them, allowing for a more flexible combination of activated experts; (2) isolating $K_s$ experts as shared ones, aiming at capturing common knowledge and mitigating redundancy in routed experts. Starting from a modest scale with 2B parameters, we demonstrate that DeepSeekMoE 2B achieves comparable performance with GShard 2.9B, which has 1.5 times the expert parameters and computation. In addition, DeepSeekMoE 2B nearly approaches the performance of its dense counterpart with the same number of total parameters, which set the upper bound of MoE models. Subsequently, we scale up DeepSeekMoE to 16B parameters and show that it achieves comparable performance with LLaMA2 7B, with only about 40% of computations. Further, our preliminary efforts to scale up DeepSeekMoE to 145B parameters consistently validate its substantial advantages over the GShard architecture, and show its performance comparable with DeepSeek 67B, using only 28.5% (maybe even 18.2%) of computations.",
+        "publishedAt": "2024-01-11T17:31:42Z"
       },
       "anchor": {
         "arxivId": "2401.04088",
+        "url": "https://arxiv.org/abs/2401.04088",
         "title": "Mixtral of Experts",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 14
+        "abstract": "We introduce Mixtral 8x7B, a Sparse Mixture of Experts (SMoE) language model. Mixtral has the same architecture as Mistral 7B, with the difference that each layer is composed of 8 feedforward blocks (i.e. experts). For every token, at each layer, a router network selects two experts to process the current state and combine their outputs. Even though each token only sees two experts, the selected experts can be different at each timestep. As a result, each token has access to 47B parameters, but only uses 13B active parameters during inference. Mixtral was trained with a context size of 32k tokens and it outperforms or matches Llama 2 70B and GPT-3.5 across all evaluated benchmarks. In particular, Mixtral vastly outperforms Llama 2 70B on mathematics, code generation, and multilingual benchmarks. We also provide a model fine-tuned to follow instructions, Mixtral 8x7B - Instruct, that surpasses GPT-3.5 Turbo, Claude-2.1, Gemini Pro, and Llama 2 70B - chat model on human benchmarks. Both the base and instruct models are released under the Apache 2.0 license.",
+        "paperId": 14,
+        "publishedAt": "2024-01-08T18:47:34Z"
       },
+      "humanVerdict": "incremental",
+      "rationale": "DeepSeekMoE improves the MoE line through finer-grained expert segmentation and shared experts to encourage specialization. It advances routing and expert design inside the same sparse-MoE paradigm, so I mark it as incremental.",
+      "id": "f14",
       "topic": {
         "id": 4,
         "name": "mixture-of-experts",
-        "keywords": ["MoE", "routing", "load balancing", "follow-up"]
-      },
-      "humanVerdict": "incremental",
-      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(MoE routing 优化,perplexity -2% 类工作)"
+        "keywords": [
+          "MoE",
+          "sparse",
+          "Mixtral",
+          "expert routing"
+        ]
+      }
     },
     {
-      "id": "f15",
       "candidate": {
-        "arxivId": "PLACEHOLDER-lora-variant",
-        "title": "PLACEHOLDER: QLoRA / LoRA-FA / DoRA variant (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2305.14314",
+        "url": "https://arxiv.org/abs/2305.14314",
+        "title": "QLoRA: Efficient Finetuning of Quantized LLMs",
+        "abstract": "We present QLoRA, an efficient finetuning approach that reduces memory usage enough to finetune a 65B parameter model on a single 48GB GPU while preserving full 16-bit finetuning task performance. QLoRA backpropagates gradients through a frozen, 4-bit quantized pretrained language model into Low Rank Adapters~(LoRA). Our best model family, which we name Guanaco, outperforms all previous openly released models on the Vicuna benchmark, reaching 99.3% of the performance level of ChatGPT while only requiring 24 hours of finetuning on a single GPU. QLoRA introduces a number of innovations to save memory without sacrificing performance: (a) 4-bit NormalFloat (NF4), a new data type that is information theoretically optimal for normally distributed weights (b) double quantization to reduce the average memory footprint by quantizing the quantization constants, and (c) paged optimziers to manage memory spikes. We use QLoRA to finetune more than 1,000 models, providing a detailed analysis of instruction following and chatbot performance across 8 instruction datasets, multiple model types (LLaMA, T5), and model scales that would be infeasible to run with regular finetuning (e.g. 33B and 65B parameter models). Our results show that QLoRA finetuning on a small high-quality dataset leads to state-of-the-art results, even when using smaller models than the previous SoTA. We provide a detailed analysis of chatbot performance based on both human and GPT-4 evaluations showing that GPT-4 evaluations are a cheap and reasonable alternative to human evaluation. Furthermore, we find that current chatbot benchmarks are not trustworthy to accurately evaluate the performance levels of chatbots. A lemon-picked analysis demonstrates where Guanaco fails compared to ChatGPT. We release all of our models and code, including CUDA kernels for 4-bit training.",
+        "publishedAt": "2023-05-23T17:50:33Z"
       },
       "anchor": {
         "arxivId": "2106.09685",
+        "url": "https://arxiv.org/abs/2106.09685",
         "title": "LoRA: Low-Rank Adaptation of Large Language Models",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 15
-      },
-      "topic": {
-        "id": 5,
-        "name": "parameter-efficient finetuning",
-        "keywords": ["LoRA variant", "PEFT", "follow-up"]
+        "abstract": "An important paradigm of natural language processing consists of large-scale pre-training on general domain data and adaptation to particular tasks or domains. As we pre-train larger models, full fine-tuning, which retrains all model parameters, becomes less feasible. Using GPT-3 175B as an example -- deploying independent instances of fine-tuned models, each with 175B parameters, is prohibitively expensive. We propose Low-Rank Adaptation, or LoRA, which freezes the pre-trained model weights and injects trainable rank decomposition matrices into each layer of the Transformer architecture, greatly reducing the number of trainable parameters for downstream tasks. Compared to GPT-3 175B fine-tuned with Adam, LoRA can reduce the number of trainable parameters by 10,000 times and the GPU memory requirement by 3 times. LoRA performs on-par or better than fine-tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite having fewer trainable parameters, a higher training throughput, and, unlike adapters, no additional inference latency. We also provide an empirical investigation into rank-deficiency in language model adaptation, which sheds light on the efficacy of LoRA. We release a package that facilitates the integration of LoRA with PyTorch models and provide our implementations and model checkpoints for RoBERTa, DeBERTa, and GPT-2 at https://github.com/microsoft/LoRA.",
+        "paperId": 15,
+        "publishedAt": "2021-06-17T17:37:18Z"
       },
       "humanVerdict": "incremental",
-      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(LoRA 家族微调 rank/dropout/quantization 的 incremental)"
+      "rationale": "QLoRA keeps LoRA's frozen-base plus low-rank-adapter setup and adds quantization and memory optimizations to make larger fine-tuning feasible. It is a strong practical extension of LoRA, not a replacement of the PEFT paradigm.",
+      "id": "f15",
+      "topic": {
+        "id": 5,
+        "name": "parameter-efficient-finetuning",
+        "keywords": [
+          "LoRA",
+          "PEFT",
+          "adapter"
+        ]
+      }
     },
     {
-      "id": "f16",
       "candidate": {
-        "arxivId": "PLACEHOLDER-flashattn-v2-or-v3",
-        "title": "PLACEHOLDER: FlashAttention-2 or FlashAttention-3 (operator verify arxivId 2307.08691 or similar)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2307.08691",
+        "url": "https://arxiv.org/abs/2307.08691",
+        "title": "FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+        "abstract": "Scaling Transformers to longer sequence lengths has been a major problem in the last several years, promising to improve performance in language modeling and high-resolution image understanding, as well as to unlock new applications in code, audio, and video generation. The attention layer is the main bottleneck in scaling to longer sequences, as its runtime and memory increase quadratically in the sequence length. FlashAttention exploits the asymmetric GPU memory hierarchy to bring significant memory saving (linear instead of quadratic) and runtime speedup (2-4$\\times$ compared to optimized baselines), with no approximation. However, FlashAttention is still not nearly as fast as optimized matrix-multiply (GEMM) operations, reaching only 25-40\\% of the theoretical maximum FLOPs/s. We observe that the inefficiency is due to suboptimal work partitioning between different thread blocks and warps on the GPU, causing either low-occupancy or unnecessary shared memory reads/writes. We propose FlashAttention-2, with better work partitioning to address these issues. In particular, we (1) tweak the algorithm to reduce the number of non-matmul FLOPs (2) parallelize the attention computation, even for a single head, across different thread blocks to increase occupancy, and (3) within each thread block, distribute the work between warps to reduce communication through shared memory. These yield around 2$\\times$ speedup compared to FlashAttention, reaching 50-73\\% of the theoretical maximum FLOPs/s on A100 and getting close to the efficiency of GEMM operations. We empirically validate that when used end-to-end to train GPT-style models, FlashAttention-2 reaches training speed of up to 225 TFLOPs/s per A100 GPU (72\\% model FLOPs utilization).",
+        "publishedAt": "2023-07-17T17:50:36Z"
       },
       "anchor": {
         "arxivId": "2205.14135",
+        "url": "https://arxiv.org/abs/2205.14135",
         "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 16
+        "abstract": "Transformers are slow and memory-hungry on long sequences, since the time and memory complexity of self-attention are quadratic in sequence length. Approximate attention methods have attempted to address this problem by trading off model quality to reduce the compute complexity, but often do not achieve wall-clock speedup. We argue that a missing principle is making attention algorithms IO-aware -- accounting for reads and writes between levels of GPU memory. We propose FlashAttention, an IO-aware exact attention algorithm that uses tiling to reduce the number of memory reads/writes between GPU high bandwidth memory (HBM) and GPU on-chip SRAM. We analyze the IO complexity of FlashAttention, showing that it requires fewer HBM accesses than standard attention, and is optimal for a range of SRAM sizes. We also extend FlashAttention to block-sparse attention, yielding an approximate attention algorithm that is faster than any existing approximate attention method. FlashAttention trains Transformers faster than existing baselines: 15% end-to-end wall-clock speedup on BERT-large (seq. length 512) compared to the MLPerf 1.1 training speed record, 3$\\times$ speedup on GPT-2 (seq. length 1K), and 2.4$\\times$ speedup on long-range arena (seq. length 1K-4K). FlashAttention and block-sparse FlashAttention enable longer context in Transformers, yielding higher quality models (0.7 better perplexity on GPT-2 and 6.4 points of lift on long-document classification) and entirely new capabilities: the first Transformers to achieve better-than-chance performance on the Path-X challenge (seq. length 16K, 61.4% accuracy) and Path-256 (seq. length 64K, 63.1% accuracy).",
+        "paperId": 16,
+        "publishedAt": "2022-05-27T17:53:09Z"
       },
+      "humanVerdict": "incremental",
+      "rationale": "FlashAttention-2 keeps the exact IO-aware attention idea and improves GPU work partitioning, parallelism, and non-matmul overhead. This is a hardware-efficiency follow-up inside the FlashAttention line.",
+      "id": "f16",
       "topic": {
         "id": 8,
         "name": "attention-efficiency",
-        "keywords": ["FlashAttention-v2", "IO-aware", "GPU optimization"]
-      },
-      "humanVerdict": "incremental",
-      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(FlashAttention-2/3 是同思路下硬件 utilization 优化)"
+        "keywords": [
+          "FlashAttention",
+          "IO-aware",
+          "memory-efficient"
+        ]
+      }
     },
     {
       "id": "f17",
       "candidate": {
-        "arxivId": "PLACEHOLDER-unrelated-with-attention-keyword",
-        "title": "PLACEHOLDER: paper using 'attention' keyword in unrelated context, e.g. social-attention or supply-chain-attention (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "1710.10903",
+        "url": "https://arxiv.org/abs/1710.10903",
+        "title": "Graph Attention Networks",
+        "abstract": "We present graph attention networks (GATs), novel neural network architectures that operate on graph-structured data, leveraging masked self-attentional layers to address the shortcomings of prior methods based on graph convolutions or their approximations. By stacking layers in which nodes are able to attend over their neighborhoods' features, we enable (implicitly) specifying different weights to different nodes in a neighborhood, without requiring any kind of costly matrix operation (such as inversion) or depending on knowing the graph structure upfront. In this way, we address several key challenges of spectral-based graph neural networks simultaneously, and make our model readily applicable to inductive as well as transductive problems. Our GAT models have achieved or matched state-of-the-art results across four established transductive and inductive graph benchmarks: the Cora, Citeseer and Pubmed citation network datasets, as well as a protein-protein interaction dataset (wherein test graphs remain unseen during training)."
       },
       "anchor": {
         "arxivId": "1706.03762",
+        "url": "https://arxiv.org/abs/1706.03762",
         "title": "Attention Is All You Need",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "abstract": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder configuration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English-to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.",
         "paperId": 17
       },
       "topic": {
         "id": 10,
         "name": "cross-topic distractor",
-        "keywords": ["attention", "keyword overlap"]
+        "keywords": [
+          "attention",
+          "keyword overlap"
+        ]
       },
       "humanVerdict": "unrelated",
-      "rationale": "operator 后续替换;草稿:keyword overlap only(attention 一词跨 domain 撞名,实际无关 NN 架构)"
+      "rationale": "GAT applies masked self-attention to graph-structured data and neighborhood aggregation, while Transformer addresses sequence transduction by replacing recurrence and convolutions with attention. The shared keyword 'attention' does not make them the same research line."
     },
     {
-      "id": "f18",
       "candidate": {
-        "arxivId": "PLACEHOLDER-unrelated-rlhf-keyword",
-        "title": "PLACEHOLDER: unrelated paper using 'feedback' or 'preference' in non-LLM context (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2404.14856",
+        "url": "https://arxiv.org/abs/2404.14856",
+        "title": "Cross-Domain Causal Preference Learning for Out-of-Distribution Recommendation",
+        "abstract": "Recommender systems use users' historical interactions to learn their preferences and deliver personalized recommendations from a vast array of candidate items. Current recommender systems primarily rely on the assumption that the training and testing datasets have identical distributions, which may not hold true in reality. In fact, the distribution shift between training and testing datasets often occurs as a result of the evolution of user attributes, which degrades the performance of the conventional recommender systems because they fail in Out-of-Distribution (OOD) generalization, particularly in situations of data sparsity. This study delves deeply into the challenge of OOD generalization and proposes a novel model called Cross-Domain Causal Preference Learning for Out-of-Distribution Recommendation (CDCOR), which involves employing a domain adversarial network to uncover users' domain-shared preferences and utilizing a causal structure learner to capture causal invariance to deal with the OOD problem. Through extensive experiments on two real-world datasets, we validate the remarkable performance of our model in handling diverse scenarios of data sparsity and out-of-distribution environments. Furthermore, our approach surpasses the benchmark models, showcasing outstanding capabilities in out-of-distribution generalization.",
+        "publishedAt": "2024-04-23T09:21:15Z"
       },
       "anchor": {
         "arxivId": "2203.02155",
+        "url": "https://arxiv.org/abs/2203.02155",
         "title": "Training language models to follow instructions with human feedback",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 18
+        "abstract": "Making language models bigger does not inherently make them better at following a user's intent. For example, large language models can generate outputs that are untruthful, toxic, or simply not helpful to the user. In other words, these models are not aligned with their users. In this paper, we show an avenue for aligning language models with user intent on a wide range of tasks by fine-tuning with human feedback. Starting with a set of labeler-written prompts and prompts submitted through the OpenAI API, we collect a dataset of labeler demonstrations of the desired model behavior, which we use to fine-tune GPT-3 using supervised learning. We then collect a dataset of rankings of model outputs, which we use to further fine-tune this supervised model using reinforcement learning from human feedback. We call the resulting models InstructGPT. In human evaluations on our prompt distribution, outputs from the 1.3B parameter InstructGPT model are preferred to outputs from the 175B GPT-3, despite having 100x fewer parameters. Moreover, InstructGPT models show improvements in truthfulness and reductions in toxic output generation while having minimal performance regressions on public NLP datasets. Even though InstructGPT still makes simple mistakes, our results show that fine-tuning with human feedback is a promising direction for aligning language models with human intent.",
+        "paperId": 18,
+        "publishedAt": "2022-03-04T07:04:42Z"
       },
+      "humanVerdict": "unrelated",
+      "rationale": "The candidate uses preference learning for recommender-system OOD generalization, while InstructGPT uses human feedback to align language-model behavior. The overlap is mainly the word preference, not the same research state.",
+      "id": "f18",
       "topic": {
         "id": 10,
         "name": "cross-topic distractor",
-        "keywords": ["feedback", "preference", "keyword overlap"]
-      },
-      "humanVerdict": "unrelated",
-      "rationale": "operator 后续替换;草稿:keyword overlap only(preference learning 在推荐系统/调度问题中常用,不构成 RLHF state 关系)"
+        "keywords": [
+          "preference",
+          "recommender",
+          "distractor"
+        ]
+      }
     },
     {
-      "id": "f19",
       "candidate": {
-        "arxivId": "PLACEHOLDER-unrelated-diffusion-keyword",
-        "title": "PLACEHOLDER: physics-diffusion or chemistry-diffusion paper (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2410.06622",
+        "url": "https://arxiv.org/abs/2410.06622",
+        "title": "Diffusion in porous media with hysteresis and bounded speed of propagation",
+        "abstract": "It is shown that the problem of moisture propagation in porous media with a nonlinear relation between the mass flux and the pressure gradient as a counterpart of the Darcy law exhibits the property of bounded speed of propagation even in the case of a hysteresis relation between the capillary pressure and the moisture content. The paper specifies conditions for existence and uniqueness of solutions, and provides an upper bound for the moisture propagation speed.",
+        "publishedAt": "2024-10-09T07:20:02Z"
       },
       "anchor": {
         "arxivId": "2112.10752",
+        "url": "https://arxiv.org/abs/2112.10752",
         "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 19
+        "abstract": "By decomposing the image formation process into a sequential application of denoising autoencoders, diffusion models (DMs) achieve state-of-the-art synthesis results on image data and beyond. Additionally, their formulation allows for a guiding mechanism to control the image generation process without retraining. However, since these models typically operate directly in pixel space, optimization of powerful DMs often consumes hundreds of GPU days and inference is expensive due to sequential evaluations. To enable DM training on limited computational resources while retaining their quality and flexibility, we apply them in the latent space of powerful pretrained autoencoders. In contrast to previous work, training diffusion models on such a representation allows for the first time to reach a near-optimal point between complexity reduction and detail preservation, greatly boosting visual fidelity. By introducing cross-attention layers into the model architecture, we turn diffusion models into powerful and flexible generators for general conditioning inputs such as text or bounding boxes and high-resolution synthesis becomes possible in a convolutional manner. Our latent diffusion models (LDMs) achieve a new state of the art for image inpainting and highly competitive performance on various tasks, including unconditional image generation, semantic scene synthesis, and super-resolution, while significantly reducing computational requirements compared to pixel-based DMs. Code is available at https://github.com/CompVis/latent-diffusion .",
+        "paperId": 19,
+        "publishedAt": "2021-12-20T18:55:25Z"
       },
+      "humanVerdict": "unrelated",
+      "rationale": "The candidate studies physical/mathematical diffusion in porous media, while the anchor studies denoising diffusion models for image synthesis. The shared word diffusion is a keyword collision, not a methodological relationship.",
+      "id": "f19",
       "topic": {
         "id": 10,
         "name": "cross-topic distractor",
-        "keywords": ["diffusion", "keyword overlap"]
-      },
-      "humanVerdict": "unrelated",
-      "rationale": "operator 后续替换;草稿:keyword overlap only(diffusion 一词在物理/化学 domain 被广泛使用,与生成模型无关)"
+        "keywords": [
+          "diffusion",
+          "porous-media",
+          "distractor"
+        ]
+      }
     },
     {
-      "id": "f20",
       "candidate": {
-        "arxivId": "PLACEHOLDER-unrelated-protein-keyword",
-        "title": "PLACEHOLDER: protein paper using non-folding methods (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+        "arxivId": "2404.10450",
+        "url": "https://arxiv.org/abs/2404.10450",
+        "title": "Graph Neural Networks for Protein-Protein Interactions -- A Short Survey",
+        "abstract": "Protein-protein interactions (PPIs) play key roles in a broad range of biological processes. Numerous strategies have been proposed for predicting PPIs, and among them, graph-based methods have demonstrated promising outcomes owing to the inherent graph structure of PPI networks. This paper reviews various graph-based methodologies, and discusses their applications in PPI prediction. We classify these approaches into two primary groups based on their model structures. The first category employs Graph Neural Networks (GNN) or Graph Convolutional Networks (GCN), while the second category utilizes Graph Attention Networks (GAT), Graph Auto-Encoders and Graph-BERT. We highlight the distinctive methodologies of each approach in managing the graph-structured data inherent in PPI networks and anticipate future research directions in this domain.",
+        "publishedAt": "2024-04-16T10:39:25Z"
       },
       "anchor": {
-        "arxivId": "PLACEHOLDER-alphafold2",
-        "title": "Highly accurate protein structure prediction with AlphaFold (operator verify arxivId)",
-        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
-        "paperId": 20
+        "arxivId": "2111.06340",
+        "url": "https://arxiv.org/abs/2111.06340",
+        "title": "ParaFold: Paralleling AlphaFold for Large-Scale Predictions",
+        "abstract": "AlphaFold predicts protein structures from the amino acid sequence at or near experimental resolution, solving the 50-year-old protein folding challenge, leading to progress by transforming large-scale genomics data into protein structures. AlphaFold will also greatly change the scientific research model from low-throughput to high-throughput manner. The AlphaFold framework is a mixture of two types of workloads: MSA construction based on CPUs and model inference on GPUs. The first CPU stage dominates the overall runtime, taking hours for a single protein due to the large database sizes and I/O bottlenecks. However, GPUs in this CPU stage remain idle, resulting in low GPU utilization and restricting the capacity of large-scale structure predictions. Therefore, we proposed ParaFold, an open-source parallel version of AlphaFold for high throughput protein structure predictions. ParaFold separates the CPU and GPU parts to enable large-scale structure predictions. ParaFold also effectively reduces the CPU and GPU runtime with two optimizations without compromising the quality of prediction results: using multi-threaded parallelism on CPUs and using optimized JAX compilation on GPUs. We evaluated ParaFold with three datasets of different size and protein lengths. We evaluated the accuracy and efficiency of optimizations on CPUs and GPUs, and showed the large-scale prediction capability by running ParaFold inferences of 19,704 small proteins in five hours on one NVIDIA DGX-2. Using the JAX compile optimization, ParaFold attained a 13.8X average speedup over AlphaFold. ParaFold offers a rapid and effective approach for high-throughput structure predictions, leveraging the predictive power by running on supercomputers, with shorter time, and at a lower cost. The development of ParaFold will greatly speed up high-throughput studies and render the protein \"structure-omics\" feasible.",
+        "paperId": 20,
+        "publishedAt": "2021-11-11T17:53:37Z"
       },
+      "humanVerdict": "unrelated",
+      "rationale": "The candidate concerns graph-based methods for protein-protein interaction prediction, while the anchor concerns AlphaFold-style protein structure prediction at scale. Both are about proteins, but the tasks and research states are different.",
+      "id": "f20",
       "topic": {
         "id": 10,
         "name": "cross-topic distractor",
-        "keywords": ["protein", "keyword overlap"]
-      },
-      "humanVerdict": "unrelated",
-      "rationale": "operator 后续替换;草稿:keyword overlap only(protein 这个词覆盖太广,候选 paper 谈的是 protein-protein interaction 而非 structure prediction)"
+        "keywords": [
+          "protein",
+          "graph-neural",
+          "distractor"
+        ]
+      }
     }
   ]
 }
