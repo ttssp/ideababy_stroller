@@ -1,0 +1,54 @@
+# RecallKit demo 配置 — Qwen/Qwen2.5-3B-Instruct + gsm8k 前 100 条
+#
+# 用途：验证 LoRA SFT 在 gsm8k 数学推理任务上能否相对 baseline 提升 >= 5% acc。
+# 对应剧本：demo/gsm8k-100-qwen3-4b/scenario.md
+# 期望指标：demo/gsm8k-100-qwen3-4b/expected_metrics.md
+#
+# 注意：
+#   - 本文件仅引用 public HF repo ID，不附任何 base model 权重本体。
+#   - 跑前需确保 HuggingFace Hub 可访问（无 HF_TOKEN 也可访问 public repo）。
+#   - 若 GPU 显存 < 24GB，可将 batch_size 降至 1，或切换至
+#     Qwen/Qwen2.5-1.5B-Instruct（R1 缓解路径，见 scenario.md）。
+#
+# schema 来源：pars/ledger/config_schema.py · RunConfig
+# 生成方式：直接传入 `pars sft start` 对应参数，此文件为文档化记录。
+
+# 元信息
+research_question: "LoRA r=16 更新 Qwen2.5-3B-Instruct 的 QKV projection 能否在 gsm8k-100 上相比 baseline 提升 >= 5% accuracy？"
+base_model: "Qwen/Qwen2.5-3B-Instruct"
+
+# 数据集配置（DatasetConfig）
+dataset:
+  hf_id: "openai/gsm8k"
+  split: "main[:100]"
+  n_samples: 100
+
+# 训练配置（TrainingConfig）— LoRA SFT
+training:
+  backend: "unsloth"
+  lora_rank: 16
+  lora_alpha: 32
+  lr: 2.0e-4
+  epochs: 3
+  batch_size: 2
+  max_seq_len: 2048
+
+# 评测配置（EvalConfig）— LM Eval Harness
+eval:
+  backend: "lm-eval"
+  tasks:
+    - "gsm8k"
+  n_shot: 5
+  limit: 100
+
+# 预算配置（BudgetConfig）
+budget:
+  usd_cap: 10.0
+  wall_clock_hours_cap: 8.0
+  gpu_hours_cap: 8.0
+
+# 可选备注
+notes: |
+  demo day-1 配置；对应 OQ3 默认选型（Qwen2.5-3B-Instruct + gsm8k-100）。
+  若 GPU OOM，降级方案见 scenario.md §5 故障排查。
+  Qwen2.5-3B-Instruct 使用 Tongyi Qianwen License，需遵守原始条款。
