@@ -1,0 +1,28 @@
+[project]
+name = "recallkit"
+version = "0.1.0.dev0"
+description = "单人后训练决策循环工具 — CLI 驱动的 LoRA SFT + eval + 决策报告"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "MIT" }
+
+# 运行时依赖：T002 负责填入实际版本；此处仅占位
+[project.optional-dependencies]
+runtime = []
+
+# 开发依赖：T002 负责填入实际版本；此处仅占位
+dev = []
+
+[project.scripts]
+# CLI 入口：T006 负责实现 pars.cli.main:app
+# 此时 entry point 已声明但 pars.cli.main 尚未实现，`pars --help` 会 fail（预期）
+pars = "pars.cli.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pars"]
+
+# 说明：以下工具配置（ruff、pytest）由 T002 负责添加，此处不配置

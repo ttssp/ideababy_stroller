@@ -1,0 +1,11 @@
+version = 1
+revision = 3
+requires-python = "==3.12.*"
+
+[[package]]
+name = "recallkit"
+version = "0.1.0.dev0"
+source = { editable = "." }
+
+[package.metadata]
+provides-extras = ["runtime", "dev"]
