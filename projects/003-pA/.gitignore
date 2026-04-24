@@ -26,7 +26,12 @@ htmlcov/
 
 # 本项目特有：训练运行产出
 runs/
+runs/*/artifacts/*.pt
 checkpoints/
+
+# 模型权重文件（license-check.yml 强制验证，绝不入库）
+*.safetensors
+*.bin
 
 # Git worktree 目录（本项目 RecallKit 管理的 worker worktrees）
 .worktrees/

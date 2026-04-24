@@ -1,0 +1,85 @@
+name: license-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 0 1 * *'  # 每月 1 日 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  license-grep:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/003-pA
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install pip-licenses
+        run: uv run pip install pip-licenses
+
+      - name: Check for GPL-family licenses (compliance §4.3 + R1 Medium #3)
+        # RecallKit 选择 MIT + Apache-2.0 友好依赖；GPL/AGPL/LGPL 会污染分发许可
+        # 若检测到 GPL 族，输出受影响包名并以非 0 退出码失败
+        run: |
+          uv run pip-licenses --format=json > licenses.json
+          if grep -Ei '"License":\s*"[^"]*\b(GPL|AGPL|LGPL)\b' licenses.json; then
+            echo "ERROR: GPL-family license detected in dependencies — review before shipping"
+            exit 1
+          fi
+          echo "OK: no GPL-family licenses detected"
+
+  artifact-hygiene:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/003-pA
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No hardcoded user paths in demo/ docs/ (compliance §4.4.2)
+        # 扫描 /Users/<name>/ 和 /home/<name>/ 形式的绝对路径
+        # 排除 demo-artifact-checklist.md 里对扫描命令本身的示例引用
+        run: |
+          if grep -rn -E '/Users/[a-zA-Z0-9_]+/|/home/[a-z][a-zA-Z0-9_]*/' demo/ docs/ 2>/dev/null \
+            | grep -vE 'demo-artifact-checklist|h200-rsync|scan-pattern'; then
+            echo "ERROR: hardcoded user path detected in demo/ or docs/"
+            exit 1
+          fi
+          echo "OK: no hardcoded user paths"
+
+      - name: No secret patterns committed (compliance §4.4.3)
+        # 扫描常见 API key 前缀模式；覆盖 Anthropic / HuggingFace / AWS IAM key
+        run: |
+          if grep -rn -E 'sk-ant-[a-zA-Z0-9]{20,}|hf_[a-zA-Z0-9]{20,}|AKIA[A-Z0-9]{16}' \
+            --include='*.md' --include='*.yml' --include='*.yaml' \
+            --include='*.py' --include='*.toml' . 2>/dev/null; then
+            echo "ERROR: potential secret committed — rotate immediately"
+            exit 1
+          fi
+          echo "OK: no secret patterns detected"
+
+      - name: .gitignore contains model weight patterns (compliance §4.4.3)
+        # 确认关键模型产出 pattern 在 .gitignore 中，防止权重文件意外入库
+        run: |
+          MISSING=0
+          for pattern in '*.safetensors' '*.bin' 'checkpoints/' 'runs/*/artifacts/*.pt'; do
+            if ! grep -qF "$pattern" .gitignore 2>/dev/null; then
+              echo "ERROR: .gitignore missing: $pattern"
+              MISSING=1
+            fi
+          done
+          if [ "$MISSING" -eq 1 ]; then
+            exit 1
+          fi
+          echo "OK: .gitignore covers all required model weight patterns"

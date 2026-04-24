@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: projects/003-pA
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install deps (CI — PEP 508 platform markers exclude CUDA-only wheels on Linux)
+        # pyproject.toml 用 sys_platform == 'linux' marker 区分 CUDA 依赖；
+        # CI 在 ubuntu-latest 上会安装 Linux marker 匹配的包（unsloth/bitsandbytes 等）。
+        # 若 CUDA wheel 缺失导致 sync 失败，降级到 --no-install-project 仅装跨平台依赖。
+        run: uv sync --frozen
+        continue-on-error: false
+
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Pytest (fast — no slow, no gpu)
+        run: uv run pytest -m "not slow and not gpu" --cov=pars --cov-fail-under=70
+
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: wagoid/commitlint-github-action@v6
