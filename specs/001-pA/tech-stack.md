@@ -1,6 +1,6 @@
 # Tech Stack · 001-pA · PI Briefing Console
 
-**版本**: 0.1.1（R_final2 G6 sync · 2026-04-24 · §2.4 LLM 合同与 spec.md D15 / llm-adapter-skeleton §2 同步 adapter-内写 llm_calls）
+**版本**: 0.1.2（G10 CVE bump · 2026-04-24 · next 15.0.3→15.5.15 · drizzle-orm 0.36.0→0.45.2 · fast-xml-parser 4.5.0→4.5.5 · nodemailer 保留 6.9.16 见 risks.md SEC-11）
 **创建**: 2026-04-23
 **原则**: **Boring over clever**。100h 的工程预算（5 周 × 20h/周）里没有任何多余时间用于配置复杂工具 —— 每个技术决策以 "最少 ramp time × 最少 on-call × 最少依赖" 为第一目标。
 
@@ -201,16 +201,16 @@ export interface LLMProvider {
 {
   "engines": { "node": "22.x", "pnpm": "9.x" },
   "dependencies": {
-    "next": "15.0.3",
+    "next": "15.5.15",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "typescript": "5.6.3",
-    "drizzle-orm": "0.36.0",
+    "drizzle-orm": "0.45.2",
     "postgres": "3.4.5",
     "zod": "3.23.8",
     "date-fns": "4.1.0",
     "nodemailer": "6.9.16",
-    "fast-xml-parser": "4.5.0",
+    "fast-xml-parser": "4.5.5",
     "jose": "5.9.6"
   },
   "devDependencies": {
@@ -248,3 +248,4 @@ export interface LLMProvider {
 | 2026-04-23 | 0.1 | 初版 · 主栈 commit · LLM 推迟到 T001 spike · 排除清单 |
 | 2026-04-23 | 0.1.1 | **Drift consolidation**（随 spec.md v0.2.2）：§2.4 LLMProvider interface 统一 camelCase（`summaryText` / `promptVersion` / `modelName` 等 · drift 1）+ judgeRelation 改 per-pair（单对 StateShiftVerdict · drift 2）· `RelationLabel` 从 `{supports/contradicts/supersedes/unrelated}` 改 `{shift/incremental/unrelated}` 与 `reference/llm-adapter-skeleton.md §2` 对齐；§2.2 OpenAI output pricing $10/M → $15/M（2026-04 公开价 · R1 Codex refreshed · drift 3）· 月度估 $10.5/月 → $12/月（仍 << C11 envelope $50）。Primary stack 未变。 |
 | 2026-04-24 | 0.1.1（R_final2 G6 sync） | §2.4 `SummaryRecord` 加 `llmCallId: number \| null` + `requestHash: string` 字段（与 `reference/llm-adapter-skeleton.md §2` 同步 · adapter 内部写 `llm_calls` 并把 id 回传）· LLMProvider `summarize` / `judgeRelation` 方法注释改为 adapter-内写 `llm_calls`（caller 只写 `paper_summaries`）· `StateShiftVerdict` shape 加 `anchorPaperId` 以与 skeleton 一致 · 契约段明确 "fallback 路径允许 `llmCallId=null`（schema F5）" · Primary stack / pricing / 排除清单 / dependency policy 全未变。 |
+| 2026-04-24 | 0.1.2 | G10 CVE bump · next 15.0.3→15.5.15 · drizzle-orm 0.36.0→0.45.2 · fast-xml-parser 4.5.0→4.5.5 · nodemailer 保留 6.9.16 (v0.1 不启用 SMTP · 见 risks.md SEC-11) |

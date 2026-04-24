@@ -41,6 +41,7 @@
 | SEC-5 | **Arbitrary file read via export filename**（export 允许指定 path） | L | H | export endpoint 被探测 | export 路由绝对不接受用户指定 filename；只返回内存生成的 JSON；无 filesystem path 参数 | operator |
 | SEC-6 | **Dependency supply chain attack**（malicious package 更新） | L | H | `pnpm audit` 红 / 异常外连 | pin 所有 deps；`pnpm audit signatures` 在 CI 前置；版本升级 manual review | operator |
 | **SEC-10**（G4 H4 · 2026-04-24 R_final 重写 · 原 GET-based 风险消除 · 替代为 POST CSRF 风险） | **POST `/api/invite/consume` 被跨站 CSRF 触发** · 外部网站可伪造 `<form action="https://<lab-domain>/api/invite/consume">` 诱导已登录 admin 消费 token | L | L | 外部域名诱导 POST；监控 `Origin` header 不匹配但 POST 成功的 `export_log` 异常行 | 1. `SameSite=Lax` session cookie（Chrome/Safari/Firefox 均支持）→ 跨站表单无法带 session cookie · 2. `Origin` header 强制匹配 `env.APP_ORIGIN`（不匹配 → 403 `CSRF_ORIGIN_MISMATCH`）· 3. （v0.2 加固）one-time nonce：前端生成 UUID · cookie 同步 · body 回传一次性验证 · 4. invite URL 使用 URL fragment（`/login#invite=<token>`），token 永不进 server log · 5. **历史**（drift 5 · 2026-04-23 旧 GET 方案已作废）：见 `DECISIONS-LOG.md 2026-04-24 drift 5 amendment` | operator |
+| **SEC-11**（2026-04-24 · G10 CVE 登记） | **nodemailer 6.9.16 保留（未升 8.0.4）** · GHSA-rcmh-qjqh-p98v（high DoS）+ GHSA-c7w3-x93f-qmm8（low SMTP injection） | L | M | Phase 3 前 operator 启用 SMTP（`SMTP_HOST` 在 `.env.example` 由空变实） | v0.1 `DECISIONS-LOG` 已决议 invite 不发邮件（`SMTP_HOST` 在 `.env.example` 留空即不启用）；nodemailer 6→8 跨 2 major 有 breaking，升级成本远超"未启用代码"的风险收益。**触发条件**：Phase 3 前若 operator 启用 SMTP，必须先 bump nodemailer 到 ≥8.0.4 并重跑测试。 | operator |
 
 ## 4. 商业（Commercial）
 
@@ -95,3 +96,4 @@
 | 2026-04-23 | 0.2 | R1 adversarial fix：TECH-1 mitigation 补 heuristic fallback 写 paper_summaries；+TECH-8（paper_summaries CHECK 误判）；+TECH-9（operator 凑 skip_why 字数）；SEC-1 mitigation 加 export_log 审计；DOGFOOD-1 sentinel 读 labs.first_day_at/allow_continue_until |
 | 2026-04-23 | 0.2.1 | drift 5 · +SEC-10（R1 H6 accepted risk · GET-based invite consume · v0.2 升级 POST）· spec.md v0.2.2 同批 |
 | 2026-04-24 | 0.3 | R_final BLOCK fix（G1/G4）· TECH-8 replaced（旧"split CHECK 误判中文"→ 新"count-terminator CHECK 拒绝无终结符文本"，adapter defensive 追加 `。` 兜底）· SEC-10 updated（invite 流从 GET-based 升级为 POST-based `/api/invite/consume` + body token · 原 Caddy `delete query` 缓解失效 · 新缓解用 CSRF + SameSite=Lax + Origin + 一次性 nonce） |
+| 2026-04-24 | 0.3.1 | G10 CVE bump 登记 · +SEC-11（nodemailer 6.9.16 保留理由 · v0.1 SMTP 不启用 · Phase 3 前升级触发条件） |
