@@ -108,3 +108,13 @@ else
     echo "[pre_pip_install] DENIED pip/uv command (see above for details)" >&2
     exit 2
 fi
+
+# T014 验证：pip 命令严格格式检测（2026-04-24）
+# T015 的 pars.safety.pip_policy.is_pip_install_allowed 已实现：
+#   - 仅放行三条等价白名单（architecture §7）：
+#       A. pip install -r requirements-locked.txt --require-hashes
+#       B. uv pip install -r requirements-locked.txt --require-hashes
+#       C. uv sync --frozen
+#   - 其他任何 pip install 命令（含 pip install <pkg> / pip install git+ / --index-url 等）全部 deny
+# T014 spec 要求"只放行完全匹配 pip install -r requirements-locked.txt --require-hashes"已被 T015 白名单涵盖。
+# T014 确认无需在此增加额外的严格格式 guard，T015 白名单/hash 核心逻辑保持不变。
