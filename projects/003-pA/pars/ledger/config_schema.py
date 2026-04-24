@@ -300,6 +300,11 @@ class RunConfig(BaseModel):
         pattern=r"^[0-9A-HJKMNP-TV-Z]{26}$",
         description="父 run 的 ULID（retry / variant 链接）；None 表示无父 run",
     )
+    retry_hypothesis: str | None = Field(
+        default=None,
+        max_length=1000,
+        description="retry 假设文本（≤1000 chars）；记录本次 retry 的动机；None 表示非 retry run",
+    )
 
     # ------ 序列化：datetime → ISO8601 字符串 ------
     # Pydantic v2 用 field_serializer 替代已废弃的 json_encoders

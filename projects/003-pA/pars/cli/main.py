@@ -102,27 +102,12 @@ def sft_status(
 
 
 # ---------------------------------------------------------------------------
-# pars sft retry
+# pars sft retry（T024 实现，委托给 pars.cli.retry 模块）
 # ---------------------------------------------------------------------------
 
-@sft.command("retry")
-def sft_retry(
-    from_run: Annotated[
-        str,
-        typer.Option("--from", help="基于哪个 run ID 创建新实验（继承 config，允许覆盖）"),
-    ],
-    hypothesis: Annotated[
-        Optional[str],
-        typer.Option("--hypothesis", help="新实验假设（覆盖原 run 假设）"),
-    ] = None,
-) -> None:
-    """基于已有 run 创建新实验（调整超参数后重跑）。
+from pars.cli.retry import run_retry as _retry_impl
 
-    TODO: T024 实现 retry 逻辑（fork config + new run）。
-    """
-    logger.warning("T024 will implement pars sft retry")
-    typer.echo("T024 will implement: pars sft retry（基于已有 run 创建新实验）", err=True)
-    raise typer.Exit(1)
+sft.command("retry")(_retry_impl)
 
 
 # ---------------------------------------------------------------------------
@@ -194,6 +179,15 @@ def sft_resume(
     """
     from pars.cli.resume import run_resume
     run_resume(run_id=run_id, yes=yes)
+
+
+# ---------------------------------------------------------------------------
+# pars compare（顶层命令，T025 O6 实现）
+# ---------------------------------------------------------------------------
+
+from pars.cli.compare import run_compare as _compare_impl
+
+app.command("compare")(_compare_impl)
 
 
 # ---------------------------------------------------------------------------
