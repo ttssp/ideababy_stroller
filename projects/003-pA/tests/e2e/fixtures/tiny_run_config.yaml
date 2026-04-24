@@ -1,0 +1,41 @@
+# tests/e2e/fixtures/tiny_run_config.yaml — E2E 测试用最小 RunConfig fixture
+#
+# 结论：使用 TinyLlama 1.1B + alpaca[:20] 保证即使在真实 GPU 运行时
+#       也能在 20min 内完成（T026 slow/gpu marker）。
+#
+# 字段合规说明（pars.ledger.config_schema.RunConfig Pydantic v2 schema）：
+#   - dataset.hf_id (NOT id) — DatasetConfig 字段名
+#   - dataset.n_samples — required, ge=1
+#   - research_question — required, 1-500 chars
+#   - run_id — 留 null，由 Orchestrator 在启动时填入
+#   - budget — 保守上限，足够 TinyLlama + alpaca[:20]
+
+run_id: null
+research_question: "Does LoRA SFT on alpaca improve TinyLlama instruction-following? (E2E test fixture)"
+base_model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+
+dataset:
+  hf_id: "tatsu-lab/alpaca"
+  split: "train[:20]"
+  n_samples: 20
+
+training:
+  backend: "unsloth"
+  lora_rank: 8
+  lora_alpha: 16
+  lr: 0.0002
+  epochs: 1
+  batch_size: 1
+  max_seq_len: 512
+
+eval:
+  backend: "lm-eval"
+  tasks:
+    - "gsm8k"
+  n_shot: 0
+  limit: 5
+
+budget:
+  usd_cap: 2.0
+  wall_clock_hours_cap: 1.0
+  gpu_hours_cap: 1.0

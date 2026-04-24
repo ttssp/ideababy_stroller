@@ -191,6 +191,7 @@ markers = [
     "e2e: 端到端测试（需要完整环境，包括 CLI）",
     "slow: 运行超过 10s 的慢测试",
     "requires_gpu: 需要 NVIDIA GPU 和 CUDA 才能运行",
+    "gpu: 需要 NVIDIA GPU（e2e 真实 run 标记，等同 requires_gpu）",
 ]
 # 将 warning 升级为 error，从 Phase 0 开始保持严格
 filterwarnings = [
