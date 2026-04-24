@@ -115,13 +115,9 @@ def sft_status(
         typer.Option("--run-id", "-r", help="指定 run ID（默认显示最近一个 run）"),
     ] = None,
 ) -> None:
-    """查询 SFT run 的当前状态（训练进度 / stuck 状态 / 已用预算）。
-
-    TODO: T023/T024 实现状态查询逻辑。
-    """
-    logger.warning("T023 will implement pars sft status")
-    typer.echo("T023 will implement: pars sft status（run 状态查询）", err=True)
-    raise typer.Exit(1)
+    """查询 SFT run 的当前状态（训练进度 / stuck 状态 / 已用预算）。"""
+    from pars.cli.status import run_status
+    run_status(run_id)
 
 
 # ---------------------------------------------------------------------------

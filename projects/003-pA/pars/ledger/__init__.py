@@ -40,6 +40,14 @@ from pars.ledger.state import (
     write_state,
 )
 
+# T009: 高层 facade API
+from pars.ledger.ledger import (
+    create_run,
+    get_run_summary,
+    list_runs,
+    run_exists,
+)
+
 # T008: metrics.jsonl append + 读取工具
 from pars.ledger.metrics import (
     MetricKind,
@@ -52,7 +60,12 @@ from pars.ledger.metrics import (
     read_metrics,
 )
 
-__all__ = [
+__all__ = [  # noqa: RUF022
+    # T009: ledger high-level API
+    "create_run",
+    "get_run_summary",
+    "list_runs",
+    "run_exists",
     # T006: schema models
     "BudgetConfig",
     "DatasetConfig",
