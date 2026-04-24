@@ -77,31 +77,12 @@ def _global_callback(ctx: typer.Context) -> None:
 
 
 # ---------------------------------------------------------------------------
-# pars sft start
+# pars sft start（T023 实现，委托给 pars.cli.start 模块）
 # ---------------------------------------------------------------------------
 
-@sft.command("start")
-def sft_start(
-    config: Annotated[
-        Optional[str],
-        typer.Option("--config", "-c", help="实验配置文件路径（YAML）"),
-    ] = None,
-    name: Annotated[
-        Optional[str],
-        typer.Option("--name", "-n", help="可读 run 名称（默认 ULID 自动生成）"),
-    ] = None,
-    hypothesis: Annotated[
-        Optional[str],
-        typer.Option("--hypothesis", help="本次实验假设文本（写入 run ledger）"),
-    ] = None,
-) -> None:
-    """启动新的 SFT 训练 run（baseline + LoRA + eval 完整循环）。
+from pars.cli.start import start as _start_impl
 
-    TODO: T023 实现完整编排逻辑。
-    """
-    logger.warning("T023 will implement pars sft start")
-    typer.echo("T023 will implement: pars sft start（完整 SFT run 编排）", err=True)
-    raise typer.Exit(1)
+sft.command("start")(_start_impl)
 
 
 # ---------------------------------------------------------------------------

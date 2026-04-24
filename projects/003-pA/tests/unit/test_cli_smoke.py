@@ -55,19 +55,26 @@ def test_sft_help_shows_subcommands() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T005-TC03: pars sft start 退出 1 + 含 "will implement"
+# T005-TC03: pars sft start 缺少必填参数时退出非零
+# 注意：T023 已实现 sft start，占位行为已替换为真实编排。
+#       缺少 --question 时 Click 报 Missing option 并退出非零。
 # ---------------------------------------------------------------------------
 
 def test_sft_start_placeholder_exits_nonzero() -> None:
-    """should exit non-zero and print 'will implement' when running pars sft start."""
+    """should exit non-zero when running pars sft start without required --question param."""
     result = runner.invoke(cli, ["sft", "start"])
     assert result.exit_code != 0, (
-        f"sft start 占位应退出非 0，实际：{result.exit_code}\n{result.output}"
+        f"sft start 缺少必填参数应退出非 0，实际：{result.exit_code}\n{result.output}"
     )
-    # click.testing.CliRunner 默认 mix_stderr=True，stderr 已混入 output
+    # T023 实现后：缺少 --question 时输出 Click 的 Missing option 错误
     combined = result.output
-    assert "will implement" in combined.lower() or "t023" in combined.lower(), (
-        f"sft start 输出应含 'will implement' 或 'T023'，实际：\n{combined}"
+    assert (
+        "will implement" in combined.lower()
+        or "t023" in combined.lower()
+        or "missing" in combined.lower()
+        or "question" in combined.lower()
+    ), (
+        f"sft start 输出应含参数错误提示，实际：\n{combined}"
     )
 
 
