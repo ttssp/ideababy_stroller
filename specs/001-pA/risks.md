@@ -40,7 +40,7 @@
 | SEC-4 | **Seat email 作为 PII 泄露给 LLM**（prompt 中意外包含） | L | L | LLM call log 出现 email | adapter 在传给 LLM 前强制 strip：只传 `{title, abstract}`；adapter 单元测试断言 payload 不含任何邮箱正则匹配 | operator |
 | SEC-5 | **Arbitrary file read via export filename**（export 允许指定 path） | L | H | export endpoint 被探测 | export 路由绝对不接受用户指定 filename；只返回内存生成的 JSON；无 filesystem path 参数 | operator |
 | SEC-6 | **Dependency supply chain attack**（malicious package 更新） | L | H | `pnpm audit` 红 / 异常外连 | pin 所有 deps；`pnpm audit signatures` 在 CI 前置；版本升级 manual review | operator |
-| **SEC-10**（drift 5 accepted） | **GET-based invite consume 被 link-preview / 邮件扫描器误触发**（R1 H6）→ 合法用户收到 "already consumed" | **L** | **L** | lab 成员反馈链接"点开就失效"；`sessions` 表里出现无后续活动的短命 session | 1. v0.1 token 走 operator 私信（微信/Slack/Signal）不走 email · 2. Caddy 配置禁止 query-string 日志（`ops-runbook.md §5`）· 3. 若真被扫 · operator 5min 内手工重发新 token · 4. **v0.2 升级**：GET 返 confirm 页（只读）· POST 才消费 · URL 无 breaking · 5. **接受本风险**：见 `DECISIONS-LOG.md 2026-04-23 · drift 5` 权威依据 | operator |
+| **SEC-10**（G4 H4 · 2026-04-24 R_final 重写 · 原 GET-based 风险消除 · 替代为 POST CSRF 风险） | **POST `/api/invite/consume` 被跨站 CSRF 触发** · 外部网站可伪造 `<form action="https://<lab-domain>/api/invite/consume">` 诱导已登录 admin 消费 token | L | L | 外部域名诱导 POST；监控 `Origin` header 不匹配但 POST 成功的 `export_log` 异常行 | 1. `SameSite=Lax` session cookie（Chrome/Safari/Firefox 均支持）→ 跨站表单无法带 session cookie · 2. `Origin` header 强制匹配 `env.APP_ORIGIN`（不匹配 → 403 `CSRF_ORIGIN_MISMATCH`）· 3. （v0.2 加固）one-time nonce：前端生成 UUID · cookie 同步 · body 回传一次性验证 · 4. invite URL 使用 URL fragment（`/login#invite=<token>`），token 永不进 server log · 5. **历史**（drift 5 · 2026-04-23 旧 GET 方案已作废）：见 `DECISIONS-LOG.md 2026-04-24 drift 5 amendment` | operator |
 
 ## 4. 商业（Commercial）
 

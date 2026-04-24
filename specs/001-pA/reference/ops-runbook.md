@@ -712,7 +712,7 @@ lab-briefing.example.com {
 # 不需要单独 site block · reverse_proxy 已覆盖；但明确把它列出来提醒 ops
 ```
 
-**Invariant**：`uri query delete` 是 H6 修补的核心。如果 operator 未来要恢复 query log（调试需要），必须先确认 `/api/invite/:token` 路径上**不**出现在 access log 里。
+**Invariant**（G4 H4 · 2026-04-24 R_final 重写）：invite token 现在走 POST body（`/api/invite/consume`）+ URL fragment（`/login#invite=<token>`）· Caddy **默认不记 POST body** · fragment **永不**进 server 日志 · 所以 token 根本不可能出现在 access log 里。原 `uri query delete` 配置保留作为一般性敏感参数清理（防止未来任何新 endpoint 把敏感值放 query），但**不是** invite token 泄漏的缓解措施。如需调试查 POST body，必须在应用层（不是 Caddy 层）开 request log，且明确不 log `/api/invite/consume` 路径。
 
 ---
 

@@ -326,6 +326,32 @@
 
 ---
 
+## 2026-04-24 · drift 5 amendment · R_final G4 H4：GET-based 方案作废，改 POST + fragment
+
+**触发**：Codex R_final review 指出原"Caddy 禁 query-string 日志"缓解**无法**保护 path 参数（`/api/invite/<token>/consume`）· Caddy `log { format filter { uri query delete } }` 只删 `?query=` · 保留 path segment · 故 token 仍可能泄到 Caddy access log（即使本项目不走 email）· 此前 drift 5 的 accepted-risk 判断基于"只有邮件 / link-preview 会扫"· Codex 指出 Caddy 本身就是一个稳定的 log 来源 · 需要实际消除 path 暴露而非依赖传递渠道。
+
+**决策 · v0.1 即升级为 POST-based**（而非推到 v0.2）：
+- 新合同 `POST /api/invite/consume` · body `{ token }` · JSON Content-Type
+- 用户面链接用 URL fragment `https://<domain>/login#invite=<token>` · fragment 永不发送给服务端 · 不进 Caddy / proxy / browser history 的 server-side log
+- 客户端 `/login` 页面读 `window.location.hash` → POST 到 `/api/invite/consume`
+- Caddy 默认不记 POST body · `uri query delete` 配置保留作通用敏感参数清理 · 但**不是**本 token 的主要缓解
+- CSRF 缓解三层：SameSite=Lax cookie · Origin header 匹配 `APP_ORIGIN` · （v0.2 加）one-time nonce
+
+**第一性**：
+- 旧方案的"accepted risk"基于错误的威胁模型（只考虑 email / link-preview）· Caddy 是项目自己的日志源 · 我们不应"放弃控制"就接受它泄 token
+- POST + fragment 实施成本低（`/login` 页面 ~30 行 JS · API route 结构与旧 GET 相仿）· 消除了整类 log-exposure 风险
+- SameSite=Lax + Origin 检查是成熟的 CSRF 缓解 · v0.1 规模下不需要 one-time nonce · 但设计空间留了 v0.2
+
+**落地（2026-04-24）**：
+- `reference/api-contracts.md` E2 ✅ 完整重写为 POST（含 CSRF headers + curl 示例 + 客户端 `/login` 页面行为）
+- `reference/api-contracts.md §4` ✅ 新增 `CSRF_ORIGIN_MISMATCH` 错误码（HTTP 403）· 总数 30 → 31
+- `reference/ops-runbook.md §5` ✅ 去掉"query-log 是 H6 核心缓解"的误导性描述 · 明确 fragment + POST body 才是主缓解
+- `risks.md SEC-10` ✅ 风险从"GET 被扫误消费"改为"POST CSRF"· mitigation 五点更新
+- `tasks/T006.md` ✅ 新 endpoint route + client-side `/login` 页面要求（见 T006 amended file_domain）
+- 本条 DECISIONS-LOG 作为 "drift 5 修正（2026-04-24）" 的权威依据 · 历史 drift 5 段保留不动（完整决策轨迹）
+
+---
+
 ## 2026-04-24 · pre-R_final hardening patch (F1–F6)
 
 **犹豫**：三轮独立 audit（prompt injection L4/L8 + export mapping + cross-ref drift）发现 6 处 surgical drift 需在 Codex R_final review 前闭合。逐项如下：
@@ -354,6 +380,35 @@
 - 6 个 F-item 涉及文件 · 11 个（`llm-adapter-skeleton.md` · `llm-anthropic-stub.ts` · `llm-openai-stub.ts` · `llm-utils.ts` 新建 · `testing-strategy.md` · `api-export-full-route.ts` · `api-contracts.md` · `T001.md` · `T023.md` · `schema.sql` · `compliance.md`）· 加 T003.md（F5 DDL 连带）· 加本 DECISIONS-LOG 本条。
 - `spec.md` 不动（已在 v0.2.2，无新 scope / 无新 outcome）。
 - 下一步：kickoff Codex R_final adversarial review，覆盖 8 层 injection defense + export round-trip 全路径。
+
+---
+
+## 2026-04-24 · R_final BLOCK closure (G1/G2/G3/G4)
+
+**触发**：Codex GPT-5.4 xhigh R_final review 返 **BLOCK** · 3 blockers + 5 high-severity · 见 `.codex-outbox/20260423T175614-001-pA-L4-adversarial-r_final.md`。
+
+**决策（逐项）**：
+
+| Item | 决策 | 落地位置 |
+|---|---|---|
+| **G1** Chinese sentence boundary | 换 CHECK 策略：从 `regexp_split_to_array(..., '(?<=[.!?。！？])\\s+')` 改成 `coalesce(array_length(regexp_matches(..., '[.!?。！？]', 'g'), 1), 0) between 1 and 3`（数终结符 · 与空格无关 · 拒绝 0 终结符文本）· 应用层 `truncateTo3Sentences` 改用相同语义 + defensive `。` 追加 · 新增纯中文 3/5 句等 7 条新 DB 测试 | `reference/schema.sql §14` · `reference/skeletons/db-schema.ts` · `reference/skeletons/llm-utils.ts` · `reference/llm-adapter-skeleton.md §3.5` · `reference/testing-strategy.md §2.4/§3.2` · `risks.md TECH-8` · `tasks/T003.md` |
+| **G2** LLM contract unification | 权威真源 = `reference/llm-adapter-skeleton.md §1–§7`：SummaryRecord 全 camelCase · provider enum `anthropic\|openai`（删 `claude\|gpt`）· judgeRelation per-pair · adapter 内部写 `llm_calls`（T013 只写 `paper_summaries`）· `llm_calls` 列名 `purpose`/`called_at`（删 `kind`/`created_at`）· OpenAI output $15/M · spec §5 task ID 从旧 `T005=schema` 等迁移到与 `dependency-graph.mmd` 一致的新编号 | `spec.md §5` + 版本 0.2.2 → 0.3.0 · `tasks/T004.md` · `tasks/T007.md` · `tasks/T013.md` |
+| **G3** Export envelope single truth | 权威真源 = `reference/api-contracts.md §3.11`：`schemaVersion='1.1'` camelCase · 12 顶层 key（labs/seats/topics/papers/paperTopicScores/paperCitations/paperSummaries/briefings/actions/breadcrumbs/resurfaceEvents/fetchRuns · 排除 sessions/llmCalls/exportLog）· `buildFullExport(labId: number)` 参数签名（删 `env.LAB_ID`）· `paperSummaries.llmCallId` null round-trip（option a 默认 · schema nullable + ON DELETE SET NULL） | `architecture.md §8` + 版本 0.2 → 0.3 · `tasks/T023.md` · `reference/skeletons/api-export-full-route.ts` · `reference/api-contracts.md §3.11` + `schemaVersion` bump 规则 · `reference/testing-strategy.md §2.5 §4.4` |
+| **G4 H1** T021 trigger_type enum | 权威 `timed_6wk\|timed_3mo\|timed_6mo\|citation`（与 `schema.sql §10` + `api-contracts.md §3.8` 一致 · 删旧 `6w\|3mo\|6mo`） | `tasks/T021.md` |
+| **G4 H2** T010 ID/code/paths | `E5-E8` task ID 从 T009 改 T010 · error code `TopicCapExceeded` + 400 → `TOO_MANY_TOPICS` + 422 · 路径统一 `src/app/(main)/topics/page.tsx` + `[id]/edit/page.tsx` + `src/lib/topics/service.ts`（删 `new/page.tsx` + `crud.ts`） | `tasks/T010.md` · `reference/api-contracts.md §E5-E8` |
+| **G4 H3** T030 deploy paths + sudo | 备份脚本路径 `deploy/backup/*` → `deploy/scripts/*`（与 directory-layout 一致） · `pg-dump.{service,timer}` 移到 `deploy/systemd/`（与 web/worker unit 同目录） · Goal 明确 systemd unit 源文件分工（T007 owns source · T030 owns install）· grants 验证命令从 `sudo -u webapp_user psql` 改 `PGUSER=... PGPASSWORD=... psql`（webapp_user 是 DB role 不是 OS user） | `tasks/T030.md` · `reference/ops-runbook.md §5` |
+| **G4 H4** Invite POST + fragment | 原 GET-based 方案作废（Caddy path log 无法保护 path token） · 改 `POST /api/invite/consume` + body token · 用户 URL 用 `/login#invite=<token>` fragment（永不进 server log）· CSRF 三层防（SameSite=Lax + Origin 检查 + v0.2 nonce）· SEC-10 从 "GET 扫描" 改 "POST CSRF" · 新 error code `CSRF_ORIGIN_MISMATCH` 403 | `tasks/T006.md` · `reference/api-contracts.md §E2 + §4` · `reference/ops-runbook.md §5` · `risks.md SEC-10` · 本 DECISIONS-LOG "drift 5 amendment 2026-04-24" |
+| **G4 H5** spec §5 stale IDs | 已随 G2 同步修复（§5 整段重写 · LLM interface 样例删除改引 skeleton） | 同 G2 |
+
+**第一性**：每条 blocker 都 block 一整条主干任务的 "junior 拿包就写" 路径；R1 的前两条其实只改了"文档口径"而没改"执行合同"。R_final 的价值是把"文档 → 代码 → 测试"三端拉到同一份真源。修复后的口径：**权威单一真源 → skeleton/tasks 引用它 → verification 按真源 grep 断言**，从而避免未来 reviewer 发现同类 drift。
+
+**落地验证**：
+- spec.md 0.2.2 → 0.3.0（minor bump · §5 结构性变更）
+- architecture.md 0.2 → 0.3（minor bump · §8 重写）
+- schema.sql 0.2.2 → 0.3.0（对齐 spec 版本 · header 标注 G1 fix）
+- api-contracts.md 0.1 → 0.4（G3 + G4 H4 累积）
+- risks.md 0.2.1 → 0.3（TECH-8 改写 + SEC-10 改写）
+- 所有改过的 task / reference 文件在文件末尾新增"变更日志"行，注明 "R_final BLOCK fix (G1/G2/G3/G4 items as applicable)"
 
 ---
 

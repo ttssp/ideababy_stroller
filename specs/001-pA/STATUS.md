@@ -1,14 +1,14 @@
 # Status · 001-pA L4 交付包
 
-**Last updated**: 2026-04-23T18:10:00Z
-**Spec version**: 0.2.2
-**Phase**: L4 Plan · 文档加厚完成 · 等 R_final adversarial review 后进 Phase 0 build
+**Last updated**: 2026-04-24T02:20:00Z
+**Spec version**: 0.3.0
+**Phase**: L4 Plan · R_final BLOCK 已修（G1–G4）· 等 R_final2 narrow re-verify 后进 Phase 0 build
 
 ---
 
 ## 一句话总结
 
-001-pA（PI Briefing Console）的 v0.1 **spec 包已达"1 架构师 + 6-8 初级工程师可直接照抄开发"的门槛**。总计 14,932 行（7 份规范 + 7 份参考 + 13 份代码骨架 + 6 份工作流 + 25 个 task + 元文档）。**正在等 Codex R_final adversarial review 给最终 verdict**（kickoff 在 `.codex-inbox/latest.md`，由 operator 在 Codex 终端跑 `cdx-run` 触发）。
+001-pA（PI Briefing Console）的 v0.1 **spec 包已修完 R_final BLOCK 的 3 blocker + 5 high-severity drift（G1/G2/G3/G4）**。当前 115h（5 周 × 20h = 100h + 15h slack，已到硬线）/ 关键路径 ~59h。**R_final2 narrow kickoff 就位**（`.codex-inbox/latest.md`→ `20260424T021718-001-pA-L4-adversarial-r_final2.md`），由 operator 在 Codex 终端跑 `cdx-run` 触发。R_final2 scope 是**只复核 G1/G2/G3/G4**，不重开未在 BLOCK 范围内的 R_final 项。
 
 ---
 
@@ -17,14 +17,16 @@
 | 指标 | 值 |
 |---|---|
 | Task 数 | 25 |
-| 总工时 | 114h（@ 20h/周 × 5 周 = 100h；slack 1h / 硬线 115h） |
+| 总工时 | 115h（@ 20h/周 × 5 周 = 100h；slack 0h / 硬线 115h · G2 已用尽 slack） |
 | 关键路径 | ~59h（T002→T003→T005→T011→T012→T014→T015→T020→T022→T024→T032→T034） |
 | Schema 表 | 15（13 既有 + R1 新增 paper_summaries + export_log） |
 | API 端点 | 18 文档化（16 v0.1 实现 + 2 v0.2 deferred） |
-| 错误码 | 50+（30 HTTP + 20 worker/DB/infra） |
+| 错误码 | 31 HTTP + 20 worker/DB/infra（G4 H4 新增 `CSRF_ORIGIN_MISMATCH`） |
 | 术语 | 70+ glossary entries |
 | R1 adversarial verdict | BLOCK（3 blocker 已修） |
-| R2 / R_final verdict | **等 Codex 跑** |
+| R2 verdict | BLOCK（3 blocker 已修） |
+| R_final verdict | **BLOCK**（B1 中文句界 + B2 LLM 合同 + B3 export envelope + 5 high-severity）— 全部 G1/G2/G3/G4 修完 |
+| R_final2 verdict | **等 Codex 跑**（narrow re-verify · `.codex-inbox/latest.md`） |
 | 开放问题 | Q1–Q4 + Q5 全部 ✅ resolved · Q3 deferred to T033 kickoff |
 
 ---
@@ -112,26 +114,42 @@ adversarial-review.md        197   何时触发 R(N) · 4 轮上限 · 文件格
 | 2026-04-23T17:52 | Explore agent 审计 5 spine tasks 初级可读性 |
 | 2026-04-23T17:55 | spec-writer 补 5 task 关键 gap |
 | 2026-04-23T17:56 | Codex R_final kickoff 就位 |
-| （waiting） | **Codex R_final cdx-run 待 human 触发** |
+| 2026-04-24T01:57 | **Codex R_final = BLOCK**（B1 D15 中文句界 whitespace-split 失败 · B2 LLM 合同 T004/T007/T013 vs skeleton 三套 · B3 export envelope architecture/task/API 三层不一 · 5 high-severity drift） |
+| 2026-04-24T02:10 | spec-writer 执行 G1–G4 修补包（22 文件改动 · 114h→115h · 仍在硬线内） |
+| 2026-04-24T02:17 | R_final2 narrow re-verify kickoff 就位 |
+| （waiting） | **Codex R_final2 cdx-run 待 human 触发** |
 
 ---
 
-## R_final 在挑战什么（outbox 回来前的预判）
+## R_final BLOCK 的 3 blocker（已全部修完 · G1/G2/G3）
 
-Codex R_final 会查（详见 `.codex-inbox/latest.md`）：
+### B1 · D15 中文句界 CHECK 失效（G1 修）
+**原因**: `paper_summaries.summary_sentence_cap` 用 `(?<=[.!?。！？])\s+` whitespace lookbehind，纯中文无空格「第一句。第二句。第三句。」被视为 1 段，误放行。`truncateTo3Sentences` 骨架也依赖 split-on-whitespace。
+**修法（G1）**: CHECK 改为计数终结符 `coalesce(array_length(regexp_matches(summary_text, '[.!?。！？]', 'g'), 1), 0) between 1 and 3`；`llm-utils.ts` 改用 `match(/[^.!?。！？]+[.!?。！？]+/g)` capture chunks；`testing-strategy.md §3.2` 增 9 DB + 10 app 测例覆盖纯中文/中英混合/无尾标点；`risks.md TECH-8` 改写。
 
-**X1 Schema 完整性** · 每列/CHECK/FK/index 正确 ← schema.sql 已 625 行涵盖
-**X2 API ↔ schema 一致** · 18 端点字段名 vs schema 列名 ← api-contracts.md §3 已做 camelCase↔snake_case 映射声明
-**X3 LLM interface ↔ spec ↔ cost** · OpenAI $15/M 一致性 ← tech-stack 已同步，envelope $50 仍守住
-**X4 Task ↔ reference alignment** · file_domain / depends_on 精确 ← R1 fix 已修，审计 pass 过
-**X5 测试 catalog** · spec §6 每条 hook 有对应测试 ← testing-strategy.md 已一一对应
-**X6 Ops runbook** · systemd 单元 / backup 脚本可运行 ← 1556 行完整命令
-**X7 Junior readiness** · T010/T015/T021 能否独立开工 ← 刚审过 T001/T003/T004/T013/T015 并 patch
-**X8 Spec versioning** · 0.1 → 0.2 → 0.2.1 → 0.2.2 changelog 清晰
-**X9 新 blocker** · reference 层引入的新冲突 ← spec-writer 自检 4 条 drift 都 close 了
-**X10 Bus-factor** · operator 缺席 14 天后别人接手 ← ops-runbook §9 I4 + §10 operator-planned-absence
+### B2 · LLM 合同三套并存（G2 修）
+**原因**: `tech-stack.md §2.4` + `llm-adapter-skeleton.md §2/§7` 已是权威 camelCase/per-pair/`anthropic|openai`，但 `T004.md` 仍写 snake_case `SummaryRecord` + batch `judgeRelation` + 自相矛盾的 llm_calls 归属；`T007.md` env 写 `claude|gpt`；`T013.md` 引用不存在的 `llm_calls.kind/created_at` 字段且双写 llm_calls，`spec.md §5` 仍列旧 task id（T005=schema）。
+**修法（G2）**: `T004.md`（117→130 行 · 5h→6h · 7 条合同点一致化）；`T007.md` env 改 `anthropic|openai`；`T013.md`（127→140 行 · persistSummary 新签名 · 明确 adapter 已写 llm_calls · fallback 允许 null）；`spec.md` 0.2.2→0.3.0 + §5 task id 恢复到 T001–T034 + interface 描述对齐。
 
-**主要判断**：≥ 80% 概率 R_final = CLEAN 或 CLEAN-WITH-NOTES。BLOCK 可能来自 LLM prompt injection 防御不充分或 export schema 的字段映射问题（spec-writer 自己标注的 3 个 drift 风险点）。
+### B3 · Export envelope 三层不一（G3 修）
+**原因**: `architecture.md §8` snake_case 9 张表 · `T023.md` 调 `buildFullExport(env.LAB_ID)`（.env 无此变量） · `api-contracts.md §3.11` 是 camelCase 12 张表 · testing-strategy.md 只测子集。
+**修法（G3）**: `api-contracts.md §3.11` 定为权威单一真源（camelCase 12 顶层 key · `schemaVersion='1.1'`）；`architecture.md §8` 改为 redirect + 摘要；`T023.md` 完整重写（`buildFullExport(labId: number)` 参数签名 · labId 来自 session · 14 条 Verification 断言）；`testing-strategy.md §2.5/§4.4` 扩 12 keys 断言 + audit-consistency + SEC-5 path traversal。
+
+## R_final BLOCK 的 5 high-severity drift（G4 修）
+
+| Tag | Drift | 修法 |
+|---|---|---|
+| **H1** | `T021` resurface enum `6w\|3mo\|6mo` vs schema `timed_6wk\|timed_3mo\|timed_6mo` | T021 改枚举 + Verification 加 grep gate |
+| **H2** | `T010` 路径 `topics/new+[id]/page` vs directory-layout `[id]/edit` + error code `TopicCapExceeded`/400 vs api-contracts `TOO_MANY_TOPICS`/422 | T010 全改权威 |
+| **H3** | `T030` 备份脚本 `deploy/backup/*` 与 directory-layout `deploy/scripts/*` · 权限验证 `sudo -u webapp_user` 把 DB role 当 OS user | T030 改 `deploy/scripts/*` + `PGUSER=webapp_user psql` |
+| **H4** | invite consume path token 被 Caddy access log 捕获（Caddy 只删 query，不删 path） | `api-contracts.md §E2` 改 `POST /api/invite/consume` + body token + 新 error code `CSRF_ORIGIN_MISMATCH`（403） · URL fragment 传 token |
+| **spec.md §5** | 旧 task id T005=schema / T007=LLM / T029=export + 旧 interface `summarize(paper): string` | §5 恢复 T001–T034 + 移除旧描述 |
+
+## R_final2 narrow scope（just landed）
+
+`.codex-inbox/latest.md` → `20260424T021718-001-pA-L4-adversarial-r_final2.md`
+
+只复核 G1/G2/G3/G4 12 行 verification matrix，不重开 H5/H7/H8/H9/H10 等已 accepted 的项。verdict gate: G-fix 全部 mechanically close 则 CLEAN-WITH-NOTES；再次出现合同级断裂才 BLOCK。
 
 ---
 
@@ -171,12 +189,13 @@ Codex R_final 会查（详见 `.codex-inbox/latest.md`）：
 
 ## 建议 operator 的下一步
 
-1. 在 Codex 终端跑 `cdx-run`，读 `.codex-outbox/20260423T175614-001-pA-L4-adversarial-r_final.md`
-2. 若 **CLEAN / CLEAN-WITH-NOTES**：
-   - Git commit + tag 整个 spec 包：`git tag spec/001-pA/v0.2.2`
+1. 在 Codex 终端跑 `cdx-run`（`.codex-inbox/latest.md` 已指向 R_final2 narrow kickoff）
+2. 读 `.codex-outbox/20260424T021718-001-pA-L4-adversarial-r_final2.md`
+3. 若 R_final2 = **CLEAN / CLEAN-WITH-NOTES**：
+   - Git commit + tag 整个 spec 包：`git tag spec/001-pA/v0.3.0`
+   - 读 `specs/001-pA/PHASE-0-KICKOFF-CHECKLIST.md`，按 10 节自检
    - Phase 0 kickoff：先跑 T001 spike（~8h，独立不依赖任何 task），并行 T002 scaffold
-3. 若 **CONCERNS**：读 blocker/concern 清单，决定修或记 risks.md 后启动
-4. 若 **BLOCK**：走上面"应急路径"表
+4. 若 R_final2 = **BLOCK**：读残余 blocker 清单，大概率是某个 G-fix 没有真正机械闭合（可能是 changelog 叙述与实际代码不一致）；重新 spec-writer 修 → R_final3。R_final 已达 3 轮上限的一半，不应再超过 2 轮额外 re-verify。
 
 ---
 
