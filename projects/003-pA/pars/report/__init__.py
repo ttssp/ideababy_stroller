@@ -28,6 +28,33 @@ from pars.report.failure_prompt import (
     render_failure_prompt,
 )
 
+# T021: schema 校验层（不引入 matplotlib 依赖，安全前置加载）
+from pars.report.schema_validator import (
+    validate_report_artifacts,
+    validate_report_schema,
+)
+
+# T021: 报告渲染层 + 图表生成层（延迟导入，避免 matplotlib 在 import time 加载）
+# 调用方可直接 from pars.report.renderer import render_report
+# 或 from pars.report.charts import plot_eval_scores, plot_training_loss
+def render_report(run_dir):  # noqa: ANN001, ANN201
+    """延迟导入 renderer.render_report，避免 matplotlib Agg 在 import time 加载。"""
+    from pars.report.renderer import render_report as _render_report  # noqa: PLC0415
+    return _render_report(run_dir)
+
+
+def plot_eval_scores(baseline_scores, lora_scores, out_path):  # noqa: ANN001, ANN201
+    """延迟导入 charts.plot_eval_scores。"""
+    from pars.report.charts import plot_eval_scores as _fn  # noqa: PLC0415
+    return _fn(baseline_scores, lora_scores, out_path)
+
+
+def plot_training_loss(loss_records, out_path):  # noqa: ANN001, ANN201
+    """延迟导入 charts.plot_training_loss。"""
+    from pars.report.charts import plot_training_loss as _fn  # noqa: PLC0415
+    return _fn(loss_records, out_path)
+
+
 __all__ = [  # noqa: RUF022
     # T020: schema 核心
     "CauseCategory",
@@ -42,4 +69,12 @@ __all__ = [  # noqa: RUF022
     # T020: prompt 模板
     "FAILURE_PROMPT_TEMPLATE",
     "render_failure_prompt",
+    # T021: 报告渲染
+    "render_report",
+    # T021: schema 校验
+    "validate_report_schema",
+    "validate_report_artifacts",
+    # T021: 图表生成
+    "plot_eval_scores",
+    "plot_training_loss",
 ]

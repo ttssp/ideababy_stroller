@@ -1,0 +1,89 @@
+{#
+  templates/report.md.j2 — RecallKit 实验报告模板
+  对齐 architecture.md §9 决策报告 schema (H2 sections 顺序固定)
+  渲染入口: pars.report.renderer.render_report()
+
+  变量说明:
+  - run_id           : str - ULID run 标识
+  - question         : str - 研究问题
+  - base_model       : str - 基础模型名称
+  - lora_config      : dict - LoRA 超参 (rank/alpha/lr/epochs)
+  - dataset          : str - 数据集 HF id + split + n_samples
+  - wall_clock       : str - 格式 HH:MM:SS
+  - usd_spent        : float - API 花费 USD
+  - gpu_hours        : float - GPU 小时数
+  - started_at       : str - 启动时间 ISO 8601
+  - ended_at         : str - 结束时间 ISO 8601
+  - gpu_model        : str - GPU 型号
+  - cuda_version     : str - CUDA 版本
+  - python_version   : str - Python 版本
+  - baseline_score   : float | None - 基线评测分数
+  - lora_scores      : list[dict] - LoRA 各 epoch/final 评测结果 [{label, score, delta}]
+  - eval_table_rows  : list[dict] - 训练曲线表格行 [{epoch, train_loss, eval_loss}]
+  - failure_exists   : bool - 是否有 failure_attribution.md
+  - failure_attribution_md : str - failure_attribution.md 内容(若有)
+  - config_yaml_block : str - config.yaml YAML 快照块
+  - eval_scores_png  : str - eval scores PNG 相对路径
+  - loss_curve_png   : str - loss curve PNG 相对路径
+  - decision_text    : str - 决策文字([继续/停止/改方向]开头)
+#}
+# Run {{ run_id }} · {{ question }}
+
+## 元数据
+- 研究问题: {{ question }}
+- baseline: {{ base_model }} accuracy={{ "%.4f"|format(baseline_score) if baseline_score is not none else "N/A" }}
+- LoRA 配置: rank={{ lora_config.rank }}, alpha={{ lora_config.alpha }}, lr={{ lora_config.lr }}, epochs={{ lora_config.epochs }}
+- 数据集: {{ dataset }}
+- wall_clock: {{ wall_clock }}
+- API USD: ${{ "%.2f"|format(usd_spent) }}
+- GPU hours: {{ "%.1f"|format(gpu_hours) }}
+
+## 训练曲线
+![training curve]({{ loss_curve_png }})
+
+| epoch | train_loss | eval_loss |
+|---|---|---|
+{% for row in eval_table_rows -%}
+| {{ row.epoch }} | {{ "%.4f"|format(row.train_loss) }} | {{ "%.4f"|format(row.eval_loss) if row.eval_loss is not none else "—" }} |
+{% endfor %}
+
+## 分数对比
+| 模型 | held-out metric | delta vs baseline |
+|---|---|---|
+| baseline (frozen) | {{ "%.4f"|format(baseline_score) if baseline_score is not none else "N/A" }} | — |
+{% for row in lora_scores -%}
+| {{ row.label }} | {{ "%.4f"|format(row.score) }} | {% if row.delta is not none %}{{ "%+.4f"|format(row.delta) }}{% else %}—{% endif %} |
+{% endfor %}
+
+![baseline_vs_lora]({{ eval_scores_png }})
+
+## 失败归因(必填,即使成功也写"无明显失败")
+{% if failure_exists -%}
+见 failure_attribution.md
+
+{{ failure_attribution_md }}
+{%- else -%}
+✅ 无失败，实验按计划完成
+
+- 假设: 基线训练和 LoRA 微调均按预期执行
+- 观察: 分数对比见上方表格，训练过程无异常中断
+- 归因: 实验正常结束，无需失败归因
+- 下一步建议: 参考决策章节
+{%- endif %}
+
+## 决策
+{{ decision_text }}
+
+---
+
+## 配置快照
+
+```yaml
+{{ config_yaml_block }}
+```
+
+## 环境快照
+- GPU: {{ gpu_model }} / CUDA {{ cuda_version }}
+- Python: {{ python_version }}
+- 启动于: {{ started_at }}
+- 结束于: {{ ended_at }}

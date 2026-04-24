@@ -197,6 +197,10 @@ filterwarnings = [
     "error",
     # 排除 pytest 自身的 PytestUnraisableExceptionWarning（极少数情况）
     "ignore::pytest.PytestUnraisableExceptionWarning",
+    # T021: matplotlib 3.9.4 + pyparsing 3.3.2 兼容性问题
+    # pyparsing 3.3.2 将 oneOf 重命名为 one_of，但 matplotlib _fontconfig_pattern 仍用 oneOf
+    # 此 warning 来自第三方依赖，不影响功能正确性
+    "ignore::pyparsing.warnings.PyparsingDeprecationWarning",
 ]
 
 # =============================================================================
