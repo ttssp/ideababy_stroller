@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+"""
+eval_script.py — RecallKit 评测脚本（由模板渲染生成，勿手动编辑）
+
+参考规格：specs/003-pA/spec.md §4 D15 / D18
+评测后端：LM Eval Harness 0.4.5（OQ2 CONFIRMED，D8）
+路径：全部来自 os.environ（RECALLKIT_RUN_DIR / RECALLKIT_CKPT_DIR / HF_HOME），符合 D18
+
+模板变量（由 render_template() 注入）：
+  - base_model:    HuggingFace 模型 ID（baseline 用）
+  - lora_ckpt_dir: LoRA checkpoint 目录路径（merged/unmerged 两路）
+  - eval_tasks:    lm_eval 评测任务名（逗号分隔）
+  - n_shot:        few-shot 数（整数，0=zero-shot）
+  - limit:         每任务最大样本数（整数，None=全量）
+
+输出：
+  - $RECALLKIT_RUN_DIR/artifacts/scores.json   — 完整 lm_eval 结果 JSON
+  - $RECALLKIT_RUN_DIR/metrics.jsonl           — 每 task 追加 event=eval_scores
+
+失败处理：
+  - 捕获所有异常 → 写 metrics.jsonl 错误行 → 非零退出（sys.exit(1)）
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+# ---------------------------------------------------------------------------
+# 路径配置（D18：全部来自 os.environ，不硬编码绝对路径）
+# ---------------------------------------------------------------------------
+
+RUN_DIR = Path(os.environ["RECALLKIT_RUN_DIR"])
+CKPT_DIR = Path(os.environ["RECALLKIT_CKPT_DIR"])
+HF_HOME_PATH = os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface"))
+
+METRICS_JSONL = RUN_DIR / "metrics.jsonl"
+ARTIFACTS_DIR = RUN_DIR / "artifacts"
+SCORES_JSON = ARTIFACTS_DIR / "scores.json"
+
+# 确保目录存在
+ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# 模板参数（由 Jinja2 渲染填充）
+# ---------------------------------------------------------------------------
+
+BASE_MODEL = "{{ base_model }}"
+LORA_CKPT_DIR = "{{ lora_ckpt_dir }}"
+EVAL_TASKS = "{{ eval_tasks }}"
+N_SHOT = {{ n_shot }}
+LIMIT = {{ limit }}
+
+
+# ---------------------------------------------------------------------------
+# 辅助函数
+# ---------------------------------------------------------------------------
+
+def _append_metric(event: str, phase: str, data: dict) -> None:
+    """向 metrics.jsonl 追加一条记录（O_APPEND 原子写入）。
+
+    worker 脚本直接写文件，不 import pars.ledger（worker 环境可能无 pars 包）。
+    """
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "phase": phase,
+        "kind": "eval",
+        "event": event,
+        "data": data,
+    }
+    line_bytes = (json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8")
+    fd = os.open(str(METRICS_JSONL), os.O_APPEND | os.O_WRONLY | os.O_CREAT, 0o644)
+    try:
+        os.write(fd, line_bytes)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def _run_eval(model_path: str, model_label: str, tasks_list: list) -> dict:
+    """运行 lm_eval.simple_evaluate 并返回结果 dict。
+
+    Args:
+        model_path:  模型路径或 HF ID
+        model_label: 用于日志的模型标签
+        tasks_list:  评测任务列表
+
+    Returns:
+        结果 dict（tasks → metric_key → value）
+    """
+    from lm_eval import simple_evaluate
+
+    print(f"[eval] 开始评测：{model_label}")
+    print(f"[eval] 任务：{tasks_list}，n_shot={N_SHOT}，limit={LIMIT}")
+
+    # lm_eval 0.4.5 simple_evaluate 签名
+    results = simple_evaluate(
+        model="hf",
+        model_args=f"pretrained={model_path}",
+        tasks=tasks_list,
+        num_fewshot=N_SHOT,
+        limit=LIMIT if LIMIT > 0 else None,
+        log_samples=False,
+    )
+    scores = results.get("results", {})
+    print(f"[eval] 评测完成：{model_label}，得分：{scores}")
+    return scores
+
+
+# ---------------------------------------------------------------------------
+# 主评测逻辑
+# ---------------------------------------------------------------------------
+
+def main() -> int:
+    """运行 baseline + LoRA merged/unmerged 双路评测，返回退出码。"""
+    print(f"[eval] 开始评测流程")
+    print(f"[eval] base_model={BASE_MODEL}")
+    print(f"[eval] lora_ckpt_dir={LORA_CKPT_DIR}")
+    print(f"[eval] eval_tasks={EVAL_TASKS}")
+    print(f"[eval] run_dir={RUN_DIR}")
+    print(f"[eval] HF_HOME={HF_HOME_PATH}")
+
+    try:
+        import lm_eval
+        print(f"[eval] lm_eval 版本：{lm_eval.__version__}")
+
+        tasks_list = [t.strip() for t in EVAL_TASKS.split(",") if t.strip()]
+        all_scores: dict = {}
+
+        # ------------------------------------------------------------------
+        # 路径 1：baseline（frozen base model）
+        # ------------------------------------------------------------------
+        baseline_scores = _run_eval(BASE_MODEL, "baseline(frozen)", tasks_list)
+        all_scores["baseline"] = baseline_scores
+        _append_metric(
+            event="eval_scores",
+            phase="evaluating",
+            data={
+                "model_label": "baseline",
+                "model_path": BASE_MODEL,
+                "tasks": tasks_list,
+                "n_shot": N_SHOT,
+                "limit": LIMIT,
+                "scores": baseline_scores,
+            },
+        )
+        print("[eval] baseline 评测完成，已写 metrics.jsonl")
+
+        # ------------------------------------------------------------------
+        # 路径 2：LoRA checkpoint（若 ckpt 目录存在）
+        # ------------------------------------------------------------------
+        lora_ckpt_path = Path(LORA_CKPT_DIR)
+        if lora_ckpt_path.exists() and lora_ckpt_path.is_dir():
+            # 尝试 merged 路径（若 worker 已 merge）
+            merged_path = lora_ckpt_path / "merged"
+            if merged_path.exists():
+                lora_scores = _run_eval(str(merged_path), "lora_merged", tasks_list)
+                label = "lora_merged"
+                eval_model_path = str(merged_path)
+            else:
+                # unmerged：用 PEFT adapter 评测
+                lora_scores = _run_eval(str(lora_ckpt_path), "lora_unmerged", tasks_list)
+                label = "lora_unmerged"
+                eval_model_path = str(lora_ckpt_path)
+
+            all_scores[label] = lora_scores
+            _append_metric(
+                event="eval_scores",
+                phase="evaluating",
+                data={
+                    "model_label": label,
+                    "model_path": eval_model_path,
+                    "tasks": tasks_list,
+                    "n_shot": N_SHOT,
+                    "limit": LIMIT,
+                    "scores": lora_scores,
+                },
+            )
+            print(f"[eval] {label} 评测完成，已写 metrics.jsonl")
+        else:
+            print(f"[eval] LoRA checkpoint 不存在：{LORA_CKPT_DIR}，跳过 LoRA 评测")
+
+        # ------------------------------------------------------------------
+        # 写 artifacts/scores.json（完整结果）
+        # ------------------------------------------------------------------
+        SCORES_JSON.write_text(
+            json.dumps(all_scores, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"[eval] scores.json 已写入：{SCORES_JSON}")
+        print("[eval] 评测流程完成")
+        return 0
+
+    except Exception as exc:
+        # ------------------------------------------------------------------
+        # 失败处理：写 metrics.jsonl 错误行 + 非零退出
+        # ------------------------------------------------------------------
+        err_msg = str(exc)
+        print(f"[eval] 错误：{err_msg}", file=sys.stderr)
+        try:
+            _append_metric(
+                event="eval_error",
+                phase="evaluating",
+                data={
+                    "error": err_msg,
+                    "error_type": type(exc).__name__,
+                    "base_model": BASE_MODEL,
+                    "lora_ckpt_dir": LORA_CKPT_DIR,
+                },
+            )
+        except Exception as write_exc:
+            print(f"[eval] 写 metrics.jsonl 失败：{write_exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

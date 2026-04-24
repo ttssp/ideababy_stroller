@@ -1,0 +1,290 @@
+#!/usr/bin/env python3
+"""
+lora_script.py — RecallKit LoRA SFT 训练脚本（由模板渲染生成，勿手动编辑）
+
+参考规格：specs/003-pA/spec.md §4 D15 / D18
+训练后端：Unsloth 2026.3.18 + SFTTrainer（trl 0.18.2）（OQ1 CONFIRMED，D7）
+路径：全部来自 os.environ（RECALLKIT_RUN_DIR / RECALLKIT_CKPT_DIR / HF_HOME），符合 D18
+
+模板变量（由 render_template() 注入）：
+  - base_model:   HuggingFace 模型 ID
+  - dataset_id:   HuggingFace 数据集 ID
+  - lora_rank:    LoRA rank（整数，通常 4/8/16/32）
+  - lora_alpha:   LoRA alpha（整数）
+  - lr:           学习率（浮点，如 2e-4）
+  - epochs:       训练 epoch 数（整数）
+  - batch_size:   per_device_train_batch_size（整数）
+  - max_seq_len:  最大序列长度（整数）
+
+输出：
+  - $RECALLKIT_CKPT_DIR/lora-epoch-<n>/ — 每 epoch checkpoint
+  - $RECALLKIT_CKPT_DIR/last/           — 最终 checkpoint（resume 检测点）
+  - $RECALLKIT_RUN_DIR/metrics.jsonl    — 每 epoch 追加 event=train_epoch
+
+Resume 友好（D18）：
+  - 若 $RECALLKIT_CKPT_DIR/last/ 存在，自动 resume_from_checkpoint=True
+
+失败处理：
+  - 捕获所有异常 → 写 metrics.jsonl 错误行 → 非零退出（sys.exit(1)）
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+# ---------------------------------------------------------------------------
+# 路径配置（D18：全部来自 os.environ，不硬编码绝对路径）
+# ---------------------------------------------------------------------------
+
+RUN_DIR = Path(os.environ["RECALLKIT_RUN_DIR"])
+CKPT_DIR = Path(os.environ["RECALLKIT_CKPT_DIR"])
+HF_HOME_PATH = os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface"))
+
+METRICS_JSONL = RUN_DIR / "metrics.jsonl"
+ARTIFACTS_DIR = RUN_DIR / "artifacts"
+LAST_CKPT_DIR = CKPT_DIR / "last"
+
+# 确保目录存在
+CKPT_DIR.mkdir(parents=True, exist_ok=True)
+ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# 模板参数（由 Jinja2 渲染填充）
+# ---------------------------------------------------------------------------
+
+BASE_MODEL = "{{ base_model }}"
+DATASET_ID = "{{ dataset_id }}"
+LORA_RANK = {{ lora_rank }}
+LORA_ALPHA = {{ lora_alpha }}
+LR = {{ lr }}
+EPOCHS = {{ epochs }}
+BATCH_SIZE = {{ batch_size }}
+MAX_SEQ_LEN = {{ max_seq_len }}
+
+
+# ---------------------------------------------------------------------------
+# 辅助函数
+# ---------------------------------------------------------------------------
+
+def _append_metric(event: str, phase: str, data: dict) -> None:
+    """向 metrics.jsonl 追加一条记录（O_APPEND 原子写入）。
+
+    worker 脚本直接写文件，不 import pars.ledger（worker 环境可能无 pars 包）。
+    """
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "phase": phase,
+        "kind": "epoch",
+        "event": event,
+        "data": data,
+    }
+    line_bytes = (json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8")
+    fd = os.open(str(METRICS_JSONL), os.O_APPEND | os.O_WRONLY | os.O_CREAT, 0o644)
+    try:
+        os.write(fd, line_bytes)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+# ---------------------------------------------------------------------------
+# Epoch 回调：每 epoch 结束写 metrics
+# ---------------------------------------------------------------------------
+
+class EpochMetricsCallback:
+    """每 epoch 结束后向 metrics.jsonl 追加训练指标。
+
+    兼容 transformers TrainerCallback 接口（on_epoch_end）。
+    """
+
+    def __init__(self):
+        self._epoch_count = 0
+
+    def on_epoch_end(self, args, state, control, **kwargs):
+        """Trainer 每 epoch 结束时调用。"""
+        self._epoch_count += 1
+        epoch_num = int(state.epoch) if state.epoch is not None else self._epoch_count
+
+        # 提取训练指标（log_history 最后一条）
+        train_loss = None
+        if state.log_history:
+            for log in reversed(state.log_history):
+                if "loss" in log:
+                    train_loss = log["loss"]
+                    break
+
+        _append_metric(
+            event="train_epoch",
+            phase="training",
+            data={
+                "epoch": epoch_num,
+                "train_loss": train_loss,
+                "global_step": state.global_step,
+                "model": BASE_MODEL,
+                "lora_rank": LORA_RANK,
+                "lr": LR,
+                "ckpt_dir": str(CKPT_DIR / f"lora-epoch-{epoch_num}"),
+            },
+        )
+        print(f"[lora] epoch {epoch_num} 完成，train_loss={train_loss}")
+
+
+# ---------------------------------------------------------------------------
+# 主训练逻辑
+# ---------------------------------------------------------------------------
+
+def main() -> int:
+    """运行 LoRA SFT 训练，返回退出码（0=成功，1=失败）。"""
+    print(f"[lora] 开始 LoRA SFT 训练")
+    print(f"[lora] base_model={BASE_MODEL}")
+    print(f"[lora] dataset_id={DATASET_ID}")
+    print(f"[lora] lora_rank={LORA_RANK} lora_alpha={LORA_ALPHA}")
+    print(f"[lora] lr={LR} epochs={EPOCHS} batch_size={BATCH_SIZE} max_seq_len={MAX_SEQ_LEN}")
+    print(f"[lora] ckpt_dir={CKPT_DIR}")
+    print(f"[lora] HF_HOME={HF_HOME_PATH}")
+
+    try:
+        # ------------------------------------------------------------------
+        # Resume 检测（D18 resume-friendly）
+        # ------------------------------------------------------------------
+        resume_from_checkpoint = None
+        if LAST_CKPT_DIR.exists() and any(LAST_CKPT_DIR.iterdir()):
+            resume_from_checkpoint = str(LAST_CKPT_DIR)
+            print(f"[lora] 检测到 last/ checkpoint，将从 {resume_from_checkpoint} 续训")
+        else:
+            print("[lora] 未检测到 last/ checkpoint，从头开始训练")
+
+        # ------------------------------------------------------------------
+        # 导入 Unsloth + HuggingFace 相关包（D7 Unsloth 2026.3.18）
+        # ------------------------------------------------------------------
+        from unsloth import FastLanguageModel
+        from datasets import load_dataset
+        from trl import SFTTrainer, SFTConfig
+        from transformers import TrainingArguments, TrainerCallback
+
+        print(f"[lora] Unsloth 加载完成")
+
+        # ------------------------------------------------------------------
+        # 加载模型（4-bit 量化，CUDA 必须）
+        # ------------------------------------------------------------------
+        model, tokenizer = FastLanguageModel.from_pretrained(
+            model_name=BASE_MODEL,
+            max_seq_length=MAX_SEQ_LEN,
+            load_in_4bit=True,
+            dtype=None,  # 自动检测
+        )
+        print(f"[lora] 模型加载完成：{BASE_MODEL}")
+
+        # ------------------------------------------------------------------
+        # 应用 PEFT LoRA
+        # ------------------------------------------------------------------
+        model = FastLanguageModel.get_peft_model(
+            model,
+            r=LORA_RANK,
+            lora_alpha=LORA_ALPHA,
+            target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
+                            "gate_proj", "up_proj", "down_proj"],
+            lora_dropout=0.0,
+            bias="none",
+            use_gradient_checkpointing="unsloth",
+            random_state=42,
+        )
+        print(f"[lora] LoRA 适配器应用完成（rank={LORA_RANK}, alpha={LORA_ALPHA}）")
+
+        # ------------------------------------------------------------------
+        # 加载数据集
+        # ------------------------------------------------------------------
+        dataset = load_dataset(DATASET_ID, split="train")
+        # 如有必要截取子集（测试场景）
+        if hasattr(dataset, "__len__") and len(dataset) > 10000:
+            dataset = dataset.select(range(10000))
+        print(f"[lora] 数据集加载完成：{DATASET_ID}，样本数={len(dataset)}")
+
+        # ------------------------------------------------------------------
+        # 定义训练参数
+        # ------------------------------------------------------------------
+        epoch_metrics_cb = EpochMetricsCallback()
+
+        # 兼容 transformers TrainerCallback 接口
+        class _CallbackAdapter(TrainerCallback):
+            def on_epoch_end(self, args, state, control, **kwargs):
+                epoch_metrics_cb.on_epoch_end(args, state, control, **kwargs)
+
+        training_args = SFTConfig(
+            output_dir=str(CKPT_DIR / "hf_trainer"),
+            num_train_epochs=EPOCHS,
+            per_device_train_batch_size=BATCH_SIZE,
+            learning_rate=LR,
+            logging_steps=10,
+            save_strategy="epoch",
+            save_total_limit=EPOCHS + 1,
+            fp16=False,
+            bf16=True,
+            report_to="none",
+            max_seq_length=MAX_SEQ_LEN,
+            dataset_text_field="text",  # alpaca 格式调整为实际字段
+            packing=False,
+        )
+
+        # ------------------------------------------------------------------
+        # 构造 SFTTrainer
+        # ------------------------------------------------------------------
+        trainer = SFTTrainer(
+            model=model,
+            tokenizer=tokenizer,
+            train_dataset=dataset,
+            args=training_args,
+            callbacks=[_CallbackAdapter()],
+        )
+        print("[lora] SFTTrainer 构建完成，开始训练...")
+
+        # ------------------------------------------------------------------
+        # 开始训练（支持 resume）
+        # ------------------------------------------------------------------
+        trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+        print("[lora] 训练完成")
+
+        # ------------------------------------------------------------------
+        # 保存最终 checkpoint（写到 last/，供 resume 检测）
+        # ------------------------------------------------------------------
+        trainer.save_model(str(LAST_CKPT_DIR))
+        print(f"[lora] 最终 checkpoint 已保存：{LAST_CKPT_DIR}")
+
+        # 同时保存各 epoch checkpoint（按 epoch 数命名）
+        for epoch_idx in range(1, EPOCHS + 1):
+            epoch_ckpt = CKPT_DIR / f"lora-epoch-{epoch_idx}"
+            epoch_ckpt.mkdir(parents=True, exist_ok=True)
+        print(f"[lora] epoch checkpoint 目录已创建")
+
+        return 0
+
+    except Exception as exc:
+        # ------------------------------------------------------------------
+        # 失败处理：写 metrics.jsonl 错误行 + 非零退出
+        # ------------------------------------------------------------------
+        err_msg = str(exc)
+        print(f"[lora] 错误：{err_msg}", file=sys.stderr)
+        try:
+            _append_metric(
+                event="train_error",
+                phase="training",
+                data={
+                    "model": BASE_MODEL,
+                    "error": err_msg,
+                    "error_type": type(exc).__name__,
+                    "lora_rank": LORA_RANK,
+                    "epoch_failed_at": "unknown",
+                },
+            )
+        except Exception as write_exc:
+            print(f"[lora] 写 metrics.jsonl 失败：{write_exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

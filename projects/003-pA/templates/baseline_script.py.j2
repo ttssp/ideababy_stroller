@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+"""
+baseline_script.py — RecallKit baseline 评测脚本（由模板渲染生成，勿手动编辑）
+
+参考规格：specs/003-pA/spec.md §4 D15 / D18
+训练后端：LM Eval Harness 0.4.5（OQ2 CONFIRMED，specs/003-pA/spec.md §4 D8）
+路径：全部来自 os.environ（RECALLKIT_RUN_DIR / HF_HOME），符合 D18 路径可移植
+
+模板变量（由 render_template() 注入）：
+  - base_model:    HuggingFace 模型 ID，如 "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+  - dataset_id:    HuggingFace 数据集 ID，如 "tatsu-lab/alpaca"
+  - dataset_split: 数据集分割，如 "train"
+  - n_samples:     评测样本数
+  - eval_tasks:    lm_eval 评测任务名（逗号分隔或单个），如 "hellaswag"
+
+输出：
+  - $RECALLKIT_RUN_DIR/metrics.jsonl — 追加 event=eval_scores, phase=baseline 一条记录
+  - $RECALLKIT_RUN_DIR/artifacts/scores.json — 完整 lm_eval 结果 JSON
+
+失败处理：
+  - 捕获所有异常 → 写 metrics.jsonl 错误行 → 非零退出（sys.exit(1)）
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+# ---------------------------------------------------------------------------
+# 路径配置（D18：全部来自 os.environ，不硬编码绝对路径）
+# ---------------------------------------------------------------------------
+
+RUN_DIR = Path(os.environ["RECALLKIT_RUN_DIR"])
+HF_HOME_PATH = os.environ.get("HF_HOME", str(Path.home() / ".cache" / "huggingface"))
+
+# 评测输出位置
+METRICS_JSONL = RUN_DIR / "metrics.jsonl"
+ARTIFACTS_DIR = RUN_DIR / "artifacts"
+SCORES_JSON = ARTIFACTS_DIR / "baseline_scores.json"
+
+# 确保目录存在
+ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# ---------------------------------------------------------------------------
+# 模板参数（由 Jinja2 渲染填充）
+# ---------------------------------------------------------------------------
+
+BASE_MODEL = "{{ base_model }}"
+DATASET_ID = "{{ dataset_id }}"
+DATASET_SPLIT = "{{ dataset_split }}"
+N_SAMPLES = {{ n_samples }}
+EVAL_TASKS = "{{ eval_tasks }}"
+
+
+# ---------------------------------------------------------------------------
+# 辅助函数
+# ---------------------------------------------------------------------------
+
+def _append_metric(event: str, phase: str, data: dict) -> None:
+    """向 metrics.jsonl 追加一条记录（O_APPEND 原子写入）。
+
+    worker 脚本直接写文件，不 import pars.ledger（worker 环境可能无 pars 包）。
+    格式与 pars.ledger.metrics 的 schema 对齐（ts/phase/kind/data）。
+    """
+    record = {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "phase": phase,
+        "kind": "custom",
+        "event": event,
+        "data": data,
+    }
+    line_bytes = (json.dumps(record, ensure_ascii=False) + "\n").encode("utf-8")
+    fd = os.open(str(METRICS_JSONL), os.O_APPEND | os.O_WRONLY | os.O_CREAT, 0o644)
+    try:
+        os.write(fd, line_bytes)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+# ---------------------------------------------------------------------------
+# 主评测逻辑
+# ---------------------------------------------------------------------------
+
+def main() -> int:
+    """运行 baseline 评测，返回退出码（0=成功，1=失败）。"""
+    print(f"[baseline] 开始 baseline 评测")
+    print(f"[baseline] base_model={BASE_MODEL}")
+    print(f"[baseline] dataset_id={DATASET_ID} split={DATASET_SPLIT} n_samples={N_SAMPLES}")
+    print(f"[baseline] eval_tasks={EVAL_TASKS}")
+    print(f"[baseline] HF_HOME={HF_HOME_PATH}")
+    print(f"[baseline] run_dir={RUN_DIR}")
+
+    try:
+        # ------------------------------------------------------------------
+        # 导入 lm_eval（D8 LM Eval Harness 0.4.5）
+        # ------------------------------------------------------------------
+        import lm_eval
+        from lm_eval import simple_evaluate
+        from lm_eval.utils import make_table
+
+        print(f"[baseline] lm_eval 版本：{lm_eval.__version__}")
+
+        # ------------------------------------------------------------------
+        # 运行评测（HF_HOME 通过 env 自动被 transformers / datasets 读取）
+        # ------------------------------------------------------------------
+        tasks_list = [t.strip() for t in EVAL_TASKS.split(",") if t.strip()]
+        print(f"[baseline] 评测任务列表：{tasks_list}")
+
+        results = simple_evaluate(
+            model="hf",
+            model_args=f"pretrained={BASE_MODEL}",
+            tasks=tasks_list,
+            num_fewshot=0,
+            limit=N_SAMPLES,
+            log_samples=False,
+        )
+
+        # ------------------------------------------------------------------
+        # 写 artifacts/baseline_scores.json
+        # ------------------------------------------------------------------
+        scores_data = results.get("results", {})
+        SCORES_JSON.write_text(
+            json.dumps(scores_data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        print(f"[baseline] scores.json 已写入：{SCORES_JSON}")
+
+        # ------------------------------------------------------------------
+        # 写 metrics.jsonl（event=eval_scores, phase=baseline）
+        # ------------------------------------------------------------------
+        _append_metric(
+            event="eval_scores",
+            phase="baseline",
+            data={
+                "model": BASE_MODEL,
+                "tasks": tasks_list,
+                "n_samples": N_SAMPLES,
+                "scores": scores_data,
+            },
+        )
+        print("[baseline] metrics.jsonl 已追加 eval_scores(phase=baseline)")
+
+        # 打印结果表格（供操作员查看）
+        try:
+            print(make_table(results))
+        except Exception:
+            print(f"[baseline] 分数：{scores_data}")
+
+        print("[baseline] baseline 评测完成")
+        return 0
+
+    except Exception as exc:
+        # ------------------------------------------------------------------
+        # 失败处理：写 metrics.jsonl 错误行 + 非零退出
+        # ------------------------------------------------------------------
+        err_msg = str(exc)
+        print(f"[baseline] 错误：{err_msg}", file=sys.stderr)
+        try:
+            _append_metric(
+                event="eval_error",
+                phase="baseline",
+                data={
+                    "model": BASE_MODEL,
+                    "error": err_msg,
+                    "error_type": type(exc).__name__,
+                },
+            )
+        except Exception as write_exc:
+            print(f"[baseline] 写 metrics.jsonl 失败：{write_exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -407,3 +407,133 @@ def test_empty_next_steps_raises_pydantic_validation_error() -> None:
     with pytest.raises(ValidationError) as exc_info:
         FailureAttribution(**kwargs)
     assert "next_steps" in str(exc_info.value)
+
+
+# ===========================================================================
+# failure_prompt.py 测试
+# ===========================================================================
+
+from pars.report.failure_prompt import (  # noqa: E402
+    FAILURE_PROMPT_TEMPLATE,
+    render_failure_prompt,
+)
+
+
+# ---------------------------------------------------------------------------
+# T21: FAILURE_PROMPT_TEMPLATE 是非空字符串且含关键字段列表
+# 防止崩塌：模板缺失必填字段引导 → worker 乱写
+# ---------------------------------------------------------------------------
+
+
+def test_failure_prompt_template_is_non_empty_string() -> None:
+    """should define FAILURE_PROMPT_TEMPLATE as a non-empty Jinja2 string."""
+    assert isinstance(FAILURE_PROMPT_TEMPLATE, str)
+    assert len(FAILURE_PROMPT_TEMPLATE) > 100
+
+
+# ---------------------------------------------------------------------------
+# T22: FAILURE_PROMPT_TEMPLATE 含禁用词黑名单
+# 防止崩塌：模板没有禁用词列表 → worker 继续使用模糊措辞
+# ---------------------------------------------------------------------------
+
+
+def test_failure_prompt_template_contains_forbidden_words() -> None:
+    """should include forbidden word list in FAILURE_PROMPT_TEMPLATE."""
+    # 按 T020 spec: 禁用词为 可能是 / 也许 / 大概 / 不确定
+    assert "可能是" in FAILURE_PROMPT_TEMPLATE
+    assert "也许" in FAILURE_PROMPT_TEMPLATE
+    assert "大概" in FAILURE_PROMPT_TEMPLATE
+    assert "不确定" in FAILURE_PROMPT_TEMPLATE
+
+
+# ---------------------------------------------------------------------------
+# T23: FAILURE_PROMPT_TEMPLATE 含归因枚举引导（至少含枚举值关键词）
+# 防止崩塌：worker 不知道有哪些归因枚举可选
+# ---------------------------------------------------------------------------
+
+
+def test_failure_prompt_template_contains_cause_category_hints() -> None:
+    """should list CauseCategory values or their descriptions in the template."""
+    # 模板应包含至少部分归因枚举名称或中文对应词
+    has_category_hint = any(
+        hint in FAILURE_PROMPT_TEMPLATE
+        for hint in [
+            "DATA_FORMAT", "LR_TOO_HIGH", "LR_TOO_LOW",
+            "学习率", "数据格式", "归因枚举",
+        ]
+    )
+    assert has_category_hint, "模板中应包含归因枚举类别的引导或列举"
+
+
+# ---------------------------------------------------------------------------
+# T24: render_failure_prompt 返回包含 run_id 的字符串
+# 防止崩塌：worker 不知道在归因哪个 run 的失败
+# ---------------------------------------------------------------------------
+
+
+def test_render_failure_prompt_includes_run_id() -> None:
+    """should include run_id in rendered prompt output."""
+    run_id = "01KPZSDEE8VWSDS83ZS9WHKWES"
+    rendered = render_failure_prompt(
+        run_id=run_id,
+        baseline_score=0.45,
+        lora_final_score=0.41,
+    )
+    assert isinstance(rendered, str)
+    assert run_id in rendered
+
+
+# ---------------------------------------------------------------------------
+# T25: render_failure_prompt 包含 baseline_score 和 lora_final_score 数值
+# 防止崩塌：worker 不知道 baseline 和实际分数，无法量化失败
+# ---------------------------------------------------------------------------
+
+
+def test_render_failure_prompt_includes_scores() -> None:
+    """should include baseline and lora_final scores in rendered prompt."""
+    rendered = render_failure_prompt(
+        run_id="01TESTULID0000000000000001",
+        baseline_score=0.55,
+        lora_final_score=0.38,
+    )
+    assert "0.55" in rendered or "55" in rendered
+    assert "0.38" in rendered or "38" in rendered
+
+
+# ---------------------------------------------------------------------------
+# T26: render_failure_prompt 包含必填字段引导（如"假设"/"观察"/"下一步建议"）
+# 防止崩塌：prompt 没有字段引导 → worker 不知道必须写什么
+# ---------------------------------------------------------------------------
+
+
+def test_render_failure_prompt_contains_required_field_hints() -> None:
+    """should contain required field names in rendered failure prompt."""
+    rendered = render_failure_prompt(
+        run_id="01TESTULID0000000000000002",
+        baseline_score=0.50,
+        lora_final_score=0.45,
+    )
+    # 必须含必填字段引导词
+    assert "假设" in rendered
+    assert "观察" in rendered
+    assert "下一步" in rendered or "next_step" in rendered.lower()
+
+
+# ---------------------------------------------------------------------------
+# T27: render_failure_prompt 包含"禁止"或"禁用"相关提示
+# 防止崩塌：worker 不知道有禁用词约束
+# ---------------------------------------------------------------------------
+
+
+def test_render_failure_prompt_contains_forbidden_word_warning() -> None:
+    """should warn about forbidden words in rendered prompt."""
+    rendered = render_failure_prompt(
+        run_id="01TESTULID0000000000000003",
+        baseline_score=0.60,
+        lora_final_score=0.55,
+    )
+    has_warning = any(
+        word in rendered
+        for word in ["禁止", "禁用", "不得使用", "黑名单", "可能是"]
+    )
+    assert has_warning, "渲染后的 prompt 应包含禁用词警告"
