@@ -198,14 +198,21 @@ def sft_resume(
         str,
         typer.Option("--run-id", "-r", help="要续跑的 run ID"),
     ],
+    yes: Annotated[
+        bool,
+        typer.Option("--yes", "-y", help="跳过交互确认（供测试和自动化脚本使用）"),
+    ] = False,
 ) -> None:
     """从 checkpoint 续跑中断的 SFT run（仅限同机重启，C22）。
 
-    TODO: T023 实现 resume 逻辑（O3 验证目标）。
+    检查流程：
+    1. 确认 run 未完成（非 completed/failed 终态）
+    2. 确认 checkpoint 目录非空
+    3. 确认 stuck_lock 不存在（否则提示 pars unlock）
+    4. 机器指纹比对（C22）：GPU/CUDA/os_major hard reject；python/os patch 仅 warning
     """
-    logger.warning("T023 will implement pars sft resume")
-    typer.echo("T023 will implement: pars sft resume（从 checkpoint 续跑）", err=True)
-    raise typer.Exit(1)
+    from pars.cli.resume import run_resume
+    run_resume(run_id=run_id, yes=yes)
 
 
 # ---------------------------------------------------------------------------
