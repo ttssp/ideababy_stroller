@@ -6,12 +6,49 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = { text = "MIT" }
 
-# 运行时依赖：T002 负责填入实际版本；此处仅占位
-[project.optional-dependencies]
-runtime = []
+# 运行时依赖（T002 填入 · R5 供应链缓解 · C17 依赖白名单）
+# 策略：全部 exact pin(==x.y.z)，与 requirements-locked.txt + uv.lock 三重保证供应链安全
+# 版本选择依据：以 Unsloth 2026.3.18 实际 PyPI requires_dist 为准；spec §8 版本表仅供参考
+# transformers: Unsloth 要求 >=4.51.3，排除多个高版本；选最低满足版本以减少变量
+# peft:         Unsloth 要求 >=0.18.0,!=0.11.0；选 0.19.1（含重要修复）
+# trl:          Unsloth 要求 >=0.18.2,!=0.19.0,<=0.24.0；选最低满足版
+# bitsandbytes: Unsloth 要求 >=0.45.5,!=0.46.0,!=0.48.0；0.49.2 同时有 linux+macOS wheel
+#               Linux/CUDA-only 运行时依赖，加 PEP 508 marker 排除 macOS dev 环境（ops-decision T002）
+# unsloth:      依赖 triton（Linux-only），加 marker 确保 macOS uv lock/sync 可正常运行（ops-decision T002）
+# 跨平台依赖（macOS arm64 + Linux x86_64 均可装）：
+#   typer, rich, pydantic, pyyaml, httpx, psutil, ulid-py, lm-eval, datasets, jinja2, deepdiff, litellm, matplotlib
+dependencies = [
+    # === Linux/CUDA-only 训练依赖（PEP 508 platform marker） ===
+    "unsloth==2026.3.18; sys_platform == 'linux'",
+    "transformers==4.51.3; sys_platform == 'linux'",
+    "peft==0.19.1; sys_platform == 'linux'",
+    "trl==0.18.2; sys_platform == 'linux'",
+    "accelerate==0.34.2; sys_platform == 'linux'",
+    "bitsandbytes==0.49.2; sys_platform == 'linux'",
+    # === 跨平台依赖（dev + prod 均装） ===
+    "datasets==3.6.0",
+    "lm-eval==0.4.5",
+    "typer==0.12.5",
+    "rich==13.7.1",
+    "jinja2==3.1.6",
+    "deepdiff==7.0.1",
+    "psutil==5.9.8",
+    "litellm==1.50.4",
+    "ulid-py==1.1.0",
+    "pyyaml==6.0.3",
+    "matplotlib==3.9.4",
+]
 
-# 开发依赖：T002 负责填入实际版本；此处仅占位
-dev = []
+[project.optional-dependencies]
+# 开发依赖（T002 填入 · 版本允许小版本更新，非供应链敏感路径）
+dev = [
+    "ruff>=0.5",
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "pre-commit>=3.7",
+    "pip-audit>=2.7",
+    "pip-licenses>=4.5",
+]
 
 [project.scripts]
 # CLI 入口：T006 负责实现 pars.cli.main:app
@@ -25,4 +62,15 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["pars"]
 
-# 说明：以下工具配置（ruff、pytest）由 T002 负责添加，此处不配置
+[tool.uv]
+# 平台 lock 策略（T002 · R5 供应链 · C17 · ops-decision 2026-04-24）：
+# - Linux x86_64：完整训练环境（unsloth + bitsandbytes + triton 等）
+# - macOS arm64：仅跨平台依赖（lm-eval, CLI 工具等），Linux-only 依赖通过 PEP 508 marker 跳过
+# - triton 在 Unsloth 依赖中已有 sys_platform == 'linux' marker，此处与之对齐
+# - uv.lock 为 universal lock，同时覆盖两个平台；requirements-locked.txt 仅 linux（R5 防御对象）
+environments = [
+    "sys_platform == 'linux' and python_version >= '3.12' and platform_machine == 'x86_64'",
+    "sys_platform == 'darwin' and python_version >= '3.12' and platform_machine == 'arm64'",
+]
+
+# 说明：ruff、pytest、coverage 配置由 T003 负责添加，此处不配置
