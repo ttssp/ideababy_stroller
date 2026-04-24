@@ -1,0 +1,438 @@
+{
+  "_meta": {
+    "schema_version": "T001-v0.1",
+    "description": "T001 spike fixture · 20 human-labeled papers · PLACEHOLDER values to be replaced by operator before running eval-harness",
+    "distribution": {
+      "shift": 10,
+      "incremental": 6,
+      "unrelated": 4
+    },
+    "rule": "DO NOT run eval-harness with PLACEHOLDER abstracts; operator must fetch real abstracts from arxiv respecting rate limit >= 3s per request (LEG-2)",
+    "authoritative_shape_ref": "specs/001-pA/tasks/T001.md#outputs",
+    "harness_compat_note": "eval-harness must accept both array-only and {_meta, fixtures:[]} shapes; this file uses the latter",
+    "topic_id_convention": "1=RLHF/alignment, 2=state-space-models, 3=vision-language, 4=mixture-of-experts, 5=parameter-efficient-finetuning, 6=protein-structure, 7=diffusion-architecture, 8=attention-efficiency, 9=alignment-non-RLHF, 10=cross-topic-distractor",
+    "d3_patch": "2026-04-24: anchor.paperId added (integer) to align VerdictSchema.anchorPaperId:z.number().int(). paperId value = fixture index (f1→1 .. f20→20); operator replaces with real DB paper_id once T003 schema lands and anchors are inserted."
+  },
+  "fixtures": [
+    {
+      "id": "f1",
+      "candidate": {
+        "arxivId": "2305.18290",
+        "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2203.02155",
+        "title": "Training language models to follow instructions with human feedback",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 1
+      },
+      "topic": {
+        "id": 1,
+        "name": "RLHF / alignment",
+        "keywords": ["RLHF", "preference learning", "reward model"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:DPO 用闭式优化绕过 reward model + PPO 三步流程,直接颠覆 InstructGPT 的 RLHF pipeline,是 alignment topic 的明确 state shift"
+    },
+    {
+      "id": "f2",
+      "candidate": {
+        "arxivId": "2312.00752",
+        "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "1706.03762",
+        "title": "Attention Is All You Need",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 2
+      },
+      "topic": {
+        "id": 2,
+        "name": "state-space-models",
+        "keywords": ["SSM", "Mamba", "long-sequence", "selective scan"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:Mamba 在长序列任务上以线性复杂度匹敌/超越 Transformer,挑战 attention is all you need 的统治地位"
+    },
+    {
+      "id": "f3",
+      "candidate": {
+        "arxivId": "2303.15343",
+        "title": "Sigmoid Loss for Language Image Pre-Training",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2103.00020",
+        "title": "Learning Transferable Visual Models From Natural Language Supervision",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 3
+      },
+      "topic": {
+        "id": 3,
+        "name": "vision-language pretraining",
+        "keywords": ["CLIP", "SigLIP", "contrastive", "sigmoid loss"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:SigLIP 用 sigmoid loss 替换 softmax,允许小 batch 训练并改善 scaling,改变了 CLIP 的对比学习范式"
+    },
+    {
+      "id": "f4",
+      "candidate": {
+        "arxivId": "2401.04088",
+        "title": "Mixtral of Experts",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2101.03961",
+        "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 4
+      },
+      "topic": {
+        "id": 4,
+        "name": "mixture-of-experts",
+        "keywords": ["MoE", "Mixtral", "sparse", "experts"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:Mixtral 把 MoE 从 research-toy 推到 production-ready dense 替代品,引发开源 LLM 主流转向稀疏架构"
+    },
+    {
+      "id": "f5",
+      "candidate": {
+        "arxivId": "2106.09685",
+        "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "PLACEHOLDER-full-finetune-anchor",
+        "title": "PLACEHOLDER: representative full-finetune baseline (operator verify arxivId, e.g. BERT-fullfinetune or GPT-3 finetune paper)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 5
+      },
+      "topic": {
+        "id": 5,
+        "name": "parameter-efficient finetuning",
+        "keywords": ["LoRA", "PEFT", "adapter", "rank decomposition"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:LoRA 用低秩矩阵把 finetune 成本降两个数量级,变成事实标准,取代 full finetune 的默认实践"
+    },
+    {
+      "id": "f6",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-alphafold2",
+        "title": "Highly accurate protein structure prediction with AlphaFold (operator verify arxivId; AlphaFold 2 is Nature 2021, not arXiv)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv (or Nature deposited preprint)"
+      },
+      "anchor": {
+        "arxivId": "PLACEHOLDER-homology-modeling-anchor",
+        "title": "PLACEHOLDER: representative homology modeling / Rosetta-era baseline (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 6
+      },
+      "topic": {
+        "id": 6,
+        "name": "protein-structure-prediction",
+        "keywords": ["AlphaFold", "protein folding", "structure"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:AlphaFold 2 用 attention + structure module 实现接近实验精度的折叠,终结手工 homology modeling 主流地位"
+    },
+    {
+      "id": "f7",
+      "candidate": {
+        "arxivId": "2212.09748",
+        "title": "Scalable Diffusion Models with Transformers",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2112.10752",
+        "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 7
+      },
+      "topic": {
+        "id": 7,
+        "name": "diffusion-architecture",
+        "keywords": ["DiT", "diffusion transformer", "U-Net", "LDM"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:DiT 把 U-Net 替换为 Transformer backbone,SD3/Sora 都跟进,改写 diffusion 架构默认"
+    },
+    {
+      "id": "f8",
+      "candidate": {
+        "arxivId": "2205.14135",
+        "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "1706.03762",
+        "title": "Attention Is All You Need",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 8
+      },
+      "topic": {
+        "id": 8,
+        "name": "attention-efficiency",
+        "keywords": ["FlashAttention", "IO-aware", "tiling", "exact attention"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:FlashAttention 用 IO-aware tiling 让 exact attention 在长序列上比近似法更快,几乎取代所有近似 attention 实现"
+    },
+    {
+      "id": "f9",
+      "candidate": {
+        "arxivId": "2212.08073",
+        "title": "Constitutional AI: Harmlessness from AI Feedback",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2203.02155",
+        "title": "Training language models to follow instructions with human feedback",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 9
+      },
+      "topic": {
+        "id": 9,
+        "name": "alignment non-RLHF",
+        "keywords": ["Constitutional AI", "RLAIF", "self-critique"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:Constitutional AI 用 AI feedback + 自我批评取代纯人类标注 RLHF,开启 RLAIF 主流路线"
+    },
+    {
+      "id": "f10",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-gpt4-tech-report",
+        "title": "GPT-4 Technical Report (operator verify arxivId 2303.08774)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "PLACEHOLDER-gpt35-or-instructgpt",
+        "title": "PLACEHOLDER: GPT-3.5 / InstructGPT baseline (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 10
+      },
+      "topic": {
+        "id": 1,
+        "name": "RLHF / alignment",
+        "keywords": ["GPT-4", "multimodal", "RLHF scaling"]
+      },
+      "humanVerdict": "shift",
+      "rationale": "operator 后续替换;草稿:GPT-4 引入多模态 + 大幅提升的 reasoning,成为 LLM scaling 与 alignment 实践的新 anchor"
+    },
+    {
+      "id": "f11",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-dpo-followup",
+        "title": "PLACEHOLDER: DPO follow-up paper · benchmark +1-2% (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2305.18290",
+        "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 11
+      },
+      "topic": {
+        "id": 1,
+        "name": "RLHF / alignment",
+        "keywords": ["DPO", "preference learning", "follow-up"]
+      },
+      "humanVerdict": "incremental",
+      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(同 DPO 框架,benchmark 微涨)"
+    },
+    {
+      "id": "f12",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-mamba-variant",
+        "title": "PLACEHOLDER: Mamba variant / extension paper (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2312.00752",
+        "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 12
+      },
+      "topic": {
+        "id": 2,
+        "name": "state-space-models",
+        "keywords": ["Mamba", "SSM", "follow-up"]
+      },
+      "humanVerdict": "incremental",
+      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(在 Mamba 上做层归一化或调度优化的 incremental work)"
+    },
+    {
+      "id": "f13",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-clip-followup",
+        "title": "PLACEHOLDER: CLIP/SigLIP family follow-up (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2103.00020",
+        "title": "Learning Transferable Visual Models From Natural Language Supervision",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 13
+      },
+      "topic": {
+        "id": 3,
+        "name": "vision-language pretraining",
+        "keywords": ["CLIP", "follow-up", "zero-shot"]
+      },
+      "humanVerdict": "incremental",
+      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(扩 dataset 或换 backbone 的标准 CLIP 改良)"
+    },
+    {
+      "id": "f14",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-moe-followup",
+        "title": "PLACEHOLDER: MoE routing improvement paper (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2401.04088",
+        "title": "Mixtral of Experts",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 14
+      },
+      "topic": {
+        "id": 4,
+        "name": "mixture-of-experts",
+        "keywords": ["MoE", "routing", "load balancing", "follow-up"]
+      },
+      "humanVerdict": "incremental",
+      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(MoE routing 优化,perplexity -2% 类工作)"
+    },
+    {
+      "id": "f15",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-lora-variant",
+        "title": "PLACEHOLDER: QLoRA / LoRA-FA / DoRA variant (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2106.09685",
+        "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 15
+      },
+      "topic": {
+        "id": 5,
+        "name": "parameter-efficient finetuning",
+        "keywords": ["LoRA variant", "PEFT", "follow-up"]
+      },
+      "humanVerdict": "incremental",
+      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(LoRA 家族微调 rank/dropout/quantization 的 incremental)"
+    },
+    {
+      "id": "f16",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-flashattn-v2-or-v3",
+        "title": "PLACEHOLDER: FlashAttention-2 or FlashAttention-3 (operator verify arxivId 2307.08691 or similar)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2205.14135",
+        "title": "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 16
+      },
+      "topic": {
+        "id": 8,
+        "name": "attention-efficiency",
+        "keywords": ["FlashAttention-v2", "IO-aware", "GPU optimization"]
+      },
+      "humanVerdict": "incremental",
+      "rationale": "operator 后续替换;草稿:follow-up advance but no state change(FlashAttention-2/3 是同思路下硬件 utilization 优化)"
+    },
+    {
+      "id": "f17",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-unrelated-with-attention-keyword",
+        "title": "PLACEHOLDER: paper using 'attention' keyword in unrelated context, e.g. social-attention or supply-chain-attention (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "1706.03762",
+        "title": "Attention Is All You Need",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 17
+      },
+      "topic": {
+        "id": 10,
+        "name": "cross-topic distractor",
+        "keywords": ["attention", "keyword overlap"]
+      },
+      "humanVerdict": "unrelated",
+      "rationale": "operator 后续替换;草稿:keyword overlap only(attention 一词跨 domain 撞名,实际无关 NN 架构)"
+    },
+    {
+      "id": "f18",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-unrelated-rlhf-keyword",
+        "title": "PLACEHOLDER: unrelated paper using 'feedback' or 'preference' in non-LLM context (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2203.02155",
+        "title": "Training language models to follow instructions with human feedback",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 18
+      },
+      "topic": {
+        "id": 10,
+        "name": "cross-topic distractor",
+        "keywords": ["feedback", "preference", "keyword overlap"]
+      },
+      "humanVerdict": "unrelated",
+      "rationale": "operator 后续替换;草稿:keyword overlap only(preference learning 在推荐系统/调度问题中常用,不构成 RLHF state 关系)"
+    },
+    {
+      "id": "f19",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-unrelated-diffusion-keyword",
+        "title": "PLACEHOLDER: physics-diffusion or chemistry-diffusion paper (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "2112.10752",
+        "title": "High-Resolution Image Synthesis with Latent Diffusion Models",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 19
+      },
+      "topic": {
+        "id": 10,
+        "name": "cross-topic distractor",
+        "keywords": ["diffusion", "keyword overlap"]
+      },
+      "humanVerdict": "unrelated",
+      "rationale": "operator 后续替换;草稿:keyword overlap only(diffusion 一词在物理/化学 domain 被广泛使用,与生成模型无关)"
+    },
+    {
+      "id": "f20",
+      "candidate": {
+        "arxivId": "PLACEHOLDER-unrelated-protein-keyword",
+        "title": "PLACEHOLDER: protein paper using non-folding methods (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv"
+      },
+      "anchor": {
+        "arxivId": "PLACEHOLDER-alphafold2",
+        "title": "Highly accurate protein structure prediction with AlphaFold (operator verify arxivId)",
+        "abstract": "PLACEHOLDER: operator to paste full abstract from arxiv",
+        "paperId": 20
+      },
+      "topic": {
+        "id": 10,
+        "name": "cross-topic distractor",
+        "keywords": ["protein", "keyword overlap"]
+      },
+      "humanVerdict": "unrelated",
+      "rationale": "operator 后续替换;草稿:keyword overlap only(protein 这个词覆盖太广,候选 paper 谈的是 protein-protein interaction 而非 structure prediction)"
+    }
+  ]
+}

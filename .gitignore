@@ -7,7 +7,7 @@
 # Local-only settings
 .claude/settings.local.json
 
-# Secrets (NEVER commit)
+# Secrets · SEC-3 红线 (NEVER commit)
 .env
 .env.*
 !.env.example
@@ -27,7 +27,8 @@ target/
 .build/
 DerivedData/
 
-# Build artifacts
+# Build artifacts · Next.js / TypeScript
+.next/
 dist/
 build/
 out/
@@ -51,3 +52,10 @@ coverage/
 .nyc_output/
 .pytest_cache/
 htmlcov/
+playwright-report/
+test-results/
+
+# T001 spike run outputs · 含真实 LLM 响应与 fixture abstract (可能含作者 PII)
+# 禁止入库;run 脚本本地可保留用于事后分析
+projects/*/spikes/runs/*
+!projects/*/spikes/runs/.gitkeep

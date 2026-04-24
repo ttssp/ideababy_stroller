@@ -1,3 +1,44 @@
+# PI Briefing Console (`pi-briefing`)
+
+> 本 worktree (`worktree-idea001`) 同时承载孵化器(根仓 `ideababy_stroller`)与
+> idea 001-pA 工程交付包。pi-briefing 工程文件在根目录铺开;Idea Incubator
+> 流程文档保留在本 README 下半部分。权威工程契约见
+> [`specs/001-pA/README.md`](./specs/001-pA/README.md)。
+
+## 本地启动 3 步
+
+```bash
+# 1. 装依赖(首次约 2 min)
+pnpm install --frozen-lockfile
+
+# 2. 准备 env + 本地 Postgres
+cp .env.example .env       # 编辑 DATABASE_URL / SESSION_SECRET / ANTHROPIC_AUTH_TOKEN
+createdb pi_briefing
+psql -d pi_briefing -f specs/001-pA/reference/schema.sql
+
+# 3. 跑起来
+pnpm dev                   # → http://localhost:3000
+```
+
+## 主要脚本
+
+| 命令 | 用途 |
+|---|---|
+| `pnpm dev` / `pnpm build` / `pnpm start` | Next dev / production build / start |
+| `pnpm lint` / `pnpm typecheck` / `pnpm test` | Biome ci · `tsc --noEmit` · vitest run |
+| `pnpm test:e2e` | Playwright (T008 后启用) |
+| `pnpm worker:daily` | systemd timer 入口 (T011 后落地) |
+| `pnpm db:generate` / `db:migrate` / `db:studio` | Drizzle Kit |
+| `pnpm validate-env` | zod 校验 .env (T007 后落地) |
+
+## 阅读顺序
+
+- 新人 → `specs/001-pA/README.md` §2.2(初级工程师 1h ramp 路径)
+- 架构师 → `specs/001-pA/README.md` §2.1
+- operator → `specs/001-pA/README.md` §2.3
+
+---
+
 # Idea Incubator · v3.0
 
 A single-operator, AI-team pipeline from raw idea to commercial-grade software.
