@@ -221,11 +221,38 @@ def cmd_unlock(
 ) -> None:
     """手动清除指定 run 的 stuck_lock 文件（适用于 stuck 状态机误判场景）。
 
-    TODO: T017 实现 unlock 逻辑（C18 白名单状态机路径）。
+    C18：人工干预路径 — 确认不是真 stuck 后，执行 pars unlock 解除熔断锁。
+    流程：
+    1. 检查 stuck_lock 是否存在；若不存在，报告并退出非零（无锁可清）
+    2. 清除 stuck_lock 文件
+    3. 重置 state.json.needs_human_review=False
+    4. 打印确认信息，退出 0
     """
-    logger.warning("T017 will implement pars unlock")
-    typer.echo("T017 will implement: pars unlock（清除 stuck_lock 文件）", err=True)
-    raise typer.Exit(1)
+    from pars.stuck.stuck_lock import clear_stuck_lock, has_stuck_lock
+    from pars.ledger.state import update_state
+
+    if not has_stuck_lock(run_id=run_id):
+        typer.echo(
+            f"[ERROR] run={run_id} 无 stuck_lock 文件（已解锁或 run_id 有误）",
+            err=True,
+        )
+        raise typer.Exit(2)
+
+    # 清除 stuck_lock 文件
+    clear_stuck_lock(run_id=run_id)
+
+    # 重置 state.json.needs_human_review = False
+    try:
+        update_state(run_id, needs_human_review=False, stuck_restart_count=0)
+    except Exception as exc:
+        logger.warning(
+            "cmd_unlock: 更新 state.json 失败（stuck_lock 已清除）",
+            exc_info=exc,
+            extra={"run_id": run_id},
+        )
+
+    typer.echo(f"[OK] run={run_id} stuck_lock 已清除，可重新提交任务。")
+    logger.info("pars unlock 成功", extra={"run_id": run_id})
 
 
 # ---------------------------------------------------------------------------
