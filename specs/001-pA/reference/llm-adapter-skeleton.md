@@ -1,8 +1,8 @@
 # LLM Adapter Skeleton · 001-pA · PI Briefing Console
 
-**版本**: 0.1
+**版本**: 0.2（R_final2 G6 fix · 2026-04-24 · adapter-内写 llm_calls 合同）
 **创建**: 2026-04-23
-**对应 spec**: `spec.md` v0.2.1 · `architecture.md` v0.2 · `tech-stack.md` v0.1
+**对应 spec**: `spec.md` v0.3.1 · `architecture.md` v0.2 · `tech-stack.md` v0.1.1
 **读者**: 架构师 + 6–8 名初级工程师（在 T001 spike + T004 adapter + T013 persistSummary 动手前必读）
 
 > 本文件把分散在 `tech-stack.md §2.4`、`architecture.md ADR-3 / ADR-4 / ADR-6`、`tasks/T001.md`、`tasks/T004.md`、`tasks/T013.md` 里的 LLM 契约汇总到**一处可抄可跑**的骨架。所有 TypeScript 代码样板按项目风格（strict · ES modules · `@/` alias）写成；初级工程师只需把本文件的 code-block 拷进对应 file path 即可完成 80% 的 T004 与 T013 骨架。**冲突以 spec.md / architecture.md / tech-stack.md 为准**。
@@ -15,8 +15,8 @@
 
 | 调用点 | 输入 | 输出 | 调用时机 | 红线 |
 |---|---|---|---|---|
-| `summarize(paper, topic)` | 单篇 paper（title + abstract）+ topic 上下文 | `SummaryRecord`（含 ≤ 3 句 `summary_text`）· caller 写 `paper_summaries` 表 | T013 summary pass（T011 daily worker 内） | C6 红线 2：summary ≤ 3 句；应用层 + DB CHECK 双兜底（ADR-6） |
-| `judgeRelation(candidate, earlier_anchor, topic)` | 候选 paper + 锚点 paper + topic | `StateShiftVerdict`（shift / incremental / unrelated + confidence） | T012 state-shift pass（T011 daily worker 内） | §4.1 provisional heuristic；T001 spike < 70% 时降级为纯 heuristic |
+| `summarize(paper, topic)` | 单篇 paper（title + abstract）+ topic 上下文 | `SummaryRecord`（含 ≤ 3 句 `summaryText` + adapter 已填的 `llmCallId`）· **adapter 内部已写 `llm_calls`** · caller 只写 `paper_summaries`（消费 `llmCallId` 作为 FK · G6） | T013 summary pass（T011 daily worker 内） | C6 红线 2：summary ≤ 3 句；应用层 + DB CHECK 双兜底（ADR-6） |
+| `judgeRelation(candidate, earlier_anchor, topic)` | 候选 paper + 锚点 paper + topic | `JudgeRelationResult`（含 `StateShiftVerdict` + adapter 已填的 `llmCallId`）· **adapter 内部已写 `llm_calls(purpose='judge')`** · T012 不重复写 | T012 state-shift pass（T011 daily worker 内） | §4.1 provisional heuristic；T001 spike < 70% 时降级为纯 heuristic |
 
 **凡在 Web request path 调 LLM 即是违反 ADR-2，构成 BLOCK。**
 
@@ -94,12 +94,17 @@ export interface JudgeRelationInput {
 // --------------------------------------------------------------------
 
 /**
- * R1 B1 产出契约。caller（T013 `persistSummary`）在事务内：
- *   1) INSERT `llm_calls(provider, purpose='summarize', input_tokens, output_tokens, cost_cents, latency_ms, request_hash, paper_id)` RETURNING id
- *   2) INSERT `paper_summaries(paper_id, topic_id, summary_text, llm_call_id, model_name, prompt_version)`
- *      ON CONFLICT (paper_id, topic_id, prompt_version) DO UPDATE（upsert 保证 worker 重跑幂等）
+ * G2/G6 权威合同（R_final / R_final2 · 2026-04-24）：
+ *   adapter **内部已** `recordLLMCall({ purpose: 'summarize', ... })` 写 `llm_calls` RETURNING id，
+ *   并把 id 填入 `llmCallId` 字段返回给 caller。
  *
- * adapter **不**直接写这两张表（保持纯函数 + 可 mock）。
+ *   caller（T013 `persistSummary`）只做一件事：
+ *     INSERT `paper_summaries(paper_id, topic_id, summary_text, llm_call_id = record.llmCallId,
+ *                             model_name, prompt_version, truncated)`
+ *     ON CONFLICT (paper_id, topic_id, prompt_version) DO UPDATE（worker 重跑幂等）
+ *
+ *   Fallback 路径（两家 provider 都 down）：T013 走 'fallback-heuristic-v1'，
+ *   此时 `llmCallId = null`（schema F5 `paper_summaries.llm_call_id` 为 nullable FK）。
  */
 export interface SummaryRecord {
   /** ≤ 3 句（adapter `truncateTo3Sentences` 已保证）；DB CHECK `summary_sentence_cap` 是最后兜底。 */
@@ -108,7 +113,12 @@ export interface SummaryRecord {
   readonly promptVersion: string;
   /** adapter `.name`；e.g. 'claude-sonnet-4-6' 或 'gpt-5.4'；fallback 路径用 'fallback-heuristic-v1'。 */
   readonly modelName: string;
-  /** 用于 `llm_calls` INSERT 与成本累计。 */
+  /**
+   * G6 · adapter 已写 `llm_calls` 返回的 id；caller 用于 `paper_summaries.llm_call_id` FK。
+   * Fallback 路径（两家 provider 都 down · T013 走 heuristic）时为 null（schema F5 允许）。
+   */
+  readonly llmCallId: number | null;
+  /** 用于 `llm_calls` INSERT 与成本累计（adapter 内部写入 llm_calls 时使用）。 */
   readonly inputTokens: number;
   readonly outputTokens: number;
   /** 本次调用耗时（audit + SLA §1.1 p95 观察）。 */
@@ -143,13 +153,23 @@ export type StateShiftVerdict =
       readonly confidence: number; // [0, 1]
     };
 
-/** judgeRelation 返回的富结构，供 T012 state-shift pass 写 `llm_calls`（purpose='judge'）。 */
+/**
+ * judgeRelation 返回的富结构。
+ *
+ * G6 权威（R_final2 · 2026-04-24）：adapter **已**调 `recordLLMCall({ purpose: 'judge', ... })` 写 `llm_calls`
+ * 并把返回 id 填入 `llmCallId`；T012 state-shift pass 不再重复写 `llm_calls`，只消费该 id（若后续写
+ * `briefings.judge_llm_call_id` 之类 FK）。
+ *
+ * Fallback 路径（LLM 完全失败）时 T012 走 heuristic-only，此时 `llmCallId = null`。
+ */
 export interface JudgeRelationResult {
   readonly verdict: StateShiftVerdict;
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly latencyMs: number;
   readonly requestHash: string;
+  /** G6 · adapter 已写 `llm_calls(purpose='judge')` 返回的 id；fallback heuristic 路径为 null。 */
+  readonly llmCallId: number | null;
 }
 
 // --------------------------------------------------------------------
@@ -161,14 +181,22 @@ export interface LLMProvider {
 
   /**
    * 为 (paper, topic) 产出 ≤ 3 句 summary。
-   * 不写 DB；caller 拿 `SummaryRecord` 后走 T013 `persistSummary` 写 `llm_calls` + `paper_summaries`。
-   * 失败抛 `LLMProviderError`（caller 决定是否走 fallback provider）。
+   *
+   * G6 职责分工（R_final2 · 2026-04-24）：
+   *   adapter **内部已**调 `recordLLMCall({ purpose: 'summarize', ... })` 写 `llm_calls`，
+   *   并把返回 id 填入 `SummaryRecord.llmCallId`。
+   *   caller（T013 `persistSummary`）**不**写 `llm_calls`，只写 `paper_summaries`，
+   *   消费 `record.llmCallId` 作为 FK（fallback 路径允许 null）。
+   *
+   * 失败抛 `LLMProviderError`（caller 决定是否走 fallback provider / heuristic）。
    */
   summarize(input: SummarizeInput): Promise<SummaryRecord>;
 
   /**
    * 判定 `candidatePaper` 相对 `earlierAnchor`（同 topic 上下文）是否为 state shift。
-   * 不写 DB；caller 拿 verdict 后走 T012 写 `llm_calls(purpose='judge')`。
+   *
+   * G6 职责分工：adapter **内部已**调 `recordLLMCall({ purpose: 'judge', ... })` 写 `llm_calls`，
+   * 并把 id 填入 `JudgeRelationResult.llmCallId`；caller（T012 state-shift pass）不重复写。
    */
   judgeRelation(input: JudgeRelationInput): Promise<JudgeRelationResult>;
 }
@@ -216,7 +244,7 @@ import {
   renderSummarizeUser,
   renderJudgeUser,
 } from './prompt-version.js';
-import { hashRequest } from './audit.js';
+import { hashRequest, recordLLMCall } from './audit.js';
 import type {
   LLMProvider,
   LLMProviderName,
@@ -268,7 +296,7 @@ export class AnthropicProvider implements LLMProvider {
     this.model = env.ANTHROPIC_MODEL;
   }
 
-  async summarize({ paper, topic }: SummarizeInput): Promise<SummaryRecord> {
+  async summarize({ paper, topic, paperId }: SummarizeInput & { paperId?: number }): Promise<SummaryRecord> {
     const promptVersion = getCurrentPromptVersion('summarize');
     // sanitize 会 throw 如果 abstract 意外含 email（SEC-4）
     stripPII(paper.abstract);
@@ -290,13 +318,29 @@ export class AnthropicProvider implements LLMProvider {
       });
       const rawText = extractText(resp);
       const { text: truncated, truncated: wasTruncated } = truncateTo3Sentences(rawText);
+      const inputTokens = resp.usage.input_tokens;
+      const outputTokens = resp.usage.output_tokens;
+      const latencyMs = Date.now() - started;
+      // G6 · adapter 内部写 llm_calls（caller 不再重复写）· 前置预算 check 在 recordLLMCall 里
+      const llmCallId = await recordLLMCall({
+        provider: 'anthropic',
+        model: this.model,
+        purpose: 'summarize',
+        inputTokens,
+        outputTokens,
+        costCents: calcCostAnthropicCents(inputTokens, outputTokens),
+        latencyMs,
+        paperId: paperId ?? null,
+        requestHash,
+      });
       return {
         summaryText: truncated,
         promptVersion,
         modelName: this.model,
-        inputTokens: resp.usage.input_tokens,
-        outputTokens: resp.usage.output_tokens,
-        latencyMs: Date.now() - started,
+        llmCallId,
+        inputTokens,
+        outputTokens,
+        latencyMs,
         truncated: wasTruncated,
         requestHash,
       };
@@ -305,7 +349,7 @@ export class AnthropicProvider implements LLMProvider {
     }
   }
 
-  async judgeRelation(input: JudgeRelationInput): Promise<JudgeRelationResult> {
+  async judgeRelation(input: JudgeRelationInput & { candidatePaperId?: number }): Promise<JudgeRelationResult> {
     const promptVersion = getCurrentPromptVersion('judge');
     stripPII(input.candidatePaper.abstract);
     stripPII(input.earlierAnchor.abstract);
@@ -338,12 +382,28 @@ export class AnthropicProvider implements LLMProvider {
         parsed.kind === 'shift' && parsed.confidence < 0.5
           ? { kind: 'incremental', confidence: parsed.confidence }
           : parsed;
+      const inputTokens = resp.usage.input_tokens;
+      const outputTokens = resp.usage.output_tokens;
+      const latencyMs = Date.now() - started;
+      // G6 · adapter 内部写 llm_calls（purpose='judge'）· T012 不重复写
+      const llmCallId = await recordLLMCall({
+        provider: 'anthropic',
+        model: this.model,
+        purpose: 'judge',
+        inputTokens,
+        outputTokens,
+        costCents: calcCostAnthropicCents(inputTokens, outputTokens),
+        latencyMs,
+        paperId: input.candidatePaperId ?? null,
+        requestHash,
+      });
       return {
         verdict,
-        inputTokens: resp.usage.input_tokens,
-        outputTokens: resp.usage.output_tokens,
-        latencyMs: Date.now() - started,
+        inputTokens,
+        outputTokens,
+        latencyMs,
         requestHash,
+        llmCallId,
       };
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -398,7 +458,8 @@ function wrapAnthropicError(err: unknown, op: 'summarize' | 'judge'): LLMProvide
 }
 
 // --------------------------------------------------------------------
-// Cost helper · 本 adapter 也导出，便于 T013 persistSummary 直接用
+// Cost helper · adapter 内部 summarize/judgeRelation 调用 recordLLMCall 时使用
+// （adapter 自己写 llm_calls 时把 cents 算好传入；caller 不再需要直接调本函数）
 // --------------------------------------------------------------------
 
 /** 按 2026-04 Anthropic Sonnet 4.6 pricing：input $3/M · output $15/M。返回 cents。 */
@@ -499,7 +560,7 @@ import {
   renderSummarizeUser,
   renderJudgeUser,
 } from './prompt-version.js';
-import { hashRequest } from './audit.js';
+import { hashRequest, recordLLMCall } from './audit.js';
 import type {
   LLMProvider,
   LLMProviderName,
@@ -536,7 +597,7 @@ export class OpenAIProvider implements LLMProvider {
     this.model = env.OPENAI_MODEL;
   }
 
-  async summarize({ paper, topic }: SummarizeInput): Promise<SummaryRecord> {
+  async summarize({ paper, topic, paperId }: SummarizeInput & { paperId?: number }): Promise<SummaryRecord> {
     const promptVersion = getCurrentPromptVersion('summarize');
     stripPII(paper.abstract);
     const userContent = renderSummarizeUser({ paper, topic });
@@ -563,14 +624,30 @@ export class OpenAIProvider implements LLMProvider {
       if (!usage) {
         throw new LLMProviderError('openai response missing usage', this.name, true);
       }
+      // OpenAI 用 prompt_tokens / completion_tokens；统一为 inputTokens / outputTokens
+      const inputTokens = usage.prompt_tokens;
+      const outputTokens = usage.completion_tokens;
+      const latencyMs = Date.now() - started;
+      // G6 · adapter 内部写 llm_calls（caller 不再重复写）
+      const llmCallId = await recordLLMCall({
+        provider: 'openai',
+        model: this.model,
+        purpose: 'summarize',
+        inputTokens,
+        outputTokens,
+        costCents: calcCostOpenAICents(inputTokens, outputTokens),
+        latencyMs,
+        paperId: paperId ?? null,
+        requestHash,
+      });
       return {
         summaryText: truncated,
         promptVersion,
         modelName: this.model,
-        // OpenAI 用 prompt_tokens / completion_tokens；统一为 inputTokens / outputTokens
-        inputTokens: usage.prompt_tokens,
-        outputTokens: usage.completion_tokens,
-        latencyMs: Date.now() - started,
+        llmCallId,
+        inputTokens,
+        outputTokens,
+        latencyMs,
         truncated: wasTruncated,
         requestHash,
       };
@@ -579,7 +656,7 @@ export class OpenAIProvider implements LLMProvider {
     }
   }
 
-  async judgeRelation(input: JudgeRelationInput): Promise<JudgeRelationResult> {
+  async judgeRelation(input: JudgeRelationInput & { candidatePaperId?: number }): Promise<JudgeRelationResult> {
     const promptVersion = getCurrentPromptVersion('judge');
     stripPII(input.candidatePaper.abstract);
     stripPII(input.earlierAnchor.abstract);
@@ -617,12 +694,28 @@ export class OpenAIProvider implements LLMProvider {
       if (!usage) {
         throw new LLMProviderError('openai response missing usage', this.name, true);
       }
+      const inputTokens = usage.prompt_tokens;
+      const outputTokens = usage.completion_tokens;
+      const latencyMs = Date.now() - started;
+      // G6 · adapter 内部写 llm_calls（purpose='judge'）· T012 不重复写
+      const llmCallId = await recordLLMCall({
+        provider: 'openai',
+        model: this.model,
+        purpose: 'judge',
+        inputTokens,
+        outputTokens,
+        costCents: calcCostOpenAICents(inputTokens, outputTokens),
+        latencyMs,
+        paperId: input.candidatePaperId ?? null,
+        requestHash,
+      });
       return {
         verdict,
-        inputTokens: usage.prompt_tokens,
-        outputTokens: usage.completion_tokens,
-        latencyMs: Date.now() - started,
+        inputTokens,
+        outputTokens,
+        latencyMs,
         requestHash,
+        llmCallId,
       };
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -912,7 +1005,8 @@ export const MONTHLY_BUDGET_CENTS = 5_000; // $50.00 · C11 envelope
 export const WARN_THRESHOLD_CENTS = 4_000; // $40.00 · SLA §1.6 预警
 
 // --------------------------------------------------------------------
-// Record helper · 由 T013 persistSummary + T012 state-shift pass 调
+// Record helper · G6 权威调用方 = adapter 内部（§3 Anthropic / §4 OpenAI summarize/judge）
+// caller（T012 / T013）不再调本函数；caller 只消费 SummaryRecord.llmCallId / JudgeRelationResult.llmCallId
 // --------------------------------------------------------------------
 
 export interface RecordLLMCallInput {
@@ -1006,7 +1100,9 @@ export class LLMBudgetExceededError extends Error {
 
 **judge purpose 说明**：`judge` 和 `summarize` 走同一个 `recordLLMCall` 但 `purpose` 字段不同（DB CHECK `llm_calls_purpose_enum` 允许 `summarize|judge`）；月度成本累计**两者合计**不得超 $50（C11 envelope 是全 LLM 调用预算，不是分类预算）。
 
-**R1 H8 备注**：H8 是"cost-cap 绕过风险"（如果某段 code path 跳过 `recordLLMCall` 直接调 adapter）。operator deferred，意味着本文件的设计已避免此风险——所有 adapter 调用 caller 必须手动写 `llm_calls`。**"free win"**：我们在 `recordLLMCall` 里统一加前置 budget check，未来加强 H8 时只需把"调 adapter"和"写 llm_calls"绑成原子单元（T013 persistSummary 事务已做到）；无需重构。
+**G6 权威调用方**（R_final2 · 2026-04-24）：`recordLLMCall()` **由 adapter 内部调用** —— 见本文件 §3 Anthropic `summarize()` / `judgeRelation()` 以及 §4 OpenAI 的对称实现。caller（T012 state-shift pass / T013 `persistSummary`）**不再重复写** `llm_calls`，只消费 adapter 返回的 `SummaryRecord.llmCallId` / `JudgeRelationResult.llmCallId` 作为下游表的 FK（fallback heuristic 路径允许 null · 见 schema F5）。这把"调 adapter 产生 LLM cost"与"写 `llm_calls` 审计行"绑成 adapter 内部的原子单元 —— 任何调用 adapter 的 code path 都不可能绕过 `recordLLMCall`，消除 H8 cost-cap 绕过风险。
+
+**R1 H8 备注**：H8 原为"cost-cap 绕过风险"（caller 忘记写 `llm_calls`）。G6 的 adapter-内写方案彻底闭合此风险：`recordLLMCall()` 是 adapter 返回 `llmCallId` 的**唯一**路径，在 budget 前置 check 失败时直接抛 `LLMBudgetExceededError`，调用链无法在不经 audit 的情况下得到成功返回值。
 
 ---
 
@@ -1441,3 +1537,4 @@ Fixture 文件位置：`tests/fixtures/adversarial-abstracts.json`（T001 Output
 |---|---|---|
 | 2026-04-23 | 0.1 | 初版 · 11 节 · 对齐 spec.md v0.2.1 / architecture.md v0.2 / tech-stack.md v0.1 · T001 spike harness + T004 adapter 双 skeleton · injection defense 8 层清单 |
 | 2026-04-24 | 0.2 | **pre-R_final hardening F1/F2/F3**：§3.5 新增 `truncateTo3Sentences` 权威实现 · §3/§4 adapter import 改 `./utils.js` · §3/§4 judgeRelation 显式 confidence-floor post-parse guard · §10 adversarial 清单 5 → 15 条（按 A/B/C/D/E 5 大类）· §8.2 采集纪律补 adversarial fixture 复用说明 |
+| 2026-04-24 | 0.2（R_final2 G6 patch） | **LLM 合同 split-brain 闭合**：§1.1 调用点表改写 caller/adapter 职责分工 · §2 `SummaryRecord` 加 `llmCallId: number \| null`、`JudgeRelationResult` 加 `llmCallId` · `LLMProvider.summarize/judgeRelation` 注释改为 adapter-内写 · §3 Anthropic `summarize()` + `judgeRelation()` 实现真正调 `recordLLMCall()` 并把返回 id 填入 `SummaryRecord.llmCallId` / `JudgeRelationResult.llmCallId`（import 加 `recordLLMCall`）· §4 OpenAI 同步 · §7 audit 注释改为 "adapter 内部调用 · caller 不再调" + R1 H8 闭合说明 · version 0.1 → 0.2、对应 spec 引用同步到 v0.3.1 / tech-stack v0.1.1 |

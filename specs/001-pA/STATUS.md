@@ -1,8 +1,8 @@
 # Status · 001-pA L4 交付包
 
-**Last updated**: 2026-04-24T02:20:00Z
-**Spec version**: 0.3.0
-**Phase**: L4 Plan · R_final BLOCK 已修（G1–G4）· 等 R_final2 narrow re-verify 后进 Phase 0 build
+**Last updated**: 2026-04-24T05:10:00Z
+**Spec version**: 0.3.1
+**Phase**: L4 Plan · **R_final3 = CLEAN-WITH-NOTES** ✅ · Ready for Phase 0 kickoff
 
 ---
 
@@ -26,7 +26,8 @@
 | R1 adversarial verdict | BLOCK（3 blocker 已修） |
 | R2 verdict | BLOCK（3 blocker 已修） |
 | R_final verdict | **BLOCK**（B1 中文句界 + B2 LLM 合同 + B3 export envelope + 5 high-severity）— 全部 G1/G2/G3/G4 修完 |
-| R_final2 verdict | **等 Codex 跑**（narrow re-verify · `.codex-inbox/latest.md`） |
+| R_final2 verdict | **BLOCK**（G1/G3/G4-H1/H3/G2-X3b/X3c ✅ · G2-X3/X8/G4-H2/H4 ❌ · 4 条 mechanical sync drift 已修 · G6-G9） |
+| R_final3 verdict | **CLEAN-WITH-NOTES** ✅（9/9 check ✅ · 0 residual · 9 min · 2 optional grep 宽匹配误报不影响） |
 | 开放问题 | Q1–Q4 + Q5 全部 ✅ resolved · Q3 deferred to T033 kickoff |
 
 ---
@@ -117,7 +118,10 @@ adversarial-review.md        197   何时触发 R(N) · 4 轮上限 · 文件格
 | 2026-04-24T01:57 | **Codex R_final = BLOCK**（B1 D15 中文句界 whitespace-split 失败 · B2 LLM 合同 T004/T007/T013 vs skeleton 三套 · B3 export envelope architecture/task/API 三层不一 · 5 high-severity drift） |
 | 2026-04-24T02:10 | spec-writer 执行 G1–G4 修补包（22 文件改动 · 114h→115h · 仍在硬线内） |
 | 2026-04-24T02:17 | R_final2 narrow re-verify kickoff 就位 |
-| （waiting） | **Codex R_final2 cdx-run 待 human 触发** |
+| 2026-04-24T03:00 | **Codex R_final2 = BLOCK**（G2 X3/X8 LLM 合同 split-brain · G4 H2/H4 文档未同步）· G1/G3/G4-H1/H3/G2-X3b/X3c ✅ |
+| 2026-04-24T03:45 | spec-writer 执行 G6/G7/G8/G9 mechanical sync patch（9 文件 · tech-stack + llm-adapter-skeleton + spec.md 0.3.0→0.3.1 + llm-types.ts + 2 stub + architecture ADR-6 + T010 + error-codes-glossary） |
+| 2026-04-24T04:03 | R_final3 super-narrow re-verify kickoff 就位（≤ 20 min scope · 只查 G6-G9） |
+| 2026-04-24T05:05 | **Codex R_final3 = CLEAN-WITH-NOTES** ✅（9 min · 9/9 ✅ · 0 residual blocker · spec 包达到"1 架构师 + 6–8 junior 可直接开工"门槛） |
 
 ---
 
@@ -187,15 +191,23 @@ adversarial-review.md        197   何时触发 R(N) · 4 轮上限 · 文件格
 
 ---
 
-## 建议 operator 的下一步
+## 建议 operator 的下一步（R_final3 = CLEAN-WITH-NOTES 已通过 ✅）
 
-1. 在 Codex 终端跑 `cdx-run`（`.codex-inbox/latest.md` 已指向 R_final2 narrow kickoff）
-2. 读 `.codex-outbox/20260424T021718-001-pA-L4-adversarial-r_final2.md`
-3. 若 R_final2 = **CLEAN / CLEAN-WITH-NOTES**：
-   - Git commit + tag 整个 spec 包：`git tag spec/001-pA/v0.3.0`
-   - 读 `specs/001-pA/PHASE-0-KICKOFF-CHECKLIST.md`，按 10 节自检
-   - Phase 0 kickoff：先跑 T001 spike（~8h，独立不依赖任何 task），并行 T002 scaffold
-4. 若 R_final2 = **BLOCK**：读残余 blocker 清单，大概率是某个 G-fix 没有真正机械闭合（可能是 changelog 叙述与实际代码不一致）；重新 spec-writer 修 → R_final3。R_final 已达 3 轮上限的一半，不应再超过 2 轮额外 re-verify。
+1. **Commit + tag spec 包**：
+   ```bash
+   git add specs/001-pA/ discussion/001/001-pA/ .codex-inbox/ .codex-outbox/
+   git commit -m "feat(001-pA): L4 spec 包 v0.3.1 · 4 轮 adversarial review 全部通过（R1/R2/R_final/R_final2 BLOCK 已修 · R_final3 CLEAN-WITH-NOTES）"
+   git tag spec/001-pA/v0.3.1
+   ```
+2. **Phase 0 自检**：读 `specs/001-pA/PHASE-0-KICKOFF-CHECKLIST.md` 10 节 checklist（本地 Postgres 16 · LLM API keys · .env 配置 · 第一 task 阅读路径）
+3. **Phase 0 kickoff**：
+   - 先并行启动 **T001 spike**（~8h · 独立不依赖任何 task · LLM provider 选型）+ **T002 scaffold**（~4h · Next 15 项目初始化 · 独立）
+   - T001 signed-off 后解锁 T004（LLM adapter）· T002 完成后解锁 T003（schema spine）
+   - 25 task DAG 见 `specs/001-pA/dependency-graph.mmd`
+4. **操作文档**：
+   - 新 junior 进场：读 `specs/001-pA/reference/workflows/on-boarding-day-1.md`（8h Day 1 plan）
+   - 每 task 领取：读 `specs/001-pA/reference/workflows/task-pickup.md`（10 步骤 · file_domain 速查 · TDD-first）
+   - PR 流程：读 `specs/001-pA/reference/workflows/pr-review.md`
 
 ---
 

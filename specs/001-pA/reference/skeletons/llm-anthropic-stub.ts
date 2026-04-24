@@ -55,11 +55,21 @@ export class AnthropicProvider implements LLMProvider {
     //   1. Render system + user prompts via renderSummarizeUser (prompt-version.ts).
     //   2. Call this.client.messages.create with max_tokens=256, temperature=0.2.
     //   3. extractText → truncateTo3Sentences.
-    //   4. Build SummaryRecord {summaryText, promptVersion, modelName: this.model,
-    //      inputTokens: resp.usage.input_tokens, outputTokens: resp.usage.output_tokens,
-    //      latencyMs, truncated, requestHash}.
-    //   5. Wrap any thrown error in LLMProviderError (retryable if 5xx or 429).
-    //   6. NEVER log the prompt or response body (SEC-4).
+    //   4. **G6 (MANDATORY)**: BEFORE building the return value, call
+    //      `recordLLMCall({ provider: 'anthropic', model: this.model,
+    //        purpose: 'summarize', inputTokens, outputTokens,
+    //        costCents: calcCostAnthropicCents(inputTokens, outputTokens),
+    //        latencyMs, paperId: input.paperId ?? null, requestHash })`
+    //      and capture the returned id into `llmCallId`.
+    //      `recordLLMCall` performs the monthly-budget pre-check (C11) and
+    //      throws LLMBudgetExceededError when the envelope would be crossed.
+    //      Caller (T013) must NOT write llm_calls; it only consumes
+    //      SummaryRecord.llmCallId as a FK for paper_summaries.
+    //   5. Build SummaryRecord {summaryText, promptVersion, modelName: this.model,
+    //      **llmCallId** (from step 4), inputTokens, outputTokens, latencyMs,
+    //      truncated, requestHash}.
+    //   6. Wrap any thrown error in LLMProviderError (retryable if 5xx or 429).
+    //   7. NEVER log the prompt or response body (SEC-4).
     throw new LLMProviderError('summarize not implemented', this.name, false);
   }
 
@@ -77,8 +87,15 @@ export class AnthropicProvider implements LLMProvider {
     //            ? { kind: 'incremental', confidence: parsed.confidence }
     //            : parsed;
     //
-    //   6. Build JudgeRelationResult (use `verdict` not `parsed`) and return.
-    //   7. Map zod/SyntaxError to retryable LLMProviderError; APIError per status.
+    //   6. **G6 (MANDATORY)**: BEFORE returning, call
+    //      `recordLLMCall({ provider: 'anthropic', model: this.model,
+    //        purpose: 'judge', inputTokens, outputTokens,
+    //        costCents: calcCostAnthropicCents(inputTokens, outputTokens),
+    //        latencyMs, paperId: input.candidatePaperId ?? null, requestHash })`
+    //      and capture the returned id into `llmCallId`. T012 does NOT re-write
+    //      llm_calls; it consumes JudgeRelationResult.llmCallId as needed.
+    //   7. Build JudgeRelationResult (use `verdict` not `parsed`, include **llmCallId**) and return.
+    //   8. Map zod/SyntaxError to retryable LLMProviderError; APIError per status.
     throw new LLMProviderError('judgeRelation not implemented', this.name, false);
   }
 }

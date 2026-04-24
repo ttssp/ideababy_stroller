@@ -52,10 +52,18 @@ export class OpenAIProvider implements LLMProvider {
     //   1. Render system + user prompts via renderSummarizeUser.
     //   2. Call this.client.chat.completions.create with max_tokens=256, temperature=0.2.
     //   3. extractText → truncateTo3Sentences.
-    //   4. Build SummaryRecord using resp.usage.prompt_tokens / completion_tokens
-    //      (NOT input_tokens / output_tokens — that is Anthropic's naming).
-    //   5. Throw LLMProviderError on missing usage (retryable=true).
-    //   6. Wrap OpenAI.APIError with retryable logic: 5xx or 429.
+    //   4. **G6 (MANDATORY)**: BEFORE building the return value, call
+    //      `recordLLMCall({ provider: 'openai', model: this.model,
+    //        purpose: 'summarize', inputTokens, outputTokens,
+    //        costCents: calcCostOpenAICents(inputTokens, outputTokens),
+    //        latencyMs, paperId: input.paperId ?? null, requestHash })`
+    //      and capture the returned id into `llmCallId`. Caller (T013) must
+    //      NOT write llm_calls; it only consumes SummaryRecord.llmCallId.
+    //   5. Build SummaryRecord using resp.usage.prompt_tokens / completion_tokens
+    //      (NOT input_tokens / output_tokens — that is Anthropic's naming),
+    //      and include **llmCallId** from step 4.
+    //   6. Throw LLMProviderError on missing usage (retryable=true).
+    //   7. Wrap OpenAI.APIError with retryable logic: 5xx or 429.
     throw new LLMProviderError('summarize not implemented', this.name, false);
   }
 
@@ -73,8 +81,14 @@ export class OpenAIProvider implements LLMProvider {
     //            ? { kind: 'incremental', confidence: parsed.confidence }
     //            : parsed;
     //
-    //   6. Build JudgeRelationResult (use `verdict` not `parsed`).
-    //   7. Map zod/SyntaxError/APIError to LLMProviderError.
+    //   6. **G6 (MANDATORY)**: BEFORE returning, call
+    //      `recordLLMCall({ provider: 'openai', model: this.model,
+    //        purpose: 'judge', inputTokens, outputTokens,
+    //        costCents: calcCostOpenAICents(inputTokens, outputTokens),
+    //        latencyMs, paperId: input.candidatePaperId ?? null, requestHash })`
+    //      and capture the returned id into `llmCallId`.
+    //   7. Build JudgeRelationResult (use `verdict` not `parsed`, include **llmCallId**).
+    //   8. Map zod/SyntaxError/APIError to LLMProviderError.
     throw new LLMProviderError('judgeRelation not implemented', this.name, false);
   }
 }

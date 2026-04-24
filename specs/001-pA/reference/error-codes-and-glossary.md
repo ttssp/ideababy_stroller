@@ -1,8 +1,8 @@
 # Error Codes & Extended Glossary · 001-pA · PI Briefing Console
 
-**版本**: 0.1
+**版本**: 0.2（R_final2 G9 sync · 2026-04-24 · +CSRF_ORIGIN_MISMATCH · invite 路径更新 · schema_version→schemaVersion）
 **创建**: 2026-04-23
-**对应 spec**: `spec.md` v0.2.1 · `architecture.md` v0.2 · `api-contracts.md` v0.1 · `reference/schema.sql` v0.2.1 · `reference/llm-adapter-skeleton.md` v0.1
+**对应 spec**: `spec.md` v0.3.1 · `architecture.md` v0.2 · `api-contracts.md` v0.1 · `reference/schema.sql` v0.2.3 · `reference/llm-adapter-skeleton.md` v0.2
 **读者**: 后端 API 实现者 · 前端 error-envelope 消费者 · on-call operator（查日志定位故障）· 新加入初级工程师（名词速查）
 
 > 本文件是 **错误码** 与 **术语** 两个维度的权威合集。`api-contracts.md §4` 是面向 HTTP 层的 error code catalog；本文件在此之上**增量**加入"不经 HTTP 路径出现的内部 error"（Worker / DB / Infra），并给出统一的日志级别约定 + 完整术语表。与 `api-contracts.md §4` 不冲突，而是**超集**（外加 server-side / DB / worker-only 错误）。冲突时 **HTTP 层以 `api-contracts.md` 为准**；DB / worker / infra 错误以本文件为准。
@@ -39,7 +39,7 @@
 
 ### 1.3 API 层错误（扩展自 `api-contracts.md §4` · 保持完全一致 · 仅补注）
 
-> 以下 30 条与 `api-contracts.md §4` **逐字一致**。本文件不重复写 user message 细节 · 仅标注"已在 `api-contracts.md §4`"避免漂移；修改时请只动一处（api-contracts.md），本表是引用。
+> 以下 **31 条**（G4 H4 · 2026-04-24 · 新增 `CSRF_ORIGIN_MISMATCH`）与 `api-contracts.md §4` **逐字一致**。本文件不重复写 user message 细节 · 仅标注"已在 `api-contracts.md §4`"避免漂移；修改时请只动一处（api-contracts.md），本表是引用。
 
 | Code | Layer | HTTP | Thrown by | When | Recovery |
 |---|---|---|---|---|---|
@@ -50,7 +50,8 @@
 | `INVALID_ROLE` | API | 400 | `invite/route.ts` | role 不在 enum | 用户修正 |
 | `INVALID_TOPIC_INPUT` | API | 400 | `topics/route.ts` | zod fail | 用户修正 |
 | `INVALID_ACTION` | API | 400 | `actions/route.ts` | action 不在 enum | 用户修正 |
-| `INVALID_TOKEN` | API | 400 | `login/verify/route.ts`（v0.2） | token 格式错 | 用户向 admin 索要新 invite |
+| `INVALID_TOKEN` | API | 400 | `invite/consume/route.ts` | token 格式错（非 64-hex · G4 H4 权威路径） | 用户向 admin 索要新 invite |
+| `CSRF_ORIGIN_MISMATCH` | API | 403 | `invite/consume/route.ts` | Origin header 不匹配 `APP_ORIGIN` · G4 H4 · 2026-04-24 · POST `/api/invite/consume` 强制 | 客户端检查 Origin header · 重新发起请求 |
 | `SKIP_WHY_REQUIRED` | API | 400 | `actions/recordAction.ts` | skip action 未附 why 或 btrim < 5 chars · D16 Layer 2 | UI 提示补填 |
 | `WHY_TOO_LONG` | API | 400 | `actions/route.ts` | why > 280 chars | 用户缩短 |
 | `EMAIL_ALREADY_INVITED` | API | 409 | `invite/route.ts` | seats 存在且 invite_token_hash 未消费 | admin 查 seats 再处理 |
@@ -61,7 +62,7 @@
 | `IDEMPOTENCY_MISMATCH` | API | 409 | `http/idempotency.ts` | 同 Idempotency-Key 但 body 不同 | 客户端换 key 重试 |
 | `RESURFACE_ALREADY_DISMISSED` | API | 409 | `resurface/[id]/dismiss/route.ts` | 重复 dismiss | 无动作 |
 | `BREADCRUMB_NOT_DISMISSED` | API | 409 | `breadcrumbs/[id]/re-breadcrumb/route.ts` | 对未 dismissed breadcrumb 再 breadcrumb | 无意义 · 客户端 block |
-| `INVITE_TOKEN_EXPIRED` | Auth | 410 | `invite/[token]/consume/route.ts` | TTL 过期 或 已消费 | 索要新 invite |
+| `INVITE_TOKEN_EXPIRED` | Auth | 410 | `invite/consume/route.ts` | TTL 过期 或 已消费（G4 H4 · POST body-token 权威路径；旧 `invite/[token]/consume/route.ts` path-based 已废弃） | 索要新 invite |
 | `PAPER_NOT_IN_LAB_TOPICS` | API | 422 | `actions/recordAction.ts` | breadcrumb 但 paper 无 topic 匹配 | UI 只允许在 /today 上 breadcrumb |
 | `TOO_MANY_TOPICS` | API | 422 | `topics/route.ts` | > 15 active topics | admin 先 archive |
 | `PAPER_NOT_FOUND` | API | 404 | `papers/[id]/*/route.ts` | paperId 不存在 | 客户端无动作 |
@@ -107,7 +108,7 @@
 |---|---|
 | 400 | `INVALID_*` · `SKIP_WHY_REQUIRED` · `WHY_TOO_LONG` |
 | 401 | `SESSION_EXPIRED` |
-| 403 | `NOT_ADMIN` · `NOT_BREADCRUMB_OWNER` |
+| 403 | `NOT_ADMIN` · `NOT_BREADCRUMB_OWNER` · `CSRF_ORIGIN_MISMATCH`（G4 H4） |
 | 404 | `*_NOT_FOUND` · `NO_BRIEFING_YET` |
 | 409 | `*_ALREADY_*` · `*_CONFLICT` · `DUPLICATE_ACTION` · `IDEMPOTENCY_MISMATCH` · `EMAIL_ALREADY_*` · `TOPIC_NAME_CONFLICT` · `BREADCRUMB_NOT_DISMISSED` |
 | 410 | `INVITE_TOKEN_EXPIRED` |
@@ -356,9 +357,11 @@ v0.1 不启用 `trace` level（vitest / pino 默认有，但本项目视同 `deb
 
 ### `email token invite`
 
-- **定义**：admin 点 `/admin/invite` 生成 64-hex token · URL 形如 `https://.../login/verify?token=...` · 手工（不走邮件）传给被邀者
-- **出现**：`spec.md §IN-5` · `schema.sql §2 seats.invite_token_hash` · `DECISIONS-LOG 2026-04-23 invite 不发邮件`
+- **定义**：admin 点 `/admin/invite` 生成 64-hex token · URL 形如 `https://<domain>/login#invite=<token>`（G4 H4 · fragment-based · 客户端 JS 读 fragment 后 POST `/api/invite/consume` body · 2026-04-24）· 手工（不走邮件）传给被邀者
+- **消费**：`POST /api/invite/consume` + body `{"token": "<64-hex>"}` + Origin header 校验（`CSRF_ORIGIN_MISMATCH` 守门）· 见 `api-contracts.md §E2`
+- **出现**：`spec.md §IN-5` · `schema.sql §2 seats.invite_token_hash` · `DECISIONS-LOG 2026-04-23 invite 不发邮件` · `DECISIONS-LOG drift-5 amendment 2026-04-24`
 - **非同义词**：≠ "magic link email"（本项目 v0.1 没有 email 发送 · DECISIONS-LOG 明确）
+- **Deprecated**：旧 GET `login/verify?token=...` 与 path-based `invite/[token]/consume/route.ts` 已废弃（G4 H4 · R_final · 2026-04-24）· 改用 POST `/api/invite/consume` + body token
 
 ### `empty state`
 
@@ -565,11 +568,12 @@ v0.1 不启用 `trace` level（vitest / pino 默认有，但本项目视同 `deb
 - **定义**：`seats.role ∈ {'admin', 'member'}` · 由 CHECK 约束
 - **出现**：`schema.sql §2`
 
-### `schema_version`
+### `schemaVersion`
 
-- **定义**：export envelope 的顶层 key · 当前 `'1.1'` · bump 规则见 `api-contracts.md §3.11`
-- **出现**：`api-contracts.md §3.11` · `DECISIONS-LOG 2026-04-23 · schema_version bump 策略`
-- **非同义词**：≠ DB schema version（DB schema 由 drizzle migration 编号管 · 不是 `schema_version`）
+- **定义**：export envelope 的顶层 key · camelCase 权威拼写（G3 · R_final · 2026-04-24）· 当前值 `'1.1'` · bump 规则见 `api-contracts.md §3.11`
+- **出现**：`api-contracts.md §3.11` · `DECISIONS-LOG 2026-04-23 · schemaVersion bump 策略`
+- **非同义词**：≠ DB schema version（DB schema 由 drizzle migration 编号管 · 不是 `schemaVersion`）
+- **Deprecated**：旧 snake_case 拼写 `schema_version` 已废弃（G3 · R_final · 2026-04-24）· export envelope 顶层 key 统一 camelCase，与 12 个 resource collections（`paperSummaries` / `paperTopicScores` 等）一致
 
 ### `seat`
 
@@ -711,3 +715,4 @@ v0.1 不启用 `trace` level（vitest / pino 默认有，但本项目视同 `deb
 | 日期 | 版本 | 变更 |
 |---|---|---|
 | 2026-04-23 | 0.1 | 初版 · §1 API error（30 条 · 同步自 api-contracts.md §4）+ 内部 error（20 条 · 新增）· §2 log levels + 禁写字段 · §3 extended glossary 60+ 词条（~2× spec.md §Glossary）· §4 cross-consistency 链 |
+| 2026-04-24 | 0.2 | **Patch（R_final2 G9 mechanical sync）**：§1.3 加 `CSRF_ORIGIN_MISMATCH` 行（G4 H4 · HTTP 403 · `invite/consume/route.ts` · Origin 不匹配 APP_ORIGIN） · API error 总数 30 → **31**（31 HTTP + 20 worker/DB/infra = 51 total）· `INVALID_TOKEN` 与 `INVITE_TOKEN_EXPIRED` 的 Thrown by 路径更新到 `invite/consume/route.ts`（旧 path-based 注明 deprecated）· §1.5 HTTP→code 对照表 403 补 `CSRF_ORIGIN_MISMATCH` · §3 Glossary 段 `email token invite` 条目 URL 模板改为 `login#invite=<token>` + POST `/api/invite/consume` + Origin 校验（旧 GET `login/verify?token=...` 注 Deprecated）· `schema_version` 条目改为 `schemaVersion` camelCase（旧 snake_case 注 Deprecated · G3 R_final export envelope 权威拼写） |

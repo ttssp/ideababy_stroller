@@ -56,12 +56,18 @@ export interface JudgeRelationInput {
 // --------------------------------------------------------------------
 
 /**
- * R1 B1 output contract. Caller (T013 `persistSummary`) inside a transaction:
- *   1) INSERT `llm_calls(provider, purpose='summarize', input_tokens, ...)` RETURNING id
- *   2) INSERT `paper_summaries(paper_id, topic_id, summary_text, llm_call_id, model_name, prompt_version)`
- *      ON CONFLICT (paper_id, topic_id, prompt_version) DO UPDATE (upsert for worker re-run idempotency)
+ * G2/G6 authoritative contract (R_final / R_final2 · 2026-04-24):
+ *   Adapter has ALREADY called `recordLLMCall({ purpose: 'summarize', ... })`
+ *   to INSERT `llm_calls` RETURNING id, and put that id into `llmCallId`.
  *
- * Adapter does NOT write these tables (kept pure + mockable).
+ *   Caller (T013 `persistSummary`) does ONE thing:
+ *     INSERT `paper_summaries(paper_id, topic_id, summary_text,
+ *                              llm_call_id = record.llmCallId,
+ *                              model_name, prompt_version, truncated)`
+ *     ON CONFLICT (paper_id, topic_id, prompt_version) DO UPDATE (upsert idempotent)
+ *
+ *   Fallback path (both providers down → T013 uses 'fallback-heuristic-v1'):
+ *     `llmCallId = null` (schema F5 allows nullable FK for paper_summaries.llm_call_id).
  */
 export interface SummaryRecord {
   /** ≤ 3 sentences (adapter's `truncateTo3Sentences` has enforced this).
@@ -72,7 +78,14 @@ export interface SummaryRecord {
   /** adapter `.name`; e.g. 'claude-sonnet-4-6' or 'gpt-5.4'.
    *  Fallback path uses 'fallback-heuristic-v1'. */
   readonly modelName: string;
-  /** For `llm_calls` INSERT and monthly cost accumulation (C11). */
+  /**
+   * G6 · The `llm_calls.id` returned by adapter's internal `recordLLMCall()`.
+   * Caller writes this into `paper_summaries.llm_call_id` FK.
+   * Fallback heuristic path (both providers down · T013 takes the heuristic
+   * branch) is `null` (schema F5 allows nullable).
+   */
+  readonly llmCallId: number | null;
+  /** For monthly cost accumulation audit (adapter has used this when writing llm_calls). */
   readonly inputTokens: number;
   readonly outputTokens: number;
   /** Call latency (audit + SLA §1.1 p95 observation). */
@@ -109,13 +122,23 @@ export type StateShiftVerdict =
       readonly confidence: number; // [0, 1]
     };
 
-/** judgeRelation full result · caller writes `llm_calls(purpose='judge')`. */
+/**
+ * judgeRelation full result.
+ *
+ * G6 authoritative (R_final2 · 2026-04-24): adapter has ALREADY called
+ * `recordLLMCall({ purpose: 'judge', ... })` and put the returned id into
+ * `llmCallId`. T012 state-shift pass does NOT re-write `llm_calls`; it only
+ * consumes `llmCallId` if a downstream FK (e.g. briefings.judge_llm_call_id)
+ * needs it. Fallback path (heuristic-only) has `llmCallId = null`.
+ */
 export interface JudgeRelationResult {
   readonly verdict: StateShiftVerdict;
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly latencyMs: number;
   readonly requestHash: string;
+  /** G6 · `llm_calls.id` from adapter's internal `recordLLMCall()`; null on heuristic fallback. */
+  readonly llmCallId: number | null;
 }
 
 // --------------------------------------------------------------------

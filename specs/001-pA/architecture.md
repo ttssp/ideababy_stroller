@@ -1,9 +1,9 @@
 # Architecture · 001-pA · PI Briefing Console
 
-**版本**: 0.3
+**版本**: 0.3.1（R_final2 G6 sync · 2026-04-24 · ADR-6 Consequence 段同步 adapter-内写 llm_calls）
 **创建**: 2026-04-23
-**上次修订**: 2026-04-24（R_final BLOCK fix G3 export envelope 单一真源 · 见变更日志）
-**依据**: `spec.md` v0.3.0 · `tech-stack.md` v0.1 · PRD v1.0
+**上次修订**: 2026-04-24（R_final2 G6 · ADR-6 consequence section rewrite · 见变更日志）
+**依据**: `spec.md` v0.3.1 · `tech-stack.md` v0.1.1 · PRD v1.0
 
 > 本文件给下游 builder 提供**最小可执行的工程蓝图**。原则：**boring over clever**。solo operator × 20h/周 × 5 周 的预算不允许任何"优雅但耗时"的折腾 —— 每一个技术决策都以"最少 ramp time + 最少 on-call"为第一目标。
 
@@ -149,15 +149,19 @@ graph TB
   3. 少一个依赖少一个 oncall。C13（solo operator 可持续性）要求 ruthless 削服务数。
 - **Tradeoff**：v0.2 若真要做 similarity search，得引入 pgvector（Postgres extension，不引入新服务）。本 v0.1 不装。
 
-### ADR-6 · **`paper_summaries` 作为 derived-data 表，而非复用 `llm_calls` 审计表**（R1 adversarial fix · B1）
+### ADR-6 · **`paper_summaries` 作为 derived-data 表，而非复用 `llm_calls` 审计表**（R1 adversarial fix · B1 · G6 amendment 2026-04-24）
 - **决策**：LLM 产出的 summary 文本持久化在**独立** `paper_summaries` 表，per `(paper_id, topic_id, prompt_version)`；`llm_calls` 仅记录 `{tokens, cost, provider, latency_ms, paper_id}` 用于审计，不存 response body。
 - **Rationale**：
   1. **语义分层**：`llm_calls` 是**审计表**（答"花了多少钱调了谁"），`paper_summaries` 是**derived-data**（答"这篇 paper 在这个 topic 下的 3 句解读是什么"）。两者维度完全不同，合表会让查询（尤其 /today loader）变复杂且低效。
   2. **Per-topic keying**：同一 paper 可被匹配进多个 topic（ADR-3 shared per-topic judgment），每个 topic 的 summary 语境不同；keying 到 `(paper, topic, prompt_version)` 支持 topic 级差异化且共享 LLM 调用成本。
-  3. **Red line 2 机械兜底**：DB CHECK `summary_sentence_cap` 约束 `array_length(regexp_split_to_array(summary_text, '(?<=[.!?。！？])\s+'), 1) <= 3`；合入审计表会让 CHECK 对 judge 的 JSON response 误判。
+  3. **Red line 2 机械兜底**：DB CHECK `summary_sentence_cap` 约束 `array_length(regexp_matches(summary_text, '[.!?。！？]', 'g'), 1) between 1 and 3`（G1 count-terminator 语义）；合入审计表会让 CHECK 对 judge 的 JSON response 误判。
   4. **Prompt reproducibility**：`prompt_version` 让 prompt 文案变动后同 (paper, topic) 能同时存 new/old 行（历史对比），审计表不需要这特征。
-- **Consequence**：T013（summary pass）事务写双表：先 `INSERT llm_calls RETURNING id`，再 `INSERT paper_summaries(llm_call_id=...)`；上游 audit 链完整，下游 read-path（T014/T015/T016）只 JOIN `paper_summaries`，不碰 llm_calls。Export（T023）`paper_summaries` 入包，`llm_calls` 排除（审计内部）。
-- **Tradeoff**：2 张表比 1 张多一次 INSERT（事务内无 latency 差异）；schema 表数 12 → 13，整体仍远低于任何"小 Postgres 项目"复杂度阈值。
+- **Consequence**（G6 权威 · R_final2 · 2026-04-24）：
+  - **写入职责**：LLM adapter 内部调 `recordLLMCall({ purpose: 'summarize', ... })` 先写 `llm_calls` RETURNING id，并把 id 填入返回的 `SummaryRecord.llmCallId`（见 `reference/llm-adapter-skeleton.md §2/§3/§4/§7`）。T013 `persistSummary` **只写** `paper_summaries(paper_id, topic_id, summary_text, llm_call_id = record.llmCallId, model_name, prompt_version)`，消费 adapter 返回的 id 作为 FK —— **T013 不再写 `llm_calls`**，Adapter-内写是 G6 权威合同。
+  - **Fallback 路径**：两家 provider 都 down 时 T013 走 `fallback-heuristic-v1` 写 `paper_summaries` 时 `llm_call_id = NULL`（schema F5 nullable）；此时没有 LLM 调用，也就没有 `llm_calls` 行可指。
+  - **读路径**：T014/T015/T016 只 JOIN `paper_summaries`，不碰 `llm_calls`。
+  - **Export（T023）**：`paper_summaries` 入包，`llm_calls` 排除（审计内部）。
+- **Tradeoff**：2 张表比 1 张多一次 INSERT（LLM 调用本身有网络 latency · 内部 audit INSERT 无感）；schema 表数整体仍远低于任何"小 Postgres 项目"复杂度阈值。
 
 ### ADR-7 · **红线 2 "skip traceable" 三层机械兜底 · 非单层守护**（R1 adversarial fix · B2）
 - **决策**：`action='skip'` 时 `why` 必填（btrim 后 ≥ 5 chars），通过 **DB CHECK + API validation + UI required** 三层同时保证：
@@ -341,3 +345,4 @@ erDiagram
 | 2026-04-23 | 0.1 | 初版 · C4 L1/L2 · 5 ADR · Data model · 部署拓扑 |
 | 2026-04-23 | 0.2 | R1 fixes: +`paper_summaries`, +`export_log`, +skip CHECK, +ADR-6, +ADR-7; 表数 13 → 15（原叙述"12 → 14"为 R1 fix 漏计 `llm_calls`的 off-by-one；`llm_calls` 一直存在、R1 实际新增 2 张）；labs +2 列 (first_day_at / allow_continue_until)；fetch_runs +1 列 (notes)；JSON export schema_version 1.0 → 1.1；§7 安全边界更新 export_log 审计 + 三层红线兜底表述 |
 | 2026-04-24 | 0.3 | R_final BLOCK fix（G3）· §8 JSON Export 格式段重写 · inline snake_case JSON 样例删除、改为引用 `reference/api-contracts.md §3.11` 作为权威单一真源 · 顶层 key 从 9 张扩到 12 张（补 paperTopicScores / paperCitations / fetchRuns + lab.exportedBySeatId）· 字段命名统一 camelCase（`schemaVersion` / `firstDayAt` / `paperSummaries`） |
+| 2026-04-24 | 0.3.1 | **R_final2 G6 sync**：ADR-6 Consequence 段重写 · "T013 事务写双表：先 INSERT llm_calls，再 INSERT paper_summaries" → "**LLM adapter 内部调 `recordLLMCall()` 写 `llm_calls` RETURNING id**，T013 只写 `paper_summaries` 并消费 `SummaryRecord.llmCallId` 作为 FK"；同步 DB CHECK 表达式改 G1 count-terminator 语义（`regexp_matches` · 与 schema.sql v0.2.3 一致）；fallback 路径说明 `llm_call_id = NULL`。其他 ADR / §7 安全边界 / §8 export / §9 部署 未变。 |
