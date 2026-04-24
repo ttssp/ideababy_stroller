@@ -364,7 +364,9 @@ function buildClient(): { client: Anthropic; model: string } {
   const client = new Anthropic({
     baseURL,
     authToken,
-    timeout: 30_000,
+    // F-timeout fix (Day-2): GLM 5.1 over ARK p95 ≈ 89s on 1500+ 字 abstract
+    // summarize · 30s 会在 11/20 条 fixture 上触发 timeout → 改 180s
+    timeout: 180_000,
   });
   return { client, model };
 }
@@ -380,7 +382,17 @@ interface CallError {
 
 function classifyError(err: unknown): CallError {
   if (err instanceof Anthropic.APIError) {
-    const retryable = err.status ? err.status >= 500 || err.status === 429 : false;
+    // F-timeout fix (Day-2): APIConnectionTimeoutError / APIConnectionError
+    // 都没有 status code(status=undefined)·原逻辑会把它们标成 non-retryable,
+    // 对 GLM 这种偶发超时不友好。显式把 Connection/Timeout 错误标 retryable。
+    const isConnErr =
+      err instanceof Anthropic.APIConnectionError ||
+      err instanceof Anthropic.APIConnectionTimeoutError;
+    const retryable = isConnErr
+      ? true
+      : err.status
+        ? err.status >= 500 || err.status === 429
+        : false;
     return { message: `Anthropic ${err.status ?? '?'}: ${err.message}`, retryable };
   }
   if (err instanceof z.ZodError) {
