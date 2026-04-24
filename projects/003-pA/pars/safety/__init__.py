@@ -10,6 +10,10 @@ T012 公共 API：
                     MountResult, ReadonlyHandle, ReadonlyFailsClosed, refuse_to_start
   - integrity:      compute_manifest, verify_manifest, compute_tree_sha256,
                     verify_tree_unchanged, MISSING, UNEXPECTED
+
+T015 公共 API（pip 供应链白名单 · R5 · C17）：
+  - pip_policy: evaluate_pip_command, is_pip_install_allowed, format_denial_message,
+                PipCommandDecision, PipPolicyResult
 """
 
 from pars.safety.integrity import (
@@ -19,6 +23,13 @@ from pars.safety.integrity import (
     compute_tree_sha256,
     verify_manifest,
     verify_tree_unchanged,
+)
+from pars.safety.pip_policy import (
+    PipCommandDecision,
+    PipPolicyResult,
+    evaluate_pip_command,
+    format_denial_message,
+    is_pip_install_allowed,
 )
 from pars.safety.readonly_mount import (
     MountResult,
@@ -50,4 +61,10 @@ __all__ = [  # noqa: RUF022
     "mount_readonly",
     "refuse_to_start",
     "unmount",
+    # pip_policy (T015)
+    "PipCommandDecision",
+    "PipPolicyResult",
+    "evaluate_pip_command",
+    "format_denial_message",
+    "is_pip_install_allowed",
 ]
