@@ -1,0 +1,155 @@
+graph TD
+    %% ================================================================
+    %% RecallKit 003-pA · Dependency Graph · R2 (2026-04-24)
+    %% 对齐 spec v0.2 · R11 模型路由 rebalance · 新增 C20/C21/C22 契约
+    %% 工时 152h(+6h 自 R1)× 1.5 踩坑 buffer ≈ 228h
+    %% 模型分布(按工时):Opus 15.1% / Sonnet 68.4% / Codex 10.5% / Haiku 5.9%
+    %% ================================================================
+
+    %% ===== Phase 0 · Foundation (T001-T008) · ≈24h =====
+    T001[T001: 项目骨架 + pyproject + uv · haiku]
+    T002[T002: 依赖锁定 requirements-locked.txt · R5 · sonnet]
+    T003[T003: Ruff / pytest / pre-commit · haiku]
+    T004[T004: 目录骨架 + logging + paths · D18 · sonnet]
+    T005[T005: CLI 入口 Typer app 占位 · sonnet]
+    T006[T006: RunConfig Pydantic schema + IO · sonnet]
+    T007[T007: ULID + state.json IO · sonnet]
+    T008[T008: metrics.jsonl append + 读取 · sonnet]
+
+    %% ===== Phase 1 · Core services (T009-T015) · ≈41h =====
+    T009[T009: Ledger 高层 + pars sft status · sonnet]
+    T010[T010: API Proxy + USD 前置拒绝 · R4 · C20 · sonnet]
+    T011[T011: worker env strip · R4 · C15 · sonnet]
+    T012[T012: worker_claude_dir fail-closed 只读 · R6 · C21 · **opus**]
+    T013[T013: Worker subprocess + worktree · sonnet]
+    T014[T014: Deny hooks 加固 + 安全测试 · sonnet]
+    T015[T015: pip install 白名单 hook · R5 · sonnet]
+
+    %% ===== Phase 2 · Training + Eval + Stuck + Report (T016-T023) · ≈56h =====
+    T016[T016: 训练/评测脚本模板 · R1/R8/R10 · sonnet]
+    T017[T017: Stuck 状态机 4 态 + stuck_lock · R2 · **opus**]
+    T018[T018: Budget Tracker wall/GPU 兜底 · O5 · sonnet]
+    T019[T019: pars sft resume + 机器指纹 · O3 · C22 · sonnet]
+    T020[T020: Failure Attribution schema · R3 · **opus**]
+    T021[T021: Report 渲染 + schema 校验 · O2 · sonnet]
+    T022[T022: O7 不误杀 8 场景矩阵 · **codex**]
+    T023[T023: pars sft start 主编排 · O1/O5 · sonnet]
+
+    %% ===== Phase 3 · Polish + Demo + Ship (T024-T028) · ≈31h =====
+    T024[T024: pars sft retry · sonnet]
+    T025[T025: pars compare runA runB · O6 · sonnet]
+    T026[T026: E2E 测试套 · O1/O2/O3/O6/O7 · sonnet]
+    T027[T027: Demo qwen3-4b + README + rehearsal + checklist · O4 · **codex**]
+    T028[T028: LICENSE + CI + license-check.yml + ship gate · haiku]
+
+    %% ===== Phase 0 edges =====
+    T001 --> T002
+    T001 --> T003
+    T001 --> T004
+    T004 --> T005
+    T004 --> T006
+    T004 --> T007
+    T004 --> T008
+    T005 --> T006
+    T005 --> T007
+    T007 --> T008
+
+    %% ===== Phase 0 -> Phase 1 =====
+    T002 --> T012
+    T002 --> T015
+    T005 --> T009
+    T005 --> T010
+    T005 --> T011
+    T005 --> T012
+    T006 --> T009
+    T007 --> T009
+    T007 --> T010
+    T008 --> T009
+    T004 --> T010
+    T004 --> T011
+    T004 --> T012
+
+    %% ===== Phase 1 internal =====
+    T010 --> T013
+    T011 --> T013
+    T012 --> T013
+    T012 --> T014
+    T012 --> T015
+
+    %% ===== Phase 1 -> Phase 2 =====
+    T002 --> T016
+    T004 --> T016
+    T008 --> T016
+    T007 --> T017
+    T013 --> T017
+    T007 --> T018
+    T008 --> T018
+    T010 --> T018
+    T006 --> T019
+    T007 --> T019
+    T009 --> T019
+    T013 --> T019
+    T016 --> T019
+    T017 --> T019
+    T004 --> T020
+    T006 --> T020
+    T008 --> T021
+    T020 --> T021
+    T016 --> T022
+    T017 --> T022
+
+    %% ===== Phase 2 -> T023 integration (fan-in) =====
+    T005 --> T023
+    T006 --> T023
+    T007 --> T023
+    T009 --> T023
+    T010 --> T023
+    T011 --> T023
+    T012 --> T023
+    T013 --> T023
+    T014 --> T023
+    T015 --> T023
+    T016 --> T023
+    T017 --> T023
+    T018 --> T023
+    T019 --> T023
+    T020 --> T023
+    T021 --> T023
+
+    %% ===== Phase 3 =====
+    T006 --> T024
+    T009 --> T024
+    T023 --> T024
+    T006 --> T025
+    T008 --> T025
+    T009 --> T025
+    T021 --> T025
+    T003 --> T026
+    T019 --> T026
+    T021 --> T026
+    T022 --> T026
+    T023 --> T026
+    T024 --> T026
+    T025 --> T026
+    T023 --> T027
+    T024 --> T027
+    T025 --> T027
+    T003 --> T028
+    T026 --> T028
+    T027 --> T028
+
+    %% ===== 样式:按模型路由着色,突出 Opus contract-heavy 收口 =====
+    classDef p0 fill:#e3f2fd,stroke:#1976d2,color:#0d47a1
+    classDef p1 fill:#fff3e0,stroke:#f57c00,color:#e65100
+    classDef p2 fill:#f3e5f5,stroke:#7b1fa2,color:#4a148c
+    classDef p3 fill:#e8f5e9,stroke:#388e3c,color:#1b5e20
+    classDef opus fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#b71c1c
+    classDef codex fill:#e0f7fa,stroke:#00838f,color:#006064
+
+    class T001,T002,T003,T004,T005,T006,T007,T008 p0
+    class T009,T010,T011,T013,T014,T015 p1
+    class T016,T018,T019,T021,T023 p2
+    class T024,T025,T026 p3
+    class T028 p3
+    class T012,T017,T020 opus
+    class T022,T027 codex
