@@ -73,4 +73,158 @@ environments = [
     "sys_platform == 'darwin' and python_version >= '3.12' and platform_machine == 'arm64'",
 ]
 
-# 说明：ruff、pytest、coverage 配置由 T003 负责添加，此处不配置
+# 说明：ruff、pytest、coverage 配置由 T003 添加（见下方 [tool.*] 段）
+
+# =============================================================================
+# T003: ruff 配置（lint + format）
+# =============================================================================
+
+[tool.ruff]
+# 行宽限制，与 T003 spec 对齐
+line-length = 100
+# 目标 Python 版本
+target-version = "py312"
+# 排除生成/临时目录，避免误扫
+exclude = [
+    "runs/",
+    "checkpoints/",
+    ".worktrees/",
+    "worker_claude_dir/",
+    "__pycache__",
+    ".git",
+    ".venv",
+    "dist",
+]
+# 源码目录（影响 import 排序的 src 布局感知）
+src = ["pars", "tests"]
+
+[tool.ruff.lint]
+# 规则集：
+#   E/W  — pycodestyle
+#   F    — pyflakes
+#   I    — isort
+#   B    — flake8-bugbear
+#   UP   — pyupgrade
+#   S    — flake8-bandit（安全）
+#   PL   — pylint
+#   RUF  — ruff 自有规则（部分 Chinese 相关规则 ignore，见下）
+#   N    — pep8-naming
+#   ANN  — flake8-annotations（类型注解检查）
+select = ["E", "F", "I", "B", "UP", "S", "PL", "RUF", "N", "ANN"]
+ignore = [
+    # ANN401: 允许 Any 作为类型（dict[str, Any] 是常见合法用法）
+    "ANN401",
+    # PLC0415: 允许函数内 import（test_paths.py 里有延迟 import 模式）
+    "PLC0415",
+    # PLR2004: magic number 比较在测试中合理（如 assert result == 24576）
+    "PLR2004",
+    # PLR0913: 参数太多（部分业务函数参数超过 5 个是合理的）
+    "PLR0913",
+    # PLW0603: global 语句（pars/logging.py 使用 global _ROOT_CONFIGURED，T004 产物）
+    "PLW0603",
+    # RUF001/RUF002/RUF003: 中文全角标点检测（本项目注释/docstring/字符串使用中文，属于误报）
+    # T004/T005 产物下大量中文字符串和注释会触发此规则；不修改存量代码，此处全局 ignore
+    "RUF001", "RUF002", "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# ------- tests/ 目录 -------
+# S101: 允许 assert（pytest 惯用法）
+# ANN: 测试函数不强制类型注解
+# S603/S607: subprocess 调用（测试中合理）
+# S108: /tmp 路径（测试隔离用途合理）
+# I001: import 排序（T004/T005 存量测试文件）
+# F401: 未使用 import（T004 存量测试文件）
+# E501: 行太长（T005 存量测试文件个别长行）
+# RUF100: 多余 noqa 指令（T005 存量文件）
+# PLR0913/PLR0912: pylint 规则
+# UP045: Optional[X] 改 X | None（T005 存量文件）
+"tests/**/*.py" = [
+    "S101", "ANN", "S603", "S607", "S108",
+    "I001", "F401", "E501", "RUF100",
+    "PLR0913", "PLR0912",
+    "UP045",
+]
+# ------- pars/ 源码目录 -------
+# 以下均为 T004 产物的存量问题，不在 T003 改动范围内
+# I001: import 排序（pars/logging.py / pars/paths.py）
+# F401: 未使用 import（pars/logging.py 的 traceback）
+# UP017: datetime.UTC 别名（pars/logging.py）
+# UP045: Optional[X] 改 X | None（pars/cli/main.py）
+# S607: subprocess partial path（pars/paths.py 中 git 命令）
+# S603: subprocess call（pars/paths.py）
+# N: 命名规范（pars/logging.py 中 _JsonFormatter 等私有类）
+"pars/**/*.py" = ["I001", "F401", "UP017", "UP045", "S607", "S603", "N801", "N802", "N803", "RUF100"]
+# __init__.py 空文件允许无 docstring，且通常无公开 API 不需要注解
+"pars/**/__init__.py" = ["D104", "ANN"]
+
+[tool.ruff.format]
+# 使用双引号（Python 社区默认）
+quote-style = "double"
+# 缩进风格：空格
+indent-style = "space"
+# 行结尾：auto
+line-ending = "auto"
+
+# =============================================================================
+# T003: pytest 配置
+# =============================================================================
+
+[tool.pytest.ini_options]
+# 测试目录
+testpaths = ["tests"]
+# 测试文件模式
+python_files = ["test_*.py"]
+# pytest 运行参数：
+#   -ra         — 显示所有非通过的测试摘要
+#   -q          — 简洁输出
+#   --strict-markers — 未注册 marker 报错
+#   --strict-config  — 配置错误报错（防误用）
+# 注意：--cov-fail-under=70 在此处不启用（避免 Phase 0 阶段 pytest 普遍失败）
+#       CI 中通过 `pytest --cov=pars --cov-fail-under=70` 显式传入
+addopts = "-ra -q --strict-markers --strict-config"
+# 自定义 marker 注册（未注册的 marker 在 --strict-markers 下会报错）
+markers = [
+    "unit: 单元测试（不依赖外部服务/文件系统）",
+    "integration: 集成测试（需要文件系统或 subprocess）",
+    "e2e: 端到端测试（需要完整环境，包括 CLI）",
+    "slow: 运行超过 10s 的慢测试",
+    "requires_gpu: 需要 NVIDIA GPU 和 CUDA 才能运行",
+]
+# 将 warning 升级为 error，从 Phase 0 开始保持严格
+filterwarnings = [
+    "error",
+    # 排除 pytest 自身的 PytestUnraisableExceptionWarning（极少数情况）
+    "ignore::pytest.PytestUnraisableExceptionWarning",
+]
+
+# =============================================================================
+# T003: coverage 配置
+# =============================================================================
+
+[tool.coverage.run]
+# 覆盖率数据源：仅 pars 包（不含 tests 和工具）
+source = ["pars"]
+# 开启分支覆盖率（条件分支覆盖，比行覆盖更严格）
+branch = true
+# 排除不需要统计的文件
+omit = [
+    "pars/**/__init__.py",
+    "tests/*",
+    "tests/**/*",
+]
+
+[tool.coverage.report]
+# 低于此阈值时报告标红（不自动 fail，fail-under 在 CI 命令里显式传入）
+fail_under = 70
+# 报告中显示缺失的行号
+show_missing = true
+# 排除特定代码行的统计（如类型忽略注释行）
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@(abc\\.)?abstractmethod",
+]

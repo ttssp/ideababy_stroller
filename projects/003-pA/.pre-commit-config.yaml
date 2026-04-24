@@ -1,0 +1,75 @@
+# pre-commit hooks 配置 — T003 · RecallKit 003-pA
+#
+# 安装：pre-commit install --hook-type pre-commit --hook-type commit-msg
+# 手动运行：uv run pre-commit run --all-files
+#
+# 包含 hook 组：
+#   1. pre-commit-hooks — 基础文件检查（trailing-whitespace / EOF / yaml / toml）
+#   2. ruff — lint（pyflakes/bugbear/isort 等）
+#   3. ruff-format — formatter（替代 black）
+#   4. conventional-pre-commit — commit message 格式检查（Conventional Commits）
+#
+# 注意：pip-audit 供应链扫描在 CI（T028 GitHub Actions）中执行，
+#       不在 pre-commit hook 里强制（避免每次 commit 时的网络依赖）
+
+repos:
+  # ---------------------------------------------------------------------------
+  # 基础文件质量 hook（无外部依赖，速度快）
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        name: 去除行尾空白
+      - id: end-of-file-fixer
+        name: 确保文件以换行符结尾
+      - id: check-yaml
+        name: 检查 YAML 语法
+      - id: check-toml
+        name: 检查 TOML 语法
+      - id: check-merge-conflict
+        name: 检查未解决的 merge conflict 标记
+      - id: check-added-large-files
+        name: 阻止提交超大文件
+        args: ["--maxkb=500"]
+      - id: debug-statements
+        name: 检查残留 debug 语句（pdb / breakpoint 等）
+
+  # ---------------------------------------------------------------------------
+  # ruff — lint（pyflakes / isort / bugbear / bandit 等）
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.7
+    hooks:
+      - id: ruff
+        name: ruff lint
+        args: ["--fix", "--exit-non-zero-on-fix"]
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        types_or: [python, pyi]
+
+  # ---------------------------------------------------------------------------
+  # conventional-pre-commit — commit message 格式强制（Conventional Commits）
+  # 触发类型：commit-msg（需要单独安装此 hook 类型）
+  # 安装：pre-commit install --hook-type commit-msg
+  # 允许的类型：feat / fix / docs / style / refactor / perf / test / build / ci / chore / revert
+  # ---------------------------------------------------------------------------
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.0.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - docs
+          - style
+          - refactor
+          - perf
+          - test
+          - build
+          - ci
+          - chore
+          - revert
+          - merge
