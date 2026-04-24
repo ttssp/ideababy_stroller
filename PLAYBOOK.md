@@ -1,9 +1,9 @@
 # Idea Incubator 完整操作手册
 
-> **版本**：v2.0 · 2026-04-21
+> **版本**：v3.0 · 2026-04-23
 > **适用对象**：零大型项目经验的单人开发者 + AI 团队
 > **质量目标**：商业落地级（production-grade）软件
-> **核心方法论**：SDD (Spec-Driven Development) + **三阶段辩论（Explore → Position → Converge）** + 并行子智能体 + 对抗式审查
+> **核心方法论**：**4 层探索树**（Inspire → Explore → Scope → Plan）+ 任意层 fork + SDD + 并行子智能体 + 对抗式审查
 
 ---
 
@@ -11,15 +11,15 @@
 
 0. [前置准备（一次性 Setup，约 90 分钟）](#0-前置准备一次性-setup约-90-分钟)
 1. [项目目录结构](#1-项目目录结构)
-2. [阶段 A：Idea 收集（Proposals）](#2-阶段-aidea-收集proposals)
-3. [阶段 B：三阶段辩论（Discussion）](#3-阶段-b三阶段辩论discussion)
-4. [阶段 C：结论综合（Conclusion）](#4-阶段-c结论综合conclusion)
-5. [阶段 D：从结论到 Spec（SDD 转化）](#5-阶段-d从结论到-specsdd-转化)
-6. [阶段 E：并行开发（单人 + AI 团队）](#6-阶段-e并行开发单人--ai-团队)
-7. [阶段 F：对抗式审查与商业级验收](#7-阶段-f对抗式审查与商业级验收)
-8. [Token 与速度优化清单](#8-token-与速度优化清单)
-9. [常见问题排障](#9-常见问题排障)
-10. [附录：可直接复制的文件模板](#10-附录可直接复制的文件模板)
+2. [阶段 A：Idea 收集（Proposals · 极简模板）](#2-阶段-aidea-收集proposals)
+3. [阶段 B：L1 Inspire（启发层）](#3-阶段-bl1-inspire启发层)
+4. [阶段 C：L2 Explore（展开层）](#4-阶段-cl2-explore展开层)
+5. [阶段 D：L3 Scope（范围层 · human 介入最重）](#5-阶段-dl3-scope范围层)
+6. [阶段 E：L4 Plan（SDD 工程层）](#6-阶段-el4-plan工程层)
+7. [阶段 F：并行开发 + 对抗审（保留 v2.1 流程）](#7-阶段-f并行开发与对抗审)
+8. [Fork / Park / Abandon（树操作）](#8-fork-park-abandon)
+9. [Token 与速度优化清单](#9-token-与速度优化清单)
+10. [常见问题排障](#10-常见问题排障)
 
 ---
 
@@ -266,449 +266,306 @@ idea-incubator/
 
 ---
 
-## 3. 阶段 B：三阶段辩论（Discussion）
+## 3. 阶段 B：L1 Inspire（启发层）
 
-这是整个流水线的**核心创新**。不是所有 idea 都值得建造——有些已经被做过，有些已经失败过，有些太模糊。**三阶段辩论的第一任务是判断"要不要建"，第二任务才是"怎么建"。**
+这是整个流水线的**最上游层**。你提一个 idea proposal，**其本质只是一个种子**。两个顶尖模型（Opus 4.7 Max + GPT-5.4 xhigh）的首要价值——不是帮你写代码，而是帮你**突破认知局限**，看到这个种子能长出哪些方向。
 
-### 3.1 为什么是三阶段（Stage 1 内还有两个子阶段）
+### 3.1 L1 讨论什么 / 不讨论什么
 
-| 阶段 | 子阶段 | 名字 | 目的 | 姿态 | Search |
-|---|---|---|---|---|---|
-| **S1** | S1A | Daydream 空想 | 各自独立想象，写 Part A（正）+ B（反）+ C（自省） | 关门想 | **禁止** |
-| **S1** | S1B | Ground 落地 | 读对方 S1A，带着问题清单去搜证 | 对照现实 | **≥5 来源** |
-| **S2** | — | Position 立场 | 基于证据收敛，产出 2–4 个方向菜单 | 协作 | ≥2 来源 |
-| **S3** | — | Converge 方案 | 架构与 MVP（仅在主持人批准后进入） | 工程师姿态 | 可选 |
-
-**先空想，再 search 的顺序是故意的**。如果先让模型 search，它会被既有方案框住，很难再跳出来想"如果从完全不同的切法呢"。S1A 让每个 debater 先把想象力充分放开——最乐观的版本是什么、最悲观的版本是什么、我到底知道什么不知道什么——然后 S1B 再去对照现实。
-
-**Part B 要诚实，不要夸张**。放飞的悲观（cynical takedown）会扼杀真正有潜力的 idea。Part B 的标准是"我会这样对一个真诚请教我的 founder 说"——有理有据地提醒致命风险，不是抖机灵。
-
-**关键**：S2 结束时是**强制主持人决策点**，四选一：
-- **Advance** — 选一个方向进入 S3
-- **Fork** — 值得追的方向不止一个，拆成多个子 idea 重新辩论
-- **Park** — 暂搁，写下复活条件
-- **Abandon** — 证据显示别建，写下教训
-
-统计上 30–50% 的 idea 在 S2 就被 Park/Abandon。**这是流程最值钱的时刻**——在花 4 周开发之前杀掉一个坏 idea。
-
-### 3.2 辩论协议设计原则
-
-| 原则 | 说明 |
+| 讨论 | 不讨论 |
 |---|---|
-| **文件即通讯总线** | 两个 AI 不直接通信，只读写 `discussion/NNN/` 下的 markdown。人类（你）做 router。 |
-| **S1A 关门想** | 每个 debater 独立写 S1A，**不准 search**，也不读对方的 S1A。想象空间先于验证空间。 |
-| **S1A 三段式** | Part A（正方）+ Part B（独立反方，诚实不刻薄）+ Part C（自省，列出 S1B 要查的问题）。 |
-| **S1B 必须搜索** | 读对方 S1A + 合并 Part C 问题清单 + ≥5 次 web search，引用 URL。 |
-| **S2 必须出菜单** | 每轮产出 2–4 个候选方向作为对等选项，**不许替人类选**。 |
-| **主持人可注入** | 随时往 `moderator-notes.md` 加约束，下一轮双方必须回应。 |
-| **阶段切换由主持人触发** | `/debate-advance-stage`，不是自动的。 |
+| 这 idea 能派生哪些有趣方向？ | 用什么技术栈（L4 的事） |
+| 价值、新颖性、实用性、延伸 | 架构怎么设计（L4 的事） |
+| 某个方向长什么样、干什么用 | 成本、可行性（L3/L4 的事） |
+| 谁会爱上它，用户的"啊哈时刻"是什么 | 要做多久（L3 的事） |
 
-### 3.3 启动 S1A 空想（`/debate-start 001`）
+**关键设计**：L1 严格不讨论技术 / 可行性。因为一旦考虑"能不能做"，想象空间立刻塌缩到"已有工具能实现的东西"，模型最擅长的**打破认知边界**就废了。
+
+### 3.2 三种模式（启动时选）
+
+```
+/inspire-start 001 --mode=full      # 默认。深度发散，2 轮，产出 8-15 个 inspired directions
+/inspire-start 001 --mode=narrow    # 只跑 1 轮，产出 4-6 个相邻变体（proposal 已较清晰时）
+/inspire-start 001 --mode=skip      # 跳过 L1，直接进 L2（proposal 已非常明确时）
+                                    # 但 L2 第一轮会要求包含"我考虑过但没选的替代方案"段
+                                    # 把 L1 的价值折叠进 L2
+```
+
+### 3.3 L1R1（Daydream · 关门想）
 
 ```bash
-cd idea-incubator
 claude
-> /debate-start 001
+> /inspire-start 001
+# 如果没带 --mode 参数,会问你
 ```
 
-这个命令会：
-1. 创建 `discussion/001/` 目录并复制 PROTOCOL.md
-2. 让 Opus **关起门来**写 S1A（**禁止 search**、也不读对方 S1A）
-3. 输出 `discussion/001/001-Opus47Max-S1A.md`，包含三段：
-   - **Part A** 最激动人心的版本（正方想象）
-   - **Part B** 最致命的版本（独立反方，诚实不刻薄）
-   - **Part C** 认识论自省（我到底知道什么、需要查什么）
+Opus 写 L1R1，四段式：
 
-**同时**在另一个终端启动 Codex，也写 S1A（也不准 search、也不读对方）：
+- **Part A · 邻近方向**（3-5 个）：换受众、换形态、换范围、换痛点
+- **Part B · 延伸方向**（2-3 个）：极端版本、最小版本、跨领域移植
+- **Part C · 重组方向**（2-3 个）：质疑 proposal 的预设
+- **Part D · 我最有感觉的 Top 3**：为什么有 spark、为什么 human 可能想不到
+
+**硬约束**：禁止 search（关门纯想）、不读对方 L1R1（并行独立）、不碰技术。
+
+Codex 侧并行跑同样结构的 L1R1：
 
 ```bash
-cd idea-incubator
-codex --model gpt-5.4 -c reasoning_effort=xhigh
+# Codex 终端（inbox 机制）:
+cdx-run
 ```
 
-粘贴（完整模板见 `discussion/001/PROTOCOL.md` §"Codex-side kickoffs · S1A"）：
+`cdx-run` 自动读 `.codex-inbox/latest.md`（Claude Code 已写好完整任务）并执行。**不用复制粘贴**。
 
-```
-You are GPT-5.4 xhigh, Debater B, S1A on idea 001.
+### 3.4 L1R2（Cross + 价值验证 search）
 
-HARD CONSTRAINT: Do NOT run any web search this round. No WebSearch, no WebFetch.
-Write from your own model knowledge and imagination only.
-
-Do NOT read discussion/001/001-Opus47Max-S1A.md (parallel independence).
-
-Read: proposals/proposals.md (001), discussion/001/PROTOCOL.md, AGENTS.md
-
-Write discussion/001/001-GPT54xHigh-S1A.md using the S1A triple-section template:
-  Part A · most-exciting version (POSITIVE)
-  Part B · most-damning version (independent NEGATIVE, honest not cynical)
-  Part C · epistemic honesty — 5 search-shaped questions for S1B
-
-400–800 words. Bold in A, truthful in B, rigorous in C.
+```bash
+> /inspire-next 001
+# (Codex 侧也跑: cdx-run)
 ```
 
-两边并行写，互不影响。S1A 想象空间最大化。
+双方读对方的 L1R1，然后做**价值验证 search**：
 
-### 3.4 S1B 落地验证（`/debate-next 001 1 B`）
-
-S1A 完成后，进入 Stage 1 第二子阶段。这一步把两份 daydream 拿去和世界对照。
-
-```
-/debate-next 001 1 B
-```
-
-Opus 会：
-1. 读自己 S1A + 对方 S1A（全部三段）
-2. 合并两边 Part C 的问题清单，去重
-3. 跑 ≥5 次 web search（必须）
-4. 判决每条 S1A 主张：被证据加强 / 被削弱 / 仍未知
-5. 输出 `discussion/001/001-Opus47Max-S1B.md`（§1-§8）
-
-Codex 侧粘贴：
-
-```
-You are GPT-5.4 xhigh, S1B on idea 001. This is the grounding round.
-
-Read in order:
-  discussion/001/PROTOCOL.md
-  discussion/001/001-moderator-notes.md (if exists; binding)
-  discussion/001/001-Opus47Max-S1A.md (opponent's daydream — ALL three parts)
-  your own S1A
-
-Merge your Part C questions with opponent's Part C questions. De-duplicate.
-Run ≥5 web searches driven by merged list. Diverse sources. Include prior
-failure cases if obvious candidates exist.
-
-Write discussion/001/001-GPT54xHigh-S1B.md using the S1B template (§1 through §8).
-500–1000 words.
-```
-
-S1B 的关键价值：**"shared imagination"（两边独立想象里的共识）是一种信号**，但它可能正确、也可能是两个模型共享的训练偏差。只有 S1B 搜证以后，你才知道哪些共识经得起现实检验、哪些是幻觉。
-
-### 3.5 Stage 1 → Stage 2 切换（`/debate-advance-stage 001 2`）
-
-```
-/debate-advance-stage 001 2
-```
-
-这个命令会：
-1. 检查 Stage 1 质量门（每边都有 S1A + S1B、S1A 三段齐全、S1B 各 ≥5 URL）
-2. 调用 `stage1-synthesizer` 子智能体，产出 `discussion/001/001-stage1-synthesis.md`
-3. 这份 synthesis **保留了"想象 vs 证据"的边界**——§1-§3 是 daydream、§5-§7 是 evidence，Stage 2 双方能看到哪些信念经受了检验、哪些没有
-
-**你必须亲自读这份 synthesis**。如果里面的结论让你感觉不对（例如漏掉了你知道的某个竞品），写到 moderator-notes，让双方带着你的 injection 再跑一次 S1B。
-
-### 3.6 Stage 2 —— 协作收敛（`/debate-next 001 2 1`）
-
-Stage 2 不再对立。双方都读过 Stage 1 synthesis，姿态是"基于证据，这个 idea 到底应该是什么、应该怎么切"。
-
-Opus 侧：`/debate-next 001 2 1`
-
-Codex 侧粘贴：
-
-```
-You are GPT-5.4 xhigh, S2R1 on idea 001. Stage 2 is cooperative, not adversarial.
-Read first: discussion/001/001-stage1-synthesis.md
-Then: PROTOCOL.md, all Stage 1 rounds, moderator-notes.md
-≥2 web searches if useful.
-Write to discussion/001/001-GPT54xHigh-S2R1.md using the S2R1+ template.
-Give 2–4 candidate directions as peers — do NOT pick one.
-```
-
-S2 每一轮双方都要回答：
-1. 这个 idea 经过搜索之后**实际上**是什么（往往比原 proposal 更窄）？
-2. 诚实 Y/N：值得建吗？条件是？
-3. 候选方向 2–4 个，每个带名字、一段描述、最大风险、目标用户——**不许排序、不许推荐一个**
-4. 自己倾向哪个，为什么
-5. 从 Stage 1 到现在的 delta
-
-通常 S2 跑 1–2 轮就够了。
-
-### 3.7 Stage 2 决策点（`/debate-advance-stage 001 3`）—— **最重要的一步**
-
-```
-/debate-advance-stage 001 3
-```
-
-这个命令调用 `stage2-checkpoint` 子智能体，输出 `discussion/001/001-stage2-checkpoint.md`，内容包括：
-
-- **双方对"该不该建"的诚实 Y/N**
-- **统一方向菜单**（合并去重后的所有候选方向）
-- **比较矩阵**（用户/价值/技术难度/TTM/差异化/法规/单人可行）
-- **synthesizer 的推荐**（明确选一个，或推荐 Fork/Park/Abandon）
-- **你要做的决定**：四选一
-
-**这一步流水线会停下来等你**。不要让 AI 替你做这个决定。可能的四个决定：
-
-| 决定 | 做什么 |
+| 允许 | 禁止 |
 |---|---|
-| **Advance** | 在 moderator-notes 记录你选哪个方向 + 理由 → 运行 `/debate-next 001 3 1` 进 Stage 3 |
-| **Fork** | 在 proposals.md 创建 001a、001b 等新 idea → 各自 `/debate-start` → 归档当前辩论为 "forked" |
-| **Park** | 更新 proposals.md 状态为 parked + 复活条件 → 辩论到此为止 |
-| **Abandon** | 更新 proposals.md 为 abandoned → 写一页 `001-abandonment-lesson.md` → 防止未来重复提同样的坏 idea |
+| "这事有人做过吗" | "用什么框架" |
+| "用户是不是真的需要" | "怎么架构" |
+| "类似项目成败如何" | "要多少钱" |
 
-### 3.8 Stage 3 —— 工程方案（仅 Advance 后）
+这一步把"共享想象"（两个模型独立想象出的共同方向）和"共享幻觉"（两个模型的共同训练偏差）区分开——search 说实话。
 
-极性作废，双方都变回"冷静的工程师"。内容和旧版辩论的 R2+ 一致：
+### 3.5 收 L1，出 inspired menu
 
-- **Steelman** 对方前一轮最强的点
-- **≤2 个分歧**，每个带可证伪的 hinge
-- **新视角**
-- **≥1 个让步**（硬性）
-- **自批评**
-- 可选 `<!-- READY-TO-CONCLUDE -->`
-
-Opus 侧：`/debate-next 001 3 1`、`/debate-next 001 3 2`、...
-Codex 侧：粘贴 PROTOCOL.md 里的 S3R1 kickoff。
-
-通常 2–3 轮。
-
-### 3.9 主持人注入（任何阶段都可以）
-
-```
-/debate-inject 001 S2R1.5
+```bash
+> /inspire-advance 001
 ```
 
-或手动编辑 `discussion/001/001-moderator-notes.md`：
+`inspire-synthesizer` 子智能体读四个 L1 文件，产出 `discussion/001/L1/stage-L1-inspire.md`：
 
-```markdown
-## Injection @ S2R1.5
-**Type**: Hard constraint
-**Binding on**: Both
+- 统一去重后的 direction 列表（含每个方向的 description、spark、cognitive jump、价值验证证据）
+- 交叉参考表（谁提的、谁背书）
+- 主题观察 + 诚实"menu 里可能漏了什么"
+- 决策菜单
 
-我注意到 S1 里没人提 App Store 的审核周期。我们做 iOS app 的话，更新周期是 1–7 天。
-请下一轮都把这个约束纳入方向菜单的评估。
-```
-
-下一轮双方**必须**在 `## Moderator injection response` 小节回应。
-
-### 3.10 收束（`/debate-finalize` → `/debate-conclude`）
-
-Stage 3 跑到双方都 `<!-- READY-TO-CONCLUDE -->` 或主持人感觉够了，让双方各写一份独立的 final：
+**决策菜单**：
 
 ```
-/debate-finalize 001
+[F] Fork 一个或多个方向 → /fork 001 from-L1 direction-<n> as <new-id>
+[R] Re-inspire：menu 不对劲，加 steering 再跑一轮
+[P] Park：这个 menu 本身就有价值，收藏着，以后再回来
+[S] Skip：menu 不打动我，用 original proposal 直接进 L2
+[A] Abandon：整个方向都不行
 ```
 
-Codex 侧粘贴：
-
-```
-You are GPT-5.4 xhigh writing FINAL POSITION on idea 001.
-Read every *.md in discussion/001/.
-Write discussion/001/001-GPT54xHigh-final.md per the Finals template:
-  1. Final recommendation (5 bullets)
-  2. Full technical proposal
-  3. MVP plan (Phase 0/1/2)
-  4. Consensus with Opus (strict)
-  5. Residual disagreements + honest verdict
-  6. Where Opus was stronger than me (≥2)
-  7. Where I was stronger than Opus (≥2)
-  8. Top 5 actionable recommendations for moderator
-  9. Open questions moderator must answer
-  10. Sign-off: "Ready for SDD" or "One more round needed because..."
-```
-
-最后：
-
-```
-/debate-conclude 001
-```
-
-这个命令会调用 `conclusion-synthesizer`，综合**三个阶段**的全部产物（S1 synthesis + S2 checkpoint + S3 rounds + finals）写 `conc/001-*.md`。
-
-### 3.11 一个完整会话看起来像什么
-
-```
-T+0h    /propose                                  # 10 分钟写完 proposal 001
-T+0h15  /debate-start 001                         # Opus 跑 S1A 空想(无 search) ~15min
-        (另开 Codex 终端粘贴 S1A kickoff)           # 并行,~15min
-T+0h45  /debate-next 001 1 B                      # Opus 读对方 S1A + search,写 S1B ~25min
-        (Codex 同步写 S1B)
-T+1h30  /debate-advance-stage 001 2               # 生成 stage1-synthesis
-        (读 synthesis,10 分钟,区分 imagination vs evidence)
-T+1h45  /debate-next 001 2 1                      # Opus S2R1 协作
-        (Codex S2R1)
-T+2h45  /debate-advance-stage 001 3               # ★ 决策点(Advance/Fork/Park/Abandon)
-        (读 checkpoint,10-20 分钟做决定)
-                                                   # 如选 Park/Abandon,流程到此结束
-T+3h15  /debate-next 001 3 1                      # Opus S3R1 工程(仅选 Advance 后)
-        (Codex S3R1)
-T+4h15  /debate-next 001 3 2                      # 如需继续
-T+4h45  /debate-finalize 001                      # Opus 写 final
-        (Codex 写 final)
-T+5h15  /debate-conclude 001                      # 综合结论
-```
-
-一个 M 级 idea 完整走完辩论约 5–7 小时纯机器时间,人类干预约 45–90 分钟。如果 S2 就 Park 或 Abandon,总时间 3 小时内结束。
-
-**相比 v2.0 的时间变化**:
-- S1 阶段从"两轮都 search"变成"一轮不 search + 一轮 search",总 search 次数从 ~20 降到 ~10,**每个 idea 省约 15 分钟 + 一些 token**
-- S1A 无搜索,Opus/Codex 几乎只是在"想",速度比有搜索的 S1B 快约 30%
-- 其余阶段不变
+**这里的 human 决策密度很低**。读 menu，挑 1-3 个方向 fork 出去，其他留 menu 里（未来可以任意时候 /fork 激活）。
 
 ---
 
-## 4. 阶段 C：结论综合（Conclusion）
+## 4. 阶段 C：L2 Explore（展开层）
 
-### 4.1 谁来综合？
+L1 给你 N 个方向 menu，你 fork 出一个（比如 `001a`）。L2 的任务：把这**一个** idea 深度展开——"这个想法到底是什么、新在哪、能干什么、能延伸到哪、自然限制在哪"。
 
-**用 Opus** 做综合（因为它最后还要负责 spec）。这对应你文件命名里的 `-byOpus47Max-`。
+### 4.1 L2 讨论什么 / 不讨论什么
 
-### 4.2 命令
+| 讨论 | 不讨论 |
+|---|---|
+| 这 idea 的全貌（用户画像 + 使用场景 + 6 个月后的"资深用户"） | 技术栈 |
+| 真正新颖在哪（vs 已有方案） | 架构 |
+| 具体 3-5 个使用场景（不是 feature 列表，是**使用**） | 成本 |
+| 自然延伸（v0.2 会是什么） | 建造难度 |
+| 自然限制（不该是什么） | 时间预算 |
 
-```
-/debate-conclude 001
-```
+L2 和 L1 的区别：L1 是"这个 seed 能长出哪些树"（多棵树），L2 是"这棵树到底长什么样"（一棵树的细节）。
 
-这会触发一个 `conclusion-synthesizer` 子智能体（定义见附录 10.4），它读完全部讨论 + 两份 final 后产出：
+### 4.2 L2 流程
 
-`conc/001-Opus47Max-GPT54xHigh-byOpus47Max-260420.md`
-
-结构如下：
-
-```markdown
-# Idea 001 结论：[idea 标题]
-
-## 1. 执行摘要（TL;DR）
-一段话。
-
-## 2. 核心共识（双方高度同意）
-- C1: ...
-- C2: ...
-
-## 3. 主要分歧与建议裁决
-| # | Opus 立场 | GPT-5.4 立场 | 主持人裁决 | 理由 |
-|---|---|---|---|---|
-
-## 4. 独立亮点（只有一方提出但值得采纳）
-### 4.1 Opus 独有
-### 4.2 GPT-5.4 独有
-
-## 5. 建议搭建方向
-- 核心产品形态
-- MVP 范围
-- 技术栈
-- 关键里程碑
-
-## 6. 风险登记
-| 风险 | 影响 | 概率 | 缓解 |
-|---|---|---|---|
-
-## 7. 放弃清单（主动不做）
-- 明确哪些诱人但不做
-
-## 8. 可立即执行的下一步
-- [ ] 创建 specs/001-xxx/
-- [ ] 技术选型 POC（1 天）
-- [ ] ...
+```bash
+> /explore-start 001a      # L2R1 Opus 侧(Daydream,6 段式,无 search)
+# Codex 侧: cdx-run        # 并行
+> /explore-next 001a       # L2R2 Opus(读对方,价值验证 search)
+# Codex 侧: cdx-run
+> /explore-advance 001a    # 出 L2 report
 ```
 
-### 4.3 审阅
+L2R1 六段：
+- §0 (仅 skip-mode 才有)：我考虑过但没选的替代 framings
+- §1 Idea unpacked（4-8 段，**整个 L2 的核心**）
+- §2 Novelty assessment（honest 判断是 novel concept / slice / execution / 不新但 underserved / 不新且拥挤）
+- §3 Utility 3-5 个具体场景（带名字的用户，做具体事）
+- §4 Natural extensions（1-2 年可能性）
+- §5 Natural limits（不该是什么）
+- §6 三个诚实问题（seed 下一轮 search）
 
-你**必须亲自审**一遍这份结论，在空白处用 `> 人工批注：...` 标注你的判断。结论是下一阶段 spec 的唯一真相源。
+### 4.3 L2 report 决策菜单
+
+`explore-synthesizer` 产出 `stage-L2-explore-001a.md`，含**明确验证判决**：**Y / Y-with-conditions / unclear / N**。
+
+```
+[1] Scope 这个 idea → /scope-start 001a
+[2] Fork 另一个 L2 角度 → /fork 001a from-L2 ... as 001a'
+[3] 回 L1 menu 选别的 → /status 001
+[4] Re-explore（加 steering 再跑一轮）
+[5] Park
+[6] Abandon
+```
+
+**当验证判决是 N**：菜单会建议 [5] 或 [6]，不会催你硬进 L3。
 
 ---
 
-## 5. 阶段 D：从结论到 Spec（SDD 转化）
+## 5. 阶段 D：L3 Scope（范围层）
 
-### 5.1 为什么必须 SDD
+这是**human 真实需求进入系统**的地方。前两层是模型想象 + 证据验证，human 介入少。L3 开始，human 必须亲自答题、定红线、挑选项。
 
-ETH 2026 年一项研究显示：LLM 自动生成的 context 文件会让任务成功率下降 0.5–2%，同时推理成本上升 20%+。只有**人工参与的 spec** 才有正收益（约 +4% 成功率）。
-
-换句话说：**你不写 spec 直接让 Claude Code 开干，1M 行代码级项目上你一定翻车**。Spec 不是流程主义，是对 AI 成功率的直接赔率提升。
-
-### 5.2 Spec 六要素（缺一不可）
-
-1. **Outcomes** – 用户可观测的结果（不是功能清单）
-2. **Scope Boundaries** – 明确说什么**不做**
-3. **Constraints** – 性能/合规/依赖
-4. **Prior Decisions** – 已定型的架构决策（从 conclusion 继承）
-5. **Task Breakdown** – 可并行的小任务 DAG
-6. **Verification Criteria** – 怎么算"做完了"（非"能跑"）
-
-### 5.3 从 conclusion 生成 spec 骨架
+### 5.1 L3 三个子阶段
 
 ```
-/spec-from-conclusion 001
+L3R0 · Human intake (人填问卷, ~5 分钟)
+        ↓
+L3R1 · 双方独立提 2-3 个 peer PRD 候选 (no search)
+        ↓
+L3R2 · Cross + scope-reality search (类似产品 v0.1 通常包含/舍弃什么)
+        ↓
+scope-synthesizer → stage-L3-scope-001a.md
 ```
 
-这会让 Opus（**关键：用 opusplan 模式**）读 conclusion，产出：
+### 5.2 L3R0 Intake —— "不确定"是一等答案
 
-- `specs/001-xxx/PRD.md` – 产品需求
-- `specs/001-xxx/architecture.md` – 系统架构 + C4 图 (Mermaid)
-- `specs/001-xxx/tech-stack.md` – 锁定版本的技术栈
-- `specs/001-xxx/spec.md` – 主 spec（六要素）
-- `specs/001-xxx/dependency-graph.mmd` – 任务依赖 DAG
-
-### 5.4 让 Codex 对抗式审 Spec
-
-**这一步决定最终代码质量的 50%**。
-
-在 Claude Code 里：
-```
-/codex:adversarial-review specs/001-xxx/
-   --focus "请挑战 spec 中的假设，尤其是我作为新手忽略的工程复杂度。
-            特别关注：并发模型、数据一致性、故障恢复、安全边界、合规。"
+```bash
+> /scope-start 001a
 ```
 
-Codex 会返回一份挑战清单。Opus 基于这份清单修订 spec，再让 Codex 审一次，直到 Codex 返回 "No blocking issues"。
+触发 AskUserQuestion 交互式问卷，6 大块：
 
-**经验数据**：这个 loop 平均需要 2–4 轮，每轮 10–20 分钟。完成后 spec 质量通常比单模型产出高 **30–40%**。
+| Block | 问什么 | 例子 |
+|---|---|---|
+| 1 | 时间 / 每周工时 | 1-2 周 / 5-15h |
+| 2 | 目标用户（从 L2 候选 personas 里选） | "Indie iOS devs" |
+| 3 | 商业模式 | free / freemium / paid |
+| 4 | 平台 | Web / iOS / CLI... |
+| 5 | 红线（绝对不做的事） | 自由文本 |
+| 6 | 优先级（速度 / 体验 / 简洁 / 低成本...） | 挑 1-2 个 |
+| 7 | 自由补充 | 你想到的别的 |
 
-### 5.5 任务分解（`task-decomposer` 子智能体）
+**每个问题都允许 "不确定 / 让模型建议"**。模型看到 ❓ 后,会在 L3R1 里主动提 2 个具体选项给你挑。这是关键设计——**human 诚实的"不确定"比被逼猜测更有价值**。
 
-```
-/decompose 001
-```
+输出：`L3R0-intake.md`，每条标记 ✅ (明确) / 🤔 (模糊) / ❓ (让模型建议) / 💡 (红线或自由补充)。
 
-它会把 spec 拆成 `specs/001-xxx/tasks/T001.md, T002.md, ...`，每个 task 必须包含：
+### 5.3 L3R1 候选 PRD
 
-```markdown
-# T042: [任务名]
+双方独立产出 2-3 个 **peer PRD 候选**（不是"主方案+备选"，是真对等的三个路径）。每个含：
 
-**依赖**: T001, T015
-**可并行**: 是 / 否（与哪些任务可并行标明）
-**预估**: 2h / 半天 / 1 天
-**推荐模型**: opus / sonnet / codex-5.4 / codex-5.4-mini / haiku
+- v0.1 一段话描述
+- 具体 persona
+- 3-5 个核心 user stories
+- Scope IN（要做的）
+- Scope OUT（明确不做的）
+- 可观察的成功标准（有数字）
+- 在 human 的时间预算下的**诚实工时估算**（如果不够就说不够，不和稀泥）
+- UX 优先取舍（不是设计稿，是"速度 > 精致"这种取舍立场）
+- 最大产品风险
+- 针对 human ❓ 项的 2 个具体选项
 
-## 目标
-一段话。
+### 5.4 L3R2 Scope-reality search
 
-## 输入
-- 已存在的文件/模块
-- 需要的外部信息
-
-## 输出
-- 文件 A：做什么
-- 文件 B：做什么
-- 测试覆盖率 >= XX%
-
-## 验收
-- [ ] 测试 `pnpm test tests/XXX` 全绿
-- [ ] `pnpm lint` 全绿
-- [ ] 集成到 main 分支后 `pnpm e2e` 不退化
-
-## 注意事项
-- 已知坑点
+```bash
+> /scope-next 001a
 ```
 
-**DAG 举例**（Mermaid）：
+双方读对方 L3R1，然后做**作用域-现实** search：
 
-```mermaid
-graph TD
-    T001[DB Schema] --> T002[ORM Models]
-    T002 --> T003[Auth Service]
-    T002 --> T004[Chat Service]
-    T003 --> T005[API Gateway]
-    T004 --> T005
-    T005 --> T006[iOS Client]
-    T005 --> T007[Web Client]
+| 允许 | 禁止 |
+|---|---|
+| "类似产品 v0.1 通常含什么" | 技术栈选型 |
+| "用户期望的最低功能集" | 架构决策 |
+| "类似产品哪些 feature 被砍了用户不在乎" | 具体实现库 |
+
+输出：精炼后的候选 + **识别 key tradeoff axis**（这 N 个候选到底在哪个维度上真正不同——human 实际在挑的就是这个维度）。
+
+### 5.5 L3 决策点（关键）
+
+```bash
+> /scope-advance 001a
 ```
 
-**T003 和 T004 可并行**，T006 和 T007 可并行。找出所有并行窗口就是下一步的关键。
+`scope-synthesizer` 出 `stage-L3-scope-001a.md`，包括：
+
+- Intake recap（✅ 硬约束 / 🤔 软偏好 / ❓ 已解决 / ❓ **仍待你决定**）
+- Key tradeoff axis
+- 2-3 peer PRD 候选（全结构）
+- 比较矩阵（时间 / persona / 优先级 / 商业模式 / 平台 / 风险 / scope-reality fit / 符合时间预算 / 符合红线）
+- Synthesizer **明确推荐**（选一个 / fork 多个 / 暂停需用户访谈 / 回 L2）
+- 诚实检查（"menu 可能漏掉了什么"）
+
+**决策菜单**：
+
+```
+[F]  Fork 一个候选成 PRD 分支 → /fork 001a from-L3 candidate-A as 001a-pA
+[MF] Fork 多个并行（两个不同用户群各自验证）
+[R]  Re-scope（加 steering 再转一轮）
+[B]  回 L2 重新想这个 idea
+[P]  Park（等用户访谈 / 等条件成熟）
+[A]  Abandon（菜单让我看清这不该建）
+```
+
+**fork from-L3 的特殊行为**：`/fork 001a from-L3 candidate-A as 001a-pA` 除了建 `001a-pA/` 目录和 `FORK-ORIGIN.md`，还**自动生成完整的 `PRD.md`**（提取候选的所有段落、合并 L3R0 硬约束、注明 lineage）。这份 PRD 就是 L4 的输入。
 
 ---
 
-## 6. 阶段 E：并行开发（单人 + AI 团队）
+## 6. 阶段 E：L4 Plan（工程层）
+
+L3 fork 出 PRD 后，L4 开始。L4 **不再讨论产品**（PRD 是真相源），**开始讨论工程**。
+
+### 6.1 L4 启动
+
+```bash
+> /plan-start 001a-pA
+```
+
+这个命令编排：
+
+1. **读 PRD**（`discussion/.../001a-pA/PRD.md`）+ L3 menu 上下文 + L2 texture
+2. 调用 **spec-writer** 子智能体产出 `specs/001a-pA/` 完整工件包：
+   - `spec.md`（6 要素契约）
+   - `architecture.md`（C4 L1/L2 + mermaid）
+   - `tech-stack.md`（带 pinned 版本 + 拒绝的替代）
+   - `SLA.md`（v0.1 + v1.0 双版本）
+   - `risks.md`（技术/运营/安全/商业/合规/**bus-factor**）
+   - `non-goals.md`（从 PRD scope OUT + 工程级 non-goals）
+   - `compliance.md`（如 PRD 暗示监管需求）
+3. 调用 **task-decomposer** 产出 `tasks/T001..TNNN.md` + `dependency-graph.mmd`（10-30 任务，4 个 phase，模型分配健康度）
+4. **写好 Codex 对抗审 R1 的 inbox task**，human 运行 `cdx-run` 即可触发
+
+### 6.2 spec-writer 的铁律
+
+- **不改 PRD**。PRD 是真相源，有问题必须停下来告诉 human。
+- **不写 tasks/**。那是 task-decomposer 的事。
+- **不碰 implementation-level 代码**。spec 描述 behavior 和 contract。
+- **不超 PRD 范围**。每个 spec feature 必须 trace 回 PRD scope IN。
+
+### 6.3 对抗审循环
+
+Codex GPT-5.4 xhigh 审查 9 个维度：并发安全 / 数据一致性 / 故障恢复 / 安全边界 / 运营成本 10x / PRD 忠实度 / non-goal 泄漏 / DAG 健全 / solo-operator 可行性。
+
+- **CLEAN** → spec 可以进 build（下节 §7）
+- **CONCERNS** → human 决定修还是记 risks.md
+- **BLOCK** → spec-writer 修订 → R2 审查（最多 4 轮）
+
+### 6.4 PRD 版本 fork
+
+如果你做到 L4 审查时发现"其实 A PRD 也值得试"，历史回溯 fork 仍然有效：
+
+```bash
+> /fork 001a from-L3 candidate-A as 001a-pA-alt
+> /plan-start 001a-pA-alt
+```
+
+两个 PRD 分支各自产出独立的 spec 和 build，互不影响。
+
+---
+## 7. 阶段 F：并行开发与对抗审（L4 延续）
+
+> 本节流程是 v2.1 时代已经验证的,v3.0 保持不变。L4 `/plan-start` 产出 spec 和 tasks 后,从这里继续。
 
 ### 6.1 模型分工（经过实测验证的分层）
 
@@ -842,9 +699,90 @@ You are a senior security engineer. For every file provided:
 完成后综合成一份报告
 ```
 
+
 ---
 
-## 7. 阶段 F：对抗式审查与商业级验收
+## 8. Fork / Park / Abandon（树操作）
+
+探索树的三个管理命令。每个都给 next-step 菜单，不让你自己去记"下一步"。
+
+### 8.1 Fork（分支 · 任意层 · 支持历史回溯）
+
+```bash
+/fork <src> from-L<n> <candidate> as <new-id>
+```
+
+**用法**：
+- 刚做完某层、看了 menu → fork 出想走的那个候选
+- 几天后、几周后想回来试之前没选的 candidate → 同命令
+
+**每个 stage 文档（`stage-L<n>-*.md`）**都会把所有 candidate 完整列出（不只是选中的）。所以未来回溯时，直接从该 stage 文档挑候选 fork 即可。
+
+**Fork from-L3 的特殊性**：不仅建目录 + FORK-ORIGIN.md，还**自动生成完整 PRD.md**（提取候选所有段落，合并 L3R0 硬约束，写 lineage）。PRD.md 就是 L4 的输入。
+
+**目录结构（fork 是 sibling，不是 nested）**：
+
+```
+discussion/001/                 # 根 idea
+├── L1/stage-L1-inspire.md      # menu（含所有 candidates）
+│
+├── 001a/                       # fork from L1 #3
+│   ├── FORK-ORIGIN.md
+│   ├── L2/stage-L2-explore.md  # menu
+│   │
+│   ├── 001a-pA/                # fork from L3 candidate A
+│   │   ├── FORK-ORIGIN.md
+│   │   └── PRD.md              # 自动生成
+│   │
+│   └── 001a-pB/                # 同 L3 的另一个 candidate
+│       ├── FORK-ORIGIN.md
+│       └── PRD.md
+│
+├── 001b/                       # fork from L1 #5
+└── 001c/                       # fork from L1 #7（parked）
+```
+
+### 8.2 Park（暂搁 · 等条件成熟）
+
+```bash
+/park <id>
+```
+
+AskUserQuestion 引导填写：
+- 复活条件（"当 X 发生时 / Y 变为真 / Z 变得可行"）
+- 复活检查日期（建议 30/60/90 天）
+
+写 `PARK-RECORD.md`，更新 proposals.md 状态。
+
+**Park ≠ Abandon**。Park 是"好 idea，坏时机"。Abandon 是"学到了这不该建"。
+
+### 8.3 Abandon（放弃 · 结构化 lesson）
+
+```bash
+/abandon <id>
+```
+
+这不是失败——是"学到了"的信息，有独立价值。流程：
+
+1. 确认（防止误触；提供 /park 作为 off-ramp）
+2. 自动从已有 artifacts 提取：prior art、failure patterns、demand signals、constraint mismatch、assumptions that proved wrong
+3. AskUserQuestion 三问：
+   - Q1 主要放弃原因（多选 + 自由文本）
+   - Q2 关于自己学到了什么（可选；如"我对 B2C 没耐心"）
+   - Q3 未来什么条件可能重启（可选；可以填"永远不"）
+4. 产出结构化 `ABANDONED.md`（含 prior art / 失败模式 / **recyclable material** 可复用到其他 idea 的部分）
+5. 追加到仓库级 `lessons-learned.md`（按日期倒序的全局总结）
+6. 更新 proposals.md 状态
+
+### 8.4 为什么 Park/Abandon 的产物都值得保留
+
+- **Park 的 artifacts** 是"好 idea 的暂存"——条件变了就直接复活
+- **Abandoned 的 artifacts** 是"你的认知升级过程"——跑 10 个 abandon 后读 lessons-learned，往往能看出 3 条关于自己的真理（例如"我总是低估 UX 工作的重量"），这种自我认知靠反思清单获得，不靠"再努力一下"。
+
+---
+---
+
+### 7.x 对抗审与 10 质量门
 
 ### 7.1 商业级 = 通过全部"质量门"
 
@@ -916,7 +854,7 @@ Opus adversarial-reviewer 子智能体
 
 ---
 
-## 8. Token 与速度优化清单
+## 9. Token 与速度优化清单
 
 **这一节的每一条都被实测验证过，总体能降 40–70% token 消耗、提 2–5x 速度**。
 
@@ -956,7 +894,7 @@ Claude Code 自己会管，但要知道：
 
 ---
 
-## 9. 常见问题排障
+## 10. 常见问题排障
 
 ### Q1: Opus 和 GPT-5.4 给出相反方案怎么办？
 
@@ -1019,7 +957,7 @@ done | sort | uniq -c | sort -rn
 
 ---
 
-## 10. 附录：可直接复制的文件模板
+## （附录已迁移到 README.md + 各 SKILL.md,此处不再重复）
 
 ### 10.1 `CLAUDE.md`（项目宪法）
 

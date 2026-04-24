@@ -1,5 +1,5 @@
 ---
-description: Advance Opus to the next round. Branches by stage. S1 has two sub-phases (A=Daydream, B=Ground); pass sub-phase letter as third argument for S1. S2 and S3 use numeric rounds.
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Advance Opus to the next round. Branches by stage. S1 has two sub-phases (A=Daydream, B=Ground); pass sub-phase letter as third argument for S1. S2 and S3 use numeric rounds.
 argument-hint: "<idea-number> <stage> <sub-phase-or-round>  e.g. 001 1 B  or  001 2 1  or  001 3 2"
 allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), WebSearch, WebFetch, Glob, Grep
 model: opus

@@ -1,5 +1,5 @@
 ---
-description: Synthesize the entire debate into a single conclusion document
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Synthesize the entire debate into a single conclusion document
 argument-hint: "<idea-number>  (e.g. 001)"
 allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Glob, Grep, Agent(conclusion-synthesizer)
 model: opus

@@ -1,5 +1,5 @@
 ---
-description: Convert a reviewed conclusion into a full SDD spec package
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Convert a reviewed conclusion into a full SDD spec package
 argument-hint: "<idea-number>  (e.g. 001)"
 allowed-tools: Read, Write, Edit, Bash(mkdir:*), Bash(ls:*), Bash(date:*), Glob, Grep, Agent(spec-writer)
 model: opus

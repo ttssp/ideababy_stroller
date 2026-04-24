@@ -1,5 +1,5 @@
 ---
-description: Write Opus's final standalone position on an idea, consolidating all rounds
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Write Opus's final standalone position on an idea, consolidating all rounds
 argument-hint: "<idea-number>  (e.g. 001)"
 allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Glob, Grep
 model: opus

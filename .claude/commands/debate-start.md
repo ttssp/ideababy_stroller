@@ -1,5 +1,5 @@
 ---
-description: Start S1A (Daydream phase) of the debate. Opus writes triple-section (A+B+C) independently, with NO web search. Pure imagination + epistemic honesty.
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Start S1A (Daydream phase) of the debate. Opus writes triple-section (A+B+C) independently, with NO web search. Pure imagination + epistemic honesty.
 argument-hint: "<idea-number> (e.g. 001)"
 allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(date:*), Glob, Grep
 model: opus

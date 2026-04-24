@@ -1,0 +1,95 @@
+```mermaid
+%% Regenerated 2026-04-23 R1→R2 transition
+%% Reflects spec-writer R1 blocker fixes (B1 paper_summaries, B2 skip CHECK, B3 task contracts)
+%% Total: 25 tasks, 113h, critical path 58h
+graph TD
+    %% Phase 0 — Foundation + LLM spike
+    T001[T001: LLM provider blind-test spike]
+    T002[T002: Monorepo + TS strict + Biome]
+    T003[T003: Postgres + Drizzle schema · +paper_summaries +export_log +labs cols]
+    T004[T004: LLMProvider interface + adapters · SummaryRecord]
+    T005[T005: arXiv API adapter]
+    T006[T006: Auth skeleton - session + invite]
+    T007[T007: Env / secrets / systemd baseline]
+    T008[T008: Vitest + Playwright harness]
+
+    %% Phase 1 — Core briefing
+    T010[T010: Topic CRUD admin]
+    T011[T011: Daily fetch worker cron · owns daily.ts]
+    T012[T012: State-shift heuristic engine]
+    T013[T013: LLM summary pass + persist paper_summaries]
+    T014[T014: Briefing precompute · co-owns daily.ts]
+    T015[T015: /today SSR + 4-action UI/API + skip-why B2]
+    T016[T016: Paper action history page · reads paper_summaries]
+
+    %% Phase 2 — Breadcrumb + export + sentinel
+    T020[T020: Breadcrumb list page]
+    T021[T021: Resurface scheduler - timed + citation · co-owns daily.ts]
+    T022[T022: Resurface UI + dismiss/re-breadcrumb · co-owns today/page]
+    T023[T023: JSON export full - admin-only + export_log audit]
+    T024[T024: Dogfood sentinel - day-30 banner + allow-continue · co-owns today/page]
+
+    %% Phase 3 — Ops + polish
+    T030[T030: Deploy - systemd + Caddy + pg_dump]
+    T031[T031: Backup + restore drill]
+    T032[T032: E2E Playwright suite]
+    T033[T033: Runbook + self-report template]
+    T034[T034: Production smoke soak]
+
+    %% Phase 0 edges
+    T002 --> T003
+    T002 --> T004
+    T002 --> T007
+    T002 --> T008
+    T003 --> T005
+    T003 --> T006
+    T001 --> T004
+
+    %% Phase 1 edges - T001 spike + Phase 0 gate Phase 1
+    T001 --> T010
+    T003 --> T010
+    T006 --> T010
+    T001 --> T011
+    T003 --> T011
+    T004 --> T011
+    T005 --> T011
+    T007 --> T011
+    T003 --> T012
+    T011 --> T012
+    T004 --> T013
+    T011 --> T013
+    T011 --> T014
+    T012 --> T014
+    T013 --> T014
+    T006 --> T015
+    T014 --> T015
+    T015 --> T016
+
+    %% Phase 2 edges
+    T010 --> T020
+    T015 --> T020
+    T003 --> T021
+    T011 --> T021
+    T014 --> T021
+    T015 --> T022
+    T020 --> T022
+    T021 --> T022
+    T003 --> T023
+    T006 --> T023
+    T003 --> T024
+    T014 --> T024
+    T015 --> T024
+    T022 --> T024
+
+    %% Phase 3 edges
+    T007 --> T030
+    T011 --> T030
+    T030 --> T031
+    T015 --> T032
+    T022 --> T032
+    T023 --> T032
+    T024 --> T032
+    T030 --> T033
+    T030 --> T034
+    T032 --> T034
+```

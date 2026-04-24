@@ -137,30 +137,16 @@ Karpathy最近的autoresearch让我印象深刻，那个项目是给定一个任
 
 ## **002**: 每天赚100美元
 
-**提出日期 / Proposed**: YYYY-MM-DD
-**状态 / Status**: draft
-**初始野心等级 / Ambition**: M
-**成熟度 / Idea maturity**: vague
+**提出日期**: 2026-04-23
+**状态**: L1 done · 3 forks in L2 pending
+**初始野心等级**: M
+**成熟度**: vague
+**L1 菜单**: [stage-L1-inspire.md](../discussion/002/L1/stage-L1-inspire.md)(crypto pivot 版 · 非-crypto 版已归档)
 
-### 动机 (Why)
-之前看到有人每天赚100美元这条新闻
+### 想法
+不贪多，有什么办法可以让我每天赚100美元。前提，依靠电脑作为生产工具。
 
-### 目标用户 (Who)
-我个人
-
-### 核心想法 (What)
-我想看看有哪些有意思的idea，或者别人真正可行的一些实践
-
-### 初始约束 (Constraints)
-- 预算 / Budget: 500美金
-- 平台 / Platform: 有computer，有各种大模型的api
-- 时间 / Timeline: 你可以认为我每天24小时都有时间，我计划搭一个智能体替代我
-
-### 我知道的相邻方案 (Adjacent / prior art I already know about)
-没有可提供的
-
-### 已知未知 (Open Questions)
-没有可提供的
-
-### 期望产出 (Desired outcome)
-3~5个可行方案
+### Active forks(已从 L1 菜单分叉,待进 L2)
+- **002b-stablecoin-payroll** — 稳定币发薪管家(routine 服务)
+- **002f-payroll-er** — 发薪事故急诊室(acute 伴生)
+- **002g-dao-bounty** — DAO bounty 技能市场(skill fallback · 启动期现金流兜底)

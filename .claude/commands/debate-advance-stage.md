@@ -1,5 +1,5 @@
 ---
-description: Advance the debate from one stage to the next. Runs the relevant synthesizer (stage1-synthesizer or stage2-checkpoint) and presents a decision menu to the moderator.
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Advance the debate from one stage to the next. Runs the relevant synthesizer (stage1-synthesizer or stage2-checkpoint) and presents a decision menu to the moderator.
 argument-hint: "<idea-number> <target-stage>  e.g. 001 2  means advance from Stage 1 to Stage 2"
 allowed-tools: Read, Write, Bash(ls:*), Glob, Grep, Agent(stage1-synthesizer), Agent(stage2-checkpoint)
 model: opus

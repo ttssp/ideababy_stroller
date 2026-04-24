@@ -34,12 +34,16 @@ of thinking that's worth keeping. Park is normal; Abandon comes with a lesson do
 
 - **Layer discipline**: L1/L2 NEVER discuss tech/feasibility/cost. L3 brings in
   human's real constraints. L4 is engineering. Don't mix.
+- **PRD is source of truth after L3**: L4 agents (spec-writer) read PRD but
+  don't alter product decisions. If PRD has issues, escalate to human.
 - **No code without a spec**: a task without `specs/.../tasks/T<NNN>.md` does
   not execute. (L4 only.)
 - **TDD for production code** (L4): tests first, fail, then implement, then green.
 - **Cross-model review mandatory** for v1.0 paths (L4 quality gate).
 - **Specs are immutable from build workers** — only operator + spec-writer touch them.
 - **Every command outputs a next-step menu** — human never has to guess what's next.
+- **"Not sure" is a first-class answer in L3R0 intake** — models must offer
+  options for ❓ items, not pressure human to decide.
 - output in Chinese
 
 ## Codex inbox/outbox bus

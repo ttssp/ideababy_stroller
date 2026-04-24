@@ -1,7 +1,7 @@
 # Idea Incubator — Project Constitution
 
 This repo is a **tree** from raw idea to shipped software. Powered by a single
-human operator and a team of AI agents (Codex Opus 4.7, GPT-5.4 xhigh,
+human operator and a team of AI agents (Claude Opus 4.7, GPT-5.4 xhigh,
 Sonnet 4.6, Codex 5.3/5.4, Haiku 4.5).
 
 ## The 4-layer pipeline (each layer can fork)
@@ -34,12 +34,16 @@ of thinking that's worth keeping. Park is normal; Abandon comes with a lesson do
 
 - **Layer discipline**: L1/L2 NEVER discuss tech/feasibility/cost. L3 brings in
   human's real constraints. L4 is engineering. Don't mix.
+- **PRD is source of truth after L3**: L4 agents (spec-writer) read PRD but
+  don't alter product decisions. If PRD has issues, escalate to human.
 - **No code without a spec**: a task without `specs/.../tasks/T<NNN>.md` does
   not execute. (L4 only.)
 - **TDD for production code** (L4): tests first, fail, then implement, then green.
 - **Cross-model review mandatory** for v1.0 paths (L4 quality gate).
 - **Specs are immutable from build workers** — only operator + spec-writer touch them.
 - **Every command outputs a next-step menu** — human never has to guess what's next.
+- **"Not sure" is a first-class answer in L3R0 intake** — models must offer
+  options for ❓ items, not pressure human to decide.
 - output in Chinese
 
 ## Codex inbox/outbox bus
@@ -71,7 +75,7 @@ copy-pasting kickoffs needed.
 ## Prohibited
 
 - L1/L2 emitting tech/feasibility content (re-route to L4)
-- Auto-generating `AGENTS.md` or `AGENTS.md` (LLM-generated context hurts quality)
+- Auto-generating `AGENTS.md` (LLM-generated context hurts quality)
 - Modifying `specs/` from a build worker
 - Committing `.env*` files
 - Forking >3 levels deep without strong reason

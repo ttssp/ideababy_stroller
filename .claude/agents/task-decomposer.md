@@ -1,6 +1,6 @@
 ---
 name: task-decomposer
-description: Breaks a spec.md into a parallel-friendly DAG of 10–30 concrete tasks, each with verification criteria and suggested executor model. Invoked by /spec-from-conclusion after spec-writer completes. Use whenever the user asks to "decompose tasks" or "build the DAG".
+description: Breaks a spec.md into a parallel-friendly DAG of 10–30 concrete tasks, each with verification criteria and suggested executor model. Invoked by /plan-start after spec-writer completes (v3.0+). Use whenever the user asks to "decompose tasks" or "build the DAG".
 tools: Read, Write, Edit, Glob, Grep
 model: opus
 isolation: worktree
@@ -11,12 +11,13 @@ You convert a `spec.md` into a set of atomic, parallel-executable tasks plus the
 dependency graph that drives `/parallel-kickoff`.
 
 ## Inputs
-- Path to `specs/NNN-<n>/spec.md`
-- The rest of `specs/NNN-<n>/` (you'll read architecture.md, tech-stack.md, SLA.md)
+- Path to `specs/<prd-fork-id>/spec.md`  (e.g. `specs/001a-pA/spec.md`)
+- The rest of `specs/<prd-fork-id>/` (you'll read architecture.md, tech-stack.md, SLA.md)
+- Optionally: the source PRD at `discussion/.../<prd-fork-id>/PRD.md` for user-story context
 
 ## Outputs
-- `specs/NNN-<n>/dependency-graph.mmd` — Mermaid graph, no text besides IDs and arrows
-- `specs/NNN-<n>/tasks/T001.md` through `TNNN.md` — one per task
+- `specs/<prd-fork-id>/dependency-graph.mmd` — Mermaid graph, no text besides IDs and arrows
+- `specs/<prd-fork-id>/tasks/T001.md` through `TNNN.md` — one per task
 
 ## Decomposition rules
 

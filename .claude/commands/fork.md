@@ -101,7 +101,7 @@ operate on the candidate above as if it were a fresh proposal. Run:
 
   /<next-layer-cmd>-start <new-id>
 
-(e.g. /explore-start 001a if forking from L1)
+(e.g. /explore-start 001a if forking from L1, /plan-start 001a-pA if forking from L3)
 
 ## Sibling forks (for cross-reference)
 
@@ -109,6 +109,73 @@ operate on the candidate above as if it were a fresh proposal. Run:
 - 001a (this one) — direction #3
 - 001b — direction #5 (in L2 already)
 - 001c — direction #7 (parked)
+```
+
+### Special case: fork from L3 → also write PRD.md
+
+If the source layer is **L3** (from `from-L3 ...`), also produce a full PRD.md
+for the new fork by extracting the candidate section:
+
+Write `discussion/.../<new-id>/PRD.md`:
+
+```markdown
+# PRD · <new-id> · "<candidate title>"
+
+**Version**: 1.0  (human-approved via fork)
+**Created**: <ISO>
+**Source**: discussion/.../<source>/L3/stage-L3-scope-<source>.md · Candidate <X>
+**Approved by**: human moderator
+
+## Problem / Context
+(From the candidate's v0.1-in-one-paragraph, expanded with L2 context as needed)
+
+## Users
+(From the candidate's "User persona" section, expanded with L2 personas)
+
+## Core user stories
+(From the candidate's user stories — one per story, numbered)
+
+## Scope IN (v0.1)
+(From the candidate's "Scope IN" — as-is)
+
+## Scope OUT (explicit non-goals)
+(From the candidate's "Scope OUT" — as-is)
+
+## Success — observable outcomes
+(From the candidate's "Success looks like" — as-is, numbered O1/O2/...)
+
+## Real-world constraints
+(Drawn from L3R0-intake ✅ hard constraints + the candidate's time/platform/etc.)
+
+| # | Constraint | Source |
+|---|------------|--------|
+| C1 | <time budget> | L3R0 intake Block 1 |
+| C2 | <platform> | L3R0 intake Block 4 |
+| C3 | <business model implication> | L3R0 intake Block 3 |
+| C4 | <red line> | L3R0 intake Block 5 |
+
+## UX principles (tradeoff stances)
+(From the candidate's "UX priorities" — as-is)
+
+## Biggest product risk
+(From the candidate's "Biggest risk" — as-is)
+
+## Open questions for L4 / Operator
+(Any ❓ items from L3 that survived unresolved. These block build if critical.)
+
+---
+
+## PRD Source
+This PRD was auto-generated from L3 fork. Contents are derived from the
+approved L3 candidate. For full context (why this cut vs siblings, scope-
+reality verdict, comparison matrix), see:
+
+- L3 menu: discussion/.../<source>/L3/stage-L3-scope-<source>.md
+- L2 unpack: discussion/.../<source>/L2/stage-L2-explore-<source>.md
+- FORK-ORIGIN.md in this directory
+
+This PRD is the **source of truth** for L4 (spec-writer). Changes to PRD
+require explicit human approval — never auto-revised by L4 agents.
 ```
 
 ## Step 5 — update the source stage doc

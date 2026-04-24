@@ -53,7 +53,22 @@ claude
 # in Codex terminal:  cdx-run
 > /explore-advance 001a
 # read the explore report; if good:
-> /scope-start 001a       # (L3 — coming in v3.0-stage2)
+> /scope-start 001a         # L3 starts with interactive intake
+# answer 6-8 questions (each allows "not sure")
+# Opus writes L3R1 (candidate PRDs); Codex inbox is ready
+# in Codex terminal:  cdx-run
+> /scope-next 001a
+# in Codex terminal:  cdx-run
+> /scope-advance 001a
+# read the PRD menu; fork the one you like:
+> /fork 001a from-L3 candidate-A as 001a-pA
+# this auto-generates PRD.md in the new fork
+> /plan-start 001a-pA       # L4 kicks off
+# spec-writer runs, task-decomposer runs, Codex adversarial review queued
+# in Codex terminal:  cdx-run    (adversarial review)
+# if CLEAN → proceed to build:
+> /parallel-kickoff 001a-pA T003,T004,T008
+> /quality-gate 001a-pA
 ```
 
 ## Anywhere in the flow
@@ -78,16 +93,26 @@ claude
 | `/explore-start <fork-id>` | Start L2 R1 (Daydream, no search) |
 | `/explore-next <fork-id>` | L2 R2 (cross-read + value-validation search) |
 | `/explore-advance <fork-id>` | Close L2, produce explore report |
-| `/scope-start <fork-id>` | Start L3 (coming in v3.0-stage2) |
-| `/plan-start <fork-id>` | Start L4 (coming in v3.0-stage2; uses preserved v2.1 SDD assets) |
+| `/scope-start <fork-id>` | Start L3 (R0 intake + R1 candidate PRDs) |
+| `/scope-next <fork-id>` | L3 R2 (cross + scope-reality search) |
+| `/scope-advance <fork-id>` | Close L3, produce PRD menu |
+| `/scope-inject <fork-id>` | Add a moderator steering note at L3 |
+| `/plan-start <prd-fork-id>` | Start L4 (spec + task DAG + Codex adversarial review prep) |
+| `/parallel-kickoff <prd-fork-id> <task-ids>` | Launch parallel build workers (v2.1, preserved) |
+| `/quality-gate <prd-fork-id>` | 10-gate pre-ship check (v2.1, preserved) |
 
 ### Tree management
 | Command | When |
 |---|---|
-| `/fork <src> from-L<n> <candidate> as <new-id>` | Branch any layer's stage doc, anytime (incl. retrospective) |
+| `/fork <src> from-L<n> <candidate> as <new-id>` | Branch any layer's stage doc, anytime (incl. retrospective); from L3 auto-generates PRD.md |
 | `/status [<id>]` | See full tree state + suggested next step |
 | `/park <id>` | Preserve, set revival condition |
-| `/abandon <id>` | Close out, write lesson doc (coming in v3.0-stage2) |
+| `/abandon <id>` | Close out with structured lesson doc (appended to lessons-learned.md) |
+
+### Deprecated (kept as escape hatch)
+The v2.1 commands (`/debate-*`, `/spec-from-conclusion`) still work if you ever
+need to bypass L1-L3 and drop straight into a debate→spec flow. Marked
+DEPRECATED in their descriptions to avoid confusion.
 
 ## Decision-menu UX
 
@@ -160,28 +185,6 @@ my-incubator/
         └── 001c/                # forked retrospectively, weeks later
             └── ...
 ```
-
-## What's in v3.0-stage1 vs stage2
-
-**stage1 (this release)**:
-- L1 Inspire: full + narrow + skip modes
-- L2 Explore
-- Tree management: status / fork / park
-- Codex inbox/outbox bus
-- Updated proposal template (one-paragraph minimum)
-
-**stage2 (next release)**:
-- L3 Scope (with `scope-protocol` skill, `/scope-*` commands, `scope-synthesizer`)
-- L4 entry glue (connects L3 PRD output to preserved v2.1 SDD assets:
-  spec-writer, task-decomposer, parallel-builder, code-reviewer,
-  adversarial-reviewer, security-auditor, quality-gate)
-- `/abandon` command
-- Full PLAYBOOK.md rewrite for 4-layer model
-
-If you need L3/L4 today, the v2.1 commands (`/debate-*`, `/spec-from-conclusion`,
-`/parallel-kickoff`, `/quality-gate`) still work and are preserved in this package.
-You can use v3.0's L1+L2 to land on a clear PRD-equivalent, then drop into
-v2.1's flow for spec→build→ship until v3.0-stage2 ships proper L3+L4 commands.
 
 ## Apps that complement this workflow
 

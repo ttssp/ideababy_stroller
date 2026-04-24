@@ -1,5 +1,5 @@
 ---
-description: Inject a moderator note into an ongoing debate that both models must respond to
+description: [DEPRECATED v3.0 — use /inspire-start → /explore-start → /scope-start → /plan-start instead] Inject a moderator note into an ongoing debate that both models must respond to
 argument-hint: "<idea-number> <round-tag>  (e.g. 001 R2.5)"
 allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(date:*), AskUserQuestion
 model: sonnet
