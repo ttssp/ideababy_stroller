@@ -1,8 +1,10 @@
 # Status · 001-pA L4 交付包
 
-**Last updated**: 2026-04-24T05:10:00Z
-**Spec version**: 0.3.1
-**Phase**: L4 Plan · **R_final3 = CLEAN-WITH-NOTES** ✅ · Ready for Phase 0 kickoff
+**Last updated**: 2026-04-24T15:30:00Z
+**Spec version**: 0.4.0
+**Phase**: L4 Plan · **R_final3 = CLEAN-WITH-NOTES** ✅ · Ready for Phase 0 kickoff（**0.4.0 修订**：T001 已 defer 到 Phase 2）
+
+> **2026-04-24 · T001 LLM spike DEFERRED to Phase 2**：v0.1 首轮 spike (GLM5.1) judge_accuracy=14/20 擦边过 70% gate · 但 p95_summarize=46289ms（超 5000ms gate 9.3×）+ 月度成本 $1838.5（60k calls/月 placeholder pricing · 超 $50 gate 36.8×）两条硬 gate fail · operator 决策从 Phase 0 强制 gate 降格为 Phase 2 validation milestone。详见 spec.md 0.4.0 changelog · `DECISIONS-LOG.md` G11 · `projects/001-pA/spikes/T001-llm-provider-report.md`（v0.1 已 freeze）。**Phase 0/1 全程默认 `LLM_*_ENABLED=false` 走 stub heuristic**;Phase 2 T001-v2 在真实端到端数据上重跑后由 operator 翻 enable flag。本次 spec 0.4.0 改动应在 Phase 2 T001-v2 重跑前由 Codex 做一轮 narrow adversarial review。
 
 ---
 

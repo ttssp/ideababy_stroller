@@ -48,9 +48,13 @@ PRD UX principle 1 · "UI 粗糙可接受（表格 + 纯文本 briefing）"。v0
 
 ---
 
-## 2. LLM provider · **T001 spike 后决定**（两家候选并列 · 待 operator 拍板）
+## 2. LLM provider · **Phase 2 T001-v2 后决定**（**0.4.0 修订** · 候选保持开放 · Phase 0/1 全程走 stub heuristic）
 
-**本 v0.1 不预 commit 到单一 provider**。`LLMProvider` interface（见 `architecture.md` ADR-4）抽象了所有 LLM 调用；T001 spike 跑完后，operator 选定某家，换 env 即可。
+**本 v0.1 不预 commit 到单一 provider · Phase 0/1 全程默认 `LLM_*_ENABLED=false` 走 stub heuristic**（详见 spec.md 0.4.0 changelog · DECISIONS-LOG G11）。`LLMProvider` interface（见 `architecture.md` ADR-4）抽象了所有 LLM 调用；Phase 2 T001-v2 spike 跑完后，operator 选定某家,在生产环境设 env 翻 true 即可。
+
+**v0.1 首轮 spike (2026-04-24)**: GLM5.1 via 火山引擎 ARK · judge_accuracy 14/20 擦边过 70% gate · 但 p95_summarize=46289ms（超 5000ms gate 9.3×）+ 月度成本 $1838.5（60k calls/月 placeholder pricing · 超 $50 gate 36.8×）两条硬 gate fail · 报告冻结在 `projects/001-pA/spikes/T001-llm-provider-report.md`。
+
+**Phase 2 T001-v2 候选**:除 §2.1/§2.2 两家外,GLM5.1（火山 ARK Anthropic-compatible endpoint）也可作为候选(等真实账单到位后定单价)。
 
 ### 2.1 候选 A · Anthropic Claude Sonnet 4.6（long-context）
 
@@ -147,18 +151,26 @@ export interface LLMProvider {
 - **Fallback 路径**：两家 provider 同时故障时 T013 走 `fallback-heuristic-v1`，此时 `llmCallId = null`（schema F5 `paper_summaries.llm_call_id` 为 nullable FK）
 - token / latency 指标必须返回以便 `llm_calls` 表审计
 
-### 2.5 T001 spike 退出条件（正式 commit）
+### 2.5 T001-v2 spike 退出条件（**0.4.0 修订** · 在 Phase 2 真实端到端数据上重跑后正式 commit）
 
-| 条件 | 阈值 |
-|---|---|
-| State-shift judgment 准确率（20 篇人工标注 blind test） | 至少一家 ≥ **70%**（≥ 14/20）|
-| 月度成本（按 §2.1/2.2 预估） | ≤ $50 USD（C11）|
-| p95 latency（summarize 300-token abstract） | ≤ **5s**（worker 跑在 06:00 非交互路径，宽松） |
-| API 可用性（spike 期间成功率） | ≥ 99%（连跑 50 次调用，失败 ≤ 1）|
+**v0.1 首轮 (2026-04-24 · GLM5.1)** 的退出条件保持原样,作为参考阈值;Phase 2 T001-v2 在真实数据上重跑时**新增第 5 条 latency 实测条件**(生产 SLA 而非 spike 上限)。
 
-**如果两家都 < 70%**：
+| 条件 | 阈值 | v0.1 首轮实测 (GLM5.1) |
+|---|---|---|
+| State-shift judgment 准确率（20 篇人工标注 blind test） | 至少一家 ≥ **70%**（≥ 14/20）| 14/20 ✅ 擦边 |
+| 月度成本（按 §2.1/2.2/v2 真实账单预估） | ≤ $50 USD（C11）| $1838.5（placeholder pricing · 60k calls/月）❌ 超 36.8× · 真实账单到位后重算 |
+| p95 latency（summarize 300-token abstract） | ≤ **5s**（worker 跑在 06:00 非交互路径，宽松） | 46289ms ❌ 超 9.3× |
+| API 可用性（spike 期间成功率） | ≥ 99%（连跑 50 次调用，失败 ≤ 1）| 100%（20/20 无 LLMProviderError）✅ |
+| **(0.4.0 新增)** 生产 SLA latency · `/api/today` SSR Server Component 直连 DB · LLM 路径异步 worker 内消化 | worker 单 paper 处理 ≤ **60s**(异步路径 · 不阻塞 user 交互) | — (Phase 2 T001-v2 才测) |
+
+**Phase 2 T001-v2 决策树**:
+- **全部 ✅** → operator commit `approved-provider: <name>` 到 `projects/001-pA/spikes/T001-llm-provider-report-v2.md` · 生产环境设 `LLM_PROVIDER=<name>` + `LLM_JUDGE_ENABLED=true` + `LLM_SUMMARIZE_ENABLED=true`
+- **judge_accuracy ≥ 70% 但延迟/成本 fail** → 仅启用 summarize · `LLM_SUMMARIZE_ENABLED=true` + `LLM_JUDGE_ENABLED=false` 走 §4.1 heuristic-only judge
+- **judge_accuracy < 70%** → 永久 fallback · 两个 flag 都保持 false · 系统按 risks.md TECH-1 mitigation 路径运行
+
+**~~如果两家都 < 70%~~**(0.4.0 后语义改变):
 - Fallback 路径 = 保留 §4.1 启发式规则（shift = "≥ 2 篇引用同一 anchor"），不再让 LLM 判 relation；LLM 仅用于 summary
-- 同时触发 spec.md `OP-Q1` 回到 operator
+- ~~同时触发 spec.md `OP-Q1` 回到 operator~~ → **`OP-Q1` 已在 spec.md 0.4.0 resolved**:Phase 0/1 一律默认 fallback heuristic · Phase 2 T001-v2 验证通过后 operator 手工翻 enable flag
 
 **如果两家都 ≥ 70%**：按成本取低者；差距 < 10% 则由 operator 主观拍板
 
@@ -249,3 +261,4 @@ export interface LLMProvider {
 | 2026-04-23 | 0.1.1 | **Drift consolidation**（随 spec.md v0.2.2）：§2.4 LLMProvider interface 统一 camelCase（`summaryText` / `promptVersion` / `modelName` 等 · drift 1）+ judgeRelation 改 per-pair（单对 StateShiftVerdict · drift 2）· `RelationLabel` 从 `{supports/contradicts/supersedes/unrelated}` 改 `{shift/incremental/unrelated}` 与 `reference/llm-adapter-skeleton.md §2` 对齐；§2.2 OpenAI output pricing $10/M → $15/M（2026-04 公开价 · R1 Codex refreshed · drift 3）· 月度估 $10.5/月 → $12/月（仍 << C11 envelope $50）。Primary stack 未变。 |
 | 2026-04-24 | 0.1.1（R_final2 G6 sync） | §2.4 `SummaryRecord` 加 `llmCallId: number \| null` + `requestHash: string` 字段（与 `reference/llm-adapter-skeleton.md §2` 同步 · adapter 内部写 `llm_calls` 并把 id 回传）· LLMProvider `summarize` / `judgeRelation` 方法注释改为 adapter-内写 `llm_calls`（caller 只写 `paper_summaries`）· `StateShiftVerdict` shape 加 `anchorPaperId` 以与 skeleton 一致 · 契约段明确 "fallback 路径允许 `llmCallId=null`（schema F5）" · Primary stack / pricing / 排除清单 / dependency policy 全未变。 |
 | 2026-04-24 | 0.1.2 | G10 CVE bump · next 15.0.3→15.5.15 · drizzle-orm 0.36.0→0.45.2 · fast-xml-parser 4.5.0→4.5.5 · nodemailer 保留 6.9.16 (v0.1 不启用 SMTP · 见 risks.md SEC-11) |
+| 2026-04-24 | 0.2.0 | **0.4.0 spec downstream**：§2 标题改 "T001 spike 后决定 → Phase 2 T001-v2 后决定" + 加 v0.1 首轮 spike 结果 (GLM5.1 · 14/20 擦边 · 延迟 + 成本两 gate fail) + 加 GLM5.1 作为 Phase 2 候选;§2.5 标题改 "T001 spike → T001-v2 spike (Phase 2)" + 加 v0.1 首轮实测列 + 加生产 SLA latency 第 5 条 + 加 Phase 2 T001-v2 决策树 + OP-Q1 已 resolved 标注。Primary stack / SDK / pricing 不变。 |
