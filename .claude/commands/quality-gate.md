@@ -11,18 +11,22 @@ Idea **$ARGUMENTS**. Runs the 10 gates defined in the Playbook. **Any failure bl
 
 Report as a checklist; do **not** mark anything ✅ unless you've actually run the check.
 
+## Pre-flight: validate argument
+
+- !`if [ -z "$ARGUMENTS" ]; then echo "ERROR: /quality-gate requires an idea id. Usage: /quality-gate 003-pA"; exit 1; fi; ls -d projects/$ARGUMENTS* 2>/dev/null | head -3 || { echo "ERROR: no projects/$ARGUMENTS* directory found"; exit 1; }`
+
 ## Context gathering (no manual effort)
 
-Read the project:
-- !`cd projects/$ARGUMENTS-* && git status --short`
-- !`cd projects/$ARGUMENTS-* && git log --oneline -10`
-- !`cd projects/$ARGUMENTS-* && cat package.json 2>/dev/null | head -40`
+Read the project (use the **first** matching directory under `projects/$ARGUMENTS*`; the glob may match `projects/003-pA` etc.):
+- !`set +o nomatch 2>/dev/null; cd $(ls -d projects/$ARGUMENTS* 2>/dev/null | head -1) && git status --short`
+- !`set +o nomatch 2>/dev/null; cd $(ls -d projects/$ARGUMENTS* 2>/dev/null | head -1) && git log --oneline -10`
+- !`set +o nomatch 2>/dev/null; PROJ_DIR=$(ls -d projects/$ARGUMENTS* 2>/dev/null | head -1); [ -f "$PROJ_DIR/package.json" ] && cat "$PROJ_DIR/package.json" | head -40 || [ -f "$PROJ_DIR/pyproject.toml" ] && cat "$PROJ_DIR/pyproject.toml" | head -40 || echo "(no package.json or pyproject.toml)"`
 
 ## Gates (run in order; stop at first hard-block if critical)
 
 ### G1 — Type check
 ```bash
-cd projects/$ARGUMENTS-*
+cd $(ls -d projects/$ARGUMENTS* | head -1)
 # JS/TS:
 pnpm tsc --noEmit 2>&1 | tail -20
 # Python:
