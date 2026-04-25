@@ -158,7 +158,7 @@ Karpathy最近的autoresearch让我印象深刻，那个项目是给定一个任
 **提出日期**: 2026-04-24
 **状态**: L3-scoping-existing-design
 
-### 想法 
+### 想法
 已有成熟 L4 级设计(discussion/003/L2/stage-L2-explore-003.md)。对抗审
 已完成(discussion/003/L3/moderator-notes.md)。现在通过 L3 Scope 层,让模型独立产出 scope candidates,和现有设计对比,
 看是否漏了别的切法。独立产出后，审视当前"14 周 × 6 人 × 这个范围"是不是最好切法,产出候选 scope 菜单对比现有设计。

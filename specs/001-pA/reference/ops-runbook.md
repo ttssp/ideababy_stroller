@@ -123,7 +123,7 @@
 
 | Account | 用途 | 创建方式 |
 |---|---|---|
-| `root` | 初装 apt · 不日常用 | VPS provider 给的 | 
+| `root` | 初装 apt · 不日常用 | VPS provider 给的 |
 | `operator`（或 `yashu`） | SSH 登录 · 日常运维 | `adduser operator` + `usermod -aG sudo operator` |
 | `pi-briefing` | 应用 runtime user | `adduser --disabled-password --gecos '' pi-briefing` |
 | `postgres` | DB runtime user | 由 `postgresql-16` 安装自动创建 |

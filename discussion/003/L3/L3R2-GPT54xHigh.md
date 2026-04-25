@@ -1,7 +1,7 @@
 # Idea 003 · L3R2 · GPT-5.4 xhigh
 
-**Timestamp**: 2026-04-24T06:55:15Z  
-**Opponent's L3R1 read**: yes  
+**Timestamp**: 2026-04-24T06:55:15Z
+**Opponent's L3R1 read**: yes
 **Searches run**: 6, scope-reality only
 
 ## 1. From opponent's candidates — what sharpened my thinking
@@ -27,29 +27,29 @@
 
 ### Candidate A · “Train-to-Decision”
 
-**User / stories**：面向有本机训练条件、想认真回答一个后训练问题的 single-operator。用户定义一个问题与成功标准，系统完成 baseline、1-2 个 LoRA/SFT 变体、held-out 对比与最终决策记录。  
-**IN**：单研究问题、最小后训练闭环、统一本地日志、失败归因、最终 markdown 报告。  
-**OUT**：多 worker 编排、论坛、自动 judge 主裁、开放式文献综述、通用 prompt playground。  
-**Success / time / UX / risk**：8-10 周；成功是用户能对一个问题做 keep/kill 决策，而不是“跑了很多实验”。UX 上先证据后结论，昂贵动作前必须显式确认。最大风险是硬件前提不成立。  
-**Scope-reality verdict**：最健康。它顺着 Axolotl/Unsloth 的真实使用面走，同时把差异化放在“agent 驱动决策闭环”而非训练框架本身。  
+**User / stories**：面向有本机训练条件、想认真回答一个后训练问题的 single-operator。用户定义一个问题与成功标准，系统完成 baseline、1-2 个 LoRA/SFT 变体、held-out 对比与最终决策记录。
+**IN**：单研究问题、最小后训练闭环、统一本地日志、失败归因、最终 markdown 报告。
+**OUT**：多 worker 编排、论坛、自动 judge 主裁、开放式文献综述、通用 prompt playground。
+**Success / time / UX / risk**：8-10 周；成功是用户能对一个问题做 keep/kill 决策，而不是“跑了很多实验”。UX 上先证据后结论，昂贵动作前必须显式确认。最大风险是硬件前提不成立。
+**Scope-reality verdict**：最健康。它顺着 Axolotl/Unsloth 的真实使用面走，同时把差异化放在“agent 驱动决策闭环”而非训练框架本身。
 **Best-fit profile**：human 真痛点就是 LoRA/SFT 判断，而不是想玩并行 agent。
 
 ### Candidate B · “Gate-Then-Train Ledger”
 
-**User / stories**：面向更在意速度与成本的研究者。先围绕一个研究问题做便宜验证，再由 human 批准进入一次最小后训练，最后把 cheap probe 与训练结果写进同一研究账本。  
-**IN**：单问题账本、cheap-first gate、一次后训练通道、统一报告、本地轻量追踪。  
-**OUT**：宽平台、自动分叉多个方向、重 dashboard、复杂协作层。  
-**Success / time / UX / risk**：9-11 周；成功是 2-3 天内拿到“该不该上训练”的证据，并在同一条目里保留后续结果。UX 核心是先便宜后昂贵。最大风险是范围滑向“什么都沾一点”。  
-**Scope-reality verdict**：现实感最强的折中案。它吸收了 local-first tracking 的经验，也避免把全部预算押在训练之前。  
+**User / stories**：面向更在意速度与成本的研究者。先围绕一个研究问题做便宜验证，再由 human 批准进入一次最小后训练，最后把 cheap probe 与训练结果写进同一研究账本。
+**IN**：单问题账本、cheap-first gate、一次后训练通道、统一报告、本地轻量追踪。
+**OUT**：宽平台、自动分叉多个方向、重 dashboard、复杂协作层。
+**Success / time / UX / risk**：9-11 周；成功是 2-3 天内拿到“该不该上训练”的证据，并在同一条目里保留后续结果。UX 核心是先便宜后昂贵。最大风险是范围滑向“什么都沾一点”。
+**Scope-reality verdict**：现实感最强的折中案。它吸收了 local-first tracking 的经验，也避免把全部预算押在训练之前。
 **Best-fit profile**：human 不确定后训练是否应当天天发生，但又不想把它完全后置。
 
 ### Candidate C · “Training Sidecar Pair”
 
-**User / stories**：面向愿意为“不中断上下文”付额外范围的人。主线只做一个训练/eval 闭环；sidecar 只负责摘要、风险、候选下一步，不自行扩张任务。  
-**IN**：1 条主线 + 1 个摘要 sidecar、统一报告、明确人审闸门。  
-**OUT**：3+ workers、自动合并、多 issue 编排、把 sidecar 发展成真正 orchestrator。  
-**Success / time / UX / risk**：10-12 周；成功不是更高吞吐，而是用户在长 run 后能无缝接回思路。UX 原则是“助手只建议，人类做决定”。最大风险是 sidecar 很容易变成编排表演。  
-**Scope-reality verdict**：可做，但不是 moat。官方文档给了它形态合法性，却没有给它强烈市场空白。  
+**User / stories**：面向愿意为“不中断上下文”付额外范围的人。主线只做一个训练/eval 闭环；sidecar 只负责摘要、风险、候选下一步，不自行扩张任务。
+**IN**：1 条主线 + 1 个摘要 sidecar、统一报告、明确人审闸门。
+**OUT**：3+ workers、自动合并、多 issue 编排、把 sidecar 发展成真正 orchestrator。
+**Success / time / UX / risk**：10-12 周；成功不是更高吞吐，而是用户在长 run 后能无缝接回思路。UX 原则是“助手只建议，人类做决定”。最大风险是 sidecar 很容易变成编排表演。
+**Scope-reality verdict**：可做，但不是 moat。官方文档给了它形态合法性，却没有给它强烈市场空白。
 **Best-fit profile**：human 最在乎的是连续性、解释性和认知负担，而不是最短工期。
 
 ## 4. The single biggest tradeoff human must decide

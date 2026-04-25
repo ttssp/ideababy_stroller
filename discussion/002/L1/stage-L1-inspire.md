@@ -300,4 +300,3 @@ crypto pivot 后菜单聚在三个 cluster,彼此之间有有趣的互补关系:
 - 2026-04-23T15:57:45Z · Direction 7 "DAO Bounty as Skill Market" forked as `002g-dao-bounty` (status: just-created · next: /explore-start 002g-dao-bounty)
 
 **Fork combination rationale**:三条为"Cluster B + skill fallback"组合——002b 是 routine 主线 · 002f 是 acute 伴生 · 002g 是启动期 skill 兜底。三条共享客户池假设 + 前置基础设施(稳定币 payroll 铺开);002g 在启动期保障 $100/天现金流底线,002b 稳定后 002g 自然退场或转为客源 funnel。
-

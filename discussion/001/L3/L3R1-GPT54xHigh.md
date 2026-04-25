@@ -189,16 +189,16 @@
 
 ## 5. Proposed red lines (3, basis: L2 §5)
 
-1. **v0.1 不扩成通用论文发现器，只守 8-15 个重点 topic。**  
+1. **v0.1 不扩成通用论文发现器，只守 8-15 个重点 topic。**
    Basis: L2 明确把“聚焦 topic density”视为价值来源；一旦扩到全域，产品会退化成普通 discovery 工具。
 
-2. **v0.1 只委托 triage，不承诺替代第一手阅读。**  
+2. **v0.1 只委托 triage，不承诺替代第一手阅读。**
    Basis: L2 把“替代阅读”定义为坏方向；好的方向是帮用户知道什么该读、什么只留痕、什么可以暂时略过。
 
-3. **v0.1 不做公开评分、公开评论市场或论文社交 feed。**  
+3. **v0.1 不做公开评分、公开评论市场或论文社交 feed。**
    Basis: L2 把私密与信任视为基础；公开层会把 lab 的 shared brain 变成表演场，而不是判断资产。
 
-4. **Optional: 不把 graph/map 当唯一首页入口。**  
+4. **Optional: 不把 graph/map 当唯一首页入口。**
    Basis: L2 已经把 digest-first 视为首页默认，map 只能是 second-order explainer layer。
 
 ## 6. Questions that need real user interviews

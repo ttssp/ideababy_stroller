@@ -1,6 +1,6 @@
 ## Pre-L3 context (from track A adversarial review)
 
-对抗审发现的一些findings. These findings should inform L3 candidate scopes — any scope that doesn't 
+对抗审发现的一些findings. These findings should inform L3 candidate scopes — any scope that doesn't
 address these is incomplete.
 
 -----
@@ -462,6 +462,3 @@ address these is incomplete.
 **v1.1 补强结论**:两份审查**结构性发现高度一致**,合并评分 47/100 稳定在"Buildable but high risk"带。**P0 8 条必须在 S1 kickoff 之前关闭**;P1 10 条必须在 Stage 1.5(S2 → S3 之间)关闭。
 
 **不关闭 P0 即开 S1 = 第一次真跑可能就是财务/安全/合规事故**(主账号 key exfil、冒名写 leaderboard、worktree 里 hooks 被自改、pypi 拉恶意包、预算硬帽被延迟窗口击穿 — 任一发生即新闻级事件)。
-
-
-
