@@ -412,6 +412,49 @@
 
 ---
 
+## 2026-04-24 · G11 · T001 LLM spike 从 Phase 0 强制 gate 降格为 Phase 2 validation milestone
+
+**触发**：T001 spike v0.1 首轮在 GLM5.1 fixture 上跑完（`projects/001-pA/spikes/runs/glm-2026-04-24T14-12-29-901Z.json`）。
+
+**结果**：
+- judge_accuracy = **14/20** = 70.0%（擦边过 70% accuracy gate · 落在 spec.md §6 模糊带 [13/20, 15/20]）
+- p95_summarize = **46289 ms**（gate ≤ 5000 ms · 超 9.3× ❌）
+- monthly_cost (60k calls/月 · GPT-5.4 placeholder pricing) = **$1838.5**（gate ≤ $50 · 超 36.8× ❌ · 但单价依赖火山真实账单未到位）
+
+**犹豫**：三选一 ——
+- A. 严守 spec：触发 Codex second-opinion（已起草 inbox · 文件 `.codex-inbox/20260424T150000-001-pA-T001-spike-second-opinion-DEFERRED.md`）→ 按 review 结果 proceed / refine-then-rerun / fallback
+- B. 推迟 LLM 调优：现在用 stub / heuristic 占位 · 把 T002–T013 端到端骨架先跑通 · LLM 调优挪到 Phase 2 在真实数据上重跑
+- C. 折中：不签 approved-provider 但记 risks.md · 用 stub 推进 · 等系统骨架好再回头跑真 LLM 测准
+
+**决策**：选 B。
+
+**第一性**（operator 决策，2026-04-24）：
+1. **判 LLM 准确率需要真实端到端语境** —— 单看 fixture 20 条人工标的判准，模型对它"过度自信"是必然。要看模型在真实 arxiv crawl + topic anchor 链路下的实际表现，等 T010/T011/T012/T013 跑通有真数据之后再评最准（这就是 T001-v2 的意义）。
+2. **延迟 ❌ + 成本 ❌ 这俩硬 gate 现在调不动** —— 延迟 46s 是 GLM5.1 长 thinking 的架构特性，不在 prompt 工程能解决的范围内；成本 gate 依赖火山真实账单到位才能终判。继续 prompt 工程救不了真正卡住的两条 gate。
+3. **B 走法的代价小** —— 只是 spec 改 13 个文件、~130 行 edit 量、~70 min 工时；Phase 1 全程默认走 heuristic（系统设计本来就允许这条降级路径，TECH-1 mitigation 写得很清楚）。
+
+**落地**（13 个文件 / 3 个 commit）：
+
+| Commit | 文件 | 改动 |
+|---|---|---|
+| 1 · spec 主体 | `spec.md` 0.3.1 → **0.4.0** | §5 Phase 0 标题 + T001 条目改写 + Phase 0 Exit 删除 T001 sign-off + Phase 2 加 T001-v2 + §6 验收降格 + §6 OP-Q1 resolved + changelog 0.4.0 entry |
+| 1 · spec 主体 | `tasks/T001.md` | header `phase 0→2` · `depends_on []→[T010,T011,T012,T013]` · `blocks [T004,T010,T011]→[]` · `estimated_hours 8→4` · 加 status 段 · Goal 改写为 T001-v2 |
+| 1 · spec 主体 | `risks.md` 0.3.1 → **0.4.0** | TECH-1 mitigation 改写 · 加 v0.1 status 行 · changelog 0.4.0 entry |
+| 1 · spec 主体 | `DECISIONS-LOG.md` | **本条 G11** |
+| 2 · 解依赖 | `tasks/T004.md` | `depends_on [T001,T002]→[T002]` · 写明 stub 实现范围（Phase 1 不调真 SDK · 只落 interface + heuristic 占位） |
+| 2 · 解依赖 | `tasks/T010.md` | `depends_on [T001,T003,T006]→[T003,T006]` |
+| 2 · 解依赖 | `tasks/T012.md` | `LLM_JUDGE_ENABLED` 默认 `false` · "T001 spike 通过后 operator 翻 true" → "Phase 2 T001-v2 通过后" |
+| 3 · 周边同步 | `PHASE-0-KICKOFF-CHECKLIST.md` | §1/§5/§6/§9 删除 T001 相关条目 + 加 (DEFERRED · Phase 2) 注释 |
+| 3 · 周边同步 | `tech-stack.md` | §2/§2.5 标题改 T001-v2 + changelog 0.2.0 entry |
+| 3 · 周边同步 | `STATUS.md` | 顶部加 2026-04-24 状态行 |
+| 3 · 周边同步 | `projects/001-pA/spikes/T001-llm-provider-report.md` | 末尾加 v0.1 freeze 段（不签 approved-provider · 等 v2） |
+
+**Codex review 命运**：已起草的 second-opinion inbox 文件加 `-DEFERRED` 后缀（`.codex-inbox/20260424T150000-001-pA-T001-spike-second-opinion-DEFERRED.md`）· Phase 2 T001-v2 跑完后参考 · 不在 Phase 0 阶段触发。
+
+**adversarial review 影响**：spec 0.4.0 是结构性变更（Phase 0/1 默认路径变为 fallback heuristic）· 历史 R_final3 review 仅复核 G6/G7/G8/G9 mechanical sync · 本次改动**应在 Phase 2 T001-v2 重跑前由 Codex 做一轮 narrow adversarial review** 复核 Phase 0 task DAG / Phase 1 LLM 路径默认值是否一致。
+
+---
+
 ## 持续更新
 
 每次遇到"犹豫点"且超过 3 分钟思考时，在此追加新条目。格式：
