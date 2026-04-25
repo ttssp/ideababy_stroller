@@ -1,6 +1,9 @@
 # Spec — 003-pA · "RecallKit" 单人后训练决策循环
 
-**Version**: 0.2.2
+**v0.2 增量**: 见 `specs/003-pA/spec-v0.2-fleet.md`(fleet mode · 4 个 T029-T032 task · v0.1 完全向后兼容)
+
+**Version**: 0.3.0-dev (主版号 bump:v0.1.0 已 ship + v0.2 fleet mode 规划中)
+**Previous**: 0.2.2
 **Created**: 2026-04-24 · **Updated**: 2026-04-24 (v0.2.2 · 操作员 OQ1/OQ2/OQ5 决策 lock-in · 不改 scope)
 **Source PRD**: `discussion/003/003-pA/PRD.md` (v1.0, human-approved)
 **Lineage**: 003 (PARS 14 周方案 L2 → L3 候选 A → 003-pA PRD)
