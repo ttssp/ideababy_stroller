@@ -1,0 +1,122 @@
+```mermaid
+graph TD
+    %% R2 修订: T020 提前到 Phase 1 末段 (H1); T021 解耦 T019 (H3); T008 多依赖 T005/T007 (B1 draft 同步)
+
+    %% Phase 0 — 基础 (foundation)
+    T001[T001: 项目脚手架 + 依赖锁 + pre-commit]
+    T002[T002: 数据 schema + alembic 初始 migration<br/>含 decision_drafts 表 R2]
+    T003[T003: SQLite 持久化层 Repository]
+    T004[T004: Web UI shell + 多 tab + 免责 footer]
+    T005[T005: LLMClient 抽象 + 缓存 + 用量记账]
+
+    %% Phase 1 — 核心 pipeline + core loop (R2 修订)
+    T006[T006: 咨询师 pipeline · watched folder + PDF 解析]
+    T007[T007: StrategyModule IDL analyze only<br/>+ 三占位 R2]
+    T010[T010: ConflictReportAssembler 中立服务<br/>+ 三列 UI 顺序随机 + pause hook R2]
+    T013[T013: DevilAdvocateService 独立服务 R2]
+    T008[T008: 决策档案 draft→preview→commit<br/>双阶段 UX R2]
+    T009[T009: commit 阶段 30 秒 timing test E2E + 手动压测]
+    T011[T011: 错位矩阵 HTML table]
+    T012[T012: 关注股 + 持仓快照录入 UI]
+    T020_p1[T020: 失败告警 O10 + dashboard<br/>+ pause_pipeline façade R2 提前]
+
+    %% Phase 2 — review · 学习 · Telegram
+    T014[T014: 周度 review generator · cron + 维护工时<br/>tz Asia/Taipei R2]
+    T015[T015: 月度 review generator + pause hook<br/>partner audience 删 R2]
+    T016[T016: 个人金融笔记 wiki + 自动去重]
+    T017[T017: Telegram bot · 周报 + event<br/>+ per-market session R2 D24]
+    T018[T018: post-mortem 回填字段 UI]
+
+    %% Phase 3 — 学习检查 · onboarding · B-lite
+    T019[T019: 学习检查季度自查 + 评分脚本]
+    T021[T021: Onboarding 15 分钟 + runbook + README<br/>解耦 T019 R2]
+    T022[T022: B-lite 降级路径 runbook + meta_decisions<br/>显式调 pause hook R2]
+
+    %% Phase 0 内部依赖
+    T001 --> T002
+    T001 --> T003
+    T001 --> T004
+    T001 --> T005
+    T002 --> T003
+    T002 --> T005
+
+    %% Phase 0 → Phase 1
+    T002 --> T006
+    T002 --> T007
+    T002 --> T008
+    T002 --> T010
+    T002 --> T011
+    T002 --> T012
+    T002 --> T013
+    T002 --> T020_p1
+    T003 --> T006
+    T003 --> T008
+    T003 --> T010
+    T003 --> T011
+    T003 --> T012
+    T003 --> T016
+    T003 --> T020_p1
+    T004 --> T008
+    T004 --> T010
+    T004 --> T011
+    T004 --> T012
+    T005 --> T006
+    T005 --> T007
+    T005 --> T008
+    T005 --> T010
+    T005 --> T013
+    T005 --> T016
+    T005 --> T019
+
+    %% Phase 1 内部依赖 (R2 修订)
+    T006 --> T010
+    T007 --> T010
+    T007 --> T008
+    T010 --> T008
+    T013 --> T008
+    T008 --> T009
+    T008 --> T018
+    T010 --> T020_p1
+    T012 --> T011
+
+    %% Phase 1 → Phase 2
+    T002 --> T014
+    T003 --> T014
+    T006 --> T014
+    T010 --> T014
+    T002 --> T015
+    T003 --> T015
+    T011 --> T015
+    T013 --> T015
+    T014 --> T015
+    T002 --> T016
+    T002 --> T017
+    T003 --> T017
+    T010 --> T017
+    T014 --> T017
+    T002 --> T018
+    T003 --> T018
+    T008 --> T018
+
+    %% Phase 1/2 → Phase 3 (R2 修订)
+    T002 --> T019
+    T003 --> T019
+    T016 --> T019
+    T009 --> T021
+    T012 --> T021
+    T020_p1 --> T021
+    T010 --> T022
+    T015 --> T022
+    T020_p1 --> T022
+
+    %% Phase 着色
+    classDef phase0 fill:#e8f0fe,stroke:#1a73e8
+    classDef phase1 fill:#e6f4ea,stroke:#188038
+    classDef phase2 fill:#fff4cc,stroke:#f9ab00
+    classDef phase3 fill:#fce8e6,stroke:#d93025
+
+    class T001,T002,T003,T004,T005 phase0
+    class T006,T007,T008,T009,T010,T011,T012,T013,T020_p1 phase1
+    class T014,T015,T016,T017,T018 phase2
+    class T019,T021,T022 phase3
+```
