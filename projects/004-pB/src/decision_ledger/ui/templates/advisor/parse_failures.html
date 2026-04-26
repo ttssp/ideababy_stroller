@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{# parse_failures.html — T006
+   结论: 列出 PDF 解析失败记录，提供手工结构化录入入口
+   细节:
+     - TECH-3 fallback: LLM 解析失败的手工处理 UI
+     - 每条失败记录提供"手工结构化"按钮，跳转到 manual_structure 页
+#}
+
+{% block title %}解析失败记录 — 决策账本{% endblock %}
+
+{% block content %}
+<section>
+  <hgroup>
+    <h1>解析失败记录</h1>
+    <p>以下 PDF 文件解析失败，可手工录入结构化数据。</p>
+  </hgroup>
+
+  {% if failures %}
+  <div class="overflow-auto">
+    <table>
+      <thead>
+        <tr>
+          <th>失败时间</th>
+          <th>PDF 路径</th>
+          <th>错误信息</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in failures %}
+        <tr>
+          <td>{{ f.failed_at.strftime('%Y-%m-%d %H:%M') if f.failed_at else '-' }}</td>
+          <td><code>{{ f.pdf_path }}</code></td>
+          <td>{{ f.error_message[:100] }}{% if f.error_message|length > 100 %}...{% endif %}</td>
+          <td>
+            <a href="/advisor/manual-structure?failure_id={{ f.failure_id }}&pdf_path={{ f.pdf_path | urlencode }}"
+               role="button"
+               class="secondary"
+               style="font-size: 0.85rem; padding: 0.25rem 0.75rem;">
+              手工结构化
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <article>
+    <p>暂无解析失败记录。所有 PDF 已成功处理。</p>
+  </article>
+  {% endif %}
+
+  <hr>
+  <p>
+    <a href="/advisor/paste" role="button" class="outline">上传 PDF (备用入口)</a>
+    <a href="/" class="secondary" style="margin-left: 1rem;">返回首页</a>
+  </p>
+</section>
+{% endblock %}
