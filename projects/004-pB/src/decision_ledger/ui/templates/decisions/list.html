@@ -1,0 +1,54 @@
+{# decisions/list.html — T008
+   结论: 决策列表页，显示所有 actions 含 hold+wait (D2/R11)
+#}
+{% extends "base.html" %}
+
+{% block title %}决策列表 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>决策档案列表</h2>
+    <p>共 {{ decisions|length }} 条决策</p>
+    <a href="/decisions/new" role="button">新建决策 +</a>
+  </header>
+
+  {% if decisions %}
+  <div class="decisions-table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>股票</th>
+          <th>动作</th>
+          <th>理由</th>
+          <th>Agent 辅助？</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in decisions %}
+        <tr>
+          <td>{{ d.pre_commit_at.strftime('%Y-%m-%d') }}</td>
+          <td>{{ d.ticker }}</td>
+          <td>
+            <span class="action-badge action-{{ d.action.value }}">
+              {{ d.action.value }}
+            </span>
+          </td>
+          <td>{{ d.reason }}</td>
+          <td>{{ "是" if not d.would_have_acted_without_agent else "否" }}</td>
+          <td><a href="/decisions/{{ d.trade_id }}">详情</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>暂无决策记录。</p>
+    <a href="/decisions/new" role="button">立即录入第一条决策</a>
+  </div>
+  {% endif %}
+</article>
+{% endblock %}

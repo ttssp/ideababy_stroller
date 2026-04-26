@@ -1,0 +1,138 @@
+{# decisions/draft_preview.html — T008
+   结论: 三列冲突报告预览页 + commit 表单
+   细节:
+     - CSS Grid 1fr 1fr 1fr 三列（按 rendered_order_seed 随机排列）
+     - 每列 data-source 属性标注信号来源
+     - 包含魔鬼代言人反驳、commit 表单
+     - commit 表单含 final_action/final_reason/would_have_acted_without_agent
+     - would_have_acted 强制 yes/no（R2 M1），commit button 在未选前 disabled
+#}
+{% extends "base.html" %}
+
+{% block title %}预览决策草稿 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>决策分析预览</h2>
+    <p>
+      <strong>{{ draft.ticker }}</strong> —
+      {{ draft.intended_action.value }}
+    </p>
+    <p class="draft-reason-display">「{{ draft.draft_reason }}」</p>
+  </header>
+
+  <!-- 冲突报告：三列 CSS Grid -->
+  <section class="conflict-report-grid" aria-label="三路信号冲突分析">
+    <h3>三路信号分析</h3>
+
+    {% set col_order = columns %}
+    <div class="signals-grid">
+      {% for signal in col_order %}
+      <div class="signal-column" data-source="{{ signal.source_id }}">
+        <div class="signal-header">
+          <span class="source-label">{{ signal.source_id }}</span>
+          <span class="direction-badge direction-{{ signal.direction.value.lower() }}">
+            {{ signal.direction.value }}
+          </span>
+          <span class="confidence-bar">信心 {{ "%.0f"|format(signal.confidence * 100) }}%</span>
+        </div>
+        <div class="signal-rationale">
+          {{ signal.rationale_plain }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- 分歧根因 -->
+    <div class="divergence-summary {% if report.has_divergence %}has-divergence{% endif %}">
+      <strong>分析摘要：</strong> {{ report.divergence_root_cause }}
+    </div>
+  </section>
+
+  <!-- 魔鬼代言人反驳 -->
+  <section class="devils-rebuttal" aria-label="魔鬼代言人反驳">
+    <h3>魔鬼代言人</h3>
+    <blockquote>
+      {{ rebuttal.rebuttal_text }}
+    </blockquote>
+  </section>
+
+  <!-- Commit 表单 -->
+  <section class="commit-form-section">
+    <h3>确认提交决策</h3>
+
+    <form method="post" action="/decisions/{{ draft.draft_id }}/commit" id="commit-form">
+      <!-- 最终动作（可修改） -->
+      <fieldset>
+        <legend>最终决策动作</legend>
+        <label>
+          <input type="radio" name="final_action" value="buy"
+            {% if draft.intended_action.value == 'buy' %}checked{% endif %}> 买入 (buy)
+        </label>
+        <label>
+          <input type="radio" name="final_action" value="sell"
+            {% if draft.intended_action.value == 'sell' %}checked{% endif %}> 卖出 (sell)
+        </label>
+        <label>
+          <input type="radio" name="final_action" value="hold"
+            {% if draft.intended_action.value == 'hold' %}checked{% endif %}> 持有 (hold)
+        </label>
+        <label>
+          <input type="radio" name="final_action" value="wait"
+            {% if draft.intended_action.value == 'wait' %}checked{% endif %}> 等待 (wait)
+        </label>
+      </fieldset>
+
+      <!-- 最终理由 -->
+      <label for="final_reason">
+        最终决策理由 <small>（最多 80 字）</small>
+        <textarea
+          id="final_reason"
+          name="final_reason"
+          maxlength="80"
+          rows="3"
+          required
+          oninput="updateCount(this)"
+        >{{ draft.draft_reason }}</textarea>
+        <small id="reason-count">0/80</small>
+      </label>
+
+      <!-- would_have_acted_without_agent（R2 M1 强制）-->
+      <fieldset>
+        <legend>
+          若没有 AI Agent，你是否仍会做出此决策？
+          <small>（必填，M1 指标）</small>
+        </legend>
+        <label>
+          <input type="radio" name="would_have_acted_without_agent" value="yes"
+                 onchange="checkWouldHaveActed()"> 是 (yes)
+        </label>
+        <label>
+          <input type="radio" name="would_have_acted_without_agent" value="no"
+                 onchange="checkWouldHaveActed()"> 否 (no)
+        </label>
+      </fieldset>
+
+      <button type="submit" id="commit-btn" disabled>
+        确认提交决策档案
+      </button>
+    </form>
+  </section>
+
+  <footer>
+    <a href="/decisions/new">← 放弃，重新填写</a>
+  </footer>
+</article>
+
+<link rel="stylesheet" href="/static/decisions.css">
+<script src="/static/decisions.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const ta = document.getElementById('final_reason');
+    if (ta) updateCount(ta);
+    // commit button 初始 disabled，直到选了 would_have_acted
+    checkWouldHaveActed();
+  });
+</script>
+{% endblock %}

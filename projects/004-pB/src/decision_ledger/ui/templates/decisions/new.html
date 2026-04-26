@@ -1,0 +1,113 @@
+{# decisions/new.html — T008
+   结论: 决策草稿表单页，含 ticker/action/reason 输入
+   细节:
+     - action radios 带键盘快捷键 1-4
+     - reason textarea maxlength=80 带字数倒计时
+     - 提交到 POST /decisions/draft
+#}
+{% extends "base.html" %}
+
+{% block title %}新建决策草稿 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>新建决策草稿</h2>
+    <p>在提交前，系统将生成冲突分析报告和魔鬼代言人反驳。</p>
+  </header>
+
+  <form method="post" action="/decisions/draft" id="draft-form">
+    <!-- Ticker 输入 -->
+    <label for="ticker">
+      股票代码
+      <input
+        type="text"
+        id="ticker"
+        name="ticker"
+        placeholder="例如 AAPL, NVDA"
+        required
+        autocomplete="off"
+        autocapitalize="characters"
+        {% if last_ticker %}value="{{ last_ticker }}"{% endif %}
+      >
+    </label>
+
+    <!-- Action Radio 按钮（键盘快捷键 1-4） -->
+    <fieldset>
+      <legend>决策动作 <small>（按数字键 1-4 快速选择）</small></legend>
+
+      <label>
+        <input
+          type="radio"
+          name="intended_action"
+          value="buy"
+          id="action-buy"
+          {% if last_action == 'buy' %}checked{% else %}{% if not last_action %}checked{% endif %}{% endif %}
+        >
+        <span>[1] 买入 (buy)</span>
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="intended_action"
+          value="sell"
+          id="action-sell"
+          {% if last_action == 'sell' %}checked{% endif %}
+        >
+        <span>[2] 卖出 (sell)</span>
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="intended_action"
+          value="hold"
+          id="action-hold"
+          {% if last_action == 'hold' %}checked{% endif %}
+        >
+        <span>[3] 持有 (hold)</span>
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          name="intended_action"
+          value="wait"
+          id="action-wait"
+          {% if last_action == 'wait' %}checked{% endif %}
+        >
+        <span>[4] 等待 (wait)</span>
+      </label>
+    </fieldset>
+
+    <!-- 决策理由 -->
+    <label for="draft_reason">
+      决策理由 <small>（最多 80 字）</small>
+      <textarea
+        id="draft_reason"
+        name="draft_reason"
+        maxlength="80"
+        rows="3"
+        placeholder="简述你的决策依据（80 字以内）..."
+        required
+        oninput="updateCount(this)"
+      >{% if last_reason %}{{ last_reason }}{% endif %}</textarea>
+      <small id="reason-count">0/80</small>
+    </label>
+
+    <button type="submit" id="submit-btn">
+      生成分析报告 →
+    </button>
+  </form>
+</article>
+
+<script src="/static/decisions.js"></script>
+<script>
+  // 初始化字数计数
+  document.addEventListener('DOMContentLoaded', function() {
+    const ta = document.getElementById('draft_reason');
+    if (ta) updateCount(ta);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,155 @@
+/* decisions.css — T008
+   结论: 决策 UI 专属样式，三列冲突报告 CSS Grid
+   细节:
+     - .signals-grid: CSS Grid 1fr 1fr 1fr（三列等宽）
+     - .signal-column: 单信号列样式
+     - .direction-badge: 方向标签色彩
+     - .commit-form-section: 提交区域样式
+*/
+
+/* ── 三列冲突报告 Grid ─────────────────────────────────── */
+.signals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.signal-column {
+  padding: 1rem;
+  border: 1px solid var(--pico-border-color, #dee2e6);
+  border-radius: var(--pico-border-radius, 0.375rem);
+  background: var(--pico-card-background-color, #fff);
+}
+
+.signal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.source-label {
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pico-muted-color, #6c757d);
+}
+
+.direction-badge {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.direction-badge.direction-long {
+  background: #d4edda;
+  color: #155724;
+}
+
+.direction-badge.direction-short {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.direction-badge.direction-neutral {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.confidence-bar {
+  font-size: 0.8rem;
+  color: var(--pico-muted-color, #6c757d);
+}
+
+.signal-rationale {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* ── 分歧摘要 ─────────────────────────────────────────── */
+.divergence-summary {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--pico-border-color, #dee2e6);
+}
+
+.divergence-summary.has-divergence {
+  border-left-color: #ffc107;
+  background: #fffbea;
+}
+
+/* ── 魔鬼代言人反驳 ─────────────────────────────────────── */
+.devils-rebuttal {
+  margin: 1.5rem 0;
+}
+
+.devils-rebuttal blockquote {
+  border-left: 3px solid #dc3545;
+  background: #fff5f5;
+  padding: 0.75rem 1rem;
+  font-style: italic;
+}
+
+/* ── commit 表单区 ────────────────────────────────────── */
+.commit-form-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--pico-border-color, #dee2e6);
+}
+
+/* ── action badge 色彩 ───────────────────────────────── */
+.action-badge {
+  display: inline-block;
+  padding: 0.15em 0.5em;
+  border-radius: 0.25em;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.action-badge.action-buy   { background: #d4edda; color: #155724; }
+.action-badge.action-sell  { background: #f8d7da; color: #721c24; }
+.action-badge.action-hold  { background: #cce5ff; color: #004085; }
+.action-badge.action-wait  { background: #e2e3e5; color: #383d41; }
+
+/* ── 草稿理由显示 ────────────────────────────────────── */
+.draft-reason-display {
+  color: var(--pico-muted-color, #6c757d);
+  font-style: italic;
+}
+
+/* ── 空状态 ──────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--pico-muted-color, #6c757d);
+}
+
+/* ── 决策详情 ────────────────────────────────────────── */
+.decision-summary dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+}
+
+.decision-summary dt {
+  font-weight: bold;
+  color: var(--pico-muted-color, #6c757d);
+}
+
+.post-mortem-link {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px dashed var(--pico-border-color, #dee2e6);
+  border-radius: var(--pico-border-radius, 0.375rem);
+}
+
+/* ── 响应式: 小屏单列 ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .signals-grid {
+    grid-template-columns: 1fr;
+  }
+}
