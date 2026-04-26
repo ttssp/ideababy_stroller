@@ -1,8 +1,8 @@
 # Open Questions — 004-pB · 决策账本
 
-**Version**: 0.2
+**Version**: 0.3.1
 **Created**: 2026-04-25T15:35:00+08:00
-**Updated**: 2026-04-25T19:30:00+08:00 (R2 surgical revision)
+**Updated**: 2026-04-26T20:30:00+08:00 (R4 surgical patch · Q7 默认假设与 T019 对齐)
 **Companion**: PRD §11 · spec.md §8
 
 > 本文档记录 spec 阶段**未独立解决**, 需 human / operator 决定的问题。
@@ -15,6 +15,8 @@
 |---------|---------|
 | 0.1 | 初稿 (Q1-Q10) |
 | 0.2 (R2) | Q4 推后到 v1.0+ (M5: D18 删除); Q5 RESOLVED (H5: D9 锁死); 新增 Q11 (cache miss 例外审) |
+| **0.3 (R3)** | **删除 Q11** (R2 引入的 cache miss 5-10s 例外与 PRD §S1 / §6 O5 原口径冲突, 路径 A 守 PRD 不允许此例外; 工程兜底改为 D13 / D21 fast-path + cache 预热 + OP-1 mitigation) |
+| **0.3.1 (R4)** | **Q7 默认假设修正** (Codex R3 MEDIUM finding #2): 改回 (b) human 手编 master checklist (`docs/learning_checklist.yaml`), 与 T019 R3 一致; 不再写 (a) LLM 自动抽取 |
 
 ---
 
@@ -147,7 +149,7 @@ OPEN — 风险是 upkeep + build time 一起拉爆.
 - (a) LLM 从过去 90 天笔记 wiki 自动抽取概念列表 + 自动出题
 - (b) human 自己手编一份 master checklist, 系统每季度展示填空
 
-**spec 默认假设 (暂用)**: **(a) LLM 从笔记 wiki 抽取**, human 评分; LLM 输出题目 + 标准答案, human 写答案 + 自评是否 "懂"
+**spec 默认假设 (R3 修订, 与 T019 一致)**: **(b) human 手编 master checklist** (`docs/learning_checklist.yaml`), agent 仅按 checklist 抽问 + 评分; LLM **不**抽取/出题 (R3 B-R2-4 cut: 节省 LLM 工时 + 防"学习假装", human 自定义概念列表更可控). 实现见 `tasks/T019.md`.
 
 **Block 状态**: 不阻塞 spec, 阻塞 Phase 3 学习检查实现
 
@@ -211,30 +213,19 @@ OPEN — 风险是 upkeep + build time 一起拉爆.
 
 ---
 
-## Q11. **(R2 新增)** Cache miss 时 draft 阶段 LLM 等待上限的可降级策略
+## Q11. ~~(R2 新增, R3 删除)~~ Cache miss 时 draft 阶段 LLM 等待上限
 
-**来源**: R2 修订引入 D21 (draft 阶段同步 LLM cache 命中常态 < 1s, miss 上限 10s);
-若实际 ship 后 cache miss 率高, 是否需要降级.
+**R3 删除**: 此 question 在 R2 引入是为了"合理化 cache miss 时 draft > 5s",
+但与 PRD §S1 / §6 O5 原口径 (单次录入 < 30s 全程) 冲突. 路径 A 守 PRD 不允许此
+例外. 工程兜底改为 D13 / D21 的 fast-path (Rebuttal max_tokens ≤ 100, ≤ 3s) +
+cache 预热 (≥ 95% 命中率) + OP-1 mitigation (cache miss > 5s 触发降级 B-lite,
+而非扩大上限).
 
-**问题**: D21 给的 cache miss 上限 10s 是工程估算 (Sonnet 4.6 cold-start 约 5-8s,
-三路并发 + rebuttal 约 8-10s p95). 若实际 ship 后 cache miss 率高 (新 ticker /
-旧 advisor_week / Anthropic API p95 飙升), **是否需要降级**:
-- (a) 缩短 prompt (减质换速)
-- (b) 仅生成 ConflictReport, Rebuttal 推后 commit 后再补 (回到 v0.1 v0.1 的部分异步设计)
-- (c) cache miss 时给 human 选项 "等 / 跳过冲突报告先 commit"
-
-**spec 默认假设 (暂用)**: **不降级**, 接受 cache miss 时 5-10s 等待 (估测 < 5%
-场景); 监控 `llm_usage` 表的 latency p95 + cache miss 率, 8 周后评估.
-
-**ConflictCacheWarmer (T010 新增, R2)** 服务于让 cache 命中成为常态: AdvisorParser
-完成后 enqueue 30-50 关注股 × (3 lane analyze + 1 assemble) 预生成. 周一次, 月成本
-$2-4, 在预算内.
-
-**Block 状态**: 不阻塞 v0.1, 监控数据驱动 v0.2 决策.
+**Block 状态**: 不存在 (R3 删除).
 
 ---
 
-## 总结表 (R2 修订)
+## 总结表 (R3 修订)
 
 | # | 问题 | 默认假设 | 阻塞 | 何时确认 |
 |---|------|---------|------|---------|
@@ -244,32 +235,33 @@ $2-4, 在预算内.
 | Q4 | **配偶可见度 (R2 推后)** | **D18 删除, v0.1 不预留接口** | 不阻塞 | v1.0+ 评估 |
 | Q5 | **Proxyman 接入 (R2 RESOLVED)** | **watched folder ~/decision_ledger/inbox/ + shell wrapper + Web 贴 PDF backup** | RESOLVED | — |
 | Q6 | 占位模型规则 | no_view | 不阻塞 | Phase 1 implementation |
-| Q7 | 学习检查内容 | LLM 抽取 (cut list 候选: 降级 human 手编) | Phase 3 | task-decomposer |
-| Q8 | 错位矩阵维度 | 行 ticker / 列 三方向 | Phase 1 | task-decomposer |
-| Q9 | Onboarding 步骤 | 15 分钟 7 步; **R2: step 7 解耦 T019** | 不阻塞 | Phase 3 |
+| Q7 | 学习检查内容 | **R3: human 手编 master checklist (yaml), agent 仅评分** | Phase 3 | task-decomposer |
+| Q8 | 错位矩阵维度 | 行 ticker / 列 三方向 (R3 简化: 无颜色) | Phase 1 | task-decomposer |
+| Q9 | Onboarding 步骤 | 15 分钟 7 步; R2: step 7 解耦 T019; R3: 模板合并 | 不阻塞 | Phase 3 |
 | Q10 | pre-commit hook | 是 | 不阻塞 | Phase 0 |
-| **Q11** | **Cache miss 降级 (R2 新增)** | **不降级, 接受 5-10s 等待 + 监控驱动 v0.2** | 不阻塞 | 8 周后 retro |
+| ~~Q11~~ | ~~Cache miss 降级 (R2)~~ | **R3 删除** (与 PRD 原口径冲突, 工程兜底 fast-path + 预热) | — | — |
 
 ---
 
-## Operator 决策路径建议 (R2 修订)
+## Operator 决策路径建议 (R3 修订)
 
 **spec freeze 前必答**: Q1 (影响 Phase 2 review 设计)
 
 **Phase 1 启动前可答**: ~~Q5~~ (R2 RESOLVED) / Q6 / Q8 (影响 Phase 1 任务粒度)
 
-**Phase 3 启动前可答**: Q7 / Q9
+**Phase 3 启动前可答**: Q7 (R3 修订: human 手编 master checklist) / Q9
 
-**8 周后 retro 评估**: Q2 / Q3 / **Q11** (影响 v0.2 是否继续 / 是否加冷静期 / 是否 cache 降级)
+**8 周后 retro 评估**: Q2 / Q3 (影响 v0.2 是否继续 / 是否加冷静期)
 
 **v1.0+ 评估窗口**: Q4 (配偶视角是否 v1.0+ 实施, R2 推后)
 
 ---
 
-## 自查 (spec-writer 提交前) — R2
+## 自查 (spec-writer 提交前) — R3
 
 - [x] 每个 question 标注 source + 默认假设 + 阻塞状态
 - [x] PRD §11 的 4 条全部转入 (Q1-Q4)
-- [x] spec 阶段新发现的问题 (Q5-Q11, R2 加 Q11) 都是工程级, 不是产品决策
+- [x] spec 阶段新发现的问题 (Q5-Q10) 都是工程级, 不是产品决策
 - [x] 任何"new in spec" 的 prior decision 不放在这里 (放 spec.md §4)
 - [x] **R2 修订**: Q4 推后到 v1.0+ (M5); Q5 RESOLVED (H5); 新增 Q11 (cache miss 降级评审, R2 D21 配套)
+- [x] **R3 修订**: Q11 删除 (与 PRD 原口径冲突, 改 D13/D21 fast-path); Q7 默认假设修订 (human 手编 yaml)
