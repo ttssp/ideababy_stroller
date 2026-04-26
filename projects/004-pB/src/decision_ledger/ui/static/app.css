@@ -1,0 +1,23 @@
+/* app.css — T004
+ * 结论: 极简自定义样式，覆盖 Pico CSS 必要样式
+ * 细节:
+ *   - 不引入 Tailwind (tech-stack.md: Pico CSS classless 不混 Tailwind)
+ *   - 只做 nav active 高亮 + footer 视觉分隔
+ */
+
+/* nav 当前页高亮 — Pico CSS classless 使用 aria-current="page" */
+nav a[aria-current="page"] {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* footer 顶部分隔线 */
+footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--pico-muted-border-color, #ccc);
+}
+
+footer small {
+  color: var(--pico-muted-color, #666);
+}

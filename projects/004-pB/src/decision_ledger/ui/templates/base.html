@@ -1,0 +1,40 @@
+{# base.html — T004
+   结论: 所有页面的基础模板，含 Pico CSS + HTMX (vendored, 不走 CDN)
+   细节:
+     - Pico CSS 2.0.6 (classless) 从 /static/ 加载，D5 离线启动不走 CDN
+     - HTMX 2.0.4 从 /static/ 加载，同上
+     - alert-banner hook: HTMX 轮询 /_partials/alert-banner (T020 接管前返回空)
+     - _nav.html 和 _footer.html 永远 include
+#}
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}决策账本{% endblock %}</title>
+  {# Pico CSS 2.0.6 — vendored, 不走 CDN (D5 离线启动) #}
+  <link rel="stylesheet" href="/static/pico.min.css">
+  {# app.css — 自定义样式覆盖 #}
+  <link rel="stylesheet" href="/static/app.css">
+  {# HTMX 2.0.4 — vendored, 不走 CDN (D5 离线启动) #}
+  <script src="/static/htmx.min.js"></script>
+</head>
+<body>
+  {# Alert Banner Hook — T020 接管前返回空; load + 60s 轮询 #}
+  <div id="alert-banner"
+       hx-get="/_partials/alert-banner"
+       hx-trigger="load, every 60s"
+       hx-swap="innerHTML">
+  </div>
+
+  <header class="container">
+    {% include "_nav.html" %}
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include "_footer.html" %}
+</body>
+</html>
