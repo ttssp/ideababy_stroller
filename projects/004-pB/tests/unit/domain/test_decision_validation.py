@@ -1,19 +1,19 @@
 """
 Decision 与 DecisionDraft 验证测试 — T002 TDD 先写 (红)
-结论: 覆盖 R2 关键 contract — action enum / reason 长度 / status / would_have_acted_without_agent NOT NULL
+结论: 覆盖 R2 关键 contract
+  - action enum / reason 长度 / status / would_have_acted_without_agent NOT NULL
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
 
 from decision_ledger.domain.decision import Action, Decision, DecisionStatus, PostMortem
 from decision_ledger.domain.env_snapshot import EnvSnapshot
-
 
 # ── fixture 工厂 ───────────────────────────────────────────────────────────────
 
@@ -24,7 +24,7 @@ def _make_env_snapshot() -> EnvSnapshot:
         holdings_pct=None,
         holdings_abs=None,
         advisor_week_id=None,
-        snapshot_at=datetime.now(tz=timezone.utc),
+        snapshot_at=datetime.now(tz=UTC),
     )
 
 
@@ -35,7 +35,7 @@ def _make_valid_decision(**overrides: object) -> dict[str, object]:
         "ticker": "TSM",
         "action": Action.BUY,
         "reason": "合理买入理由",
-        "pre_commit_at": datetime.now(tz=timezone.utc),
+        "pre_commit_at": datetime.now(tz=UTC),
         "env_snapshot": _make_env_snapshot(),
         "conflict_report_ref": str(uuid.uuid4()),
         "devils_rebuttal_ref": str(uuid.uuid4()),
@@ -160,7 +160,7 @@ def test_decision_post_mortem_optional() -> None:
 def test_decision_post_mortem_with_data() -> None:
     """结论: 含数据的 PostMortem 合法。"""
     pm = PostMortem(
-        executed_at=datetime.now(tz=timezone.utc),
+        executed_at=datetime.now(tz=UTC),
         result_pct_after_7d=2.5,
         result_pct_after_30d=None,
         retrospective_notes="回顾笔记",

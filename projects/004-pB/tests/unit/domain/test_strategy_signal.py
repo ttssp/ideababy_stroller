@@ -12,7 +12,6 @@ from decision_ledger.domain.conflict_report import ConflictReport
 from decision_ledger.domain.rebuttal import Rebuttal
 from decision_ledger.domain.strategy_signal import Direction, StrategySignal
 
-
 # ── fixture 工厂 ───────────────────────────────────────────────────────────────
 
 def _make_signal(
@@ -114,7 +113,7 @@ def test_conflict_report_signals_3_pass() -> None:
 
 def test_conflict_report_signals_more_than_3_pass() -> None:
     """结论: signals > 3 条合法。"""
-    signals = _make_three_signals() + [_make_signal(source_id="custom_v1")]
+    signals = [*_make_three_signals(), _make_signal(source_id="custom_v1")]
     cr = ConflictReport(
         signals=signals,
         divergence_root_cause="分歧",

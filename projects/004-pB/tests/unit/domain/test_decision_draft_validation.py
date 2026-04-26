@@ -6,7 +6,7 @@ DecisionDraft 验证测试 — T002 TDD 先写 (红)
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -16,7 +16,6 @@ from decision_ledger.domain.decision_draft import DecisionDraft, DraftStatus
 from decision_ledger.domain.env_snapshot import EnvSnapshot
 from decision_ledger.domain.portfolio import Market, Watchlist
 
-
 # ── fixture 工厂 ───────────────────────────────────────────────────────────────
 
 def _make_env_snapshot() -> EnvSnapshot:
@@ -25,7 +24,7 @@ def _make_env_snapshot() -> EnvSnapshot:
         holdings_pct=None,
         holdings_abs=None,
         advisor_week_id=None,
-        snapshot_at=datetime.now(tz=timezone.utc),
+        snapshot_at=datetime.now(tz=UTC),
     )
 
 
@@ -39,7 +38,7 @@ def _make_valid_draft(**overrides: object) -> dict[str, object]:
         "conflict_report_ref": None,
         "devils_rebuttal_ref": None,
         "status": DraftStatus.DRAFT,
-        "created_at": datetime.now(tz=timezone.utc),
+        "created_at": datetime.now(tz=UTC),
         "committed_at": None,
         "abandoned_at": None,
     }

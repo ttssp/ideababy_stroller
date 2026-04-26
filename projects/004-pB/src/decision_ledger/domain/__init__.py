@@ -18,7 +18,7 @@ from decision_ledger.domain.portfolio import Holding, HoldingsSnapshot, Market, 
 from decision_ledger.domain.rebuttal import Rebuttal
 from decision_ledger.domain.strategy_signal import Direction, StrategySignal
 
-__all__ = [
+__all__ = [  # noqa: RUF022 — 按模块语义分组优先于字母序
     # advisor
     "AdvisorWeeklyReport",
     "ParseFailure",

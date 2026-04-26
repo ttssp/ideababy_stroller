@@ -21,10 +21,14 @@ class LLMUsage(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    call_id: str                           # UUID 字符串
-    service: str                           # 调用方: "ConflictReportAssembler" / "AdvisorStrategy.analyze" / ...
-    model: str                             # 模型 ID, e.g. "claude-sonnet-4-6"
-    prompt_template_version: str           # prompt 版本, e.g. "conflict_v1"
+    # call_id: UUID 字符串
+    # service: 调用方,如 "ConflictReportAssembler" / "AdvisorStrategy.analyze"
+    # model: 模型 ID,如 "claude-sonnet-4-6"
+    # prompt_template_version: prompt 版本,如 "conflict_v1"
+    call_id: str
+    service: str
+    model: str
+    prompt_template_version: str
     prompt_tokens: int
     output_tokens: int
     cost_usd: float                        # 实时估算
