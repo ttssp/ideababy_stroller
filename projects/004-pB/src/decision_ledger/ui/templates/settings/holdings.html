@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{# settings/holdings.html — T012
+   结论: 持仓快照录入页，含 JSON 粘贴区 + 最新快照展示
+   细节:
+     - 错误消息通过 error_message 上下文变量注入
+     - snapshot: HoldingsSnapshot | None 传入，展示当前最新快照
+#}
+
+{% block title %}持仓快照设置 — 决策账本{% endblock %}
+
+{% block content %}
+<section>
+  <hgroup>
+    <h2>持仓快照设置</h2>
+    <p>粘贴 JSON 录入当前持仓（格式：[{"ticker":"TSM","qty":100,"cost_basis":92.0}]；上限 100 条）</p>
+  </hgroup>
+
+  {% if error_message %}
+  <article style="background: #f8d7da; border-color: #f5c6cb;">
+    <p><strong>录入错误：</strong>{{ error_message }}</p>
+  </article>
+  {% endif %}
+
+  {% include "settings/_holdings_form.html" %}
+
+  <hr>
+
+  <h3>最新持仓快照</h3>
+  {% if snapshot %}
+  <p class="secondary">快照时间：{{ snapshot.snapshot_at.strftime("%Y-%m-%d %H:%M:%S UTC") }}</p>
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>市场</th>
+          <th>数量</th>
+          <th>均价成本</th>
+          <th>当前市值</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for holding in snapshot.holdings %}
+        <tr>
+          <td><code>{{ holding.ticker }}</code></td>
+          <td>{{ holding.market }}</td>
+          <td>{{ holding.quantity }}</td>
+          <td>{{ "%.2f" | format(holding.avg_cost) if holding.avg_cost is not none else "—" }}</td>
+          <td>{{ "%.2f" | format(holding.current_value) if holding.current_value is not none else "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="secondary">暂无持仓快照。请粘贴 JSON 导入。</p>
+  {% endif %}
+
+  <hr>
+  <p>
+    <a href="/settings/watchlist" class="secondary">关注股设置</a>
+    &nbsp;·&nbsp;
+    <a href="/" class="secondary">返回首页</a>
+  </p>
+</section>
+{% endblock %}

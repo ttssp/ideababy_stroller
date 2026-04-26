@@ -1,0 +1,18 @@
+{# settings/_watchlist_form.html — T012
+   结论: 关注股 CSV 粘贴区局部模板
+   细节:
+     - form POST /settings/watchlist, 字段 csv_text
+     - textarea 供用户粘贴 CSV（ticker,sector,note 格式）
+     - 支持 BOM CSV (Excel 导出)
+#}
+<form method="post" action="/settings/watchlist">
+  <label for="csv_text">
+    粘贴关注股 CSV（格式：ticker,板块,备注；每行一条，上限 100 条）
+    <textarea id="csv_text"
+              name="csv_text"
+              rows="12"
+              placeholder="TSM,科技,台积电&#10;AAPL,科技,苹果&#10;NVDA,科技,英伟达"
+              style="font-family: monospace; width: 100%;"></textarea>
+  </label>
+  <button type="submit">保存关注股</button>
+</form>
