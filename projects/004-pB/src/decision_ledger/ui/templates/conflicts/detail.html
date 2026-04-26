@@ -1,0 +1,50 @@
+{# conflicts/detail.html — T010
+   结论: 冲突报告详情页，有分歧时渲染三列，无分歧时渲染空态
+   细节:
+     - has_divergence=True: 展示 divergence_root_cause + 三列 _three_columns
+     - has_divergence=False 或全 no_view: 展示 _empty_state
+     - R10 红线: 不含 priority / winner / recommended 任何字眼
+     - divergence_root_cause 必须渲染在页面（测试验证）
+#}
+{% extends "base.html" %}
+
+{% block title %}冲突报告详情 — 决策账本{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="/static/conflicts.css">
+
+<article class="conflict-detail">
+  <header>
+    <h2>冲突报告</h2>
+    <p class="report-id">ID: {{ report_id }}</p>
+  </header>
+
+  {% if report.has_divergence %}
+  {# 有分歧: 展示根因 + 三列信号 #}
+  <section class="divergence-summary">
+    <h3>分歧概要</h3>
+    <p>{{ report.divergence_root_cause }}</p>
+  </section>
+
+  <section class="signals-view">
+    {% include "conflicts/_three_columns.html" %}
+  </section>
+
+  {% else %}
+  {# 无分歧: 展示空态（平静状态，HTTP 200）#}
+  <section class="divergence-summary">
+    <p>{{ report.divergence_root_cause }}</p>
+  </section>
+
+  {% include "conflicts/_empty_state.html" %}
+
+  {# 仍然展示三列（全 no_view 也显示各视角信息）#}
+  {% if ordered_signals %}
+  <section class="signals-view">
+    {% include "conflicts/_three_columns.html" %}
+  </section>
+  {% endif %}
+  {% endif %}
+
+</article>
+{% endblock %}

@@ -1,0 +1,25 @@
+{# conflicts/_three_columns.html — T010 R2 D22
+   结论: 三列信号视图，CSS grid 1fr 1fr 1fr，每列含 data-source 属性
+   细节:
+     - data-source="<source_id>" 属性: 测试验证三列存在性
+     - 列顺序由 ordered_signals 决定（rendered_order_seed 排列，R2 D22）
+     - rationale_plain 必须显式渲染（不变量 #4 测试验证）
+     - direction / confidence 展示各视角判断
+     - R10 红线: 不含 priority / winner / recommended / 建议 / 推荐 等词
+#}
+<div class="conflict-three-columns" aria-label="三路分析视角">
+  {% for signal in ordered_signals %}
+  <div class="conflict-column" data-source="{{ signal.source_id }}">
+    <header>
+      <strong>{{ signal.source_id }}</strong>
+      <span class="direction-badge direction-{{ signal.direction }}">{{ signal.direction }}</span>
+    </header>
+    <dl>
+      <dt>置信度</dt>
+      <dd>{{ "%.0f" | format(signal.confidence * 100) }}%</dd>
+      <dt>分析</dt>
+      <dd class="rationale">{{ signal.rationale_plain }}</dd>
+    </dl>
+  </div>
+  {% endfor %}
+</div>

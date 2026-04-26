@@ -1,0 +1,36 @@
+{# conflicts/index.html — T010
+   结论: 冲突报告列表页，展示最近的 ConflictReport，无 winner 偏向（R10 红线）
+   细节:
+     - 无报告时显示 "暂无冲突报告" 提示（平静文案，非错误）
+     - 有报告时列表展示，链接到 /conflicts/{report_id}
+#}
+{% extends "base.html" %}
+
+{% block title %}冲突报告 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>冲突报告</h2>
+    <p>三路分析视角的客观汇总，无优先级排序。</p>
+  </header>
+
+  {% if reports %}
+  <ul>
+    {% for report in reports %}
+    <li>
+      <a href="/conflicts/{{ report.report_id if report.report_id is defined else loop.index }}">
+        {% if report.has_divergence %}
+          存在分歧 — {{ report.divergence_root_cause[:80] }}{% if report.divergence_root_cause|length > 80 %}…{% endif %}
+        {% else %}
+          暂无分歧
+        {% endif %}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>暂无冲突报告。</p>
+  {% endif %}
+</article>
+{% endblock %}

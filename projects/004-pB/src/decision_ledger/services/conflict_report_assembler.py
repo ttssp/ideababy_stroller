@@ -1,0 +1,241 @@
+"""
+ConflictReportAssembler + ConflictReportAssemblerService — T010
+结论: 三路信号中立聚合服务，严禁选 winner（R10 红线）
+细节:
+  - ConflictReportLLMOutput: LLM 输出 schema，只含 divergence_root_cause + has_divergence
+  - compute_rendered_order_seed: hash(sorted(source_ids)+day) % 6，deterministic
+  - ConflictReportAssembler: 核心聚合器，接收 signals + env_snapshot → ConflictReport
+  - ConflictReportAssemblerService: ticker 级 wrapper，调用 registry lanes + core assembler
+  - R9: 不导入 advisor_strategy / placeholder_model / agent_synthesis（registry 提供 lane）
+  - R3 #13: assembler 失败 → raise，不返回 placeholder stub
+"""
+
+from __future__ import annotations
+
+import hashlib
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
+
+from decision_ledger.domain.conflict_report import ConflictReport
+from decision_ledger.domain.strategy_signal import Direction, StrategySignal
+
+if TYPE_CHECKING:
+    from decision_ledger.domain.env_snapshot import EnvSnapshot
+    from decision_ledger.llm.client import LLMClient
+    from decision_ledger.strategy.registry import StrategyRegistry
+
+
+# ── LLM 输出 Schema ──────────────────────────────────────────────────────────
+
+
+class ConflictReportLLMOutput(BaseModel):
+    """结论: LLM 输出的结构化 schema — 只含根因 + 是否分歧。
+
+    细节:
+      - 不含 signals（signals 由各 lane analyze 产生，传入 assembler）
+      - 不含 priority / winner / recommended（R10 红线）
+      - LLMClient.call() 以此作为 schema 参数，获取 tool_use 结构化输出
+    """
+
+    divergence_root_cause: str  # 白话根因，无分歧时填 "暂无分歧"
+    has_divergence: bool        # 是否存在实质性分歧
+
+
+# ── rendered_order_seed 公式 ─────────────────────────────────────────────────
+
+
+def compute_rendered_order_seed(source_ids: list[str], day_str: str) -> int:
+    """结论: 计算 rendered_order_seed，驱动 UI 三列随机顺序（R2 D22）。
+
+    细节:
+      - 公式: hash(sorted(source_ids)+day) % 6
+      - 使用 hashlib.md5 保证 Python 版本 / 环境无关（hash() 受 PYTHONHASHSEED 影响）
+      - sorted() 保证 source_id 排列顺序不影响结果（invariant）
+      - 每天变换顺序（day_str = "YYYY-MM-DD"）
+    """
+    sorted_ids = ",".join(sorted(source_ids))
+    raw = sorted_ids + day_str
+    digest = hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest()
+    return int(digest, 16) % 6
+
+
+# ── 核心聚合器 ───────────────────────────────────────────────────────────────
+
+
+class ConflictReportAssembler:
+    """结论: 核心中立聚合器 — 接收 signals，调用 LLM 分析分歧，返回 ConflictReport。
+
+    细节:
+      - 不含 registry / lane 引用（R9: 只处理已聚合的 signals）
+      - 失败时 raise（R3 #13: 无 placeholder fallback）
+      - LLM 提示词引用 docs/prompts/conflict_assembler_v1.md 设计原则
+    """
+
+    _TEMPLATE_VERSION = "conflict_assembler_v1"
+
+    def __init__(self, llm_client: LLMClient) -> None:
+        """结论: 只注入 LLMClient，不依赖任何 lane 实现（R9 隔离）。"""
+        self._llm = llm_client
+
+    async def assemble(
+        self,
+        signals: list[StrategySignal],
+        env_snapshot: EnvSnapshot,
+    ) -> ConflictReport:
+        """结论: 接收 ≥ 3 条 signals，调用 LLM 产出中立 ConflictReport。
+
+        细节:
+          - 调用 LLM 获取 divergence_root_cause + has_divergence
+          - 计算 rendered_order_seed（按当天日期）
+          - 失败时 raise（R3 #13）
+        """
+        if len(signals) < 3:
+            raise ValueError(
+                f"ConflictReportAssembler.assemble 要求 ≥ 3 条 signals，当前 {len(signals)} 条"
+            )
+
+        # 构建 LLM 提示词（无 winner 偏向，遵循 conflict_assembler_v1 原则）
+        prompt = self._build_prompt(signals, env_snapshot)
+
+        # 调用 LLM 获取结构化输出（tool_use schema）
+        # 失败时自然 raise，不 catch（R3 #13）
+        llm_output: ConflictReportLLMOutput = await self._llm.call(
+            prompt,
+            template_version=self._TEMPLATE_VERSION,
+            cache_key_extras={
+                "ticker": signals[0].ticker if signals else "",
+                "sources": ",".join(sorted(s.source_id for s in signals)),
+            },
+            schema=ConflictReportLLMOutput,
+        )
+
+        # 计算 rendered_order_seed（每天变化，R2 D22）
+        day_str = datetime.now(tz=UTC).strftime("%Y-%m-%d")
+        source_ids = [s.source_id for s in signals]
+        seed = compute_rendered_order_seed(source_ids, day_str)
+
+        return ConflictReport(
+            signals=signals,
+            divergence_root_cause=llm_output.divergence_root_cause,
+            has_divergence=llm_output.has_divergence,
+            rendered_order_seed=seed,
+        )
+
+    def _build_prompt(
+        self,
+        signals: list[StrategySignal],
+        env_snapshot: EnvSnapshot,
+    ) -> str:
+        """结论: 构建中立分析提示词，遵循 conflict_assembler_v1 原则。
+
+        细节:
+          - 呈现三路信号但不暗示任何一路"更重要"
+          - 明确指示 LLM: 不要选 winner，不要推荐方向
+          - 若全部 no_view 则直接返回"暂无分歧"
+        """
+        # 检查是否全为 no_view
+        all_no_view = all(s.direction == Direction.NO_VIEW for s in signals)
+        if all_no_view:
+            # 全 no_view 时直接告知 LLM（不需要复杂分析）
+            signal_text = "\n".join(
+                f"- {s.source_id}: {s.direction} (conf={s.confidence:.2f})"
+                f" — {s.rationale_plain}"
+                for s in signals
+            )
+            return (
+                f"以下是三个分析视角的信号(所有视角均无具体观点):\n{signal_text}\n\n"
+                "因所有视角均为 no_view,请回答:"
+                " divergence_root_cause='暂无分歧', has_divergence=false"
+            )
+
+        signal_text = "\n".join(
+            f"- {s.source_id}: 方向={s.direction}, 置信度={s.confidence:.2f}\n"
+            f"  分析: {s.rationale_plain}"
+            for s in signals
+        )
+
+        ticker = signals[0].ticker if signals else "未知"
+
+        return (
+            f"分析以下三个独立视角对 {ticker} 的判断，客观评估是否存在实质性分歧。\n\n"
+            f"各视角信号:\n{signal_text}\n\n"
+            "要求:\n"
+            "1. 客观描述各视角的分歧点（如有），不要选择 winner 或推荐方向\n"
+            "2. 不要使用 '建议' '推荐' '应该' '更好' 等引导性词汇\n"
+            "3. divergence_root_cause: 简洁白话描述分歧根因，无分歧时填 '暂无分歧'\n"
+            "4. has_divergence: 是否存在实质性分歧（方向不同 = True，相同或均 no_view = False）\n"
+        )
+
+
+# ── ticker 级服务 wrapper ──────────────────────────────────────────────────────
+
+
+class ConflictReportAssemblerService:
+    """结论: ticker 级 wrapper — 调用 registry 的三路 lanes，再调 core assembler。
+
+    细节:
+      - T008 DecisionRecorder 依赖此接口: .assemble(ticker, env_snapshot) -> ConflictReport
+      - R9: 不直接导入 advisor_strategy / placeholder_model / agent_synthesis
+        （通过 registry.get_all() 获取 lanes，registry 负责 lane 构建）
+      - 失败时 raise（R3 #13）
+    """
+
+    def __init__(
+        self,
+        registry: StrategyRegistry,
+        llm_client: LLMClient,
+        source_data_provider: Any,
+        conflict_repo: Any | None = None,
+    ) -> None:
+        """结论: 注入 registry + LLMClient + source_data_provider。
+
+        细节:
+          - registry: 提供三个 lane 实例（advisor / placeholder_model / agent_synthesis）
+          - llm_client: 传给 ConflictReportAssembler 用于最终聚合
+          - source_data_provider: lane.analyze 可能需要（通过 lane 构建时已注入）
+          - conflict_repo: 可选，插入报告到 DB（cache warmer 使用）
+        """
+        self._registry = registry
+        self._assembler = ConflictReportAssembler(llm_client)
+        self._conflict_repo = conflict_repo
+
+    async def assemble(
+        self,
+        ticker: str,
+        env_snapshot: EnvSnapshot,
+    ) -> ConflictReport:
+        """结论: 三路 lane.analyze 并行 → core assembler 聚合 → ConflictReport。
+
+        细节:
+          - 从 registry 获取所有 lane（至少 3 条，R3）
+          - 并行调用各 lane 的 analyze()
+          - 将 signals 传给 ConflictReportAssembler.assemble()
+          - 失败时 raise（R3 #13）
+        """
+        import asyncio
+
+        lanes = self._registry.get_all()
+        if len(lanes) < 3:
+            raise ValueError(
+                f"StrategyRegistry 必须包含 ≥ 3 个 lane，当前 {len(lanes)} 个"
+            )
+
+        # 并行调用各 lane analyze（不传 advisor_report — 使用 env_snapshot 代替）
+        # 注: StrategyModule.analyze 签名: (advisor_report, portfolio, ticker, env_snapshot)
+        # 这里 advisor_report / portfolio 由 env_snapshot 内部提供或传 None
+        async def _call_lane(lane: Any) -> StrategySignal:
+            signal: StrategySignal = await lane.analyze(
+                advisor_report=None,
+                portfolio=None,
+                ticker=ticker,
+                env_snapshot=env_snapshot,
+            )
+            return signal
+
+        signals: list[StrategySignal] = list(
+            await asyncio.gather(*(_call_lane(lane) for lane in lanes))
+        )
+
+        return await self._assembler.assemble(signals=signals, env_snapshot=env_snapshot)

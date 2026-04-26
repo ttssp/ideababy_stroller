@@ -1,0 +1,11 @@
+{# conflicts/_empty_state.html — T010
+   结论: 空态渲染（has_divergence=False 或全 no_view），平静文案非错误页
+   细节:
+     - "暂无分歧" 是正常状态，不是 error page（HTTP 200）
+     - 文案平静中立，不包含任何警示或错误语气
+     - R10 红线: 不含 priority / winner / recommended 任何字眼
+#}
+<section class="conflict-empty-state" aria-label="暂无分歧">
+  <p>暂无分歧</p>
+  <p>三路分析视角当前未显示实质性分歧。</p>
+</section>
