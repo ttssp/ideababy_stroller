@@ -2,11 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, worktree-*]
   pull_request:
+    branches: [main]
 
 jobs:
-  test:
+  # 003-pA Python 子项目（uv + ruff + pytest）
+  python-003pA:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,6 +39,20 @@ jobs:
 
       - name: Pytest (fast — no slow, no gpu)
         run: uv run pytest -m "not slow and not gpu" --cov=pars --cov-fail-under=70
+
+  # 根目录 Node 项目（pnpm + biome + tsc + vitest）
+  node-root:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm biome ci .
+      - run: pnpm tsc --noEmit
+      - run: pnpm vitest run
 
   conventional-commits:
     runs-on: ubuntu-latest

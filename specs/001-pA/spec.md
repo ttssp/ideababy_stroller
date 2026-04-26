@@ -1,6 +1,6 @@
 # Spec · 001-pA · PI Briefing Console
 
-**版本**: 0.3.1
+**版本**: 0.4.0
 **创建**: 2026-04-23
 **上次修订**: 2026-04-24（R_final2 G6 patch · D15 clarification · LLM 合同 split-brain 闭合 · 见变更日志）
 **Source PRD**: `discussion/001/001-pA/PRD.md`（version 1.0 · 人工通过 `/fork 001 from-L3 candidate-A as 001-pA` 批准）
@@ -146,10 +146,12 @@ shift(T) := TRUE iff
 
 下方给出**阶段骨架 + 权威 task ID**（G2 · 2026-04-24 R_final BLOCK fix 迁移到与 `dependency-graph.mmd` 一致的新编号；此前 T005/T007/T009/T029 等旧编号已废弃）。
 
-### Phase 0 · Foundation + LLM spike（T001–T008 · ~22h）
-- **T001 · LLM provider blind-test spike**（2–3 天，入口关卡）
-  - **退出条件**：至少一个 provider 在 20 篇 blind test 上 `state-shift` 判定准确率 ≥ **70%**（≥ 14/20 正确）；两家都 ≥ 70% 按成本裁决；两家都 < 70% 降级为纯启发式，LLM 仅用于 summary
-  - **产出**：`projects/001-pA/spikes/T001-llm-provider-report.md` + operator `approved-provider: <name>` sign-off
+### Phase 0 · Foundation（T002–T008 · ~14h · **T001 已 defer 到 Phase 2**）
+- **T001 · LLM provider blind-test spike** — **DEFERRED to Phase 2**（0.4.0 · 详见 changelog）
+  - **defer 理由**：(1) 判 LLM 准确率需真实端到端语境（arxiv crawl + topic anchor 链路）· 2026-04-24 v0.1 spike 在 fixture 上 14/20 擦边过 accuracy gate 但延迟 p95 46s + 月度成本 $1838.5（60k calls 外推 · placeholder pricing）两条硬 gate 失败 (2) 延迟超线是 GLM5.1 长 thinking 的架构特性 · prompt 工程救不了 (3) 成本 gate 依赖火山真实账单到位才能终判
+  - **Phase 0/1 替代路径**：`OP-Q1` 默认翻 `fallback_to_heuristic=true` · `LLM_JUDGE_ENABLED=false` · T012 走 §4.1 heuristic-only（anchor 被 ≥ 2 篇引用即 shift）· T013 走 fallback summary 模板（`abstract 头两句 + [⚠️ LLM unavailable]` · `model_name='fallback-heuristic-v1'`）· T004 落 interface + stub 实现（不调真 SDK）
+  - **Phase 2 T001-v2 退出条件**：在真实数据上重跑 spike（详见 `tech-stack.md` §2.5）· 通过则 operator commit `approved-provider: <name>` 并手工翻 `LLM_JUDGE_ENABLED=true` · 失败则永久 fallback（系统不依赖 LLM judge 也能跑）
+  - **v0.1 首轮 spike 报告**：`projects/001-pA/spikes/T001-llm-provider-report.md`（已 freeze · 不签 approved-provider）
 - **T002 · 项目脚手架**：Next.js 15 App Router + TS strict + pnpm + Biome + Vitest/Playwright 基础
 - **T003 · Postgres schema + Drizzle migrations**：**15 张表**（labs / seats / sessions / topics / papers / paper_citations / paper_topic_scores / actions / breadcrumbs / resurface_events / briefings / fetch_runs / llm_calls / paper_summaries / export_log）· R1 CHECK（`skip_requires_why` · `summary_sentence_cap` · G1 count-terminator 语义）· F5 nullable `llm_call_id`
 - **T004 · LLMProvider interface + Anthropic/OpenAI adapters**：`src/lib/llm/` 完整落地（types camelCase · adapter 内部写 `llm_calls` · select + fallback · prompt-version · audit · truncateTo3Sentences · stripPII）。**权威契约见 `reference/llm-adapter-skeleton.md §1–§7`**，本 spec 不再内联接口代码样例
@@ -158,7 +160,7 @@ shift(T) := TRUE iff
 - **T007 · Env / secrets / systemd units baseline**：zod env schema（**provider enum = `anthropic|openai`**，不是 `claude|gpt`）· systemd unit 文件 · `.env.example` · `LoadCredential=`
 - **T008 · Test harness**：vitest / playwright 全局 setup · truncate-between-tests · meta test（red-line 3 no-public-endpoint scan）
 
-**Phase 0 Exit**：T001 blind-test 出结果并 operator 批准；schema 可执行；adapter contract test 全绿；能在 CLI 里跑 `pnpm dev:fetch arxiv --topic <id>` 拿到 paper 落库。
+**Phase 0 Exit**（0.4.0 修订 · T001 已移除）：schema 可执行；adapter contract test 全绿（含 T004 stub 路径）；能在 CLI 里跑 `pnpm dev:fetch arxiv --topic <id>` 拿到 paper 落库。**Phase 1 全程默认 `LLM_JUDGE_ENABLED=false` · 走 heuristic-only · T001-v2 在 Phase 2 验证后才允许翻 true**。
 
 ### Phase 1 · Core briefing（T010–T016 · ~33h）
 - **T010 · Topic CRUD**（admin-only write · all seat read · cap 15 · **G4 H2 · 422 `TOO_MANY_TOPICS`**；路径 `src/app/(main)/topics/page.tsx` + `[id]/edit/page.tsx` + API `src/app/api/topics/route.ts` + `[id]/route.ts`）
@@ -171,7 +173,8 @@ shift(T) := TRUE iff
 
 **Phase 1 Exit**：operator 06:30 看到当天 briefing；p95 /today < 1s（local Postgres）；4-action 全部可追溯。
 
-### Phase 2 · Breadcrumb + resurface + export + sentinel（T020–T024 · ~24h）
+### Phase 2 · Breadcrumb + resurface + export + sentinel + LLM revalidation（T001-v2 + T020–T024 · ~28h）
+- **T001-v2 · LLM provider revalidation spike**（0.4.0 新增 · 4h · 在真实端到端数据上重跑 T001 spike · 退出条件见 `tech-stack.md` §2.5 · 通过则 operator commit `approved-provider: <name>` 到 `projects/001-pA/spikes/T001-llm-provider-report-v2.md` 并手工翻 `LLM_JUDGE_ENABLED=true`）
 - **T020 · Breadcrumb 列表页** `/breadcrumbs`（展示 user 历史 breadcrumb）
 - **T021 · Resurface scheduler**（timed `timed_6wk | timed_3mo | timed_6mo` + citation-triggered · TECH-7 topic-overlap 去噪 · worker hook slot · citation 优先于 timed）
 - **T022 · Resurface UI**（/today 顶部 banner · dismiss / re-breadcrumb API）
@@ -212,7 +215,7 @@ shift(T) := TRUE iff
 | **O-verify-c6-api** | `POST /api/actions {action:'skip', why:''}` → 400 `SKIP_WHY_REQUIRED`；`{action:'skip', why:'no.'}` → 400；`{action:'skip', why:'I have read this before'}` → 200 | C6 / D16 Layer 2 |
 | **O-verify-c6-ui** | Playwright：点击 skip 按钮 → textarea 展开（不立即 POST）；输入 < 5 字符 → Submit 按钮 disabled；输入 ≥ 5 字符 → Submit 可点 + 提交成功 | C6 / D16 Layer 3 |
 
-**T001 spike 额外验收**（这是 Phase 0 准入条件而非 Outcome）：blind test 结果报告必须由 operator 签字（即 operator commit 一个 `approved-provider: <name>` 行到 `projects/001-pA/spikes/T001-llm-provider-report.md`）后 Phase 1 才能开始。
+**T001 spike 验收**（0.4.0 修订 · 已从 Phase 0 准入降格为 Phase 2 验证 milestone）：v0.1 首轮 spike 报告 `projects/001-pA/spikes/T001-llm-provider-report.md` 已 freeze（不签 approved-provider · 详见 §5 Phase 0 T001 条目）；Phase 2 T001-v2 在真实端到端数据上重跑后,operator commit `approved-provider: <name>` 到 `projects/001-pA/spikes/T001-llm-provider-report-v2.md`,并手工翻 `LLM_JUDGE_ENABLED=true`;Phase 2 T001-v2 仍 fail 则永久 fallback（系统不依赖 LLM judge 也能跑）。
 
 **Sentinel 验收**：`day-30` 时自动计算 `active_seats_30d` = 过去 30 天有 ≥ 1 次 login 的 seat 数；若 < 3，`/today` 顶部显示 escalate banner 并阻塞新 feature 开发，直到 operator 签字 `allow-continue` 或 pivot。Sentinel 状态由 T024 读 `labs.first_day_at` + `labs.allow_continue_until` 两列（T003 R1 已前置）。
 
@@ -244,12 +247,12 @@ shift(T) := TRUE iff
 
 | Q | 内容 | 何时需要答复 | 默认假设（在 operator 给出别的决定前生效） |
 |---|---|---|---|
-| **OP-Q1** | T001 spike 的**额外** exit criteria 细节：若两家 provider 都在 70%–80% 区间，是否进一步按 latency 而非成本裁决？ | T001 kickoff 之前 | 按成本裁决；若成本差 < 10%，按 operator 主观偏好 |
+| **OP-Q1** | ~~T001 spike 的**额外** exit criteria 细节~~ → **0.4.0 已 resolved**：T001 defer 到 Phase 2 后,Phase 0/1 全程默认 `fallback_to_heuristic=true` + `LLM_JUDGE_ENABLED=false`;Phase 2 T001-v2 通过后由 operator 手工翻 `LLM_JUDGE_ENABLED=true` 并按 v2 报告里的 latency/cost 自行裁决 provider | ~~T001 kickoff 之前~~ Phase 2 T001-v2 kickoff 之前 | **resolved**：Phase 0/1 一律 fallback heuristic;Phase 2 T001-v2 验证通过后再启用 LLM judge |
 | **OP-Q2** | **Per-topic 权限**（PRD Q5 记录的场景：PI 不想某些 operator 看某些 topic） —— v0.1 确定不做；v0.2 是否进入 radar？ | v0.2 规划前 | v0.2 不入 roadmap，除非 60 天 dogfood 期间出现真实摩擦 |
 | **OP-Q3** | **v0.1 免费承诺的时间边界**：是"永久免费"还是"v0.1 期间免费、v1.0 引入 tier"？ | v0.1 ship 时 | v0.1 期间免费 + 不承诺永久（但数据 portability 保证退出成本为零，用户无损） |
 | **OP-Q4** | **Compliance 声明 / 隐私政策**：v0.1 数据全在 operator 机器上，是否仍需要一份面向 operator 的"lab 数据使用声明"？ | v0.1 ship 前 | 是，见 `compliance.md` §"Data locality & operator statement"；一页 markdown 够用 |
 
-本 spec **主动不问** 的问题（已在 PRD 或 L4 intake 被 resolve）：LLM provider 选谁（= T001 spike）、用 Postgres 还是 SQLite（= Postgres）、要不要招外部 lab（= 不要，C10）、state shift 怎么定义（= §4.1 provisional）、resurface 规则（= §4.2）。
+本 spec **主动不问** 的问题（已在 PRD 或 L4 intake 被 resolve）：LLM provider 选谁（= T001 spike · 0.4.0 后 defer 到 Phase 2 T001-v2）、用 Postgres 还是 SQLite（= Postgres）、要不要招外部 lab（= 不要，C10）、state shift 怎么定义（= §4.1 provisional）、resurface 规则（= §4.2）。
 
 ---
 
@@ -263,3 +266,4 @@ shift(T) := TRUE iff
 | 2026-04-23 | 0.2.2 | **Patch bump（Q5 + 5 interface drift consolidation + reference/ 完整落地 + README 导航）**。(1) Q5 解决：architecture §5.1 首行 + T003 Goal / Verification 由"14 张"订正为"15 张"（llm_calls 原本就在，R1 fix 注释 off-by-one · 实际新增 2 张）。(2) 5 interface drift 闭合：**drift 1** SummaryRecord 字段改 camelCase（接口层 camelCase / DB snake_case / `src/lib/summary/persist.ts` 映射）；**drift 2** judgeRelation 签名改 per-pair（candidate×anchor 单对 verdict + discriminated union · 利 TS strict）；**drift 3** OpenAI output pricing 修正到 $15/M（2026-04 公开价 · 月度估 $10.5 → $12 · envelope $50 仍成立 · C11 注释同步更新）；**drift 4** `GET /api/today` 从 E9 移至 §7 "Future / deferred endpoints"（v0.1 不实现 · SSR Server Component 直连 DB）；**drift 5** `GET /api/invite/:token/consume` 保留（v0.1 不发邮件 · token 通过 operator 私信传递 · Caddy 禁止 query-string 日志 · v0.2 再升级到 POST-based 确认 · SEC-10 风险登记）。(3) reference/ 完整交付（schema.sql · directory-layout · api-contracts · llm-adapter-skeleton · ops-runbook · testing-strategy · error-codes-and-glossary）并写入 README.md 导航。Scope / Outcomes / Constraints 不变。 |
 | 2026-04-24 | 0.3.1 | **Patch bump（R_final2 narrow review 残余 G6/G7/G8/G9 mechanical sync · 不改 scope/outcomes）**。R_final2 narrow 复核认定 G2 LLM 合同仍是 split-brain（T004/T013/changelog 已切到 adapter-内写 `llm_calls` + `llmCallId` 回传，但 `tech-stack.md §2.4` / `reference/llm-adapter-skeleton.md §2/§3/§4/§7` / `spec.md §4 D15` 与 `reference/skeletons/llm-types.ts` 仍写旧 caller-写 方案）。本次 patch 完成 4 条机械同步：(G6/G7) **D15 改写**为 "T013 只写 `paper_summaries` · adapter 已内部写 `llm_calls` 并把 `llmCallId` 通过 `SummaryRecord` 回传"；同步更新 `tech-stack.md §2.4`（SummaryRecord 加 `llmCallId: number \| null` + `requestHash` 字段 · 契约段写明 adapter 调 `recordLLMCall` 的职责）、`reference/llm-adapter-skeleton.md §2`（`SummaryRecord` 加 `llmCallId` · `JudgeRelationResult` 加 `llmCallId` · LLMProvider 方法注释改为 adapter-内写）、§3/§4 两家 adapter `summarize()` / `judgeRelation()` 实现真正调 `recordLLMCall()` 并返回 `llmCallId`、§7 audit 段标注 `recordLLMCall()` 由 adapter 调（caller 不再调）、`reference/skeletons/llm-types.ts`（SummaryRecord 加 `llmCallId` 字段）、`reference/skeletons/llm-anthropic-stub.ts` + `llm-openai-stub.ts`（TODO 块明确"必须在 return 前调 `recordLLMCall()` 并把返回 id 填入 `llmCallId`"）。(G8) `tasks/T010.md` Goal 段 "topic > 15 时 POST 返回 400" 改为 "**422 `TOO_MANY_TOPICS`**"，与 Verification + api-contracts §E6 一致。(G9) `reference/error-codes-and-glossary.md` §1.3 加 `CSRF_ORIGIN_MISMATCH` 行（HTTP 403 · `invite/consume/route.ts` · Origin header 不匹配 APP_ORIGIN · G4 H4）· 错误码总数 50 → **51**；§Glossary 段把 `email token invite` URL 模板从 `login/verify?token=...` 改为 `POST /api/invite/consume` body token（旧 GET path 注 Deprecated · G4 H4）· `schema_version` 条目改 `schemaVersion` camelCase（与 G3 export envelope 权威一致 · 旧 snake_case 注 Deprecated）。Scope / Outcomes / Constraints / Phases / Task IDs / 工时（115h）均未变。 |
 | 2026-04-24 | 0.3.0 | **Minor bump（R_final BLOCK fix G1/G2/G3/G4 · 结构性变更）**。(1) **G1** `paper_summaries.summary_sentence_cap` CHECK 从 `regexp_split_to_array(…)` 换成 `regexp_matches(..., 'g')` 数终结符语义（纯中文无空格 3 句现在正确判 3、5 句正确拒；无终结符文本拒绝 · adapter `truncateTo3Sentences` defensive 追加 `。`）· TECH-8 risks.md 改写 · T003 CHECK DDL 更新 · schema.sql v0.2.2 → v0.2.3 · 7 条新 DB 约束测试 + 9 条新应用层 test case。(2) **G2** LLM 契约统一：`SummaryRecord` 全 camelCase、provider enum `anthropic|openai`（删 `claude|gpt`）、`judgeRelation` per-pair、adapter 内部写 `llm_calls`（T013 只写 `paper_summaries`）、`llm_calls` 列名权威 = `purpose`/`called_at`（删 `kind`/`created_at`）、OpenAI output $15/M（删 $10/M）· T004/T007/T013 整体重写 · §5 旧 task ID `T005=schema` / `T007=LLM adapter` / `T029=export` 全面迁移到与 `dependency-graph.mmd` 一致的新编号；§5 中的过时 LLM interface 代码样例（`summarize(paper): string`）删除，改为引用 `reference/llm-adapter-skeleton.md §2` 单一真源。(3) **G3** export envelope 单一真源 = `reference/api-contracts.md §3.11` camelCase（12 顶层 key：labs/seats/topics/papers/paperTopicScores/paperCitations/paperSummaries/briefings/actions/breadcrumbs/resurfaceEvents/fetchRuns · 排除 sessions/llmCalls/exportLog）· `schemaVersion='1.1'`（camelCase 字段名）· architecture.md §8 改为引 api-contracts 为权威 · T023 rewrite（`buildFullExport(labId)` 删 `env.LAB_ID`）· skeleton `api-export-full-route.ts` 签名改（labId 参数）· testing-strategy export 断言更新。(4) **G4** H1 T021 `trigger_type` 统一为 `timed_6wk|timed_3mo|timed_6mo|citation`（删 `6w|3mo|6mo`）· H2 T010 路径与 error code 统一（422 `TOO_MANY_TOPICS`，服务层 `src/lib/topics/service.ts`，页面 `[id]/edit/page.tsx`）· H3 T030 backup 脚本路径改 `deploy/scripts/*` + 验证命令改 `PGUSER=... PGPASSWORD=... psql` · H4 invite 消费流程由 GET path-token 改为 POST `/api/invite/consume` + body token（Caddy 不记 POST body · fragment-based link 不进服务端日志 · SEC-10 风险从 "link-preview 误触" 改为 "POST CSRF" 的缓解 SameSite=Lax + Origin 检查 + 一次性 nonce · DECISIONS-LOG drift-5 附 2026-04-24 amendment）· T006 invite 路由改 POST · H5 spec §5 task ID + 过时 interface 已随 G2 同步更新。Scope / Outcomes / Constraints 不变。 |
+| 2026-04-24 | 0.4.0 | **Minor bump（T001 LLM spike 从 Phase 0 blocking gate 降格为 Phase 2 validation milestone · 结构性变更）**。**触发**：2026-04-24 v0.1 首轮 spike 在 GLM5.1（`projects/001-pA/spikes/runs/glm-2026-04-24T14-12-29-901Z.json`）跑完后,judge_accuracy=14/20 擦边过 70% gate,但 p95_summarize=46289ms（gate ≤ 5000ms · 超 9.3×）+ 月度成本 $1838.5（60k calls/月 · placeholder pricing · gate ≤ $50 · 超 36.8×）两条硬 gate 失败 · operator 决策 defer。**改动**：(1) §5 Phase 0 标题从 `Foundation + LLM spike (T001-T008 · ~22h)` 改为 `Foundation (T002-T008 · ~14h · T001 已 defer)` · T001 条目改写为 DEFERRED 说明 + Phase 0/1 替代路径 + Phase 2 T001-v2 退出条件。(2) §5 Phase 0 Exit 删除 T001 sign-off 要求 · 加 "Phase 1 默认 LLM_JUDGE_ENABLED=false 走 heuristic-only"。(3) §5 Phase 2 加 T001-v2 条目（4h · 在真实端到端数据上重跑 spike）· Phase 2 工时 24h → 28h。(4) §6 T001 spike 验收段改写为"已从 Phase 0 准入降格为 Phase 2 验证"+ 指向 T001-v2 报告路径。(5) §6 OP-Q1 标记 resolved · 默认值改为 `fallback_to_heuristic=true` + `LLM_JUDGE_ENABLED=false`。(6) §6 主动不问段加 0.4.0 注释。**downstream impact**：T001.md(phase 0→2 · blocks 解除)、T004.md(depends_on 去 T001 · 写明 stub 实现范围)、T010.md(depends_on 去 T001)、T012.md(LLM_JUDGE_ENABLED 默认 false 改述)、tech-stack.md §2/§2.5(标题改 + changelog)、PHASE-0-KICKOFF-CHECKLIST.md(§1/§5/§6/§9 改)、risks.md TECH-1(加 v0.1 status 行)、DECISIONS-LOG.md(新增 G11)、STATUS.md(顶部加状态行)、T001 报告(末尾加 v0.1 freeze 段)。**adversarial review impact**：本次 patch 触发 spec 结构性变更（Phase 0/1 默认路径变为 fallback heuristic）· 历史 R_final3 review 仅复核 G6/G7/G8/G9 mechanical sync · 本次 0.4.0 改动**应在 Phase 2 T001-v2 重跑前由 Codex 做一轮 narrow adversarial review 复核** Phase 0 task DAG / Phase 1 LLM 路径默认值是否一致。 |
