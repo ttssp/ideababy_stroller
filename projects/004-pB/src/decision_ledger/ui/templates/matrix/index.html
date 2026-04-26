@@ -1,0 +1,22 @@
+{# matrix/index.html — T011 (R3 简化版)
+   结论: 错位矩阵主页，展示 watchlist tickers 的三路 signals 方向 score 与持仓 %
+   细节:
+     - R3 真砍: 无颜色 class，无错位强度排序，ticker 字母序
+     - D16 红线: 无 plotly/matplotlib/d3.js/chart.js 引用
+     - OP-6: 错位矩阵在 nav 第三位 (由 _nav.html 保证，active_tab="matrix")
+     - Pico CSS classless 渲染，无自定义 matrix.css
+#}
+{% extends "base.html" %}
+
+{% block title %}决策账本 — 矩阵视图{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>错位矩阵</h2>
+    <p>三路信号方向汇总（顾问 / 占位模型 / Agent 综合）与当前持仓 %。</p>
+  </header>
+
+  {% include "matrix/_table.html" %}
+</article>
+{% endblock %}
