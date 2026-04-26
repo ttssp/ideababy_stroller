@@ -1,0 +1,78 @@
+# GitHub Actions CI — T001
+# 结论: 跑 ruff + mypy + pytest，strict mode 默认开启（架构不变量 #15）
+# 细节:
+#   - uv sync --frozen（锁文件优先）
+#   - matrix 只有 Python 3.12.7（pinned，不允许 3.13）
+#   - DECISION_LEDGER_TEST_MODE=strict（架构不变量 #15）
+#   - 测试 env 注入假 key 避免真 API 调用
+
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  # 架构不变量 #15: CI 默认 strict mode
+  DECISION_LEDGER_TEST_MODE: strict
+  # 假 key — 测试中不做真 API 调用；pre-commit hook 不扫 CI env
+  ANTHROPIC_API_KEY: sk-test-ci-placeholder
+  TELEGRAM_BOT_TOKEN: "000000000:test-ci-placeholder-token"
+
+jobs:
+  ci:
+    name: "Python ${{ matrix.python-version }} · lint + type + test"
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.12"]
+        # 注意: tech-stack.md 钉 3.12.7，matrix 只一个版本
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.5.11"
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # 结论: --frozen 使用 uv.lock，CI 不允许依赖变更
+      - name: Install dependencies (frozen)
+        run: uv sync --frozen --extra dev
+
+      # ── Lint ─────────────────────────────────────────
+      - name: Ruff lint
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      # ── Type check ──────────────────────────────────
+      - name: Mypy strict
+        run: uv run mypy src/
+
+      # ── Tests ───────────────────────────────────────
+      # 结论: 排除 slow/e2e，integration 可选（无外部服务时跳过）
+      - name: Unit + integration tests
+        run: >
+          uv run pytest
+          tests/unit
+          -m "not slow and not e2e"
+          --tb=short
+          -v
+
+      # ── 安全扫描（可选，不阻塞 CI）──────────────────
+      # - name: pip-audit
+      #   run: uv run pip-audit --require-hashes -r requirements.txt
+      #   continue-on-error: true
