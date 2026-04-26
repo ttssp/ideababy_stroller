@@ -1,0 +1,18 @@
+{# decisions/_rebuttal_partial.html — T013
+   结论: HTMX rebuttal partial, 展示一句话反方意见 + compliance §4.3 免责声明
+   细节:
+     - R2 修订: 不再 poll, draft 阶段已同步生成
+     - compliance §4.3 强制: '反方意见仅供考虑'
+     - HTMX 局部加载目标: hx-get="/decisions/{trade_id}/rebuttal"
+#}
+<section class="devils-rebuttal-partial" aria-label="魔鬼代言人反方意见">
+  <div class="rebuttal-card">
+    <div class="rebuttal-icon" aria-hidden="true">⚖</div>
+    <div class="rebuttal-content">
+      <p class="rebuttal-text">{{ rebuttal.rebuttal_text }}</p>
+    </div>
+  </div>
+  <p class="rebuttal-disclaimer">
+    <small>反方意见仅供考虑，不构成交易建议。</small>
+  </p>
+</section>
