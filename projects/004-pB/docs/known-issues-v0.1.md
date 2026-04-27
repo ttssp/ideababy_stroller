@@ -205,11 +205,69 @@
 
 ---
 
+## 8. 用户视角: production 启动后 /decisions/* 等 12 个 router 全 raise 500
+
+> **重要**:本节是 §1 的"用户视角后果"显式表述。§1 说"production 从未构造过
+> LLMClient / StrategyRegistry / SourceDataProvider";本节说**这件事的直接后果是
+> 用户跑 `./scripts/start.sh` 后,除了 `/healthz` / `/onboarding` / `/settings/*` /
+> `/decisions/new`(GET 静态模板) 外,所有需要 DB 的页面都 500**。
+
+**症状**
+- 用户按 runbook §1 跑 `cp .env.example .env && uv run alembic upgrade head && ./scripts/start.sh`,服务启动成功(健康检查通过),浏览器打开 `http://localhost:8000` 看到 onboarding 引导页。
+- 完成 onboarding → 跳转决策列表 / 主页 → **所有需要 DB 的页面都 raise 500**:
+  - `POST /decisions/draft` → 500 "DecisionRecorder 未初始化"
+  - `GET /decisions/{trade_id}` → 500
+  - `GET /conflicts/...` → 500
+  - `GET /post-mortem/...` → 500
+  - `GET /notes` / `GET /weekly-review` / `GET /monthly-review` / `GET /learning/...` → 500
+- 唯一**可用**的路径(F1 修复后):
+  - `GET /healthz` → 200 (静态)
+  - `GET /onboarding` + `POST /onboarding/...` → 工作 (router_onboarding 自带 startup task pool)
+  - `GET /settings/watchlist` / `GET /settings/holdings` → 工作 (F1 修复后)
+  - `GET /decisions/new` → 200 (纯静态模板,不查 DB)
+
+**根因**
+- `src/decision_ledger/ui/router_decisions.py:31 set_recorder(recorder)` 与同模式的 11 个 `set_xxx()` setter,注释明说"测试 DI 入口"。
+- grep 全 `src/`:**0 个 production 调用方**;只在 `tests/e2e/e2e_app_factory.py:205` 和 `tests/integration/ui/*.py` 的 fixture 里被调。
+- handler 第一行 `_get_xxx()` 检测 `_xxx is None` → `HTTPException(500, "...未初始化")`(router_decisions.py:43 等)。
+- e2e 测试用 `make_e2e_app()` factory 手工 wire 整条依赖链(initialize pool + 构造 4 个 repo + 构造 mock services + 构造 DecisionRecorder + `set_recorder()`),**bypass `decision_ledger.main` 的 lifespan**。这就是 spec §6 O5 verification 通过的实际路径。
+
+**为什么 v0.1 接受**
+- spec §6 O5 verification 字面口径是 `pytest tests/e2e/test_decision_input_timing.py` 自动化通过 — **已通过**(e2e 跑赢 < 30s)。
+- spec **没有承诺** `python -m decision_ledger.main` 启动路径在 v0.1 用户可用;known-issues §1 已经间接承认 production wiring 链断裂(只是用 ConflictWorker 视角)。
+- 真正接通 production wiring 是新 task 级别工作:需要构造真实 `LLMClient(api_key, UsageWriter, cache_dir)` + `SourceDataProvider`(读 advisor PDF + portfolio + env_snapshot)+ `StrategyRegistry.build_default()` + 4 个 repo 单例 + 12 个 router 的 setter 全调通,与 §1 v0.2 计划同一份工作。
+
+**用户(你自己)实际可见影响**
+- v0.1 ship 当日跑 `./scripts/start.sh` → 浏览器打开 → onboarding 走完 → **录入决策报 500**。
+- 唯一 v0.1 真实可用路径是**跑 e2e 测试套件验证 spec O5**(机制存在 + 计时通过)。
+- 真要试用决策录入,需要手工像 `tests/e2e/e2e_app_factory.py:make_e2e_app()` 那样 wire,或等 v0.2。
+
+**workaround(v0.1)**
+- 不录入决策。v0.1 ship 后第一件事是排 v0.2 priority 1 的 production wiring 任务。
+- 临时试用:本地写一个 `scripts/start_dev.sh` 调 `uvicorn 'tests.e2e.e2e_app_factory:make_e2e_app' --factory --host 127.0.0.1 --port 8000`(LLM 走 cache mock,不调真 API)。仅供 dev 验证,不用作 production。
+
+**v0.2 计划**
+- **新 task T100+ "production app factory"**(预估 8-12h):
+  - 构造 `LLMClient` startup 单例(传入 `ANTHROPIC_API_KEY` + `UsageWriter` + `cache_dir`)
+  - 实现 `SourceDataProvider` production 类(读 inbox PDF + watchlist/holdings DB + env_snapshot)
+  - `StrategyRegistry.build_default(llm_client, provider)` 在 startup 期完成
+  - 12 个 router 的 setter 在 startup task 里调通(同 F1 修复模式:`register_startup_task(_init_xxx)`)
+  - 在 main.py lifespan 期完成所有 wiring,删 `_get_xxx is None → 500` 的 dead branch (改成 wiring gate 或保留作 fail-fast)
+- **新增 production smoke gate**:`tests/integration/test_production_app_smoke.py` 启动真 main.py + GET 关键路由,断言 0 个 500。本质等价于 F1 的 `test_settings_router_production_path.py`,把"v0.1 沉默 0%"换成"v0.2 production smoke 必须 0 失败"。
+
+**为什么不在 v0.1 修**
+- 工作量:8-12h + 完整回归 + 真实 LLMClient 接入(可能要修 DraftRepo / SourceDataProvider 实现细节),不在 review followup scope。
+- 风险:production wiring 串错任一节,F1 修复刚补的 503 gate 又会失效,需要重做 regression。
+- 价值:v0.1 就是 single-operator 验证机制存在(spec §0 文档定位),**用户实际录入决策从一开始就不在 v0.1 contract 内**(O2/O3 是 ship + 8 周才度量);v0.2 才是"真用起来"的窗口。
+
+---
+
 ## 实现引用
 
 - F2-T020 H7 followup A1:`src/decision_ledger/monitor/pause_pipeline.py::_get_conflict_worker` 改 noop + counter + WARNING;`get_wiring_status()` / `pause_hook_noop_call_count()` 自检 API
 - F2-T020 followup A1:`src/decision_ledger/main.py::_print_v01_banner` 启动期 stderr BANNER
 - F2-T020 followup A2:`scripts/toggle_b_lite.py::_print_cli_pause_hook_disclaimer` CLI disclaimer
 - Codex review F1 followup:`src/decision_ledger/ui/router_settings.py` 改 startup-task pool 模式 + 503 wiring gate (regression test `tests/integration/ui/test_settings_router_production_path.py`)
+- 用户视角 production 500 实证:`grep -rn 'set_recorder\|set_decision_repo\|set_conflict_repo' src/` 返回 0 个 production 调用方;`tests/e2e/e2e_app_factory.py` 是唯一 wire 完整链路的入口
 
 启动 BANNER 抑制方法(测试 / CI / 监控对接用):`DECISION_LEDGER_SUPPRESS_V01_BANNER=1`

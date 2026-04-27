@@ -26,7 +26,10 @@ def reset_pause_pipeline() -> None:
 
 
 def test_build_banner_lists_v01_stubs_when_unwired() -> None:
-    """followup A1: 默认 (未 wire) 时 BANNER 应列出 4 条 v0.1 stub。"""
+    """followup A1: 默认 (未 wire) 时 BANNER 应列出 v0.1 stub。
+
+    α-followup: 新增 §8 'DB-bound routers 500' 断言, 防回退到"沉默的 0%"。
+    """
     from decision_ledger.main import _build_v01_banner
 
     banner = _build_v01_banner()
@@ -38,6 +41,9 @@ def test_build_banner_lists_v01_stubs_when_unwired() -> None:
     assert "FailureAlert cron:" in banner
     assert "TabMetricsMiddleware:" in banner
     assert "register_scheduler_job:" in banner
+    # α-followup: §8 用户视角最大 stub
+    assert "DB-bound routers:" in banner
+    assert "500 in production" in banner
 
 
 def test_build_banner_omits_conflict_worker_when_wired() -> None:
