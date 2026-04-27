@@ -1,0 +1,60 @@
+{# learning/_results.html — T019 (R3 简化版)
+   结论: 季度评分结果展示
+   细节:
+     - 题目 + 答案 + 分数三栏
+     - 均分 + 通过状态 (≥ 7/10)
+     - finalized=True 时由 router 渲染此模板
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ quarter_id }} 评分结果 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>季度学习检查 · {{ quarter_id }} · 评分结果</h2>
+      <p>
+        均分 <strong>{{ "%.2f"|format(average_score) }} / 10</strong>
+        {% if passing %}
+          <mark style="background: #d4edda; color: #155724;">✓ 通过 (≥ 7/10, O4 verification)</mark>
+        {% else %}
+          <mark style="background: #f8d7da; color: #721c24;">✗ 未通过 (&lt; 7/10)</mark>
+        {% endif %}
+      </p>
+    </hgroup>
+    <a href="/learning" role="button" class="secondary">← 返回</a>
+  </header>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>概念</th>
+        <th>你的答案</th>
+        <th>分数</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for q in questions %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td><strong>{{ q.concept }}</strong></td>
+          <td><small>{{ answers.get(q.id, '(未答)') }}</small></td>
+          <td>
+            {% set score = scores.get(q.id, 0) %}
+            <strong>{{ score }}</strong> / 10
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p>
+    <small>
+      评分由 LLM 比对 <code>docs/learning_checklist.yaml</code> 标准答案完成。
+      不通过时建议复习 <code>/notes</code> 笔记 wiki 中相关概念。
+    </small>
+  </p>
+</article>
+{% endblock %}

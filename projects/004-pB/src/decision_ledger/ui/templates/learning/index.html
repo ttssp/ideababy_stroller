@@ -1,0 +1,55 @@
+{# learning/index.html — T019 (R3 简化版)
+   结论: 季度学习检查首页
+   细节:
+     - 静态文档自查入口 (R3 不做 nav 红色提醒)
+     - 链接 CLI 抽题 / 评分命令说明
+#}
+{% extends "base.html" %}
+
+{% block title %}季度学习检查 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>季度学习检查</h2>
+      <p>每季抽 7 题, 防"学习假装" (PRD §S4 / O4 / R7)。</p>
+    </hgroup>
+  </header>
+
+  <section>
+    <h3>使用流程 (CLI 驱动)</h3>
+    <ol>
+      <li>
+        <strong>抽题</strong>:
+        <code>python -m scripts.learning_check --quarter 2026-Q2</code>
+        — 从 <code>docs/learning_checklist.yaml</code> 随机抽 7 题入库。
+      </li>
+      <li>
+        <strong>答题</strong>: 浏览器打开
+        <code>/learning/&lt;quarter_id&gt;</code>
+        — e.g. <a href="/learning/2026-Q2">/learning/2026-Q2</a>。
+      </li>
+      <li>
+        <strong>评分</strong>:
+        <code>python -m scripts.grade_learning --quarter 2026-Q2</code>
+        — LLM 比对答案 vs 标准答案, 0-10 分。
+      </li>
+      <li>
+        <strong>结果</strong>: 均分 ≥ 7/10 视为通过 (O4 verification)。
+        刷新季度页查看 <code>scores</code>。
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>R3 简化说明</h3>
+    <ul>
+      <li>master checklist 由 human 手编 <code>docs/learning_checklist.yaml</code> (10 概念 + 标准答案)。</li>
+      <li>service 路径零 LLM 调用 — 仅评分脚本调 LLM 一次/季度。</li>
+      <li>不做 nav 红色提醒 — 改为 docs 自查 / runbook 引用。</li>
+      <li>下一次提醒由 T020 alert banner 在 90 天后自动出现。</li>
+    </ul>
+  </section>
+</article>
+{% endblock %}

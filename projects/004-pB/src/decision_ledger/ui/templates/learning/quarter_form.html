@@ -1,0 +1,49 @@
+{# learning/quarter_form.html — T019 (R3 简化版)
+   结论: 季度答题表单, 7 题 + textarea
+   细节:
+     - 表单 field name = concept.id (yaml 里定义)
+     - 已答案预填 (re-answer 允许)
+     - submit 跳 /learning/{quarter_id}/answer
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ quarter_id }} 答题 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>季度学习检查 · {{ quarter_id }}</h2>
+      <p>共 {{ questions|length }} 题, 答完后跑 <code>scripts/grade_learning.py</code> 评分。</p>
+    </hgroup>
+    <a href="/learning" role="button" class="secondary">← 返回</a>
+  </header>
+
+  <form method="post" action="/learning/{{ quarter_id }}/answer">
+    {% for q in questions %}
+      <fieldset>
+        <legend>
+          <strong>题 {{ loop.index }} / {{ questions|length }}</strong>:
+          {{ q.concept }}
+        </legend>
+        <label for="ans-{{ q.id }}">
+          你的答案
+          <textarea
+            id="ans-{{ q.id }}"
+            name="{{ q.id }}"
+            rows="4"
+            placeholder="用自己的话写出对该概念的理解 (≥ 30 字)"
+          >{{ answers.get(q.id, '') }}</textarea>
+        </label>
+      </fieldset>
+    {% endfor %}
+
+    <button type="submit">保存答案</button>
+    <p>
+      <small>
+        保存后未自动评分 — 跑 <code>python -m scripts.grade_learning --quarter {{ quarter_id }}</code> 触发 LLM 评分。
+      </small>
+    </p>
+  </form>
+</article>
+{% endblock %}
