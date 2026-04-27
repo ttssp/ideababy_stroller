@@ -81,10 +81,13 @@ def _build_v01_banner() -> str | None:
     )
     stubs.append("TabMetricsMiddleware:  not installed (OP-6 ratio is best-effort)")
     stubs.append("register_scheduler_job: collected but never started (cron-only)")
-    # 用户视角最大 stub: 12 个 router setter 在 production 永不被调,
-    # 用户跑 ./start.sh 后访问 /decisions/draft 等 DB-bound 路由会 500.
-    # 详见 known-issues-v0.1.md §8. v0.2 建 production app factory 修复.
-    stubs.append("DB-bound routers:      500 in production (use e2e factory; §8)")
+    # 用户视角最大 stub: main.py 不 import 路由模块,
+    # plugin registry 在 production 启动时为空 → app.routes 只有 5 条
+    # (/healthz + FastAPI 默认 /docs /openapi.json /redoc /docs/oauth2-redirect),
+    # 用户跑 ./start.sh 后访问 /decisions/draft 等业务路由全部 404 (不是 500,
+    # 因为路由根本没注册). 详见 known-issues-v0.1.md §8. v0.2 建 production
+    # app factory 修复.
+    stubs.append("business routers:      not registered in production (404; §8)")
 
     if not stubs:
         return None
