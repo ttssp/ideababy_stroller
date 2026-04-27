@@ -1,6 +1,6 @@
 {# T020 alert banner partial — R3 M2 + B-R2-4: 仅 CLI 命令 + runbook 引用,不提供 UI 降级 link #}
 <div role="alert" style="background:#fdd; border:2px solid #c00; padding:1rem; margin-bottom:1rem;">
-  <strong>⚠️ {{ alert.message }}</strong>
+  <strong>⚠️ {{ alert.body }}</strong>
   <p style="margin-top:0.5rem;">
     连续 2 周决策档案 &lt; 2 条 = 红色告警。
     运行 <code>scripts/toggle_b_lite.py engage</code> 进入 B-lite 降级

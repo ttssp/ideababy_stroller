@@ -302,6 +302,10 @@ async def test_alert_banner_partial_contains_cli_commands(
     assert "scripts/toggle_b_lite.py engage" in html
     assert "docs/runbooks/b_lite.md" in html
 
+    # F1-2 修复回归: 模板必须正确渲染 alert.body (之前 KeyError on alert.message)
+    # body 文案由 FailureAlertMonitor 写入, 含 LOOKBACK_DAYS / count 等动态内容
+    assert "连续 2 周决策档案" in html, "模板必须真实渲染 alert.body, 不能是 Jinja2 silent undefined"
+
 
 async def test_alert_banner_empty_when_no_active_alert(
     migrated_pool: AsyncConnectionPool,
