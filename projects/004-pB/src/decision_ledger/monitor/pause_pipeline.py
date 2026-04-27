@@ -1,47 +1,96 @@
 """
 pause_pipeline.py — T020
-结论: B-lite 降级 facade，调 T010 ConflictWorker.pause/resume + T015 placeholder
+结论: B-lite 降级 facade, 调 T010 ConflictWorker.pause/resume + T015 placeholder
 细节 (R3 ⚠️ H1):
   - T015 未 ship: ImportError → log warning + graceful no-op (非 strict 模式)
   - DECISION_LEDGER_TEST_MODE=strict: ImportError → AssertionError (CI 失败)
-    防止 T015 ship 后 wiring 漂移（post-ship import 失败 = wiring 错误）
-  - ConflictWorker 是强依赖（T010 必须 ship），import 失败不捕获
+    防止 T015 ship 后 wiring 漂移 (post-ship import 失败 = wiring 错误)
+  - ConflictWorker 是强依赖 (T010 必须 ship), import 失败不捕获
   - _get_conflict_worker / _try_pause_monthly_scheduler 独立函数便于 patch in tests
+
+F2-T020 H7: 生产 wiring 必须显式注入 ConflictWorker, 没注入时 raise RuntimeError;
+  仅在 DECISION_LEDGER_TEST_MODE=allow-noop 时返回 _Noop (用于 fixture 隔离)。
+F2-T020 H8: pause/resume 是同步方法, 用 asyncio.Lock 串行化避免并发 race
+  (例如 O10 alert 与人工 panic stop 并发触发 pause_all)。
+F2-T020 H9: 提供 reset_conflict_worker() helper, 测试 fixture 用以避免
+  跨测试 wiring 污染。
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# T020 单例占位:生产 wiring 由 main.py 在 startup 注入,测试用 patch 替换。
-# 默认 None 表示未注入,调用方应在测试 patch 或生产 wire 后再用。
+# T020 单例占位: 生产 wiring 由 main.py 在 startup 注入, 测试用 patch 替换。
+# 默认 None 表示未注入。
 _conflict_worker_instance: Any = None
+
+# F2-T020 H8: pause/resume 同步方法 + asyncio.Lock 串行化, 防 O10 alert 与
+# 人工 panic stop 并发触发导致 worker._paused 状态颠倒。
+_pause_lock: asyncio.Lock = asyncio.Lock()
+
+# F2-T020 H7: noop 模式开关; 仅特定测试 fixture 显式打开
+_TEST_MODE_NOOP = "allow-noop"
+
+
+class _Noop:
+    """ConflictWorker 同步 noop 替身, 仅 fixture 用 (F2-T020 H7/H8/H9)。"""
+
+    def pause(self) -> None: ...
+    def resume(self) -> None: ...
+    def is_paused(self) -> bool:
+        return False
 
 
 def _get_conflict_worker() -> Any:
-    """结论: 获取 ConflictWorker 单例(由 main.py startup 或 test patch 注入)。"""
-    if _conflict_worker_instance is None:
-        # 生产环境如果没 wire,记录警告(测试一定 patch 这个函数,不会走到这里)
-        logger.warning("ConflictWorker singleton not wired; pause/resume is no-op")
+    """获取 ConflictWorker 单例 (由 main.py startup 或 test patch 注入)。
 
-        class _Noop:
-            def pause(self) -> None: ...
-            def resume(self) -> None: ...
-            def is_paused(self) -> bool:
-                return False
+    F2-T020 H7: 生产模式下未注入必须 raise, 防止 pause/resume 静默退化为 no-op
+    (R8 panic stop 必须真停, 不能因 wiring 漏装而无声失败)。
+    仅 DECISION_LEDGER_TEST_MODE=allow-noop 时返回 _Noop。
+    """
+    if _conflict_worker_instance is not None:
+        return _conflict_worker_instance
 
+    if os.environ.get("DECISION_LEDGER_TEST_MODE") == _TEST_MODE_NOOP:
         return _Noop()
-    return _conflict_worker_instance
+
+    raise RuntimeError(
+        "ConflictWorker singleton not wired. "
+        "在 main.py startup 调 set_conflict_worker(worker), "
+        "或 fixture 设置 DECISION_LEDGER_TEST_MODE=allow-noop。"
+    )
 
 
 def set_conflict_worker(worker: Any) -> None:
-    """生产 wiring:由 main.py startup 注入 ConflictWorker 实例。"""
+    """生产 wiring: 由 main.py startup 注入 ConflictWorker 实例。
+
+    F2-T020 H7: 真的 wire 进来不许给假货 (None / 缺 pause/resume 方法 / async 方法
+    都视为 wiring 错误)。
+    """
+    if worker is None:
+        raise ValueError("set_conflict_worker(None) 非法; 用 reset_conflict_worker() 清空")
+    for attr in ("pause", "resume", "is_paused"):
+        if not callable(getattr(worker, attr, None)):
+            raise TypeError(
+                f"ConflictWorker wiring 错误: 缺少同步方法 {attr!r}"
+            )
+        if asyncio.iscoroutinefunction(getattr(worker, attr)):
+            raise TypeError(
+                f"ConflictWorker.{attr} 必须是同步方法, 收到 async (F2-T020 H8)"
+            )
     global _conflict_worker_instance
     _conflict_worker_instance = worker
+
+
+def reset_conflict_worker() -> None:
+    """F2-T020 H9: 清空注入实例 (测试 fixture 专用, 防跨测试 wiring 污染)。"""
+    global _conflict_worker_instance
+    _conflict_worker_instance = None
 
 
 def _try_pause_monthly_scheduler() -> None:
@@ -62,55 +111,59 @@ def _try_resume_monthly_scheduler() -> None:
 
 
 async def pause_all_pipelines(reason: str = "") -> None:
-    """B-lite 一键降级 (R3: ImportError 不静默吞).
+    """B-lite 一键降级 (R3: ImportError 不静默吞)。
 
     结论:
-      - ConflictWorker.pause() 强依赖（必须成功）
-      - MonthlyScheduler.pause() 弱依赖（T015 未 ship → warning; strict → AssertionError）
+      - ConflictWorker.pause() 强依赖 (必须成功)
+      - MonthlyScheduler.pause() 弱依赖 (T015 未 ship → warning; strict → AssertionError)
+      - F2-T020 H8: 全过程持 _pause_lock, 串行化并发 pause/resume
 
     参数:
-      reason: 暂停原因，写入日志（可选）
+      reason: 暂停原因, 写入日志 (可选)
     """
-    worker = _get_conflict_worker()
-    worker.pause()
-    logger.info("ConflictWorker paused. reason=%s", reason)
+    async with _pause_lock:
+        worker = _get_conflict_worker()
+        worker.pause()
+        logger.info("ConflictWorker paused. reason=%s", reason)
 
-    try:
-        _try_pause_monthly_scheduler()
-        logger.info("MonthlyScheduler paused")
-    except ImportError as e:
-        # R3 ⚠️ H1: T015 未 ship 是 graceful no-op (warning), T015 ship 后 import 失败 = wiring 错误
-        logger.warning(
-            "MonthlyScheduler import failed (T015 not shipped or wiring broken): %s", e
-        )
-        if os.environ.get("DECISION_LEDGER_TEST_MODE") == "strict":
-            # CI / test mode 下视为失败, 防 wiring drift
-            raise AssertionError(
-                f"T015 import expected to succeed in strict test mode: {e}"
-            ) from e
+        try:
+            _try_pause_monthly_scheduler()
+            logger.info("MonthlyScheduler paused")
+        except ImportError as e:
+            # R3 ⚠️ H1: T015 未 ship → graceful no-op (warning),
+            # ship 后再 import 失败 = wiring 错误 (strict mode 下 raise)
+            logger.warning(
+                "MonthlyScheduler import failed (T015 not shipped or wiring broken): %s", e
+            )
+            if os.environ.get("DECISION_LEDGER_TEST_MODE") == "strict":
+                # CI / test mode 下视为失败, 防 wiring drift
+                raise AssertionError(
+                    f"T015 import expected to succeed in strict test mode: {e}"
+                ) from e
 
-    logger.info("All pipelines paused (B-lite engaged). reason=%s", reason)
+        logger.info("All pipelines paused (B-lite engaged). reason=%s", reason)
 
 
 async def unpause_all_pipelines() -> None:
-    """B-lite 取消降级.
+    """B-lite 取消降级 (F2-T020 H8: 锁串行化)。
 
     结论:
       - ConflictWorker.resume() 强依赖
-      - MonthlyScheduler.resume() 弱依赖（同 pause，T015 未 ship → warning）
+      - MonthlyScheduler.resume() 弱依赖 (同 pause, T015 未 ship → warning)
     """
-    worker = _get_conflict_worker()
-    worker.resume()
-    logger.info("ConflictWorker resumed")
+    async with _pause_lock:
+        worker = _get_conflict_worker()
+        worker.resume()
+        logger.info("ConflictWorker resumed")
 
-    try:
-        _try_resume_monthly_scheduler()
-        logger.info("MonthlyScheduler resumed")
-    except ImportError as e:
-        logger.warning("MonthlyScheduler import failed: %s", e)
-        if os.environ.get("DECISION_LEDGER_TEST_MODE") == "strict":
-            raise AssertionError(
-                f"T015 import expected to succeed: {e}"
-            ) from e
+        try:
+            _try_resume_monthly_scheduler()
+            logger.info("MonthlyScheduler resumed")
+        except ImportError as e:
+            logger.warning("MonthlyScheduler import failed: %s", e)
+            if os.environ.get("DECISION_LEDGER_TEST_MODE") == "strict":
+                raise AssertionError(
+                    f"T015 import expected to succeed: {e}"
+                ) from e
 
-    logger.info("All pipelines resumed (B-lite disengaged)")
+        logger.info("All pipelines resumed (B-lite disengaged)")

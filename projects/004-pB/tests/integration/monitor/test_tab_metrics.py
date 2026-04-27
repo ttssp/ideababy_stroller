@@ -247,3 +247,133 @@ async def test_middleware_does_not_record_post_request(
     tab_repo = TabMetricsRepository(migrated_pool)
     count = await tab_repo.count_opens_since(days=1)
     assert count == 0
+
+
+# ── F2-T020 H10: 路径白名单 + UA 截断 ────────────────────────────────────────
+
+
+async def test_middleware_skips_unknown_path(
+    migrated_pool: AsyncConnectionPool,
+) -> None:
+    """F2-H10: GET 不在白名单的随机 path → 不记录 (防 log 撑爆)。"""
+    from fastapi import FastAPI
+    from fastapi.responses import PlainTextResponse
+
+    from decision_ledger.monitor.tab_metrics import TabMetricsMiddleware, TabMetricsRepository
+
+    app = FastAPI()
+    app.add_middleware(TabMetricsMiddleware, pool=migrated_pool)
+
+    @app.get("/anything-malicious-{path:path}")
+    async def anything(path: str) -> PlainTextResponse:
+        return PlainTextResponse("ok")
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        for path in ("/anything-malicious-1", "/anything-malicious-foo", "/anything-malicious-x"):
+            r = await client.get(path)
+            assert r.status_code == 200
+
+    tab_repo = TabMetricsRepository(migrated_pool)
+    count = await tab_repo.count_opens_since(days=1)
+    assert count == 0, "F2-H10: 非白名单路径不应进入 tab_open_log"
+
+
+async def test_middleware_records_whitelisted_subpath(
+    migrated_pool: AsyncConnectionPool,
+) -> None:
+    """F2-H10: 白名单前缀的子路径 (如 /decisions/abc) 命中。"""
+    from fastapi import FastAPI
+    from fastapi.responses import PlainTextResponse
+
+    from decision_ledger.monitor.tab_metrics import TabMetricsMiddleware, TabMetricsRepository
+
+    app = FastAPI()
+    app.add_middleware(TabMetricsMiddleware, pool=migrated_pool)
+
+    @app.get("/decisions/{path:path}")
+    async def decisions_path(path: str) -> PlainTextResponse:
+        return PlainTextResponse("ok")
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        r = await client.get("/decisions/draft-uuid-xyz")
+        assert r.status_code == 200
+
+    tab_repo = TabMetricsRepository(migrated_pool)
+    count = await tab_repo.count_opens_since(days=1)
+    assert count >= 1
+
+
+async def test_middleware_skips_api_path(
+    migrated_pool: AsyncConnectionPool,
+) -> None:
+    """F2-H10: /api/ 前缀显式排除 (后端调用不算 tab open)。"""
+    from fastapi import FastAPI
+    from fastapi.responses import PlainTextResponse
+
+    from decision_ledger.monitor.tab_metrics import TabMetricsMiddleware, TabMetricsRepository
+
+    app = FastAPI()
+    app.add_middleware(TabMetricsMiddleware, pool=migrated_pool)
+
+    @app.get("/api/health")
+    async def api_health() -> PlainTextResponse:
+        return PlainTextResponse("ok")
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        r = await client.get("/api/health")
+        assert r.status_code == 200
+
+    tab_repo = TabMetricsRepository(migrated_pool)
+    count = await tab_repo.count_opens_since(days=1)
+    assert count == 0
+
+
+async def test_record_open_truncates_long_user_agent(
+    migrated_pool: AsyncConnectionPool,
+) -> None:
+    """F2-H10: user_agent 长度 > 256 必须被截断 (防超大 UA 头打爆磁盘)。"""
+    from decision_ledger.monitor.tab_metrics import TabMetricsRepository
+
+    repo = TabMetricsRepository(migrated_pool)
+    huge_ua = "X" * 2048
+    await repo.record_open(path="/", user_agent=huge_ua)
+
+    async with migrated_pool.connection() as conn:
+        cursor = await conn.execute(
+            "SELECT user_agent FROM tab_open_log ORDER BY opened_at DESC LIMIT 1"
+        )
+        row = await cursor.fetchone()
+    assert row is not None
+    stored_ua: str = row[0]
+    assert len(stored_ua) <= 256, f"F2-H10 违反: UA 应截断到 ≤ 256, 实际 {len(stored_ua)}"
+
+
+async def test_record_open_keeps_short_user_agent_intact(
+    migrated_pool: AsyncConnectionPool,
+) -> None:
+    """F2-H10 反向: 正常 UA 不被截断。"""
+    from decision_ledger.monitor.tab_metrics import TabMetricsRepository
+
+    repo = TabMetricsRepository(migrated_pool)
+    ua = "Mozilla/5.0 (Macintosh) AppleWebKit/537.36"
+    await repo.record_open(path="/", user_agent=ua)
+
+    async with migrated_pool.connection() as conn:
+        cursor = await conn.execute(
+            "SELECT user_agent FROM tab_open_log ORDER BY opened_at DESC LIMIT 1"
+        )
+        row = await cursor.fetchone()
+    assert row[0] == ua
+
+
+async def test_record_open_handles_none_user_agent(
+    migrated_pool: AsyncConnectionPool,
+) -> None:
+    """F2-H10 反向: user_agent=None 不报错 (匿名请求)。"""
+    from decision_ledger.monitor.tab_metrics import TabMetricsRepository
+
+    repo = TabMetricsRepository(migrated_pool)
+    await repo.record_open(path="/", user_agent=None)
+
+    count = await repo.count_opens_since(days=1)
+    assert count == 1
