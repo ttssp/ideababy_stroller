@@ -6,7 +6,7 @@ pre-commit 敏感内容检测钩子 — T001
   - 检测 Anthropic API key 前缀: sk-ant-
   - 检测 Telegram bot token 格式: bot[0-9]+: 或 [0-9]+:[A-Za-z0-9_-]{35,}
   - 检测 inbox/ 路径字样（版权内容）
-  - 检测 db.sqlite 字样（数据库文件路径/引用）
+  - 检测 db.sqlite 字样（F3 修复后已统一为 data.sqlite, 此 hook 防回退）
   - 二进制文件跳过
   - 退出码 0 = 通过, 1 = 拦截
 """
@@ -41,9 +41,9 @@ RULES: list[tuple[str, re.Pattern[str], str]] = [
         "路径包含 inbox/（咨询师 PDF 目录，版权敏感）",
     ),
     (
-        "db_sqlite",
+        "legacy_db_sqlite",
         re.compile(r"\bdb\.sqlite"),
-        "包含 db.sqlite（数据库文件引用）",
+        "包含 db.sqlite（F3 修复后已统一为 data.sqlite, 此命中说明回退到旧路径）",
     ),
 ]
 

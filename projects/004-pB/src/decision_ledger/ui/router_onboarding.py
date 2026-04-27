@@ -158,7 +158,8 @@ async def _onboarding_startup_check() -> None:
         from decision_ledger.repository.base import AsyncConnectionPool
 
         settings = load_settings()
-        db_path = str(settings.decision_ledger_home / "data.sqlite")
+        # F3 修复: 通过 Settings.db_path 单一权威入口, 与 alembic + scripts 一致
+        db_path = str(settings.db_path)
         pool = AsyncConnectionPool(db_path=db_path)
         await pool.initialize()
 

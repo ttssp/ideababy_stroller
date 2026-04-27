@@ -35,16 +35,17 @@ def _get_db_url() -> str:
     结论: 优先从 DECISION_LEDGER_DB_URL env var 读取（测试用），否则从 config.py 构建。
     细节:
       - 测试时通过 DECISION_LEDGER_DB_URL 传入临时 SQLite 路径，隔离测试数据
-      - 生产时读 Settings.decision_ledger_home / db.sqlite
+      - 生产时读 Settings.db_path (Codex review F3 修复: 单一权威路径入口,
+        与运行时 router_settings/router_onboarding 用同一文件 data.sqlite)
     """
     # 测试 hook: 环境变量直接覆盖
     env_url = os.environ.get("DECISION_LEDGER_DB_URL")
     if env_url:
         return env_url
 
-    # 生产路径: 从 config.py 推导（避免循环 import）
+    # 生产路径: 从 config.py 推导（避免循环 import; F3 修复后与运行时同名文件 data.sqlite）
     home = Path(os.environ.get("DECISION_LEDGER_HOME", "~/decision_ledger")).expanduser()
-    return f"sqlite:///{home}/db.sqlite"
+    return f"sqlite:///{home}/data.sqlite"
 
 
 def _configure_sqlite_pragmas(engine: Engine) -> None:

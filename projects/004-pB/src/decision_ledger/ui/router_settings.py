@@ -305,11 +305,14 @@ def _settings_pool_getter() -> AsyncConnectionPool | None:
 
 
 def _resolve_settings_db_path() -> str:
-    """从 Settings 解析 DB 路径; load_settings 失败时退回默认路径。"""
+    """从 Settings 解析 DB 路径; load_settings 失败时退回默认路径。
+
+    F3 修复: 通过 Settings.db_path 单一权威入口, 与 alembic + scripts 一致。
+    """
     try:
         from decision_ledger.config import load_settings
         settings = load_settings()
-        return str(settings.decision_ledger_home / "data.sqlite")
+        return str(settings.db_path)
     except Exception:
         return str(Path("~/decision_ledger/data.sqlite").expanduser())
 

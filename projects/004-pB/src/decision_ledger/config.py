@@ -54,6 +54,21 @@ class Settings(BaseSettings):
         alias="DECISION_LEDGER_TEST_MODE",
     )
 
+    @property
+    def db_path(self) -> Path:
+        """SQLite 主数据库文件绝对路径 — 单一权威入口。
+
+        结论: 所有运行时组件 + alembic + scripts 必须通过此 property
+        解析 DB 路径, 严禁硬编码 SQLite 文件名字符串。
+
+        细节:
+          - Codex review F3 修复: 此前 alembic 与运行时使用不同文件名,
+            用户跑 alembic upgrade head 后 onboarding 撞缺表 silent fail
+          - 当前文件名: data.sqlite (与 docs/runbook.md 既有用户契约一致)
+          - DECISION_LEDGER_DB_URL env var 仍可整体覆盖 (alembic env.py 内部尊重)
+        """
+        return self.decision_ledger_home / "data.sqlite"
+
     @field_validator("anthropic_api_key", mode="before")
     @classmethod
     def _validate_anthropic_key(cls, v: object) -> object:

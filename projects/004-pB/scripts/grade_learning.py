@@ -227,7 +227,8 @@ async def _main(quarter_id: str) -> None:
     if db_url.startswith("sqlite:///"):
         db_path = db_url[len("sqlite:///"):]
     else:
-        db_path = str(_PROJECT_ROOT / "db.sqlite")
+        # F3 修复: 与 alembic + 运行时统一使用 data.sqlite
+        db_path = str(_PROJECT_ROOT / "data.sqlite")
 
     pool = AsyncConnectionPool(db_path)
     await pool.initialize()
