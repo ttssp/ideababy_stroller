@@ -8,8 +8,13 @@ pause_pipeline.py — T020
   - ConflictWorker 是强依赖 (T010 必须 ship), import 失败不捕获
   - _get_conflict_worker / _try_pause_monthly_scheduler 独立函数便于 patch in tests
 
-F2-T020 H7: 生产 wiring 必须显式注入 ConflictWorker, 没注入时 raise RuntimeError;
-  仅在 DECISION_LEDGER_TEST_MODE=allow-noop 时返回 _Noop (用于 fixture 隔离)。
+F2-T020 H7 (followup A1 修订):
+  - 生产模式未注入 → 默认 _Noop + WARNING + counter 自增 (不再 raise)
+    理由: v0.1 plugin registry 系统性死代码, ConflictWorker 在 production
+    本就不启动 (见 docs/known-issues-v0.1.md)。raise 反而把 R8 panic stop
+    路径变成定时炸弹。改 noop + counter + 启动期 BANNER 让"未生效"显式可见。
+  - DECISION_LEDGER_TEST_MODE=strict 维持 raise (CI gate 抓 wiring drift)
+  - DECISION_LEDGER_TEST_MODE=allow-noop 维持返回 _Noop (显式 fixture 用)
 F2-T020 H8: pause/resume 是同步方法, 用 asyncio.Lock 串行化避免并发 race
   (例如 O10 alert 与人工 panic stop 并发触发 pause_all)。
 F2-T020 H9: 提供 reset_conflict_worker() helper, 测试 fixture 用以避免
@@ -35,6 +40,14 @@ _pause_lock: asyncio.Lock = asyncio.Lock()
 
 # F2-T020 H7: noop 模式开关; 仅特定测试 fixture 显式打开
 _TEST_MODE_NOOP = "allow-noop"
+# F2-T020 H7 (followup A1): strict 模式仍 raise (CI gate 抓 wiring drift)
+_TEST_MODE_STRICT = "strict"
+
+# F2-T020 H7 (followup A1): 未 wire 时 _get_conflict_worker 调用计数,
+# 给 R8 panic stop 路径"已知未生效"提供可观测信号。
+# 启动期 BANNER 通过 get_wiring_status() 读 _conflict_worker_instance is None,
+# 运行期 panic stop 失效次数通过 pause_hook_noop_call_count() 读这个 counter。
+_pause_hook_noop_calls: int = 0
 
 
 class _Noop:
@@ -49,21 +62,60 @@ class _Noop:
 def _get_conflict_worker() -> Any:
     """获取 ConflictWorker 单例 (由 main.py startup 或 test patch 注入)。
 
-    F2-T020 H7: 生产模式下未注入必须 raise, 防止 pause/resume 静默退化为 no-op
-    (R8 panic stop 必须真停, 不能因 wiring 漏装而无声失败)。
-    仅 DECISION_LEDGER_TEST_MODE=allow-noop 时返回 _Noop。
+    F2-T020 H7 (followup A1): 行为分三档:
+      1. 已注入 (`set_conflict_worker(worker)` 调用过) → 返回真实 worker
+      2. 未注入且 TEST_MODE=strict → raise (CI gate 抓 wiring drift)
+      3. 其他 (包括 production 默认 / TEST_MODE=allow-noop / 未设)
+         → 返回 _Noop + WARNING + counter 自增
+
+    为什么 production 默认 noop 而非 raise: v0.1 plugin registry 是系统性死代码,
+    ConflictWorker 不在 production 启动 (见 docs/known-issues-v0.1.md)。
+    raise 把 R8 panic stop 路径变成定时炸弹反而更糟。改用 counter +
+    启动期 BANNER 让"未生效"显式可见。
     """
     if _conflict_worker_instance is not None:
         return _conflict_worker_instance
 
-    if os.environ.get("DECISION_LEDGER_TEST_MODE") == _TEST_MODE_NOOP:
-        return _Noop()
+    test_mode = os.environ.get("DECISION_LEDGER_TEST_MODE", "")
 
-    raise RuntimeError(
-        "ConflictWorker singleton not wired. "
-        "在 main.py startup 调 set_conflict_worker(worker), "
-        "或 fixture 设置 DECISION_LEDGER_TEST_MODE=allow-noop。"
+    if test_mode == _TEST_MODE_STRICT:
+        raise RuntimeError(
+            "ConflictWorker singleton not wired (strict mode). "
+            "在 main.py startup 调 set_conflict_worker(worker), "
+            "或临时设置 DECISION_LEDGER_TEST_MODE=allow-noop。"
+        )
+
+    # production 默认 + allow-noop 都走这里: noop + WARNING + counter
+    global _pause_hook_noop_calls
+    _pause_hook_noop_calls += 1
+    logger.warning(
+        "pause_pipeline: ConflictWorker 未 wire, 走 _Noop 替身 "
+        "(R8 panic stop 在此调用上不生效; 累计 %d 次; v0.1 已知, "
+        "见 docs/known-issues-v0.1.md)",
+        _pause_hook_noop_calls,
     )
+    return _Noop()
+
+
+def get_wiring_status() -> dict[str, str]:
+    """F2-T020 H7 (followup A1): 暴露当前 wiring 状态,给 main.py 启动期 BANNER 自检。
+
+    返回各 wiring 槽位的状态: "wired" 表示已注入真实实例, "noop" 表示走替身。
+    新加 wiring 时应在此处增加键, 让 BANNER 自动检测。
+    """
+    return {
+        "conflict_worker": "wired" if _conflict_worker_instance is not None else "noop",
+    }
+
+
+def pause_hook_noop_call_count() -> int:
+    """F2-T020 H7 (followup A1): 读取累计的 noop 调用次数。
+
+    用途:
+      - smoke / 自检脚本: 触发一次 panic stop, 看 counter 是否自增
+      - 测试: 断言未注入路径走了 noop 分支
+    """
+    return _pause_hook_noop_calls
 
 
 def set_conflict_worker(worker: Any) -> None:
@@ -88,9 +140,13 @@ def set_conflict_worker(worker: Any) -> None:
 
 
 def reset_conflict_worker() -> None:
-    """F2-T020 H9: 清空注入实例 (测试 fixture 专用, 防跨测试 wiring 污染)。"""
-    global _conflict_worker_instance
+    """F2-T020 H9: 清空注入实例 (测试 fixture 专用, 防跨测试 wiring 污染)。
+
+    F2-T020 H7 (followup A1): 同时重置 noop counter, 让每个测试的断言独立。
+    """
+    global _conflict_worker_instance, _pause_hook_noop_calls
     _conflict_worker_instance = None
+    _pause_hook_noop_calls = 0
 
 
 def _try_pause_monthly_scheduler() -> None:

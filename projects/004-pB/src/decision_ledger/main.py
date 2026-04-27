@@ -6,12 +6,19 @@ FastAPI 应用入口 — T001
   - plugin registry 模式: register_router / register_startup_task / register_scheduler_job
   - lifespan: 执行所有注册的 startup_tasks
   - DECISION_LEDGER_TEST_MODE=strict 由 CI 注入（架构不变量 #15）
+
+F2-T020 followup A1: lifespan 加启动期 stderr BANNER 列出 v0.1 已知 stub
+  (ConflictWorker 未 wire / FailureAlert cron 未起 / TabMetricsMiddleware 未挂 /
+  register_scheduler_job 死消费), 让"v0.1 plugin registry 系统性死代码"
+  显式可见, 不再"沉默的 0%"。详见 docs/known-issues-v0.1.md。
 """
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import os
+import sys
 from collections.abc import AsyncGenerator, Coroutine
 from contextlib import asynccontextmanager
 from typing import Any  # needed for Coroutine[Any, Any, None]
@@ -21,6 +28,7 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from decision_ledger.config import ConfigError, load_settings
+from decision_ledger.monitor.pause_pipeline import get_wiring_status
 from decision_ledger.plugin import apply_to_app, get_startup_tasks
 
 # ── 日志配置 ─────────────────────────────────────────────
@@ -47,6 +55,60 @@ except ConfigError as _config_err:
     _settings = None  # type: ignore[assignment]
 
 
+# ── F2-T020 followup A1: v0.1 已知 stub 启动期 BANNER ──────────────────────────
+#
+# 为什么用 stderr.write 而不是 logger: BANNER 必须无视 logging level filter,
+# 即便 root logger 被设成 ERROR 也要打出来。这是"沉默的 0% → 可见信号" 的关键。
+# 单用户 localhost 没人看 INFO log, 但每次启动 terminal 都会扫到 stderr。
+_V01_BANNER_SUPPRESS_ENV = "DECISION_LEDGER_SUPPRESS_V01_BANNER"
+
+
+def _build_v01_banner() -> str | None:
+    """构造 v0.1 已知 stub BANNER 文本。返回 None 表示无 stub (未来全 wire 后)。
+
+    F2-T020 followup A1: 通过 get_wiring_status() 检测 wiring,
+    如果某槽位未来真 wire 了, 该行会从 banner 中自动消失。
+    """
+    wiring = get_wiring_status()
+    stubs: list[str] = []
+    if wiring.get("conflict_worker") == "noop":
+        stubs.append("ConflictWorker:        not wired (B-lite engage pause = no-op)")
+    # 以下 stub 是 v0.1 的设计选择, 不依赖 wiring detect (没有对应注入点);
+    # 直接列出, 等 v0.2 真 wire 时手工删除对应行。
+    stubs.append(
+        "FailureAlert cron:     not scheduled (manual run only)"
+    )
+    stubs.append("TabMetricsMiddleware:  not installed (OP-6 ratio is best-effort)")
+    stubs.append("register_scheduler_job: collected but never started (cron-only)")
+
+    if not stubs:
+        return None
+
+    bar = "*" * 78
+    body_lines = [
+        bar,
+        "*** v0.1 KNOWN LIMITATIONS — see docs/known-issues-v0.1.md".ljust(74) + " ***",
+    ]
+    for line in stubs:
+        body_lines.append("*** " + line.ljust(70) + " ***")
+    body_lines.append(bar)
+    return "\n".join(body_lines) + "\n"
+
+
+def _print_v01_banner() -> None:
+    """启动期把 v0.1 stub BANNER 打到 stderr。
+
+    用环境变量 DECISION_LEDGER_SUPPRESS_V01_BANNER=1 关闭 (CI / 测试 / 监控对接用)。
+    """
+    if os.environ.get(_V01_BANNER_SUPPRESS_ENV) == "1":
+        return
+    banner = _build_v01_banner()
+    if banner is None:
+        return
+    sys.stderr.write(banner)
+    sys.stderr.flush()
+
+
 # ── Lifespan 上下文管理器 ─────────────────────────────────
 @asynccontextmanager
 async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
@@ -60,6 +122,9 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         coro: Coroutine[Any, Any, None] = factory()
         t: asyncio.Task[None] = asyncio.create_task(coro, name=getattr(factory, "__name__", "task"))
         running.append(t)
+
+    # F2-T020 followup A1: 在 ready log 之前打 v0.1 stub BANNER 到 stderr
+    _print_v01_banner()
 
     logger.info("FastAPI 应用已就绪 | bind=127.0.0.1:8000")
     yield

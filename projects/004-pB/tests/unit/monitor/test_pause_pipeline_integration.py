@@ -1,14 +1,15 @@
 """
-test_pause_pipeline_integration.py — T020 unit 测试 (F2-T020 H7/H8/H9 强化)
-结论: 验证 pause_pipeline facade 的 R3 ⚠️ H1 + F2 H7/H8/H9 行为
+test_pause_pipeline_integration.py — T020 unit 测试 (F2-T020 H7/H8/H9 + followup A1)
+结论: 验证 pause_pipeline facade 的 R3 ⚠️ H1 + F2 H7/H8/H9 + followup A1 行为
 细节:
   - pause_all_pipelines() 调用 ConflictWorker.pause() (同步)
   - T015 (MonthlyScheduler) 缺失时优雅处理 (graceful)
   - DECISION_LEDGER_TEST_MODE=strict → AssertionError (R3 H1)
   - DECISION_LEDGER_TEST_MODE=allow-noop → _Noop 替身 (F2 H7)
-  - 生产模式未注入 → RuntimeError (F2 H7)
+  - 生产模式未注入 → _Noop + WARNING + counter 自增 (F2 H7 followup A1)
+  - 仅 TEST_MODE=strict 维持 raise (F2 H7 followup A1, CI gate)
   - set_conflict_worker(async方法) → TypeError (F2 H8)
-  - reset_conflict_worker() 清空注入实例 (F2 H9)
+  - reset_conflict_worker() 清空注入实例 + 重置 counter (F2 H9 + followup A1)
 """
 
 from __future__ import annotations
@@ -129,19 +130,51 @@ async def test_pause_all_passes_reason_to_worker() -> None:
 # ── F2-T020 H7: production wiring 必须显式 ────────────────────────────────────
 
 
-def test_get_conflict_worker_raises_when_unwired_in_production() -> None:
-    """F2-H7: 没注入 worker 且非 noop 模式时, _get_conflict_worker 必须 raise。"""
+def test_get_conflict_worker_returns_noop_in_production_when_unwired(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """F2-H7 followup A1: production 默认未 wire 走 _Noop + WARNING + counter 自增。
+
+    替代旧的"未注入必 raise"行为 — v0.1 plugin registry 死代码现实下, raise
+    把 R8 panic stop 变成定时炸弹。改 noop + counter + 启动期 BANNER 让"未生效"
+    显式可见。
+    """
+    from decision_ledger.monitor.pause_pipeline import (
+        _get_conflict_worker,
+        _Noop,
+        pause_hook_noop_call_count,
+    )
+
+    caplog.set_level("WARNING", logger="decision_ledger.monitor.pause_pipeline")
+    with patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": ""}, clear=False):
+        worker = _get_conflict_worker()
+
+    assert isinstance(worker, _Noop)
+    # counter 自增 (autouse fixture 已 reset 到 0)
+    assert pause_hook_noop_call_count() == 1
+    # WARNING 日志含可识别关键词
+    assert any(
+        "未 wire" in r.message or "not wired" in r.message.lower()
+        for r in caplog.records
+    ), f"应有 wiring WARNING, 实际 records: {[r.message for r in caplog.records]}"
+
+
+def test_get_conflict_worker_strict_mode_still_raises() -> None:
+    """F2-H7 followup A1: TEST_MODE=strict 维持 raise (CI gate 抓 wiring drift)。
+
+    production 默认改 noop, 但 CI 必须能识别"代码改完忘了 wire"这种漂移。
+    """
     from decision_ledger.monitor.pause_pipeline import _get_conflict_worker
 
     with (
-        patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": ""}, clear=False),
-        pytest.raises(RuntimeError, match="not wired"),
+        patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": "strict"}, clear=False),
+        pytest.raises(RuntimeError, match="strict"),
     ):
         _get_conflict_worker()
 
 
 def test_get_conflict_worker_returns_noop_in_allow_noop_mode() -> None:
-    """F2-H7: DECISION_LEDGER_TEST_MODE=allow-noop 显式开关下, 才返回 _Noop。"""
+    """F2-H7: DECISION_LEDGER_TEST_MODE=allow-noop 显式开关下, 也返回 _Noop。"""
     from decision_ledger.monitor.pause_pipeline import _get_conflict_worker, _Noop
 
     with patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": "allow-noop"}):
@@ -151,6 +184,57 @@ def test_get_conflict_worker_returns_noop_in_allow_noop_mode() -> None:
         worker.pause()
         worker.resume()
         assert worker.is_paused() is False
+
+
+def test_pause_hook_noop_counter_increments_per_call() -> None:
+    """F2-H7 followup A1: 每次 _Noop 路径调用 counter +1, 给 smoke / 自检用。"""
+    from decision_ledger.monitor.pause_pipeline import (
+        _get_conflict_worker,
+        pause_hook_noop_call_count,
+    )
+
+    with patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": ""}, clear=False):
+        for expected in (1, 2, 3, 4, 5):
+            _get_conflict_worker()
+            assert pause_hook_noop_call_count() == expected
+
+
+def test_get_wiring_status_reflects_injection() -> None:
+    """F2-H7 followup A1: get_wiring_status() 给启动期 BANNER 自检读 wiring 状态。"""
+    from decision_ledger.monitor.pause_pipeline import (
+        get_wiring_status,
+        reset_conflict_worker,
+        set_conflict_worker,
+    )
+
+    # 未注入: noop
+    assert get_wiring_status()["conflict_worker"] == "noop"
+
+    # 注入后: wired
+    worker = _make_mock_conflict_worker()
+    set_conflict_worker(worker)
+    assert get_wiring_status()["conflict_worker"] == "wired"
+
+    # reset 后: 又 noop
+    reset_conflict_worker()
+    assert get_wiring_status()["conflict_worker"] == "noop"
+
+
+def test_reset_conflict_worker_resets_counter() -> None:
+    """F2-H7 followup A1 + H9: reset 同时清 wiring + counter, 让测试断言独立。"""
+    from decision_ledger.monitor.pause_pipeline import (
+        _get_conflict_worker,
+        pause_hook_noop_call_count,
+        reset_conflict_worker,
+    )
+
+    with patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": ""}, clear=False):
+        _get_conflict_worker()
+        _get_conflict_worker()
+        assert pause_hook_noop_call_count() == 2
+
+        reset_conflict_worker()
+        assert pause_hook_noop_call_count() == 0
 
 
 def test_set_conflict_worker_rejects_none() -> None:
@@ -188,9 +272,14 @@ def test_set_conflict_worker_rejects_missing_methods() -> None:
 
 
 def test_set_then_reset_conflict_worker() -> None:
-    """F2-H9: set 后 reset, 再次 _get_conflict_worker 必须 raise (生产模式)。"""
+    """F2-H9 + followup A1: set 后 reset, 再次 _get_conflict_worker 退化为 _Noop。
+
+    (旧版本断言 raise; followup A1 后 production 默认是 noop 不 raise。
+    对应 strict 模式仍 raise 的回归覆盖见 test_get_conflict_worker_strict_mode_still_raises。)
+    """
     from decision_ledger.monitor.pause_pipeline import (
         _get_conflict_worker,
+        _Noop,
         reset_conflict_worker,
         set_conflict_worker,
     )
@@ -200,11 +289,9 @@ def test_set_then_reset_conflict_worker() -> None:
     assert _get_conflict_worker() is worker
 
     reset_conflict_worker()
-    with (
-        patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": ""}, clear=False),
-        pytest.raises(RuntimeError),
-    ):
-        _get_conflict_worker()
+    with patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": ""}, clear=False):
+        result = _get_conflict_worker()
+    assert isinstance(result, _Noop)
 
 
 # ── F2-T020 H8: pause/resume 串行化锁 ─────────────────────────────────────────
