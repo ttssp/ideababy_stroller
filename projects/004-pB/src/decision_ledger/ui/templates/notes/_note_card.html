@@ -1,0 +1,56 @@
+{# notes/_note_card.html — T016
+   结论: 笔记卡片 partial，供列表页 (index.html) include
+   细节:
+     - 显示 title, content 前 200 字符 snippet, tags, updated_at
+     - 编辑 + 删除操作链接
+     - 删除用 JS fetch DELETE (非 form submit), 以支持 DELETE method
+#}
+<article style="margin-bottom: 1rem;">
+  <header style="display: flex; justify-content: space-between; align-items: center;">
+    <h4 style="margin: 0;">{{ note.title }}</h4>
+    <small style="color: var(--pico-muted-color);">
+      {{ note.updated_at.strftime('%Y-%m-%d %H:%M') if note.updated_at else '' }}
+    </small>
+  </header>
+
+  <p style="margin: 0.5rem 0;">
+    {{ note.content[:200] }}{% if note.content|length > 200 %}…{% endif %}
+  </p>
+
+  {% if note.tags %}
+  <p style="margin: 0.25rem 0;">
+    {% for tag in note.tags %}
+    <small><mark>{{ tag }}</mark></small>
+    {% endfor %}
+  </p>
+  {% endif %}
+
+  <footer style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+    <a href="/notes/{{ note.note_id }}/edit" role="button" class="outline" style="font-size: 0.875rem; padding: 0.25rem 0.75rem;">
+      编辑
+    </a>
+    <button
+      class="outline contrast"
+      style="font-size: 0.875rem; padding: 0.25rem 0.75rem;"
+      onclick="deleteNote('{{ note.note_id }}', this)"
+      type="button"
+    >
+      删除
+    </button>
+  </footer>
+</article>
+
+<script>
+  function deleteNote(noteId, btn) {
+    if (!confirm('确认删除此笔记？')) return;
+    fetch('/notes/' + noteId, { method: 'DELETE' })
+      .then(resp => {
+        if (resp.redirected || resp.ok) {
+          window.location.href = '/notes';
+        } else {
+          alert('删除失败: ' + resp.status);
+        }
+      })
+      .catch(err => alert('删除出错: ' + err));
+  }
+</script>
