@@ -1,0 +1,67 @@
+{# decisions/_post_mortem_form.html — T018
+   结论: post-mortem 回填表单局部，含 4 字段 + 时间注入 + 预填逻辑
+   细节:
+     - executed_at: datetime-local，R11 允许留空
+     - result_pct_after_7d: 数字，7 天后才能填（服务端校验）
+     - result_pct_after_30d: 数字，无时间限制
+     - retrospective_notes: textarea
+     - _now_override: 隐藏字段，仅测试用（生产留空）
+#}
+<form method="post" action="/decisions/{{ decision.trade_id }}/post-mortem">
+
+  <label for="executed_at">
+    实际执行时间
+    <small>（hold/wait 决策可留空，R11）</small>
+  </label>
+  <input
+    type="datetime-local"
+    id="executed_at"
+    name="executed_at"
+    value="{{ existing_pm.executed_at.strftime('%Y-%m-%dT%H:%M') if existing_pm and existing_pm.executed_at else '' }}"
+  >
+
+  <label for="result_pct_after_7d">
+    7 日后收益 %
+    <small>（仅决策 7 天后可填；留空可稍后补填）</small>
+  </label>
+  <input
+    type="number"
+    step="0.01"
+    id="result_pct_after_7d"
+    name="result_pct_after_7d"
+    value="{{ existing_pm.result_pct_after_7d if existing_pm and existing_pm.result_pct_after_7d is not none else '' }}"
+    placeholder="例: 3.25"
+  >
+
+  <label for="result_pct_after_30d">
+    30 日后收益 %
+    <small>（无时间限制；留空可稍后补填）</small>
+  </label>
+  <input
+    type="number"
+    step="0.01"
+    id="result_pct_after_30d"
+    name="result_pct_after_30d"
+    value="{{ existing_pm.result_pct_after_30d if existing_pm and existing_pm.result_pct_after_30d is not none else '' }}"
+    placeholder="例: 8.50"
+  >
+
+  <label for="retrospective_notes">
+    复盘笔记
+  </label>
+  <textarea
+    id="retrospective_notes"
+    name="retrospective_notes"
+    rows="5"
+    placeholder="事后总结：执行情况、收益原因、下次改进点..."
+  >{{ existing_pm.retrospective_notes if existing_pm and existing_pm.retrospective_notes else '' }}</textarea>
+
+  {# _now_override: 仅测试用，生产永远留空 #}
+  <input type="hidden" name="_now_override" value="">
+
+  <div class="grid">
+    <button type="submit">保存复盘</button>
+    <a href="/decisions/{{ decision.trade_id }}" role="button" class="secondary outline">取消</a>
+  </div>
+
+</form>
