@@ -38,9 +38,14 @@ _conflict_worker_instance: Any = None
 # 人工 panic stop 并发触发导致 worker._paused 状态颠倒。
 _pause_lock: asyncio.Lock = asyncio.Lock()
 
-# F2-T020 H7: noop 模式开关; 仅特定测试 fixture 显式打开
+# F2-T020 H7 / followup A1: TEST_MODE 三档值 (DECISION_LEDGER_TEST_MODE env)
+#   - "" (默认 / unset): production / 开发 — 走 _Noop + WARNING + counter
+#   - "allow-noop": 显式 fixture 用 — 与 production 同效 (写出来是为了让测试
+#     fixture 显式声明意图; 也避免运维误以为"strict"是唯一合法值)
+#   - "strict": CI gate — 未 wire 时 raise, 抓 wiring drift
+#  注: production 应当**不设**该 env (留空), CI 才设 strict。Settings 模型
+#  默认 'strict' 是给 CI workflow 的暗示, 不是 production 默认值。
 _TEST_MODE_NOOP = "allow-noop"
-# F2-T020 H7 (followup A1): strict 模式仍 raise (CI gate 抓 wiring drift)
 _TEST_MODE_STRICT = "strict"
 
 # F2-T020 H7 (followup A1): 未 wire 时 _get_conflict_worker 调用计数,
@@ -82,10 +87,17 @@ def _get_conflict_worker() -> Any:
         raise RuntimeError(
             "ConflictWorker singleton not wired (strict mode). "
             "在 main.py startup 调 set_conflict_worker(worker), "
-            "或临时设置 DECISION_LEDGER_TEST_MODE=allow-noop。"
+            f"或临时设置 DECISION_LEDGER_TEST_MODE={_TEST_MODE_NOOP}。"
         )
 
-    # production 默认 + allow-noop 都走这里: noop + WARNING + counter
+    # production 默认 (test_mode == "") + 显式 allow-noop (test_mode == _TEST_MODE_NOOP)
+    # 都走 _Noop + WARNING + counter。任何其他未识别值 (打字错误等) 也走这里,
+    # 与 production 默认行为相同 — 比静默 raise 更友好。
+    if test_mode not in ("", _TEST_MODE_NOOP):
+        logger.warning(
+            "pause_pipeline: 未识别的 DECISION_LEDGER_TEST_MODE=%r, 按 production 默认处理",
+            test_mode,
+        )
     global _pause_hook_noop_calls
     _pause_hook_noop_calls += 1
     logger.warning(

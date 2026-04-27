@@ -186,6 +186,28 @@ def test_get_conflict_worker_returns_noop_in_allow_noop_mode() -> None:
         assert worker.is_paused() is False
 
 
+def test_get_conflict_worker_unknown_test_mode_falls_back_to_noop(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """followup A1 (self-review N3): 未识别的 TEST_MODE 值走 noop + 警告, 不 raise。
+
+    防止"打字错误"(如 'striict')让 production 静默 raise; 同时 logger.warning
+    告知运维该值不被识别。
+    """
+    from decision_ledger.monitor.pause_pipeline import _get_conflict_worker, _Noop
+
+    caplog.set_level("WARNING", logger="decision_ledger.monitor.pause_pipeline")
+    with patch.dict(os.environ, {"DECISION_LEDGER_TEST_MODE": "striict"}, clear=False):
+        worker = _get_conflict_worker()
+
+    assert isinstance(worker, _Noop)
+    # 应有"未识别"警告 + 走 noop 的警告 (两条)
+    msgs = [r.message for r in caplog.records]
+    assert any("未识别的" in m for m in msgs), (
+        f"应有未识别 TEST_MODE 警告, 实际 records: {msgs}"
+    )
+
+
 def test_pause_hook_noop_counter_increments_per_call() -> None:
     """F2-H7 followup A1: 每次 _Noop 路径调用 counter +1, 给 smoke / 自检用。"""
     from decision_ledger.monitor.pause_pipeline import (

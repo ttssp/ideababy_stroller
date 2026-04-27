@@ -5,7 +5,8 @@ FastAPI 应用入口 — T001
   - bind 127.0.0.1（架构不变量 #7，永远不接 0.0.0.0）
   - plugin registry 模式: register_router / register_startup_task / register_scheduler_job
   - lifespan: 执行所有注册的 startup_tasks
-  - DECISION_LEDGER_TEST_MODE=strict 由 CI 注入（架构不变量 #15）
+  - DECISION_LEDGER_TEST_MODE=strict 由 CI 注入 (架构不变量 #15)
+    production 应当不注入此 env (留空), 让 _get_conflict_worker 走 _Noop 替身
 
 F2-T020 followup A1: lifespan 加启动期 stderr BANNER 列出 v0.1 已知 stub
   (ConflictWorker 未 wire / FailureAlert cron 未起 / TabMetricsMiddleware 未挂 /

@@ -4,7 +4,12 @@
 细节:
   - ANTHROPIC_API_KEY 和 TELEGRAM_BOT_TOKEN 必填，空值即 ConfigError
   - DECISION_LEDGER_HOME 默认 ~/decision_ledger
-  - DECISION_LEDGER_TEST_MODE 默认 "strict"（架构不变量 #15）
+  - DECISION_LEDGER_TEST_MODE 默认 "strict" (架构不变量 #15)
+    注: 此默认值是给 CI workflow 的契约暗示 (CI 必须显式设 strict 抓 wiring drift),
+    **不是** production 部署的必需值。production 应当**不设** DECISION_LEDGER_TEST_MODE
+    (留 env 为空), 让 monitor.pause_pipeline 走 _Noop 替身 (v0.1 已知 stub,
+    见 docs/known-issues-v0.1.md)。运行时检测以 os.environ 为准 — 即便 Settings
+    模型默认 'strict', 只要 env 没显式注入, _get_conflict_worker 看到的也是 ""。
   - 模块级 _settings 单例，避免重复加载
 """
 
@@ -41,7 +46,9 @@ class Settings(BaseSettings):
         default_factory=lambda: Path("~/decision_ledger").expanduser()
     )
 
-    # strict mode 控制（架构不变量 #15: CI 默认 strict）
+    # strict mode 控制 (架构不变量 #15: CI 显式设 strict 抓 wiring drift;
+    # production 应当不设 env, monitor.pause_pipeline 直接读 os.environ 默认空字符串
+    # 走 _Noop 替身, 详见 docs/known-issues-v0.1.md)
     decision_ledger_test_mode: str = Field(
         default="strict",
         alias="DECISION_LEDGER_TEST_MODE",

@@ -1,5 +1,7 @@
 # v0.1 已知 stub 与 plugin registry 死代码声明
 
+> **INTERNAL — do not publish.** 本文档详细列出 v0.1 减弱保护层(R8 panic stop / O10 alert / OP-6 metric)各路径为何不生效。仅给运维/接手 v0.2 的工程师参考。如需对外说明 v0.1 限制,另写一份脱敏版(只说"v0.1 reduced async coverage",不点名具体 hook)。
+
 **目的**:把"沉默的 0%"翻译成可见信号。本文档列出 v0.1 已知**未生效**的 wiring 链路,以及 v0.2 计划的修复方向。每次 FastAPI 启动会在 stderr 打印一段 BANNER 引用本文档,B-lite CLI 真实路径也会打 disclaimer 引用本文档。
 
 > **不是 bug**:这些是 v0.1 的设计选择(spec §6 / architecture.md 默认承诺级别 = "hook 存在 + 单测覆盖",未承诺 production 真跑)。
