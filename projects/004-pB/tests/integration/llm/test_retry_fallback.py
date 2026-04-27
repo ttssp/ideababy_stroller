@@ -92,7 +92,9 @@ async def test_retry_succeeds_after_one_api_error(tmp_path: Path) -> None:
 
     call_count = 0
 
-    async def api_side_effect(prompt: str, schema: type, model: str) -> Any:
+    async def api_side_effect(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
         nonlocal call_count
         call_count += 1
         if call_count == 1:
@@ -130,7 +132,9 @@ async def test_retry_exhausted_raises_llm_unavailable(tmp_path: Path) -> None:
     client = _make_client(tmp_path)
     call_count = 0
 
-    async def always_fail(prompt: str, schema: type, model: str) -> Any:
+    async def always_fail(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
         nonlocal call_count
         call_count += 1
         raise anthropic.APIStatusError(
@@ -171,7 +175,9 @@ async def test_sonnet_exhausted_fallback_to_haiku_succeeds(tmp_path: Path) -> No
     sonnet_call_count = 0
     haiku_call_count = 0
 
-    async def model_dependent(prompt: str, schema: type, model: str) -> Any:
+    async def model_dependent(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
         nonlocal sonnet_call_count, haiku_call_count
         if "sonnet" in model:
             sonnet_call_count += 1
@@ -211,7 +217,9 @@ async def test_haiku_fallback_also_exhausted_raises(tmp_path: Path) -> None:
 
     client = _make_client(tmp_path)
 
-    async def always_fail(prompt: str, schema: type, model: str) -> Any:
+    async def always_fail(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
         raise anthropic.APIStatusError(
             message="Service Unavailable",
             response=MagicMock(status_code=503),
@@ -241,7 +249,9 @@ async def test_rate_limit_error_triggers_retry(tmp_path: Path) -> None:
 
     call_count = 0
 
-    async def rate_limit_then_ok(prompt: str, schema: type, model: str) -> Any:
+    async def rate_limit_then_ok(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
         nonlocal call_count
         call_count += 1
         if call_count < 3:

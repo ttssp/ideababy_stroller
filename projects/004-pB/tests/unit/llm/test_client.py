@@ -182,7 +182,9 @@ async def test_monthly_cost_over_40_fallback_to_haiku(tmp_path: Path) -> None:
 
     actual_model_used: list[str] = []
 
-    async def fake_call_api(prompt: str, schema: type, model: str) -> Any:
+    async def fake_call_api(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
         actual_model_used.append(model)
         return mock_response
 
@@ -323,3 +325,154 @@ async def test_usage_records_template_version(tmp_path: Path) -> None:
     )
 
     assert usage_writer.records[0].prompt_template_version == "advisor_v2"
+
+
+# ── F1: fast-path 新参数测试 ─────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_cache_lookup_false_skips_cache_read_and_write(tmp_path: Path) -> None:
+    """should not read or write cache when cache_lookup=False (T013 D21 + R3 #13)。"""
+    client = _make_client(tmp_path)
+    mock_response = _make_tool_use_response({"direction": "long", "confidence": 0.7})
+
+    # 预填 cache, 若读了 cache 会被发现
+    client._cache.put(
+        advisor_week_id="2026-W17",
+        ticker="TSM",
+        prompt_template_version="devil_v1",
+        model="claude-sonnet-4-6",
+        data={"direction": "should-not-be-used", "confidence": 0.0},
+    )
+
+    api_call_count = 0
+
+    async def fake_call_api(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
+        nonlocal api_call_count
+        api_call_count += 1
+        return mock_response
+
+    with patch.object(client, "_call_api", new_callable=AsyncMock, side_effect=fake_call_api):
+        # 第 1 次
+        result1 = await client.call(
+            prompt="rebuttal_1",
+            template_version="devil_v1",
+            cache_key_extras={"advisor_week_id": "2026-W17", "ticker": "TSM"},
+            schema=_TestSchema,
+            model="claude-sonnet-4-6",
+            cache_lookup=False,
+        )
+        # 第 2 次同 key
+        result2 = await client.call(
+            prompt="rebuttal_2",
+            template_version="devil_v1",
+            cache_key_extras={"advisor_week_id": "2026-W17", "ticker": "TSM"},
+            schema=_TestSchema,
+            model="claude-sonnet-4-6",
+            cache_lookup=False,
+        )
+
+    # 两次都调 API (cache 不读)
+    assert api_call_count == 2
+    assert result1.direction == "long"  # 来自 mock 不是预填 cache
+    assert result2.direction == "long"
+
+
+@pytest.mark.asyncio
+async def test_allow_fallback_false_blocks_haiku_downgrade_when_cost_over_40(
+    tmp_path: Path,
+) -> None:
+    """should not downgrade to Haiku when allow_fallback=False even if cost > $40 (T013)。"""
+    usage_writer = _FakeUsageWriter(monthly_cost=50.0)  # 已超 $40 阈值
+    client = _make_client(tmp_path, usage_writer=usage_writer)
+
+    actual_model_used: list[str] = []
+    mock_response = _make_tool_use_response({"direction": "neutral", "confidence": 0.5})
+
+    async def fake_call_api(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
+        actual_model_used.append(model)
+        return mock_response
+
+    with patch.object(client, "_call_api", new_callable=AsyncMock, side_effect=fake_call_api):
+        await client.call(
+            prompt="test",
+            template_version="devil_v1",
+            cache_key_extras={"advisor_week_id": "2026-W17", "ticker": "TSM"},
+            schema=_TestSchema,
+            model="claude-sonnet-4-6",
+            allow_fallback=False,
+        )
+
+    # 严格用 Sonnet, 不许降 Haiku
+    assert actual_model_used == ["claude-sonnet-4-6"]
+
+
+@pytest.mark.asyncio
+async def test_cache_extras_make_different_keys_for_different_directions(
+    tmp_path: Path,
+) -> None:
+    """should produce different cache keys when extras differ (R10 红线 防同 ticker
+    不同 direction cache 命中同一根因)。"""
+    client = _make_client(tmp_path)
+    mock_response = _make_tool_use_response({"direction": "long", "confidence": 0.7})
+
+    api_call_count = 0
+
+    async def fake_call_api(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
+        nonlocal api_call_count
+        api_call_count += 1
+        return mock_response
+
+    with patch.object(client, "_call_api", new_callable=AsyncMock, side_effect=fake_call_api):
+        # 第 1 次: direction=long
+        await client.call(
+            prompt="test",
+            template_version="conflict_v1",
+            cache_key_extras={
+                "advisor_week_id": "2026-W17", "ticker": "TSM", "direction": "long",
+            },
+            schema=_TestSchema,
+            model="claude-sonnet-4-6",
+        )
+        # 第 2 次: 同 ticker 但 direction=short → 必须 cache miss
+        await client.call(
+            prompt="test",
+            template_version="conflict_v1",
+            cache_key_extras={
+                "advisor_week_id": "2026-W17", "ticker": "TSM", "direction": "short",
+            },
+            schema=_TestSchema,
+            model="claude-sonnet-4-6",
+        )
+
+    # 不同 direction 必须各调一次 API
+    assert api_call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_timeout_seconds_raises_when_exceeded(tmp_path: Path) -> None:
+    """should raise asyncio.TimeoutError when timeout_seconds exceeded (T013 = 3s)。"""
+    import asyncio
+    client = _make_client(tmp_path)
+
+    async def slow_api(
+        prompt: str, schema: type, model: str, *args: Any, **kwargs: Any
+    ) -> Any:
+        await asyncio.sleep(2.0)  # 远超 timeout
+        return _make_tool_use_response({"direction": "long", "confidence": 0.5})
+
+    with patch.object(client, "_call_api", new_callable=AsyncMock, side_effect=slow_api):
+        with pytest.raises(asyncio.TimeoutError):
+            await client.call(
+                prompt="test",
+                template_version="devil_v1",
+                cache_key_extras={"advisor_week_id": "2026-W17", "ticker": "TSM"},
+                schema=_TestSchema,
+                model="claude-sonnet-4-6",
+                timeout_seconds=0.1,
+            )

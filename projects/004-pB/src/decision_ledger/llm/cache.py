@@ -45,12 +45,17 @@ class LLMCache:
         ticker: str,
         prompt_template_version: str,
         model: str,
+        extras: dict[str, str] | None = None,
     ) -> dict[str, Any] | None:
         """
         尝试命中缓存。
         返回: dict (命中) | None (未命中)
+
+        F1: extras 参与 key 计算 (语义层 cache 区分, e.g. direction/confidence_bucket
+            for ConflictReport, 防止"同 ticker 不同 direction cache 命中同一根因"
+            悄悄植入 winner 偏向)
         """
-        key = self._make_key(advisor_week_id, ticker, prompt_template_version, model)
+        key = self._make_key(advisor_week_id, ticker, prompt_template_version, model, extras)
         path = self._path(key)
         if not path.exists():
             return None
@@ -69,12 +74,15 @@ class LLMCache:
         prompt_template_version: str,
         model: str,
         data: dict[str, Any],
+        extras: dict[str, str] | None = None,
     ) -> None:
         """
         原子写入缓存条目。
         元数据嵌入文件，供 invalidate 使用。
+
+        F1: extras 同 get(), 让写入也按 extras 区分。
         """
-        key = self._make_key(advisor_week_id, ticker, prompt_template_version, model)
+        key = self._make_key(advisor_week_id, ticker, prompt_template_version, model, extras)
         path = self._path(key)
         tmp_path = path.with_suffix(".tmp")
 
@@ -132,12 +140,19 @@ class LLMCache:
         ticker: str,
         prompt_template_version: str,
         model: str,
+        extras: dict[str, str] | None = None,
     ) -> str:
         """
-        生成缓存键 = sha256(advisor_week_id + ticker + prompt_template_version + model)
+        生成缓存键 = sha256(主四元组 + sorted(extras))
         D11 spec: prompt_template_version 必须含，否则 prompt 改 cache 不更新会污染。
+        F1: extras (e.g. direction/confidence_bucket) 排序后参与 hash, 让"同 ticker 同 source
+            不同 direction" 不再 cache 命中同一份根因 (R10 红线 + adversarial Saboteur#1).
         """
-        raw = f"{advisor_week_id}|{ticker}|{prompt_template_version}|{model}"
+        extras_str = ""
+        if extras:
+            # 排序保证同样 dict 不同插入顺序 hash 一致
+            extras_str = "|".join(f"{k}={v}" for k, v in sorted(extras.items()))
+        raw = f"{advisor_week_id}|{ticker}|{prompt_template_version}|{model}|{extras_str}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
     def _path(self, key: str) -> Path:

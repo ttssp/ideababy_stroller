@@ -112,120 +112,158 @@ class LLMClient:
         cache_key_extras: dict[str, str],
         schema: type[T],
         model: str = _SONNET_MODEL,
+        max_tokens: int = 2048,
+        temperature: float | None = None,
+        cache_lookup: bool = True,
+        allow_fallback: bool = True,
+        timeout_seconds: float | None = None,
     ) -> T:
         """
         统一 LLM 调用接口 (D19 async)。
 
         顺序:
-          1. 检查月成本是否超 $40 → 自动降级 model (TECH-2)
-          2. cache.get → 命中: 记 usage(cache_hit=True, cost=0) → 返回
+          1. 检查月成本是否超 $40 → 自动降级 model (TECH-2; allow_fallback=False 禁用)
+          2. cache.get → 命中: 记 usage(cache_hit=True, cost=0) → 返回 (cache_lookup=False 禁用)
           3. cache miss → retry(call_api) with fallback → schema validate
+                          (allow_fallback=False 禁用第二层 Haiku fallback)
           4. usage.record (cache_hit=False, 真实 token)
-          5. cache.put
+          5. cache.put (cache_lookup=False 禁用)
 
         Args:
             prompt: 已渲染的 prompt 文本
-            template_version: prompt 模板版本，如 "conflict_v1"（必须含，D11）
-            cache_key_extras: 构成 cache key 的额外字段，必须含 advisor_week_id + ticker
-            schema: pydantic model 类，用于 tool use schema + 结果验证 (SEC-4)
-            model: 目标模型，默认 Sonnet 4.6；月成本超 $40 时自动降为 Haiku
-
-        Returns:
-            schema 实例
+            template_version: prompt 模板版本 (D11 必须含)
+            cache_key_extras: 构成 cache key 的额外字段, 必须含 advisor_week_id + ticker;
+                额外语义字段 (e.g. direction/confidence_bucket) 也进 cache key
+                防止 "同 ticker 不同 direction cache 命中同一根因" (R10 红线)
+            schema: pydantic model 类, 用于 tool use schema + 结果验证 (SEC-4)
+            model: 目标模型, 默认 Sonnet 4.6
+            max_tokens: SDK 上限 (T013 Rebuttal fast-path = 100, 反 over-explanation)
+            temperature: SDK 采样温度 (T013 = 0.3 低随机性), None = SDK 默认
+            cache_lookup: True = 走 cache (默认); False = 不读不写 cache
+                (T013 Rebuttal D21 + R3 #13: 不可缓存)
+            allow_fallback: True = 月成本超阈值降 Haiku + 主模型 retry 耗尽降 Haiku;
+                False = 严格用指定 model, 任何降级都 raise (T013 spec 显式禁令)
+            timeout_seconds: asyncio.wait_for 包装的硬超时 (T013 = 3.0s, B-R2-2 = 5.0s);
+                None = 不限制 (caller 自己 wrap)
 
         Raises:
             LLMSchemaError: API 返回数据不符合 schema (SEC-4)
             LLMUnavailableError: 5 次 retry + fallback 全部失败
+            asyncio.TimeoutError: timeout_seconds 触发
+            ValueError: allow_fallback=False 且 _resolve_model 想降级
         """
         advisor_week_id = cache_key_extras.get("advisor_week_id", "")
         ticker = cache_key_extras.get("ticker", "")
+        # advisor_week_id / ticker 已在主四元组里, 用余下字段构造 cache extras
+        cache_extras: dict[str, str] = {
+            k: v for k, v in cache_key_extras.items()
+            if k not in ("advisor_week_id", "ticker")
+        }
 
-        # 步骤 1: 月成本超 $40 → 自动降级
-        effective_model = await self._resolve_model(model)
-
-        start_ns = asyncio.get_event_loop().time()
-
-        # 步骤 2: cache 查询
-        cached = self._cache.get(
-            advisor_week_id=advisor_week_id,
-            ticker=ticker,
-            prompt_template_version=template_version,
-            model=effective_model,
-        )
-
-        if cached is not None:
-            logger.debug("缓存命中: ticker=%s, version=%s", ticker, template_version)
-            # cache hit: 记录 usage (cost=0, cache_hit=True)
-            await self._record_usage(
-                model=effective_model,
-                template_version=template_version,
-                input_tokens=0,
-                output_tokens=0,
-                cost_usd=0.0,
-                cache_hit=True,
-                latency_ms=self._elapsed_ms(start_ns),
+        async def _do_call() -> T:
+            # 步骤 1: 月成本超 $40 → 自动降级 (allow_fallback=False 时禁用)
+            effective_model = await self._resolve_model(
+                model, allow_fallback=allow_fallback
             )
+
+            start_ns = asyncio.get_event_loop().time()
+
+            # 步骤 2: cache 查询 (cache_lookup=False 时跳过)
+            if cache_lookup:
+                cached = self._cache.get(
+                    advisor_week_id=advisor_week_id,
+                    ticker=ticker,
+                    prompt_template_version=template_version,
+                    model=effective_model,
+                    extras=cache_extras,
+                )
+                if cached is not None:
+                    logger.debug("缓存命中: ticker=%s, version=%s", ticker, template_version)
+                    await self._record_usage(
+                        model=effective_model,
+                        template_version=template_version,
+                        input_tokens=0,
+                        output_tokens=0,
+                        cost_usd=0.0,
+                        cache_hit=True,
+                        latency_ms=self._elapsed_ms(start_ns),
+                    )
+                    try:
+                        return schema(**cached)
+                    except ValidationError as e:
+                        raise LLMSchemaError(
+                            f"缓存数据不符合 schema {schema.__name__}: {e}",
+                            raw_data=cached,
+                        ) from e
+
+            # 步骤 3: cache miss / cache 关闭 → 调用 API
+            response = await self._call_with_retry_and_fallback(
+                prompt=prompt,
+                schema=schema,
+                model=effective_model,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                allow_fallback=allow_fallback,
+            )
+
+            # 步骤 4: 解析 tool_use block
+            tool_data = self._extract_tool_data(response)
+
+            # 步骤 5: pydantic validate (SEC-4)
             try:
-                return schema(**cached)
+                result = schema(**tool_data)
             except ValidationError as e:
                 raise LLMSchemaError(
-                    f"缓存数据不符合 schema {schema.__name__}: {e}",
-                    raw_data=cached,
+                    f"API 返回数据不符合 schema {schema.__name__}: {e}",
+                    raw_data=tool_data,
                 ) from e
 
-        # 步骤 3: cache miss → 调用 API (含 retry + fallback)
-        response = await self._call_with_retry_and_fallback(
-            prompt=prompt,
-            schema=schema,
-            model=effective_model,
-        )
+            # 步骤 6: 记录 usage
+            actual_model = getattr(response, "model", effective_model) or effective_model
+            input_tokens = response.usage.input_tokens
+            output_tokens = response.usage.output_tokens
+            cost = _estimate_cost(actual_model, input_tokens, output_tokens)
 
-        # 步骤 4: 解析 tool_use block
-        tool_data = self._extract_tool_data(response)
+            await self._record_usage(
+                model=actual_model,
+                template_version=template_version,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                cost_usd=cost,
+                cache_hit=False,
+                latency_ms=self._elapsed_ms(start_ns),
+            )
 
-        # 步骤 5: pydantic validate (SEC-4)
-        try:
-            result = schema(**tool_data)
-        except ValidationError as e:
-            raise LLMSchemaError(
-                f"API 返回数据不符合 schema {schema.__name__}: {e}",
-                raw_data=tool_data,
-            ) from e
+            # 步骤 7: cache.put (cache_lookup=False 时禁用; D21 + R3 #13 不可缓存)
+            if cache_lookup:
+                self._cache.put(
+                    advisor_week_id=advisor_week_id,
+                    ticker=ticker,
+                    prompt_template_version=template_version,
+                    model=effective_model,
+                    data=tool_data,
+                    extras=cache_extras,
+                )
 
-        # 步骤 6: 记录 usage
-        actual_model = getattr(response, "model", effective_model) or effective_model
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
-        cost = _estimate_cost(actual_model, input_tokens, output_tokens)
+            return result
 
-        await self._record_usage(
-            model=actual_model,
-            template_version=template_version,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cost_usd=cost,
-            cache_hit=False,
-            latency_ms=self._elapsed_ms(start_ns),
-        )
-
-        # 步骤 7: cache.put (用 actual_model 的 cache key)
-        self._cache.put(
-            advisor_week_id=advisor_week_id,
-            ticker=ticker,
-            prompt_template_version=template_version,
-            model=effective_model,
-            data=tool_data,
-        )
-
-        return result
+        if timeout_seconds is not None:
+            return await asyncio.wait_for(_do_call(), timeout=timeout_seconds)
+        return await _do_call()
 
     # ── 内部工具 ──────────────────────────────────────────────────────────────
 
-    async def _resolve_model(self, requested_model: str) -> str:
+    async def _resolve_model(
+        self, requested_model: str, *, allow_fallback: bool = True
+    ) -> str:
         """
-        TECH-2: 检查月成本，超 $40 自动降级 Sonnet → Haiku。
+        TECH-2: 检查月成本, 超 $40 自动降级 Sonnet → Haiku。
+        F1: allow_fallback=False 时强制返回 requested_model (T013 spec 显式禁令:
+            Rebuttal 不允许 fallback 到 Haiku, 避免质量风险)。
         注意: 月成本统计在 cache 查询之前。
         """
+        if not allow_fallback:
+            return requested_model
         monthly_cost = await self._usage_writer.monthly_total_cost()
         if monthly_cost >= _MONTHLY_COST_FALLBACK_THRESHOLD:
             fallback = _FALLBACK_MODEL.get(requested_model)
@@ -245,10 +283,15 @@ class LLMClient:
         prompt: str,
         schema: type[T],
         model: str,
+        *,
+        max_tokens: int = 2048,
+        temperature: float | None = None,
+        allow_fallback: bool = True,
     ) -> Any:
         """
-        TECH-7: 先对主模型 retry 5 次，失败后 fallback 到 Haiku 再 retry 5 次。
+        TECH-7: 先对主模型 retry 5 次, 失败后 fallback 到 Haiku 再 retry 5 次。
         双层都失败 → LLMUnavailableError。
+        F1: allow_fallback=False 时关闭第二层 Haiku fallback (T013)。
         """
         try:
             return await retry_with_backoff(
@@ -256,8 +299,12 @@ class LLMClient:
                 prompt,
                 schema,
                 model,
+                max_tokens,
+                temperature,
             )
         except LLMUnavailableError:
+            if not allow_fallback:
+                raise
             fallback_model = _FALLBACK_MODEL.get(model)
             if fallback_model and fallback_model != model:
                 logger.warning(
@@ -270,6 +317,8 @@ class LLMClient:
                     prompt,
                     schema,
                     fallback_model,
+                    max_tokens,
+                    temperature,
                 )
             raise
 
@@ -278,15 +327,19 @@ class LLMClient:
         prompt: str,
         schema: type[BaseModel],
         model: str,
+        max_tokens: int = 2048,
+        temperature: float | None = None,
     ) -> Any:
         """
         封装 anthropic SDK 同步调用 → asyncio.to_thread (TECH-5)。
         使用 Anthropic tool use 强制 structured output (SEC-4)。
         API key 不出现在日志 (SEC-3)。
+        F1: max_tokens / temperature 透传 (T013 fast-path: 100 / 0.3)。
         """
         logger.debug(
-            "调用 Anthropic API: model=%s, api_key=%s",
+            "调用 Anthropic API: model=%s, max_tokens=%d, api_key=%s",
             model,
+            max_tokens,
             _redact_api_key(self._api_key),
         )
 
@@ -298,13 +351,16 @@ class LLMClient:
             sdk_client = anthropic.Anthropic(api_key=self._api_key)
             # dict literals 与 ToolParam/ToolChoiceAnyParam TypedDict 运行时兼容，
             # 但 mypy 无法通过 overload 解析确认 → 抑制 call-overload 错误
-            return sdk_client.messages.create(  # type: ignore[call-overload]
-                model=model,
-                max_tokens=2048,
-                tools=[tool_def],
-                tool_choice={"type": "any"},
-                messages=[{"role": "user", "content": prompt}],
-            )
+            kwargs: dict[str, Any] = {
+                "model": model,
+                "max_tokens": max_tokens,
+                "tools": [tool_def],
+                "tool_choice": {"type": "any"},
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            if temperature is not None:
+                kwargs["temperature"] = temperature
+            return sdk_client.messages.create(**kwargs)
 
         # TECH-5: asyncio.to_thread 隔离同步阻塞
         return await asyncio.to_thread(_sync_call)
