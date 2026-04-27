@@ -134,10 +134,82 @@
 
 ---
 
+## 6. create_draft 三事务非原子,可能产生 orphan conflict_report/rebuttal (Codex review F3)
+
+**症状**
+- `services/decision_recorder.py::DecisionRecorder.create_draft()` 在 LLM gather 成功后,串行执行 3 个独立 `write_connection` 事务:
+  1. INSERT decisions (status=draft)
+  2. INSERT conflict_reports
+  3. INSERT rebuttals
+- 任意一步失败(磁盘满 / Ctrl+C / kernel OOM)会留下"前面已 commit、后面没写完"的 orphan 行。
+- Codex 评级:medium。
+
+**为什么 v0.1 接受(不修)**
+- v0.1 是单用户 SQLite WAL,**只有一个 writer**。合并到一个长事务会让 writer_lock 持有 100ms+ (LLM 已成功,但 3 次 INSERT + index 更新 + WAL flush 是同步 I/O),阻塞所有读路径(列表 / 详情 / banner 都要 SELECT)。
+- 单用户场景下,Codex 提到的"原子性"价值是负的:换来一致性 vs 可观察的 UI 卡顿,后者更刺眼。
+- orphan 行的实际危害:每年最多几 MB,LLM 钱已经花掉(写了一半已经没救),不影响新决策录入也不影响列表查询(JOIN 时 `ON dec.id = cr.decision_id` orphan 永远 join 不上)。
+
+**用户可见影响**
+- 极少(年频次,且只在系统级故障 — 磁盘满 / 强制杀进程 — 时发生)。
+- 列表 UI 不会显示 orphan 报告,因为入口都从 `decisions` 表 LEFT JOIN 出发。
+- DB 大小缓慢增长,但远低于决策草稿本身的存储成本。
+
+**workaround(v0.1)**
+- 接受。每月做月度 review 时手工跑清理(脚本 v0.2 提供):
+  ```sql
+  -- scripts/cleanup_orphan_llm_data.sql (v0.2 待加)
+  DELETE FROM conflict_reports
+   WHERE decision_id NOT IN (SELECT id FROM decisions);
+  DELETE FROM rebuttals
+   WHERE decision_id NOT IN (SELECT id FROM decisions);
+  ```
+- 实测影响:零(从未触发过 orphan,因为 v0.1 单用户、SSD、有 swap、不会被 OOM)。
+
+**v0.2 计划**
+- **不**改成长事务(理由如上)。
+- 真要原子性时考虑 saga / outbox pattern:
+  - 写 `llm_outbox` 表记录 (decision_id, payload, step) 三步意图
+  - 各步真写完后从 outbox 删除对应行
+  - 启动期或定时 worker 兜底:扫 outbox 中 stale 行,要么继续完成,要么回滚 + cleanup
+- 这才是"分布式事务"在 SQLite 单写场景下的合理近似,而不是把锁吃满。
+
+---
+
+## 7. LLMClient 每次 _call_api 新建 SDK client (Codex review F2)
+
+**症状**
+- `services/llm_client.py::LLMClient._call_api()` 每次调用 `anthropic.Anthropic(api_key=self._api_key)`,不复用 SDK 实例。
+- 每次新建 client 触发 TLS 握手(~50ms)+ 内部 HTTP/2 connection setup,远超过纯 LLM token 推理时间分母里的几个百分点。
+- Codex 评级:medium。
+
+**为什么 v0.1 接受(不修)**
+- v0.1 是**单用户决策录入**,实测每天最多 60 次 `_call_api`(决策草稿 ~4-5 次/条 × 10-15 条/天)。
+- 60 × 50ms = 3 秒总 TLS 握手开销,远低于 30s SLA(spec §6 O5),用户感知 = 0。
+- 改 SDK 复用要处理的真问题:
+  - **thread-safety**:`anthropic.Anthropic` 在 SDK 文档里没有承诺 thread-safe(虽然底层 httpx 是),复用前需要研究或加 lock
+  - **api_key 热轮换**:复用后改 key 要重建,需要新接口
+  - **GC 语义**:旧 client 内部连接池什么时候释放,会不会泄漏 socket
+- 上面三件都是单测覆盖不到的 edge case,在 v0.1 单用户负载下**永远观察不到**,改了反而引入回归风险。
+
+**用户可见影响**
+- 0。决策录入耗时仍 < 30s。
+
+**workaround(v0.1)**
+- 无需 workaround。
+
+**v0.2 计划**
+- `LLMClient.__init__` 期建 `self._client = anthropic.Anthropic(api_key=...)`,所有 `_call_api` 复用。
+- 加 `set_api_key(new_key)` 接口处理热轮换:`self._client = anthropic.Anthropic(api_key=new_key)`(原 client 由 GC 释放,SDK 内部连接池超时关)。
+- 加并发测试:同一 client 实例在 10 个 asyncio task 并发 `messages.create`,确保不报错且响应正确归位。
+- 真正的收益不是节省 3 秒 TLS,而是 v0.2 引入 ConflictWorker 真启用后,异步并发场景下连接复用避免 socket 风暴。
+
+---
+
 ## 实现引用
 
 - F2-T020 H7 followup A1:`src/decision_ledger/monitor/pause_pipeline.py::_get_conflict_worker` 改 noop + counter + WARNING;`get_wiring_status()` / `pause_hook_noop_call_count()` 自检 API
 - F2-T020 followup A1:`src/decision_ledger/main.py::_print_v01_banner` 启动期 stderr BANNER
-- F2-T020 followup A2:`scripts/toggle_b_lite.py::_print_cross_process_disclaimer_if_noop` CLI disclaimer
+- F2-T020 followup A2:`scripts/toggle_b_lite.py::_print_cli_pause_hook_disclaimer` CLI disclaimer
+- Codex review F1 followup:`src/decision_ledger/ui/router_settings.py` 改 startup-task pool 模式 + 503 wiring gate (regression test `tests/integration/ui/test_settings_router_production_path.py`)
 
 启动 BANNER 抑制方法(测试 / CI / 监控对接用):`DECISION_LEDGER_SUPPRESS_V01_BANNER=1`
