@@ -205,60 +205,108 @@
 
 ---
 
-## 8. 用户视角: production 启动后 /decisions/* 等 12 个 router 全 raise 500
+## 8. 用户视角: production main app 业务路由根本未注册 (404 not 500)
+
+> **Codex review F1 纠错**:本节早期版本写"DB-bound 路由 raise 500",事实更糟 —
+> `from decision_ledger.main import app` 后 `app.routes` 只有 5 条
+> (`/healthz` + FastAPI 默认 `/docs` `/docs/oauth2-redirect` `/openapi.json`
+> `/redoc`),**所有业务路由根本未注册**,用户访问得到的是 **404** 不是 500。
+> regression gate: `tests/integration/test_main_app_route_snapshot.py`。
 
 > **重要**:本节是 §1 的"用户视角后果"显式表述。§1 说"production 从未构造过
 > LLMClient / StrategyRegistry / SourceDataProvider";本节说**这件事的直接后果是
-> 用户跑 `./scripts/start.sh` 后,除了 `/healthz` / `/onboarding` / `/settings/*` /
-> `/decisions/new`(GET 静态模板) 外,所有需要 DB 的页面都 500**。
+> 用户跑 `./scripts/start.sh` 后,除了 `/healthz` 和 FastAPI 默认 `/docs`/`/openapi.json`/`/redoc` 外,所有路径都 404**。
 
 **症状**
-- 用户按 runbook §1 跑 `cp .env.example .env && uv run alembic upgrade head && ./scripts/start.sh`,服务启动成功(健康检查通过),浏览器打开 `http://localhost:8000` 看到 onboarding 引导页。
-- 完成 onboarding → 跳转决策列表 / 主页 → **所有需要 DB 的页面都 raise 500**:
-  - `POST /decisions/draft` → 500 "DecisionRecorder 未初始化"
-  - `GET /decisions/{trade_id}` → 500
-  - `GET /conflicts/...` → 500
-  - `GET /post-mortem/...` → 500
-  - `GET /notes` / `GET /weekly-review` / `GET /monthly-review` / `GET /learning/...` → 500
-- 唯一**可用**的路径(F1 修复后):
-  - `GET /healthz` → 200 (静态)
-  - `GET /onboarding` + `POST /onboarding/...` → 工作 (router_onboarding 自带 startup task pool)
-  - `GET /settings/watchlist` / `GET /settings/holdings` → 工作 (F1 修复后)
-  - `GET /decisions/new` → 200 (纯静态模板,不查 DB)
+- 用户按 runbook §1 跑 `cp .env.example .env && uv run alembic upgrade head && ./scripts/start.sh`,服务启动成功,健康检查通过 (`GET /healthz` 200),`GET /docs` 显示 OpenAPI 页面但 paths 里只有 `/healthz`。
+- 浏览器打开 `http://localhost:8000` → **404 Not Found** (没有 `/` 路由)。
+- 浏览器打开 `http://localhost:8000/onboarding` → **404** (router_onboarding 模块没被 import,plugin registry 是空的)。
+- 任何业务路径 → **404**。
+- 唯一**可访问**:
+  - `GET /healthz` → 200 (`@app.get` 在 main.py 里直接定义,不走 plugin registry)
+  - `GET /docs` / `GET /redoc` / `GET /openapi.json` / `GET /docs/oauth2-redirect` → FastAPI 默认 (空 paths)
 
 **根因**
-- `src/decision_ledger/ui/router_decisions.py:31 set_recorder(recorder)` 与同模式的 11 个 `set_xxx()` setter,注释明说"测试 DI 入口"。
-- grep 全 `src/`:**0 个 production 调用方**;只在 `tests/e2e/e2e_app_factory.py:205` 和 `tests/integration/ui/*.py` 的 fixture 里被调。
-- handler 第一行 `_get_xxx()` 检测 `_xxx is None` → `HTTPException(500, "...未初始化")`(router_decisions.py:43 等)。
-- e2e 测试用 `make_e2e_app()` factory 手工 wire 整条依赖链(initialize pool + 构造 4 个 repo + 构造 mock services + 构造 DecisionRecorder + `set_recorder()`),**bypass `decision_ledger.main` 的 lifespan**。这就是 spec §6 O5 verification 通过的实际路径。
+- `src/decision_ledger/main.py` **不导入** `decision_ledger.ui` 也不导入任何 `router_*` 模块。
+- 所有 `register_router(...)` / `register_startup_task(...)` 副作用注册依赖**模块被 import** 才会运行(模块 level 调用)。production 路径下没人 import,plugin registry 永远是空的。
+- `apply_to_app(app)` 在 main.py:166 被调,但此时 registry 内容为 0,所以挂上去也是空。
+- e2e 测试用 `tests/e2e/e2e_app_factory.py::make_e2e_app()` 手工 import 各 router 模块 + 调 `set_recorder()` 等 setter + `app.include_router(...)`,**bypass `decision_ledger.main` 的 lifespan + plugin registry**。这就是 spec §6 O5 verification 通过的实际路径。
+
+**事实证据(运行时验证)**
+```python
+$ python -c "
+import os
+os.environ['ANTHROPIC_API_KEY']='x'
+os.environ['TELEGRAM_BOT_TOKEN']='000:test'
+os.environ['DECISION_LEDGER_SUPPRESS_V01_BANNER']='1'
+from decision_ledger.main import app
+print(sorted(r.path for r in app.routes))"
+['/docs', '/docs/oauth2-redirect', '/healthz', '/openapi.json', '/redoc']
+```
+
+(只有 5 条 — 0 业务路由。这与 §1 wiring 链断裂是同一根问题。)
 
 **为什么 v0.1 接受**
 - spec §6 O5 verification 字面口径是 `pytest tests/e2e/test_decision_input_timing.py` 自动化通过 — **已通过**(e2e 跑赢 < 30s)。
 - spec **没有承诺** `python -m decision_ledger.main` 启动路径在 v0.1 用户可用;known-issues §1 已经间接承认 production wiring 链断裂(只是用 ConflictWorker 视角)。
-- 真正接通 production wiring 是新 task 级别工作:需要构造真实 `LLMClient(api_key, UsageWriter, cache_dir)` + `SourceDataProvider`(读 advisor PDF + portfolio + env_snapshot)+ `StrategyRegistry.build_default()` + 4 个 repo 单例 + 12 个 router 的 setter 全调通,与 §1 v0.2 计划同一份工作。
+- 真正接通 production wiring 是新 task 级别工作:需要(a) main.py 显式 import 12 个 router 模块或改成 explicit `include_router` 模式,(b) 构造真实 `LLMClient(api_key, UsageWriter, cache_dir)` + `SourceDataProvider` + `StrategyRegistry.build_default()` + 4 个 repo 单例 + 12 个 router 的 setter 全调通,与 §1 v0.2 计划同一份工作。
 
 **用户(你自己)实际可见影响**
-- v0.1 ship 当日跑 `./scripts/start.sh` → 浏览器打开 → onboarding 走完 → **录入决策报 500**。
+- v0.1 ship 当日跑 `./scripts/start.sh` → 浏览器打开任意路径 (除 `/healthz` `/docs`) → **404**。
 - 唯一 v0.1 真实可用路径是**跑 e2e 测试套件验证 spec O5**(机制存在 + 计时通过)。
-- 真要试用决策录入,需要手工像 `tests/e2e/e2e_app_factory.py:make_e2e_app()` 那样 wire,或等 v0.2。
+- 真要试用决策录入,需要走 `make_e2e_app()` factory(LLM cache mock 模式),或等 v0.2。
 
 **workaround(v0.1)**
 - 不录入决策。v0.1 ship 后第一件事是排 v0.2 priority 1 的 production wiring 任务。
-- 临时试用:本地写一个 `scripts/start_dev.sh` 调 `uvicorn 'tests.e2e.e2e_app_factory:make_e2e_app' --factory --host 127.0.0.1 --port 8000`(LLM 走 cache mock,不调真 API)。仅供 dev 验证,不用作 production。
+- 临时试用 e2e factory:`uvicorn 'tests.e2e.e2e_app_factory:make_e2e_app' --factory --host 127.0.0.1 --port 8000`(LLM 走 cache mock,不调真 API)。仅供 dev 验证,不用作 production。
 
 **v0.2 计划**
 - **新 task T100+ "production app factory"**(预估 8-12h):
+  - main.py 显式 `from decision_ledger.ui import (...)` 触发 plugin registry 注册,**或**改成 explicit `app.include_router(...)` 模式(更显式;Codex review F1 推荐方向)
   - 构造 `LLMClient` startup 单例(传入 `ANTHROPIC_API_KEY` + `UsageWriter` + `cache_dir`)
   - 实现 `SourceDataProvider` production 类(读 inbox PDF + watchlist/holdings DB + env_snapshot)
   - `StrategyRegistry.build_default(llm_client, provider)` 在 startup 期完成
-  - 12 个 router 的 setter 在 startup task 里调通(同 F1 修复模式:`register_startup_task(_init_xxx)`)
-  - 在 main.py lifespan 期完成所有 wiring,删 `_get_xxx is None → 500` 的 dead branch (改成 wiring gate 或保留作 fail-fast)
-- **新增 production smoke gate**:`tests/integration/test_production_app_smoke.py` 启动真 main.py + GET 关键路由,断言 0 个 500。本质等价于 F1 的 `test_settings_router_production_path.py`,把"v0.1 沉默 0%"换成"v0.2 production smoke 必须 0 失败"。
+  - 12 个 router 的 setter 在 startup task 里调通(同 F1 settings 修复模式:`register_startup_task(_init_xxx)`)
+  - 同步重构 §9 startup task 一次性初始化与后台 long-running task 拆分(见下)
+- **新增 production smoke gate**:`tests/integration/test_production_app_smoke.py` 启动真 main.py + GET 关键路由,断言 0 个 500/404。本质等价于 F1 的 `test_settings_router_production_path.py`,把"v0.1 沉默 0%"换成"v0.2 production smoke 必须全绿"。
+- 当前 `test_main_app_route_snapshot.py` 在 v0.2 接通时会自然 fail(routes 集合变了),工程师需要更新 `EXPECTED_ROUTES` 为完整业务路由 — 这是健康的提示而非 regression。
 
 **为什么不在 v0.1 修**
 - 工作量:8-12h + 完整回归 + 真实 LLMClient 接入(可能要修 DraftRepo / SourceDataProvider 实现细节),不在 review followup scope。
 - 风险:production wiring 串错任一节,F1 修复刚补的 503 gate 又会失效,需要重做 regression。
 - 价值:v0.1 就是 single-operator 验证机制存在(spec §0 文档定位),**用户实际录入决策从一开始就不在 v0.1 contract 内**(O2/O3 是 ship + 8 周才度量);v0.2 才是"真用起来"的窗口。
+
+---
+
+## 9. startup task fire-and-forget,/healthz 不反映依赖就绪 (Codex review F2)
+
+**症状**(代码层面;v0.1 当前路径下不可见,v0.2 接通后会显形)
+- `src/decision_ledger/main.py::_lifespan` 对 `get_startup_tasks()` 里每个 factory 直接 `asyncio.create_task(...)`,然后立刻打印 ready 日志并 `yield`,**不 `await` 任何任务完成**。
+- `GET /healthz` 永远返回 `{"ok": true}`,完全不感知 startup task 状态。
+- 后果在 **v0.1 当前路径无害**:因为 §8 的 wiring 缺失意味着 production 的 plugin registry 为空,`get_startup_tasks()` 返回空 list,`create_task` 循环根本不执行 → 没有"伪健康"。
+- 后果在 **v0.2 production app factory 接通后会显形**:settings_pool / DecisionRecorder / LLMClient 等 startup task 启动失败时,`/healthz` 仍返回 200,但首批业务请求会撞 503/500。
+
+**为什么 v0.1 接受**
+- 单用户 localhost 场景下 `/healthz` 不接 k8s readiness probe(没有外部 orchestrator 依赖它)。用户启动后立刻 curl 一下就知道实际状态,与服务端 readiness 协议无关。
+- v0.1 当前路径不可观察(get_startup_tasks() 永远空 list),修与不修对用户视角行为无差。
+- v0.2 修这条**必须**和 §8 一起做(单独修没意义,因为 §8 不修这条永远不显形)。
+
+**用户可见影响(v0.1 当前)**
+- 0。
+
+**workaround(v0.1)**
+- 无需 workaround。
+
+**v0.2 计划**(与 §8 production app factory 同一份工作)
+- 拆分 startup task 类型为两类:
+  - **前置 ready 必需**(pool init / repo 构造 / SDK client 单例):lifespan 中 `await` 完成,任一失败即抛错让 FastAPI 启动期失败而非"伪健康"
+  - **后台 long-running**(ConflictWorker.run_loop / Telegram bot polling / draft GC / failure_alert cron 等):仍用 `create_task` 托管,但加 done_callback 写错误日志 + counter,/healthz 反映这些 task 的 alive 状态
+- 把 `register_startup_task` API 拆成 `register_init_task(coro_factory)` 和 `register_background_task(coro_factory)`,语义显式
+- `/healthz` 增加 dependency status 字段:`{"ok": True, "deps": {"pool": "initialized", "telegram": "running", ...}}` 或更简单的 `503 if any init task failed`
+
+**为什么不在 v0.1 修**
+- v0.1 当前路径下此问题不可观察,修了零边际收益
+- 改 plugin registry API + lifespan 拆分会牵动 22 个 register_startup_task 调用方(telegram/onboarding/settings/draft_gc/...),工作量等同 §8 wiring 一起做才划算
 
 ---
 
@@ -268,6 +316,8 @@
 - F2-T020 followup A1:`src/decision_ledger/main.py::_print_v01_banner` 启动期 stderr BANNER
 - F2-T020 followup A2:`scripts/toggle_b_lite.py::_print_cli_pause_hook_disclaimer` CLI disclaimer
 - Codex review F1 followup:`src/decision_ledger/ui/router_settings.py` 改 startup-task pool 模式 + 503 wiring gate (regression test `tests/integration/ui/test_settings_router_production_path.py`)
-- 用户视角 production 500 实证:`grep -rn 'set_recorder\|set_decision_repo\|set_conflict_repo' src/` 返回 0 个 production 调用方;`tests/e2e/e2e_app_factory.py` 是唯一 wire 完整链路的入口
+- 用户视角 production 404 实证:`grep -rn 'set_recorder\|set_decision_repo\|set_conflict_repo' src/` 返回 0 个 production 调用方;`tests/e2e/e2e_app_factory.py` 是唯一 wire 完整链路的入口
+- Codex review F1 钉死:`tests/integration/test_main_app_route_snapshot.py` 钉死 v0.1 production main app 路由 = 5 条 (defensive 测试,v0.2 接通时自然 fail 提示更新)
+- Codex review F3 修复:`src/decision_ledger/config.py::Settings.db_path` property 作为 SQLite 路径单一权威入口;`alembic/env.py` + `scripts/grade_learning.py` + `scripts/learning_check.py` 全部统一使用 `data.sqlite` 文件名;`tests/integration/test_db_path_unification.py` 作为 alembic-runtime 一致性 regression gate
 
 启动 BANNER 抑制方法(测试 / CI / 监控对接用):`DECISION_LEDGER_SUPPRESS_V01_BANNER=1`
