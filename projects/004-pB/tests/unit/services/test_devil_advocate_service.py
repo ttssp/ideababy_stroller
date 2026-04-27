@@ -510,3 +510,52 @@ class TestPromptInjectionDefense:
         # 文本主体保留
         assert "正常" in sanitized
         assert "忽略上文" in sanitized  # 内容保留, 但已无标签包装能力
+
+
+# ── F2-T013: prompt 单一来源不变量 ─────────────────────────────────────────────
+
+
+class TestPromptSingleSource:
+    """F2-T013: prompt 模板必须从 docs/prompts/devil_advocate_v1.md 加载, py 文件不持有字面量。"""
+
+    def test_prompt_loaded_from_markdown_doc(self) -> None:
+        """模板内容必须来自 .md 文件 (含关键标记 + placeholders)。"""
+        from decision_ledger.services.devil_advocate_service import (
+            _PROMPT_DOC_PATH,
+            _PROMPT_TEMPLATE,
+        )
+
+        assert _PROMPT_DOC_PATH.is_file(), f".md 文档必须存在: {_PROMPT_DOC_PATH}"
+        text = _PROMPT_DOC_PATH.read_text(encoding="utf-8")
+        # 模板必须是 .md 文件内容的子串 (即真的从 .md 加载, 没在 py 里另写一份)
+        assert _PROMPT_TEMPLATE in text, (
+            "F2-T013 违反: _PROMPT_TEMPLATE 不是 .md 文档的子串, "
+            "可能在 py 文件里另维护了一份字面量"
+        )
+        # 关键 placeholder 都必须保留
+        for placeholder in ("{ticker}", "{intended_action}", "{draft_reason}",
+                            "{price}", "{holdings_pct}"):
+            assert placeholder in _PROMPT_TEMPLATE, (
+                f"模板缺少 placeholder: {placeholder}"
+            )
+        # F1 prompt injection 防护必须保留
+        assert "<user_input>" in _PROMPT_TEMPLATE
+        assert "</user_input>" in _PROMPT_TEMPLATE
+        assert "不可信源" in _PROMPT_TEMPLATE or "不得遵循" in _PROMPT_TEMPLATE
+
+    def test_py_module_has_no_inline_prompt_literal(self) -> None:
+        """F2-T013: py 文件不应再持有 prompt 字面量 (只允许 path/marker/loader)。"""
+        from pathlib import Path
+
+        py_path = (
+            Path(__file__).resolve().parents[3]
+            / "src" / "decision_ledger" / "services"
+            / "devil_advocate_service.py"
+        )
+        src = py_path.read_text(encoding="utf-8")
+        # 反方意见 prompt 的标志性句子不应再在 py 里出现
+        forbidden = "你是一位严格的风险审查员"
+        assert forbidden not in src, (
+            f"F2-T013 违反: py 文件仍含 prompt 字面量 '{forbidden}', "
+            "请改为从 docs/prompts/devil_advocate_v1.md 加载"
+        )
