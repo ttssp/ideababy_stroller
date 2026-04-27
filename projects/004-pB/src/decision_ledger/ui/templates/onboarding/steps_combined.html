@@ -1,0 +1,141 @@
+{# onboarding/steps_combined.html — T021 (R3 简化)
+   结论: 步骤 2-7 单页多 section，内嵌 anchor 跳转，无 in-app tooltip (R3 砍掉)
+   细节:
+     - 7 个 section，每个 section 有 id="section-step-{n}" (Playwright 锚点定位用)
+     - step 7 使用静态文字 (R2 H3: 无 T019 引用，仅引用 T020 alert banner 机制)
+     - inline 说明文字替代 tooltip
+     - 各 step 含快捷链接直达对应功能页面
+#}
+{% extends "base.html" %}
+
+{% block title %}引导步骤 2-7 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h1>决策账本配置引导</h1>
+    <p>完成以下 6 步（步骤 2-7），约 13 分钟</p>
+    <nav>
+      <a href="#section-step-2">步 2</a> |
+      <a href="#section-step-3">步 3</a> |
+      <a href="#section-step-4">步 4</a> |
+      <a href="#section-step-5">步 5</a> |
+      <a href="#section-step-6">步 6</a> |
+      <a href="#section-step-7">步 7</a>
+    </nav>
+  </header>
+
+  {# ── 步骤 2: 录入关注股 ────────────────────────────────────────────── #}
+  <section id="section-step-2">
+    <h2>步骤 2 / 7：录入关注股（约 5 分钟）</h2>
+    <p>
+      在下方页面粘贴 <strong>30-50 只</strong>关注股 ticker，一行一个（或逗号分隔）。
+      格式：<code>AAPL</code>、<code>MSFT</code>、<code>GOOG</code> 等美股 ticker。
+    </p>
+    <p>
+      <small>说明：系统将用这份关注股列表生成冲突分析，关注股越完整，分析越准确。</small>
+    </p>
+    <a href="/settings/watchlist" role="button" class="secondary">前往录入关注股</a>
+    <hr>
+  </section>
+
+  {# ── 步骤 3: 录入持仓快照 ──────────────────────────────────────────── #}
+  <section id="section-step-3">
+    <h2>步骤 3 / 7：录入持仓快照（约 3 分钟）</h2>
+    <p>
+      粘贴当前持仓 JSON，格式：
+    </p>
+    <pre><code>[{"ticker": "AAPL", "qty": 10, "cost_basis": 150.0}]</code></pre>
+    <p>
+      <small>说明：持仓快照帮助系统计算持仓比例，用于冲突报告的 holdings_pct 字段。</small>
+    </p>
+    <a href="/settings/holdings" role="button" class="secondary">前往录入持仓</a>
+    <hr>
+  </section>
+
+  {# ── 步骤 4: 拖入第一份 PDF ────────────────────────────────────────── #}
+  <section id="section-step-4">
+    <h2>步骤 4 / 7：拖入第一份咨询师 PDF（约 1 分钟）</h2>
+    <p>
+      将咨询师 PDF 文件拖入系统监听目录：
+    </p>
+    <pre><code>~/decision_ledger/inbox/</code></pre>
+    <p>
+      系统会自动检测并解析（约 20-60 秒）。解析完成后可在冲突报告中看到咨询师信号。
+    </p>
+    <p>
+      <small>说明：PDF 仅本地解析，不上传任何服务器。首次解析可能需要 LLM 调用（约 30 秒）。</small>
+    </p>
+    <hr>
+  </section>
+
+  {# ── 步骤 5: 录入首次决策档案 ──────────────────────────────────────── #}
+  <section id="section-step-5">
+    <h2>步骤 5 / 7：录入首次决策档案（约 30 秒~1 分钟）</h2>
+    <p>
+      创建第一条决策档案，熟悉双阶段流程（草稿 → 预览冲突报告 → 提交）。
+    </p>
+    <p>
+      <small>
+        说明：选任意关注股（如 AAPL），action=hold 或 wait，填写简短理由。
+        这是一次练习，数据会正式保存。
+      </small>
+    </p>
+    <a href="/decisions/new" role="button" class="secondary">前往录入决策</a>
+    <hr>
+  </section>
+
+  {# ── 步骤 6: 绑定 Telegram ─────────────────────────────────────────── #}
+  <section id="section-step-6">
+    <h2>步骤 6 / 7：绑定 Telegram 通知（约 3 分钟）</h2>
+    <p>步骤：</p>
+    <ol>
+      <li>在 Telegram 搜索 <code>@BotFather</code>，发送 <code>/newbot</code></li>
+      <li>按提示创建 bot，获取 <code>bot token</code>（格式：<code>123456:ABC-DEF...</code>）</li>
+      <li>将 token 填入 <code>.env</code> 文件的 <code>TELEGRAM_BOT_TOKEN</code></li>
+      <li>重启系统（<code>Ctrl+C</code> 然后 <code>./scripts/start.sh</code>）</li>
+      <li>在 Telegram 中和你的 bot 发送任意消息，获取 <code>chat_id</code></li>
+      <li>将 <code>chat_id</code> 填入 <code>.env</code> 的 <code>TELEGRAM_CHAT_ID</code></li>
+    </ol>
+    <p>
+      <small>
+        说明：Telegram bot 用于推送每周决策回顾提醒（每周日晚）。
+        若跳过此步，系统仍可正常使用，只是没有推送通知。
+      </small>
+    </p>
+    <hr>
+  </section>
+
+  {# ── 步骤 7: 完成引导 — 空态说明 (R2 H3: 无 T019 引用) ──────────── #}
+  <section id="section-step-7">
+    <h2>步骤 7 / 7：完成引导（约 1.5 分钟）</h2>
+
+    <p>
+      <strong>系统已配置完毕！</strong>
+    </p>
+
+    <h3>关于季度学习提醒</h3>
+    <p>
+      首次季度学习提醒在 <strong>90 天后</strong>自动出现（通过 alert banner 由 T020 触发）。
+      届时系统会在页面顶部显示横幅提醒，引导回顾决策准确率。
+    </p>
+    <p>
+      <small>
+        说明：此功能无需额外配置，系统自动在 90 天后触发。
+        日常使用中可忽略此提醒，专注于决策录入即可。
+      </small>
+    </p>
+
+    <h3>日常使用提示</h3>
+    <ul>
+      <li>每次做投资决策前，先到"决策 - 新建"录入决策档案</li>
+      <li>冲突报告会自动对比你的判断与咨询师建议</li>
+      <li>每周日收到 Telegram 回顾提醒（需完成步骤 6）</li>
+    </ul>
+
+    <p>
+      <a href="/onboarding/done" role="button">完成引导，进入系统</a>
+    </p>
+  </section>
+</article>
+{% endblock %}

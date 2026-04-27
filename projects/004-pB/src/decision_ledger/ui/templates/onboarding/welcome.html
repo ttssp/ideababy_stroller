@@ -1,0 +1,46 @@
+{# onboarding/welcome.html — T021 (R3 简化)
+   结论: Onboarding 步骤 1 欢迎页，引导用户点击进入 steps_combined 页
+   细节:
+     - 无 tooltip (R3 砍掉 in-app tooltip，改为 inline 文字)
+     - 点击"开始引导"跳转 /onboarding/steps
+     - 若已完成引导，显示跳过链接
+#}
+{% extends "base.html" %}
+
+{% block title %}欢迎 — 决策账本引导{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h1>欢迎使用决策账本</h1>
+    <p>首次使用引导 — 预计 15 分钟完成配置</p>
+  </header>
+
+  <section>
+    <h2>步骤 1 / 7：启动确认</h2>
+    <p>
+      系统已通过 <code>./scripts/start.sh</code> 启动，您正在看到这个欢迎页面。
+      接下来将引导您完成 7 个配置步骤（总计约 15 分钟）。
+    </p>
+
+    <h3>本次引导内容</h3>
+    <ol>
+      <li>启动系统 — <small>约 1 分钟</small></li>
+      <li>录入 30-50 只关注股 — <small>约 5 分钟</small></li>
+      <li>录入当前持仓快照 — <small>约 3 分钟</small></li>
+      <li>拖入第一份咨询师 PDF — <small>约 1 分钟</small></li>
+      <li>录入首次决策档案 — <small>约 30 秒~1 分钟</small></li>
+      <li>绑定 Telegram 通知 — <small>约 3 分钟</small></li>
+      <li>了解空态说明 — <small>约 1.5 分钟</small></li>
+    </ol>
+  </section>
+
+  <footer>
+    <a href="/onboarding/steps" role="button" data-onboarding-start="true">
+      开始引导（步骤 2 起）
+    </a>
+    &nbsp;
+    <a href="/" class="secondary">跳过（已完成过引导）</a>
+  </footer>
+</article>
+{% endblock %}
