@@ -12,7 +12,9 @@ ConflictReportAssembler + ConflictReportAssemblerService — T010
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
+import re
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
@@ -73,17 +75,23 @@ class ConflictReportLLMOutput(BaseModel):
 # ── rendered_order_seed 公式 ─────────────────────────────────────────────────
 
 
-def compute_rendered_order_seed(source_ids: list[str], day_str: str) -> int:
+def compute_rendered_order_seed(
+    source_ids: list[str], day_str: str, ticker: str = ""
+) -> int:
     """结论: 计算 rendered_order_seed，驱动 UI 三列随机顺序（R2 D22）。
 
     细节:
-      - 公式: hash(sorted(source_ids)+day) % 6
+      - 公式: md5(sorted(source_ids) + day + ticker) % 6
       - 使用 hashlib.md5 保证 Python 版本 / 环境无关（hash() 受 PYTHONHASHSEED 影响）
       - sorted() 保证 source_id 排列顺序不影响结果（invariant）
-      - 每天变换顺序（day_str = "YYYY-MM-DD"）
+      - F2 H1: 加 ticker 进 hash, 同一天不同 ticker 顺序不同。原 1/6 advisor
+        固定第一窗口 (每周 ≥ 1 天) 现降为 1/(6×N) — 攻击者无法批量利用同一 seed=0
+        排列。day_str 必须是 "YYYY-MM-DD" 严格格式 (调用方校验)。
     """
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day_str):
+        raise ValueError(f"day_str 必须是 YYYY-MM-DD 格式: {day_str!r}")
     sorted_ids = ",".join(sorted(source_ids))
-    raw = sorted_ids + day_str
+    raw = sorted_ids + day_str + ticker
     digest = hashlib.md5(raw.encode(), usedforsecurity=False).hexdigest()
     return int(digest, 16) % 6
 
@@ -102,6 +110,10 @@ class ConflictReportAssembler:
 
     _TEMPLATE_VERSION = "conflict_assembler_v1"
 
+    # F2 H3: spec B-R2-2 draft 同步并发 5s 上限 — assembler 自身 hard timeout,
+    # 不再把超时责任甩给 caller (DecisionRecorder), 让契约清晰可测。
+    _ASSEMBLE_TIMEOUT_S = 5.0
+
     def __init__(self, llm_client: LLMClient) -> None:
         """结论: 只注入 LLMClient，不依赖任何 lane 实现（R9 隔离）。"""
         self._llm = llm_client
@@ -115,9 +127,24 @@ class ConflictReportAssembler:
 
         细节:
           - 调用 LLM 获取 divergence_root_cause + has_divergence
-          - 计算 rendered_order_seed（按当天日期）
+          - 计算 rendered_order_seed（按当天日期 + ticker, F2 H1）
           - 失败时 raise（R3 #13）
+
+        Raises:
+            asyncio.TimeoutError: assemble 超过 5s (F2 H3 / spec B-R2-2 硬上限)
+            ValueError: signals 数量不足
         """
+        return await asyncio.wait_for(
+            self._assemble_inner(signals, env_snapshot),
+            timeout=self._ASSEMBLE_TIMEOUT_S,
+        )
+
+    async def _assemble_inner(
+        self,
+        signals: list[StrategySignal],
+        env_snapshot: EnvSnapshot,
+    ) -> ConflictReport:
+        """assemble 主逻辑 (无 timeout 包装, 内部 helper)。"""
         if len(signals) < 3:
             raise ValueError(
                 f"ConflictReportAssembler.assemble 要求 ≥ 3 条 signals，当前 {len(signals)} 条"
@@ -149,10 +176,11 @@ class ConflictReportAssembler:
             schema=ConflictReportLLMOutput,
         )
 
-        # 计算 rendered_order_seed（每天变化，R2 D22）
+        # 计算 rendered_order_seed（每天变化 + 每 ticker 不同, F2 H1, R2 D22）
         day_str = datetime.now(tz=UTC).strftime("%Y-%m-%d")
         source_ids = [s.source_id for s in signals]
-        seed = compute_rendered_order_seed(source_ids, day_str)
+        ticker_for_seed = signals[0].ticker if signals else ""
+        seed = compute_rendered_order_seed(source_ids, day_str, ticker_for_seed)
 
         return ConflictReport(
             signals=signals,

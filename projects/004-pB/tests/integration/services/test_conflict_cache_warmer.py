@@ -1,10 +1,10 @@
 """
-ConflictCacheWarmer 集成测试 — T010 R3 B-R2-3
-结论: 验证 warmer 只预热 ConflictReport（不预热 Rebuttal），enqueue ≥ 30 jobs
+ConflictCacheWarmer 集成测试 — T010 R3 B-R2-3 (F2-H2 简化)
+结论: 验证 warmer 只预热 ConflictReport (不预热 Rebuttal), 每 ticker 1 个 assemble job
 细节:
-  - test_warmer_enqueues_30_50_tickers: 30 关注股 × (3 analyze + 1 assemble) = 120 jobs
+  - test_warmer_enqueues_30_50_tickers: 30 关注股 × 1 assemble = 30 jobs
   - test_warmer_does_not_enqueue_rebuttal: warmer 不入队 Rebuttal 类型 job (R3 B-R2-3)
-  - test_warmer_enqueue_is_idempotent: 重复调用不重复入队
+  - F2-H2: 移除 cache_warmer_analyze (死 no-op), 仅保留 cache_warmer_assemble
 """
 
 from __future__ import annotations
@@ -39,13 +39,12 @@ class FakeJobQueueRepo:
 class TestConflictCacheWarmerEnqueue:
     """ConflictCacheWarmer.warm_for_advisor_report 入队行为测试。"""
 
-    async def test_warmer_enqueues_30_50_tickers(self) -> None:
-        """结论: 30 关注股 × (3 analyze + 1 assemble) = 120 jobs 入队。"""
+    async def test_warmer_enqueues_30_tickers(self) -> None:
+        """结论: F2-H2 简化后, 30 关注股 × 1 assemble = 30 jobs 入队。"""
         from decision_ledger.services.conflict_cache_warmer import ConflictCacheWarmer
 
         fake_job_repo = FakeJobQueueRepo()
 
-        # 构建 30 关注股列表
         tickers = [f"TICKER{i:02d}" for i in range(30)]
 
         warmer = ConflictCacheWarmer(
@@ -55,10 +54,10 @@ class TestConflictCacheWarmerEnqueue:
 
         await warmer.warm_for_advisor_report(advisor_report_id="advisor_2026_W17")
 
-        # 每个 ticker: 3 lane.analyze + 1 assemble = 4 jobs
-        # 30 tickers × 4 = 120 jobs
-        assert len(fake_job_repo.enqueued_jobs) >= 30, (
-            f"warmer 应入队 ≥ 30 个 job，当前 {len(fake_job_repo.enqueued_jobs)}"
+        # F2-H2: 每 ticker 1 个 assemble (移除 3 个 analyze 死 no-op)
+        # 30 tickers × 1 = 30 jobs
+        assert len(fake_job_repo.enqueued_jobs) == 30, (
+            f"F2-H2 后 warmer 应入队 30 个 job, 当前 {len(fake_job_repo.enqueued_jobs)}"
         )
 
         # 所有 tickers 都应被覆盖
@@ -71,8 +70,8 @@ class TestConflictCacheWarmerEnqueue:
                 f"ticker {ticker} 未被 warmer 覆盖"
             )
 
-    async def test_warmer_enqueues_4_jobs_per_ticker(self) -> None:
-        """结论: 每个 ticker 入队 4 个 job (3 analyze + 1 assemble)。"""
+    async def test_warmer_enqueues_one_assemble_per_ticker(self) -> None:
+        """F2-H2: 每个 ticker 仅入队 1 个 cache_warmer_assemble job。"""
         from decision_ledger.services.conflict_cache_warmer import ConflictCacheWarmer
 
         fake_job_repo = FakeJobQueueRepo()
@@ -86,13 +85,36 @@ class TestConflictCacheWarmerEnqueue:
         await warmer.warm_for_advisor_report(advisor_report_id="advisor_2026_W17")
 
         aapl_jobs = [j for j in fake_job_repo.enqueued_jobs if j["payload"].get("ticker") == "AAPL"]
-        assert len(aapl_jobs) == 4, (
-            f"每个 ticker 应有 4 个 job (3 analyze + 1 assemble)，当前 {len(aapl_jobs)}"
+        assert len(aapl_jobs) == 1, (
+            f"F2-H2 每个 ticker 应仅 1 个 assemble job, 当前 {len(aapl_jobs)}"
         )
 
         job_types = {j["job_type"] for j in aapl_jobs}
-        assert "cache_warmer_analyze" in job_types, "应有 cache_warmer_analyze 类型 job"
-        assert "cache_warmer_assemble" in job_types, "应有 cache_warmer_assemble 类型 job"
+        assert job_types == {"cache_warmer_assemble"}, (
+            f"F2-H2 仅应有 cache_warmer_assemble, 当前 {job_types}"
+        )
+
+    async def test_warmer_does_not_enqueue_analyze(self) -> None:
+        """F2-H2 红线: warmer 不再入队 cache_warmer_analyze (死 no-op 已删除)。"""
+        from decision_ledger.services.conflict_cache_warmer import ConflictCacheWarmer
+
+        fake_job_repo = FakeJobQueueRepo()
+        tickers = ["AAPL", "TSM"]
+
+        warmer = ConflictCacheWarmer(
+            job_queue_repo=fake_job_repo,
+            tickers=tickers,
+        )
+
+        await warmer.warm_for_advisor_report(advisor_report_id="advisor_2026_W17")
+
+        analyze_jobs = [
+            j for j in fake_job_repo.enqueued_jobs
+            if j["job_type"] == "cache_warmer_analyze"
+        ]
+        assert len(analyze_jobs) == 0, (
+            f"F2-H2 违反: warmer 不应再入队 cache_warmer_analyze, 当前 {len(analyze_jobs)} 个"
+        )
 
     async def test_warmer_does_not_enqueue_rebuttal(self) -> None:
         """结论: R3 B-R2-3 — warmer 不预热 Rebuttal（Rebuttal 输入依赖 draft 内容，每次唯一）。"""
@@ -119,7 +141,7 @@ class TestConflictCacheWarmerEnqueue:
         )
 
     async def test_warmer_job_types_correct(self) -> None:
-        """结论: 入队的 job_type 只能是 cache_warmer_analyze / cache_warmer_assemble。"""
+        """F2-H2: 入队的 job_type 只能是 cache_warmer_assemble。"""
         from decision_ledger.services.conflict_cache_warmer import ConflictCacheWarmer
 
         fake_job_repo = FakeJobQueueRepo()
@@ -132,10 +154,10 @@ class TestConflictCacheWarmerEnqueue:
 
         await warmer.warm_for_advisor_report(advisor_report_id="advisor_2026_W17")
 
-        allowed_types = {"cache_warmer_analyze", "cache_warmer_assemble"}
+        allowed_types = {"cache_warmer_assemble"}
         for job in fake_job_repo.enqueued_jobs:
             assert job["job_type"] in allowed_types, (
-                f"非法 job_type: {job['job_type']}，只允许 {allowed_types}"
+                f"非法 job_type: {job['job_type']}, 只允许 {allowed_types}"
             )
 
     async def test_warmer_payload_contains_advisor_report_id(self) -> None:

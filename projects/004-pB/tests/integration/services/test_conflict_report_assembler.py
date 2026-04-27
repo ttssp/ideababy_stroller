@@ -535,3 +535,124 @@ class TestCacheKeyInvariant:
         await assembler.assemble(signals, env)
 
         assert captured_extras[0]["signals_hash"] == captured_extras[1]["signals_hash"]
+
+
+# ── F2 H1: rendered_order_seed + ticker + 严格日期格式 ─────────────────────────
+
+
+class TestRenderedOrderSeedF2:
+    """F2-T010 H1: seed 加 ticker + day_str 严格 YYYY-MM-DD。"""
+
+    def test_seed_differs_across_tickers(self) -> None:
+        """同一天同一组 source_ids,不同 ticker → seed 期望不同 (1/(6×N) 同序列概率)。"""
+        from decision_ledger.services.conflict_report_assembler import (
+            compute_rendered_order_seed,
+        )
+
+        source_ids = ["advisor", "placeholder_model", "agent_synthesis"]
+        day_str = "2026-04-26"
+
+        seeds = {
+            ticker: compute_rendered_order_seed(source_ids, day_str, ticker)
+            for ticker in ("AAPL", "TSM", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "TSLA")
+        }
+        # 8 ticker 至少应有 2 个不同 seed (期望 6 桶, 命中同桶概率极低)
+        assert len(set(seeds.values())) >= 2, (
+            f"8 个不同 ticker 应产生 ≥ 2 个不同 seed, 实际 {set(seeds.values())}"
+        )
+
+    def test_seed_default_ticker_empty(self) -> None:
+        """ticker 缺省时退化为旧公式 (向后兼容已写入数据)。"""
+        from decision_ledger.services.conflict_report_assembler import (
+            compute_rendered_order_seed,
+        )
+
+        source_ids = ["advisor", "placeholder_model", "agent_synthesis"]
+        day_str = "2026-04-26"
+
+        seed_no_ticker = compute_rendered_order_seed(source_ids, day_str)
+        seed_empty_ticker = compute_rendered_order_seed(source_ids, day_str, "")
+        assert seed_no_ticker == seed_empty_ticker
+
+    def test_seed_rejects_invalid_day_format(self) -> None:
+        """day_str 必须严格 YYYY-MM-DD,否则 raise ValueError。"""
+        from decision_ledger.services.conflict_report_assembler import (
+            compute_rendered_order_seed,
+        )
+
+        source_ids = ["advisor", "placeholder_model", "agent_synthesis"]
+        for bad_day in ("2026/04/26", "26-04-2026", "2026-4-26", "today", "2026-04-26 12:00"):
+            with pytest.raises(ValueError, match="YYYY-MM-DD"):
+                compute_rendered_order_seed(source_ids, bad_day)
+
+    def test_seed_accepts_valid_day_format(self) -> None:
+        """合法 YYYY-MM-DD 必须通过。"""
+        from decision_ledger.services.conflict_report_assembler import (
+            compute_rendered_order_seed,
+        )
+
+        source_ids = ["advisor", "placeholder_model", "agent_synthesis"]
+        seed = compute_rendered_order_seed(source_ids, "2026-04-26", "AAPL")
+        assert 0 <= seed < 6
+
+
+# ── F2 H3: assembler.assemble 5s 硬上限 ───────────────────────────────────────
+
+
+class TestAssembleHardTimeout:
+    """F2-T010 H3: assemble 自身 timeout=5s,不再把超时责任甩给 caller。"""
+
+    @pytest.mark.asyncio
+    async def test_assemble_raises_timeout_when_llm_slow(self) -> None:
+        """LLM 调用阻塞超过 5s,assemble 必须 raise TimeoutError。"""
+        import asyncio
+
+        from decision_ledger.services.conflict_report_assembler import (
+            ConflictReportAssembler,
+        )
+
+        signals = [
+            _make_signal("advisor"),
+            _make_signal("placeholder_model"),
+            _make_signal("agent_synthesis"),
+        ]
+        env = _make_env_snapshot()
+
+        async def slow_call(prompt: str, **kwargs: Any) -> Any:
+            await asyncio.sleep(10)
+            raise AssertionError("不应到达")
+
+        mock_llm = AsyncMock()
+        mock_llm.call = slow_call
+        assembler = ConflictReportAssembler(llm_client=mock_llm)
+        # 把 timeout 调到 0.05s,避免测试本身耗时
+        assembler._ASSEMBLE_TIMEOUT_S = 0.05  # type: ignore[misc]
+
+        with pytest.raises((asyncio.TimeoutError, TimeoutError)):
+            await assembler.assemble(signals=signals, env_snapshot=env)
+
+    @pytest.mark.asyncio
+    async def test_assemble_succeeds_within_timeout(self) -> None:
+        """LLM 在 timeout 内返回 → assemble 正常返回 ConflictReport。"""
+        from decision_ledger.services.conflict_report_assembler import (
+            ConflictReportAssembler,
+            ConflictReportLLMOutput,
+        )
+
+        signals = [
+            _make_signal("advisor"),
+            _make_signal("placeholder_model"),
+            _make_signal("agent_synthesis"),
+        ]
+        env = _make_env_snapshot()
+
+        mock_llm = AsyncMock()
+        mock_llm.call = AsyncMock(
+            return_value=ConflictReportLLMOutput(
+                divergence_root_cause="ok", has_divergence=True
+            )
+        )
+        assembler = ConflictReportAssembler(llm_client=mock_llm)
+
+        report = await assembler.assemble(signals=signals, env_snapshot=env)
+        assert isinstance(report, ConflictReport)

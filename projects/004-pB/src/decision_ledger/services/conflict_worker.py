@@ -102,28 +102,31 @@ class ConflictWorker:
                 await self._job_queue_repo.mark_failed(job_id, str(exc))
 
     async def _execute_job(self, job_type: str, payload: dict[str, Any]) -> None:
-        """结论: 根据 job_type 执行对应任务。
+        """结论: 根据 job_type 执行对应任务 (F2-H2 简化: 只保留 assemble)。
 
         细节:
-          - cache_warmer_analyze: 调 assembler_service.assemble 的 analyze 阶段（预热）
-          - cache_warmer_assemble: 调 assembler_service.assemble 完整流程（预热）
-          - 其他 job_type: raise ValueError（明确拒绝未知 job）
+          - cache_warmer_assemble: 调 assembler_service.assemble 完整流程 (预热)
+          - 其他 job_type: raise ValueError (明确拒绝未知 job)
+          - F2-H2: 移除 cache_warmer_analyze (assemble 内部已经跑 3 lanes,
+            独立 analyze job 是死 no-op, 占 75% 队列又永远 mark_done,
+            会让 O10 失败告警的"95% 成功率"指标说谎)
         """
-        if job_type not in ("cache_warmer_analyze", "cache_warmer_assemble"):
+        if job_type != "cache_warmer_assemble":
             raise ValueError(f"ConflictWorker 不识别 job_type: {job_type!r}")
 
         ticker: str = payload.get("ticker", "")
         if not ticker:
             raise ValueError(f"job payload 缺少 ticker 字段: {payload}")
 
-        # 注: env_snapshot 在 cache warmer 场景下可以为 None 或从 payload 重建
-        # 这里简化处理：cache warmer 阶段不需要完整 env_snapshot
-        # 实际 prod 实现应从 payload 反序列化 env_snapshot
-        env_snapshot = payload.get("env_snapshot", None)
-
-        if job_type == "cache_warmer_assemble" and env_snapshot is not None:
-            await self._assembler_service.assemble(
-                ticker=ticker,
-                env_snapshot=env_snapshot,
+        # F2-H2: env_snapshot 必须存在, 不再静默 no-op
+        # (R3 #13: assemble 失败必 raise, cache warmer 不应静默吞掉无效 payload)
+        env_snapshot = payload.get("env_snapshot")
+        if env_snapshot is None:
+            raise ValueError(
+                f"cache_warmer_assemble payload 缺少 env_snapshot: {payload}"
             )
-        # cache_warmer_analyze 阶段: 单路 lane analyze（未来扩展，当前 no-op for warmer）
+
+        await self._assembler_service.assemble(
+            ticker=ticker,
+            env_snapshot=env_snapshot,
+        )
