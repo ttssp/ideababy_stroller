@@ -34,7 +34,8 @@ L3 output: PRD.md (product view)
   ├─ Who the user is (specific, persona-level)
   ├─ Core user stories (3-7, each executable)
   ├─ Scope IN (what this v0.1 delivers)
-  ├─ Scope OUT (explicit non-goals)
+  ├─ Scope OUT (永远不做 / red-line non-goals — 永久排除)
+  ├─ Phased roadmap (committed, 按阶段交付; v0.2 详细, v0.5+ 概要)
   ├─ Success looks like (observable outcomes, numbered)
   ├─ Real constraints (time/budget/platform/compliance)
   └─ UX principles (tradeoffs, not wireframes)
@@ -46,6 +47,27 @@ L4 input:  PRD.md  →  L4 output: spec.md, architecture.md, ...
 **Key property**: a PRD should be readable by someone who has no idea what the
 technology will be. A spec is readable by engineers. They're different documents
 for different audiences.
+
+## Scope OUT vs Phased roadmap — 为什么拆开 (设计意图, 防再走样)
+
+历史教训 (idea004 v0.1 ship 后发现): 早期 L3 把 L2 §4 "Natural extensions"
+压扁进 candidate 的 "Scope OUT" 单一节, fork 后 PRD §5 出现 v0.2+/v0.5+/v1.0+
+和 "永远不做" 混在同一标签下。这导致下游 reader 心态混乱:
+
+- 把 v0.2+ 当 "Out of scope" 读 → v0.1 完全不留扩展点, v0.2 起步等于重写
+- 把 "永远不做" 当 "Deferred" 读 → 红线被当成可商量
+
+修复: PRD 必须强制分两节 — **Scope OUT (永远不做)** 与 **Phased roadmap (committed,
+按阶段)**。前者是不变量, 后者是承诺序列。两者对 v0.1 架构的影响**完全相反**:
+
+| 节 | 性质 | v0.1 架构应该 |
+|---|---|---|
+| Scope OUT | 永久不变量 | **不留扩展点** (留了会引诱人去做) |
+| Phased roadmap | committed 承诺序列 | **必须留扩展点** (v0.2+ 启动时不重写) |
+
+**关键来源**: Phased roadmap 必须从 L2 §4 "Natural extensions" 继承结构 + 风险对应。
+L2 §4 已经按 v0.2/v0.5/v1.0/v1.5+ 分档, 每条对应一条风险 — L3 candidate 必须
+保留这个分档和风险编号, 不要重新归类成 "Scope OUT"。
 
 ## The three sub-phases
 
@@ -254,8 +276,45 @@ One paragraph: my reading of human's constraints and what it implies for scope.
 - <feature>
 - ...
 
-### Scope OUT (explicit non-goals)
-- <tempting thing we're not doing, and why>
+### Scope OUT (永远不做 — red-line / 永久排除)
+
+只列**永久排除**的项 (与项目身份冲突 / 红线级别 / 永远不在任何版本做)。
+例: 自动下单 (永远 human 拍板), 商业化付费层 (这是私用项目), 期权/加密/高杠杆。
+
+- <hard non-goal>, because <invariant reason — 红线 / 项目定位 / 法律 / etc.>
+- ...
+
+### Phased roadmap (全部 committed, 按阶段交付)
+
+**所有承诺将来做的功能**, 从 L2 §4 "Natural extensions" 继承结构。
+原则: 每条**都会做**, 顺序按 (1) 当前版本痛点 (2) 实现难度 (3) 解决的风险等级。
+**不是** "可能不做" — 是 "排好的实现队列, 顺序可基于使用数据微调"。
+
+**写作约定 (重要)**:
+- **v0.2 (NEXT)** = 即将做的下一版 → **详细描述** (做什么 / 完成标准 / v0.1 已留位)
+- **v0.5 / v1.0 / v1.5+** = 远期 → **一行概要** (名字 + 难度/重要性 + 对应 L2 风险编号)
+- 每次 ship 后, 把"下一版"那段从概要升级成详细。这是 PRD 持续演进, 不是一次写死。
+
+#### Phase v0.2 (1-3 个月内 — NEXT, 详细)
+
+##### v0.2.1 <feature 名>
+[难度 L/M/H, 重要性 L/M/H] — 对应解决: L2 §4 风险 #<n> "<风险简述>"
+
+**v0.2 做什么**: <2-4 句具体描述>
+**完成标准**: <bullet 2-3 条 measurable>
+**v0.1 已留位**: <接口/扩展点位置, 如果有>
+
+##### v0.2.2 ...
+(继续, 每条独立子节)
+
+#### Phase v0.5 (3-9 个月 — 概要)
+- <feature> [难度 X, 重要性 Y] — 对应解决: L2 风险 #<n>
+- ...
+
+#### Phase v1.0 (9-18 个月 — 概要)
+- ...
+
+#### Phase v1.5+ (远期 — 概要)
 - ...
 
 ### Success looks like (observable outcomes)
@@ -440,8 +499,9 @@ fork one (or more) into PRD branches for L4:
 **Core user stories**:
 - ...
 
-**Scope IN**: <list>
-**Scope OUT**: <list>
+**Scope IN (v0.1)**: <list>
+**Scope OUT (永远不做)**: <list of red-line non-goals only>
+**Phased roadmap**: 见 candidate detail (v0.2 NEXT 详细 + v0.5/v1.0/v1.5+ 概要; 全部 committed; 顺序按难度+重要性+对应风险)
 **Success observable**: <measurable>
 
 **Time estimate under your constraints**: <n> weeks

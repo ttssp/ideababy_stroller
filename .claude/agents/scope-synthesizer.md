@@ -155,9 +155,39 @@ collaboration live to adopt, A wins."
 - <feature>
 - ...
 
-**Scope OUT (explicit non-goals — don't build these now)**:
-- <tempting thing>, because <reason>
+**Scope OUT (永远不做 — red-line / 永久排除)**:
+只列与项目身份冲突 / 红线级别 / 永远不在任何版本做的项。
+- <hard non-goal>, because <invariant reason — 红线 / 项目定位 / 法律>
 - ...
+
+**Phased roadmap (全部 committed, 按阶段交付)**:
+
+**重要**: 必须从 L2 §4 "Natural extensions" 继承结构 + 每条对应的风险编号。
+**不要**把 L2 §4 的内容压扁进 "Scope OUT" — 那是历史走样, 已修复。
+
+写作约定:
+- **v0.2 (NEXT) — 详细描述** (做什么 / 完成标准 / v0.1 已留位)
+- **v0.5 / v1.0 / v1.5+ — 一行概要** (名字 + 难度/重要性 + 对应 L2 风险编号)
+
+格式:
+```
+#### Phase v0.2 (NEXT — 详细)
+##### v0.2.1 <feature 名>
+[难度 L/M/H, 重要性 L/M/H] — 对应解决: L2 §4 风险 #<n>
+**v0.2 做什么**: <2-4 句>
+**完成标准**: <bullet 2-3 条>
+**v0.1 已留位**: <接口/扩展点>
+
+#### Phase v0.5 (3-9 个月 — 概要)
+- <feature> [难度 X, 重要性 Y] — 对应解决: L2 风险 #<n>
+- ...
+
+#### Phase v1.0 (9-18 个月 — 概要)
+- ...
+
+#### Phase v1.5+ (远期 — 概要)
+- ...
+```
 
 **Success looks like** (observable outcomes):
 - <measurable: "a returning user accomplishes X in <60s">
