@@ -114,7 +114,17 @@ operate on the candidate above as if it were a fresh proposal. Run:
 ### Special case: fork from L3 → also write PRD.md
 
 If the source layer is **L3** (from `from-L3 ...`), also produce a full PRD.md
-for the new fork by extracting the candidate section:
+for the new fork by extracting the candidate section.
+
+**重要 (历史教训)**: PRD §5 和 §6 必须分开 — §5 是 "Scope OUT (永远不做)"
+红线级别非目标, §6 是 "Phased roadmap (committed, 按阶段)" 承诺序列。
+两者对 v0.1 架构的影响完全相反:
+- Scope OUT → v0.1 不留扩展点 (留了诱发越界)
+- Phased roadmap → v0.1 必须留扩展点 (避免 v0.2+ 起步重写)
+
+历史 idea004 fork 早期版本把 L2 §4 "Natural extensions" 压扁进 Scope OUT,
+导致下游混乱。新协议强制分离, 详见 `.claude/skills/scope-protocol/SKILL.md`
+"Scope OUT vs Phased roadmap — 为什么拆开" 节。
 
 Write `discussion/.../<new-id>/PRD.md`:
 
@@ -138,8 +148,50 @@ Write `discussion/.../<new-id>/PRD.md`:
 ## Scope IN (v0.1)
 (From the candidate's "Scope IN" — as-is)
 
-## Scope OUT (explicit non-goals)
-(From the candidate's "Scope OUT" — as-is)
+## Scope OUT (永远不做 — red-line / 永久排除)
+**ONLY** copy candidate's red-line non-goals here (项目身份冲突 / 永远不做的项).
+**DO NOT** copy phased roadmap items here (those go to next section).
+例: 自动下单 / 商业化 / 期权高杠杆 / 信息壳赛道 (跨 candidate identity).
+
+- <hard non-goal>, because <invariant reason>
+- ...
+
+## Phased roadmap (全部 committed, 按阶段交付)
+
+**Source**: From candidate's "Phased roadmap" section (which itself inherits
+from L2 §4 "Natural extensions"). 必须保留每条的:
+- 阶段归属 (v0.2 / v0.5 / v1.0 / v1.5+)
+- 难度 + 重要性标签
+- 对应解决的 L2 风险编号
+
+**写作约定 (强制)**:
+- **v0.2 (NEXT)**: 详细描述 (做什么 / 完成标准 / v0.1 已留位)
+- **v0.5 / v1.0 / v1.5+**: 一行概要
+
+**Maintenance hint** (添加到本节末尾):
+> 每次 ship 后 PRD 维护: 把已完成阶段从 roadmap 删除, 把"下一阶段"从概要升级
+> 成详细描述。这是 PRD 持续演进, 不是一次写死。
+
+### Phase v0.2 (NEXT — 详细)
+
+#### v0.2.1 <feature name>
+[难度 L/M/H, 重要性 L/M/H] — 对应解决: L2 §4 风险 #<n>
+
+**v0.2 做什么**: <2-4 句>
+**完成标准**: <2-3 条 measurable>
+**v0.1 已留位**: <接口/扩展点位置>
+
+#### v0.2.2 ...
+
+### Phase v0.5 (3-9 个月 — 概要)
+- <feature> [难度 X, 重要性 Y] — 对应解决: L2 §4 风险 #<n>
+- ... [v0.2 ship 后细化]
+
+### Phase v1.0 (9-18 个月 — 概要)
+- ...
+
+### Phase v1.5+ (远期 — 概要)
+- ...
 
 ## Success — observable outcomes
 (From the candidate's "Success looks like" — as-is, numbered O1/O2/...)
