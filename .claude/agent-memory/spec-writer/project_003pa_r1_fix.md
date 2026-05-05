@@ -4,6 +4,10 @@ description: How spec v0.2 resolved R1 adversarial review BLOCK verdict via D-OP
 type: project
 ---
 
+**Scope**: 仅适用于 `specs/003-pA/`。其他 idea/fork 上工作时,**不要**直接套用具体决策内容(USD < $30 cap、`.claude/` fail-closed、跨机移植限制) — 这些是 003-pA 特定的产品/技术约束。**可以借鉴**的是模式本身:"operator 在 review dispatch 阶段预先裁决 ambiguous trade-offs,spec-writer 据此 bump"这个工作流。
+
+---
+
 003-pA spec bumped to v0.2 on 2026-04-24 to absorb R1 adversarial review (BLOCK · 3 blocker + 5 high + 4 med-low).
 
 Why: Codex gpt-5.4 xhigh flagged contract gaps that would let builders ship a broken MVP. Operator pre-approved three key decisions before spec-writer round:
