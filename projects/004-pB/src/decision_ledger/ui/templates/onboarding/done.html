@@ -1,0 +1,44 @@
+{# onboarding/done.html — T021 (R3 简化)
+   结论: Onboarding 完成确认页，显示耗时和 O6 pass 状态
+   细节:
+     - 显示 o6_pass 状态（是否在 900s 内完成）
+     - 提供进入主界面链接
+     - 无 T019 引用 (R2 H3)
+#}
+{% extends "base.html" %}
+
+{% block title %}引导完成 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h1>引导完成</h1>
+  </header>
+
+  <section>
+    {% if o6_pass %}
+    <p>
+      <strong>出色！</strong>您在 {{ total_duration_s | int }} 秒内完成了引导（O6 验证通过）。
+    </p>
+    {% else %}
+    <p>
+      引导已完成。
+      {% if total_duration_s %}
+      耗时 {{ total_duration_s | int }} 秒。
+      {% endif %}
+    </p>
+    {% endif %}
+
+    <h2>下一步</h2>
+    <ul>
+      <li>前往<a href="/decisions/new">录入今日决策</a></li>
+      <li>查看<a href="/decisions">决策档案列表</a></li>
+      <li>查阅 <a href="/docs/runbook.md" target="_blank">运维 Runbook</a></li>
+    </ul>
+  </section>
+
+  <footer>
+    <a href="/" role="button">进入主界面</a>
+  </footer>
+</article>
+{% endblock %}

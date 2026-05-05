@@ -1,0 +1,32 @@
+{# reviews/_weekly_maintenance_partial.html — T014
+   结论: 维护工时摘要 partial，供 HTMX hx-swap 和页面初始渲染共用
+   细节:
+     - 显示当周工时、4 周滚动平均、OP-4 阈值判断
+     - over_threshold 时显示红色警告
+     - 此 partial 被 weekly.html 和 POST /reviews/weekly/maintenance 返回使用
+#}
+<dl>
+  <dt>当周工时</dt>
+  <dd>
+    {% if maintenance.current_hours > 0 %}
+      {{ "%.1f"|format(maintenance.current_hours) }} 小时
+      {% if maintenance.over_threshold %}
+        <strong class="pico-color-red-500"> ⚠ 超过 {{ maintenance.threshold }}h 阈值</strong>
+      {% endif %}
+    {% else %}
+      — (尚未填报)
+    {% endif %}
+  </dd>
+
+  <dt>4 周滚动平均</dt>
+  <dd>
+    {% if maintenance.rolling_avg > 0 %}
+      {{ "%.1f"|format(maintenance.rolling_avg) }} 小时/周
+    {% else %}
+      — (暂无历史数据)
+    {% endif %}
+  </dd>
+
+  <dt>OP-4 阈值</dt>
+  <dd>{{ maintenance.threshold }} 小时/周</dd>
+</dl>

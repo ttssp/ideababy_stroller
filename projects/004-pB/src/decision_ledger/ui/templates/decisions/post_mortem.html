@@ -1,0 +1,49 @@
+{# decisions/post_mortem.html — T018
+   结论: post-mortem 回填页面，含 4 字段表单
+   细节:
+     - 继承 base.html，保持整体 Pico CSS 风格
+     - 显示决策摘要（ticker + action + pre_commit_at）
+     - 引入 _post_mortem_form.html 局部
+     - 若已有回填数据，提示"已有复盘记录"
+#}
+{% extends "base.html" %}
+
+{% block title %}事后复盘 — {{ decision.ticker }} — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>事后复盘 (Post-mortem)</h2>
+  </header>
+
+  <section class="decision-summary">
+    <dl>
+      <dt>Trade ID</dt>
+      <dd><code>{{ decision.trade_id }}</code></dd>
+
+      <dt>股票代码</dt>
+      <dd>{{ decision.ticker }}</dd>
+
+      <dt>动作</dt>
+      <dd>{{ decision.action.value }}</dd>
+
+      <dt>归档时间</dt>
+      <dd>{{ decision.pre_commit_at.strftime('%Y-%m-%d %H:%M') }} UTC</dd>
+    </dl>
+  </section>
+
+  {% if existing_pm %}
+  <p>
+    <strong>已有复盘记录</strong>，可在下方修改后重新保存。
+  </p>
+  {% endif %}
+
+  {% include "decisions/_post_mortem_form.html" %}
+
+  <footer>
+    <a href="/decisions/{{ decision.trade_id }}">← 返回决策详情</a>
+    &nbsp;|&nbsp;
+    <a href="/decisions">← 返回决策列表</a>
+  </footer>
+</article>
+{% endblock %}

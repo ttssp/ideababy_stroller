@@ -1,0 +1,97 @@
+{# reviews/monthly.html — T015 (R3 简化版)
+   结论: 月度 review 全页, 4 section 静态 markdown render (无 LLM, 无 PNG 图表)
+   细节:
+     - R3 真砍: 不调 LLM 摘要，不渲染 PNG 图表，无 partner audience 参数
+     - Section 1: 校准证据聚合 (committed only)
+     - Section 2: 错位矩阵月末快照 (include T011 matrix/_table.html partial)
+     - Section 3: 风险快照 (静态 4 行: OP-1/OP-2/TECH-2/O10, 无颜色)
+     - Section 4: 12 个月对标 placeholder (Q1 mitigation)
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ month_id }} 月报 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>{{ month_id }} 月度 Review</h2>
+      <p>校准证据汇总 &amp; 风险快照 (R3 简化版 · 纯 SQL 聚合 · 无 LLM)</p>
+    </hgroup>
+  </header>
+
+  {# ── Section 1: 校准证据聚合 (committed decisions only, R2) ───────────── #}
+  <section>
+    <h3>校准证据聚合</h3>
+    <p class="secondary">仅统计 committed 决策，draft 不计入 (R2)。</p>
+
+    {% set cal = review.calibration %}
+    <dl>
+      <dt>本月 committed 决策总数</dt>
+      <dd>{{ cal.total_committed }} 条</dd>
+
+      <dt>不动 (hold + wait) 决策数</dt>
+      <dd>{{ cal.inactive_count }} 条</dd>
+
+      <dt>不动占比</dt>
+      <dd>
+        {% if cal.total_committed > 0 %}
+          {{ "%.1f"|format(cal.inactive_ratio * 100) }}%
+        {% else %}
+          — (本月暂无决策)
+        {% endif %}
+      </dd>
+
+      <dt>无 Agent 也会行动 (would_have_acted) 计数</dt>
+      <dd>{{ cal.would_have_acted_count }} 条</dd>
+    </dl>
+  </section>
+
+  {# ── Section 2: 错位矩阵月末快照 (复用 T011 partial) ─────────────────── #}
+  <section>
+    <h3>错位矩阵月末快照</h3>
+    <p class="secondary">
+      三路信号方向汇总 (顾问 / 占位模型 / Agent 综合) 当前持仓。
+      实时矩阵请访问 <a href="/matrix">矩阵视图</a>。
+    </p>
+
+    {# 嵌入 T011 矩阵 table partial (复用，不重写) #}
+    {% set rows = review.matrix_snapshot %}
+    {% include "matrix/_table.html" %}
+  </section>
+
+  {# ── Section 3: 风险快照 (静态 4 行, 无颜色) ─────────────────────────── #}
+  <section>
+    <h3>风险快照</h3>
+    <p class="secondary">静态 4 项运营风险，月末核查 (无颜色，无动态更新)。</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>风险 ID</th>
+          <th>描述</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for risk in review.risk_snapshot %}
+        <tr>
+          <td><strong>{{ risk.id }}</strong></td>
+          <td>{{ risk.description }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  {# ── Section 4: 12 个月对标 placeholder (Q1 mitigation) ──────────────── #}
+  <section>
+    <h3>12 个月年化对标</h3>
+    <p class="secondary">Q1 默认假设: 需满 12 个月才出年化 alpha 估算。</p>
+    <blockquote>
+      {{ review.benchmark_placeholder }}
+    </blockquote>
+    <small class="secondary">年化精确计算请参阅 O9 — human 手算，不做系统自动年化</small>
+  </section>
+
+</article>
+{% endblock %}

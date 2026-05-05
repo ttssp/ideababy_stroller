@@ -1,0 +1,64 @@
+{# notes/index.html — T016
+   结论: 笔记 wiki 列表页，含全文搜索 + 新建按钮
+   细节:
+     - 支持 ?q= 全文搜索 (title/content LIKE, FTS5), 零 LLM
+     - 无笔记时显示空态提示
+     - 笔记列表用 _note_card.html partial (updated_at DESC)
+#}
+{% extends "base.html" %}
+
+{% block title %}笔记 wiki — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>笔记 wiki</h2>
+      <p>金融概念备忘录 — 个人笔记，全文可搜索。</p>
+    </hgroup>
+    <a href="/notes/new" role="button">+ 新建笔记</a>
+  </header>
+
+  {# 全文搜索表单 #}
+  <form method="get" action="/notes" style="margin-bottom: 1rem;">
+    <div style="display: flex; gap: 0.5rem;">
+      <input
+        type="search"
+        name="q"
+        placeholder="搜索关键词 (e.g. FOMC, P/E)…"
+        value="{{ query }}"
+        style="flex: 1;"
+        autocomplete="off"
+      >
+      <button type="submit">搜索</button>
+      {% if query %}
+      <a href="/notes" role="button" class="secondary outline">清除</a>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if query %}
+  <p><small>搜索 "<strong>{{ query }}</strong>" — 找到 {{ notes|length }} 条结果</small></p>
+  {% endif %}
+
+  {# 笔记列表 #}
+  {% if notes %}
+  <ul style="list-style: none; padding: 0;">
+    {% for note in notes %}
+    <li>
+      {% include "notes/_note_card.html" %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <section>
+    {% if query %}
+    <p>未找到包含 "<strong>{{ query }}</strong>" 的笔记。</p>
+    <p><a href="/notes/new?title={{ query }}">新建关于此主题的笔记 →</a></p>
+    {% else %}
+    <p>暂无笔记。<a href="/notes/new">创建第一条笔记 →</a></p>
+    {% endif %}
+  </section>
+  {% endif %}
+</article>
+{% endblock %}

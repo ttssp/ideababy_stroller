@@ -1,7 +1,8 @@
 # Risk Register — 004-pB · 决策账本
 
-**Version**: 0.1
+**Version**: 0.3
 **Created**: 2026-04-25T15:20:00+08:00
+**Updated**: 2026-04-26T19:00:00+08:00 (R3: OP-2 mitigation 改为 "已砍至 160h 边界")
 **Companion**: PRD §10 (Risk #1-4) · spec.md §3 Constraints
 
 > 单用户私用工具的风险结构与商业产品**完全不同**。死因不是"用户流失",是
@@ -34,7 +35,7 @@
 | ID | Risk | L | I | Trigger | Mitigation | Owner |
 |----|------|---|---|---------|-----------|-------|
 | **OP-1 (最硬)** | **Upkeep 负担: 录入 > 30 秒即死** (PRD Risk #1) | M | H | (a) E2E timing test 失败 (b) human 主观觉得"录入烦"≥ 3 次 (c) 连续 2 周决策档案 < 2 条 (O10 触发) | (a) C11 / O5 硬门槛 + 自动化 timing test (b) 录入 UX D13 默认填 + 快捷键 + 一键 commit (c) Onboarding ≤ 15 分钟 (d) **O10 红色告警**: 连续 2 周档案 < 2 条 → Telegram + Web banner 双通道, 提示降级 B-lite | operator |
-| **OP-2** | 开发时间超 180h (吞噬主业, PRD Risk #3) | M | H | weekly 工时 log 累积 > 180h 或 周工时 > 30h 持续 2 周 | (a) C1 时间预算硬约束 (b) Phase 0-3 估时 110-165h (R2 修订, 见下 cut list), 余 < 10% buffer (c) 超时 → 立即按 cut list 砍, 不再 v0.2 商榷 (d) git log + uv 配套 commit-time tracking <br/><br/>**R2 H2 cut list (≈ 13h 备选, 按优先级)**: <br/>1. **T015 月度 review (8h)** — Q1 仍 OPEN, 12 个月 benchmark 无大价值前可降级到 ship 后做; pause hook 已存在, 无破坏链路 <br/>2. **T019 学习检查 LLM 抽取 → human 手编 master checklist (-3h)** — 仅静态题库 + 答题表单, 不调 LLM 抽题 <br/>3. **T022 B-lite UI toggle → 只 runbook + scripts/toggle_b_lite.py CLI (-2h)** — pause_pipeline() 已存在 (R2 H1), 不破坏链路 <br/>共 ≈ 13h 可省, 落到 ≈ 152h 仍接近预算上限. cut 时务必同步在 spec.md §5 phase 标注 + risks.md 加 timestamp. | operator |
+| **OP-2** | 开发时间超 180h (吞噬主业, PRD Risk #3) | M | H | weekly 工时 log 累积 > 160h 或 周工时 > 30h 持续 2 周 | (a) C1 时间预算硬约束 (≤ 160h hard max) (b) Phase 0-3 估时 **120-160h** (R3 修订, 已砍至 160h 边界), 无 buffer (c) 超时 → 立即降级 v0.2 (d) git log + uv 配套 commit-time tracking <br/><br/>**R3 已砍 task pack 落到 ≤ 160h 边界 (B-R2-4 真砍 21h)**: <br/>1. **T011 错位矩阵** 6h → 3h (-3h): 仅 HTML table, 无颜色着色 / 排序; v0.2+ polish <br/>2. **T015 月度 review** 8h → 3h (-5h): 仅 markdown 文本汇总 + Web view; 无 LLM 摘要 / PNG 图表 <br/>3. **T016 笔记 wiki** 7h → 4h (-3h): 仅 markdown + FTS5 全文搜索; 无 LLM 自动语义去重 (v0.2+ 加) <br/>4. **T018 post-mortem** 4h → 3h (-1h): 仅 form 录入; 无自动 nudge / 7-30 天后弹窗 <br/>5. **T019 学习检查** 8h → 5h (-3h): human 手编 master checklist (yaml); LLM 仅评分, 不抽题 <br/>6. **T021 onboarding** 8h → 4h (-4h): 模板合并 (3 个); 无 in-app tooltip; runbook + README 极简 <br/>7. **T022 B-lite** 5h → 3h (-2h): 仅 CLI + runbook; 删除 `/settings/b-lite` UI 路由 <br/>**共砍 21h, 181h → 160h 满足 C1 hard max**. v0.2+ 可加回 polish. | operator |
 | **OP-3** | 自用工具无 forcing function → 6-8 周后 human 停用 (PRD Risk #2) | M | H | (a) O3 (3+ "如果没 agent 我会动") 8 周达不到 (b) human 6 周后主动报告"不想用了" | (a) O10 监控 (b) Devil's advocate 强制每次 action 听一句反方 (c) 周度 review 凸显"不动是一等输出" → 让 human 看到沉淀价值 (d) 接受作为 "8 周自我观察" 的可能输出 (即承认失败也是数据) | operator |
 | **OP-4** | 每周维护 > 3h (违反 R5 红线) | M | M | weekly review 自报维护时间 > 3h 持续 2 周 | (a) C13 / O7 监控 (b) 重维护源头通常是 LLM prompt 调试或 PDF parser 修, 限制每月 prompt 调整次数 ≤ 1 (c) 修复优先级降低 (UI 小 bug 容忍) | operator |
 | **OP-5** | 备份失败导致数据丢失 | L | H | weekly cron 失败超 4 周 | (a) macOS launchd / Linux systemd timer 配置 (b) 备份成功通过 Telegram 通知 (c) 4 周内若无成功通知, Telegram 红色告警 | operator |

@@ -1,0 +1,56 @@
+# 学习检查 Master Checklist — T019 (human 手编, ship 时一次性填好)
+# 格式:
+#   concepts: 列表，每条含:
+#     - id: 概念 ID (字符串, 唯一, 用于 answers_json / scores_json 的 key)
+#     - concept: 概念名称 (给 human 看的题目描述)
+#     - standard_answer: 标准答案 (供 LLM 评分时比对)
+#
+# 使用说明:
+#   - 季度开始时 scripts/learning_check.py 从此 yaml 随机抽 7 题
+#   - 评分时 scripts/grade_learning.py 用 LLM 比对 human 答案 vs standard_answer
+#   - 均分 >= 7/10 视为通过 (O4 verification)
+#
+# 维护说明:
+#   - ship 前 human 自行填好 10 个概念 + 标准答案
+#   - 后续可按需添加 / 修改概念，不影响历史季度记录
+
+concepts:
+  - id: calibration
+    concept: "什么是校准 (calibration)？为什么投资决策中需要保持校准意识？"
+    standard_answer: "校准是指预测置信度与实际准确率的一致性。若置信度 70% 的预测仅 50% 成真，则过度自信 (over-confident)。投资中校准意识帮助避免对胜率高估，防止仓位过重；定期记录预测结果与实际对照，持续修正判断偏差。"
+
+  - id: would_have_acted
+    concept: "系统中 would_have_acted_without_agent 字段的含义是什么？它如何用于校准验证？"
+    standard_answer: "该字段记录「若没有 AI agent 辅助，我是否还会做出相同决策」。值为 1 表示独立意志决策，值为 0 表示 agent 影响了决策。定期统计此比例可评估 agent 依赖程度，防止 OP-2 过度依赖风险；O4 要求季度自查此指标。"
+
+  - id: devil_advocate
+    concept: "Devil Advocate (反驳者) 模块的作用是什么？R3 版本的设计约束有哪些？"
+    standard_answer: "DevilAdvocateService 在 draft 阶段并发生成一句话反方意见，迫使决策者考虑对立视角，防止确认偏误。R3 约束：使用 claude-sonnet-4-6 (不降为 Haiku)，cache 绕过以确保每次唯一 (nonce)，asyncio.wait_for timeout=3s，rebuttal_text ≤ 80 字且必须包含「考虑反方」。"
+
+  - id: conflict_matrix
+    concept: "错位矩阵 (Conflict Matrix) 是什么？它报告哪三条信号来源之间的分歧？"
+    standard_answer: "错位矩阵展示三个信号来源之间的对齐 / 冲突状态：(1) 当前持仓 + 宏观偏见、(2) 技术面、(3) 基本面估值。矩阵中每格表示两个信号的一致或冲突，帮助识别市场分歧，避免在多方向不一致时过度仓位。"
+
+  - id: r3_simplification
+    concept: "系统设计中 R3 真砍 (B-R2-4) 原则是什么？举一个在本系统中被 R3 砍掉的功能。"
+    standard_answer: "R3 真砍指在 sprint B-R2 第 4 次迭代中真正删除功能（而非延后或简化），以控制工时在合理范围。被砍例子：LLM 抽取概念 (T019 改为 human 手编 checklist)；UI nav 红色提醒 (改为 docs 自查)；LLM 语义去重 (T016 改为 SHA256 content_hash)。"
+
+  - id: llm_cost_control
+    concept: "系统如何防止 LLM 月成本失控？自动降级机制的触发条件和行为是什么？"
+    standard_answer: "LLMClient 追踪月度累计成本 (llm_usage 表)。当月成本超过 $40 时，自动将调用模型从 claude-sonnet-4-6 降为 claude-haiku-4-5 (TECH-2 mitigation)。此外，Sonnet 连续 5 次失败也触发 fallback Haiku。降级后写入 usage 记录，便于 review 时分析成本走势。"
+
+  - id: async_pool
+    concept: "AsyncConnectionPool 的设计目的是什么？写操作和读操作分别使用哪个上下文管理器？"
+    standard_answer: "AsyncConnectionPool 封装 SQLite aiosqlite 连接，支持 async/await 并发操作，隔离同步 DB 调用。写操作使用 pool.write_connection() (serialized)，读操作使用 pool.read_connection() (可并发)。初始化时执行 PRAGMA journal_mode=WAL 启用写前日志，提升并发读写性能。"
+
+  - id: post_mortem
+    concept: "Post-mortem (复盘) 在系统中的流程是什么？何时填写？包含哪些核心字段？"
+    standard_answer: "Post-mortem 在决策结果明朗后填写（推荐 30-90 天后）。流程：(1) 在已提交 Decision 详情页点击「写复盘」；(2) 填写 outcome (实际结果)、lessons (学到什么)、calibration_score (0-10 主观评分)。core 字段：outcome_text, calibration_score, written_at, linked_decision_id。目的是建立决策反馈环。"
+
+  - id: over_trading_risk
+    concept: "OP-1 过度交易风险如何定义？系统设计了哪些机制来缓解它？"
+    standard_answer: "OP-1：AI agent 可能通过频繁推荐操作，使 operator 决策频率超过原本纪律目标。缓解机制：(1) devil advocate 每次生成反驳，增加决策摩擦；(2) would_have_acted_without_agent 指标追踪 agent 影响；(3) 月度 review 统计不动率 (hold+wait 占比)；(4) 季度学习检查验证 operator 理解深度。"
+
+  - id: telegram_rate_limit
+    concept: "Telegram 推送的限流机制是什么？weekly 和 event 推送的窗口限制分别是多少？"
+    standard_answer: "系统在 telegram_pushes 表记录推送历史，每次推送前查询 7 天滚动窗口。weekly 推送：每 7 天最多 1 次；event 推送（决策提交、月报等）：每 7 天最多 10 次。超出限制时静默跳过（不报错），并在下次检查时自动恢复。T017 R4 红线要求限流不能阻塞主流程。"

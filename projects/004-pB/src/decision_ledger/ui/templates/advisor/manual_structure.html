@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{# manual_structure.html — T006
+   结论: 手工录入解析失败 PDF 的结构化 JSON
+   细节:
+     - TECH-3 fallback: LLM 挂了时 human 手填结构化数据
+     - 提交到 POST /advisor/manual-structure
+     - 字段: advisor_id, week_id, structured_json (textarea)
+#}
+
+{% block title %}手工结构化录入 — 决策账本{% endblock %}
+
+{% block content %}
+<section>
+  <hgroup>
+    <h1>手工结构化录入</h1>
+    <p>请填写咨询师周报的结构化数据，提交后将入库供分析使用。</p>
+  </hgroup>
+
+  {% if pdf_path %}
+  <article>
+    <header>原始 PDF 文件</header>
+    <code>{{ pdf_path }}</code>
+  </article>
+  {% endif %}
+
+  {% if error_message %}
+  <article class="error-card">
+    <header>原始解析错误</header>
+    <p>{{ error_message }}</p>
+  </article>
+  {% endif %}
+
+  <form method="post" action="/advisor/manual-structure">
+    <input type="hidden" name="failure_id" value="{{ failure_id or '' }}">
+    <input type="hidden" name="pdf_path" value="{{ pdf_path or '' }}">
+
+    <label for="advisor_id">
+      咨询师 ID
+      <input type="text"
+             id="advisor_id"
+             name="advisor_id"
+             placeholder="e.g. advisor_zhang"
+             value="{{ advisor_id or '' }}"
+             required>
+    </label>
+
+    <label for="week_id">
+      周次 (YYYY-WNN)
+      <input type="text"
+             id="week_id"
+             name="week_id"
+             placeholder="e.g. 2026-W17"
+             pattern="\d{4}-W\d{2}"
+             value="{{ week_id or '' }}"
+             required>
+    </label>
+
+    <label for="raw_summary">
+      摘要
+      <textarea id="raw_summary"
+                name="raw_summary"
+                placeholder="本周投资建议摘要..."
+                rows="3">{{ raw_summary or '' }}</textarea>
+    </label>
+
+    <label for="structured_json">
+      结构化 JSON
+      <small>格式: {"TSM": {"direction": "BUY", "confidence": 0.85, "rationale_plain": "..."}}</small>
+      <textarea id="structured_json"
+                name="structured_json"
+                placeholder='{"TSM": {"direction": "BUY", "confidence": 0.85, "rationale_plain": "技术面强势"}}'
+                rows="8"
+                required>{{ structured_json or '' }}</textarea>
+    </label>
+
+    <div style="display: flex; gap: 1rem;">
+      <button type="submit">保存结构化数据</button>
+      <a href="/advisor/parse-failures" role="button" class="secondary outline">返回失败列表</a>
+    </div>
+  </form>
+
+  {% if success %}
+  <article style="margin-top: 1rem; background: #d4edda; border-color: #c3e6cb;">
+    <p>数据已成功入库。</p>
+  </article>
+  {% endif %}
+</section>
+{% endblock %}

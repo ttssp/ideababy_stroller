@@ -1,0 +1,18 @@
+{# settings/_holdings_form.html — T012
+   结论: 持仓快照 JSON 粘贴区局部模板
+   细节:
+     - form POST /settings/holdings, 字段 json_text
+     - textarea 供用户粘贴 JSON array（[{ticker, qty, cost_basis?},...] 格式）
+     - 上限 100 条
+#}
+<form method="post" action="/settings/holdings">
+  <label for="json_text">
+    粘贴持仓 JSON（格式：[{"ticker":"TSM","qty":100,"cost_basis":92.0},...]；上限 100 条）
+    <textarea id="json_text"
+              name="json_text"
+              rows="12"
+              placeholder='[{"ticker": "TSM", "qty": 100, "cost_basis": 92.0}]'
+              style="font-family: monospace; width: 100%;"></textarea>
+  </label>
+  <button type="submit">保存持仓快照</button>
+</form>

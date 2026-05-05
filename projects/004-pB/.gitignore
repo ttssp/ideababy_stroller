@@ -1,0 +1,73 @@
+# 决策账本 — gitignore
+# 结论: 明确排除所有敏感/生成文件，pre-commit hook 双重防护
+
+# ── 机密 / 环境变量 ─────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── 数据库（含咨询师内容，版权敏感）─────────────────────
+db.sqlite
+db.sqlite3
+db.sqlite-shm
+db.sqlite-wal
+*.sqlite
+*.sqlite3
+*.db
+
+# ── watched folder（咨询师 PDF，版权敏感）───────────────
+inbox/
+inbox
+
+# ── LLM cache（可能含咨询师内容）───────────────────────
+llm_cache/
+llm_cache
+
+# ── 备份（含 DB 快照）──────────────────────────────────
+backups/
+backups
+
+# ── Python 虚拟环境 ──────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── Python 字节码 ─────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── uv ──────────────────────────────────────────────────
+# 注意: uv.lock 应 commit！此处不排除
+.uv/
+
+# ── 编辑器 / OS ─────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# ── 构建产物 ─────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+
+# ── 测试产物 ─────────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ── 日志 ─────────────────────────────────────────────────
+*.log
+logs/
+# 注意: release_log.jsonl / alerts_log.jsonl / llm_usage.jsonl 在 decision_ledger_home/logs/
+# 不在项目目录，无需此处 gitignore
+
+# ── 临时文件 ─────────────────────────────────────────────
+*.tmp
+*.temp

@@ -1,0 +1,72 @@
+# pre-commit 配置 — T001
+# 结论: ruff lint/format + mypy + 自定义敏感内容检测
+# 细节:
+#   - ruff: lint + format，速度优先，用 cache 保证 < 10s (C13)
+#   - mypy: strict mode
+#   - check-secrets: 拦截 sk-ant- / bot[0-9]+: / inbox/ / db.sqlite
+
+# 安装: pre-commit install
+# 手动跑: pre-commit run --all-files
+
+repos:
+  # ── ruff lint + format ──────────────────────────────
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        name: ruff lint
+        args: ["--fix"]
+        types_or: [python, pyi]
+      - id: ruff-format
+        name: ruff format
+        types_or: [python, pyi]
+
+  # ── mypy strict ─────────────────────────────────────
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        name: mypy strict
+        args:
+          - "--strict"
+          - "--ignore-missing-imports"
+          - "--exclude=tests/"
+          - "--exclude=alembic/"
+        additional_dependencies:
+          - "pydantic==2.10.4"
+          - "pydantic-settings==2.7.0"
+          - "fastapi==0.115.5"
+        files: "^src/"
+
+  # ── 自定义: 敏感内容检测 ─────────────────────────────
+  - repo: local
+    hooks:
+      - id: check-secrets
+        name: 检测敏感内容 (sk-ant- / bot token / inbox/ / db.sqlite)
+        language: python
+        entry: python scripts/check_secrets.py
+        types: [file]
+        # 排除已豁免的文件
+        exclude: |
+          (?x)^(
+            \.env\.example|
+            .*\.md|
+            scripts/check_secrets\.py
+          )$
+
+  # ── 基础安全 ─────────────────────────────────────────
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+        exclude: "uv\\.lock"
+      - id: trailing-whitespace
+        exclude: "uv\\.lock"
+      - id: no-commit-to-branch
+        args: ["--branch", "main"]

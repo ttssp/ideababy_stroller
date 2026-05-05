@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{# settings/watchlist.html — T012
+   结论: 关注股录入页，含 CSV 粘贴区 + 当前列表展示
+   细节:
+     - 错误消息通过 error_message 上下文变量注入
+     - watchlist: list[Watchlist] 传入，展示当前库中所有关注股
+#}
+
+{% block title %}关注股设置 — 决策账本{% endblock %}
+
+{% block content %}
+<section>
+  <hgroup>
+    <h2>关注股设置</h2>
+    <p>粘贴 CSV 批量导入关注股（ticker,板块,备注；支持 Excel BOM 格式；上限 100 条）</p>
+  </hgroup>
+
+  {% if error_message %}
+  <article style="background: #f8d7da; border-color: #f5c6cb;">
+    <p><strong>录入错误：</strong>{{ error_message }}</p>
+  </article>
+  {% endif %}
+
+  {% include "settings/_watchlist_form.html" %}
+
+  <hr>
+
+  <h3>当前关注股（{{ watchlist | length }} 条）</h3>
+  {% if watchlist %}
+  <div style="overflow-x: auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Ticker</th>
+          <th>市场</th>
+          <th>显示名称</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in watchlist %}
+        <tr>
+          <td><code>{{ item.ticker }}</code></td>
+          <td>{{ item.market }}</td>
+          <td>{{ item.display_name or "—" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="secondary">暂无关注股。请粘贴 CSV 导入。</p>
+  {% endif %}
+
+  <hr>
+  <p>
+    <a href="/settings/holdings" class="secondary">持仓快照设置</a>
+    &nbsp;·&nbsp;
+    <a href="/" class="secondary">返回首页</a>
+  </p>
+</section>
+{% endblock %}

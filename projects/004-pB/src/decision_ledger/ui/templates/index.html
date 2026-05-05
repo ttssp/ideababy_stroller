@@ -1,0 +1,27 @@
+{# index.html — T004
+   结论: 首页，展示项目说明 + 跳转决策档案入口
+   细节:
+     - 默认高亮"决策档案" tab (OP-6: 主场景是决策档案，不是错位矩阵)
+     - 简洁说明系统用途（自用免责声明在 footer 常驻）
+#}
+{% extends "base.html" %}
+
+{% block title %}决策账本 — 首页{% endblock %}
+
+{% block content %}
+<section>
+  <hgroup>
+    <h1>决策账本</h1>
+    <p>ML PhD 自用投资决策档案系统 — calibration engine first</p>
+  </hgroup>
+
+  <article>
+    <header>快速导航</header>
+    <p>
+      本系统帮助你记录、冲突分析和复盘投资决策。
+      主要工作流：录入 draft → 三路冲突报告 + 反方意见 → commit 入档。
+    </p>
+    <a href="/decisions" role="button">进入决策档案</a>
+  </article>
+</section>
+{% endblock %}

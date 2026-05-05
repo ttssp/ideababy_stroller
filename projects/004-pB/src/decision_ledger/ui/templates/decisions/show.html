@@ -1,0 +1,53 @@
+{# decisions/show.html — T008
+   结论: 决策成功归档页，含 post-mortem 预留链接（T018 接管）
+#}
+{% extends "base.html" %}
+
+{% block title %}决策已归档 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>决策已归档</h2>
+  </header>
+
+  <div class="decision-summary">
+    <dl>
+      <dt>Trade ID</dt>
+      <dd><code>{{ decision.trade_id }}</code></dd>
+
+      <dt>股票代码</dt>
+      <dd>{{ decision.ticker }}</dd>
+
+      <dt>动作</dt>
+      <dd>{{ decision.action.value }}</dd>
+
+      <dt>理由</dt>
+      <dd>{{ decision.reason }}</dd>
+
+      <dt>归档时间</dt>
+      <dd>{{ decision.pre_commit_at.strftime('%Y-%m-%d %H:%M') }} UTC</dd>
+
+      <dt>若没有 Agent 仍会操作？</dt>
+      <dd>{{ "是" if decision.would_have_acted_without_agent else "否" }}</dd>
+    </dl>
+  </div>
+
+  <!-- post-mortem 预留链接（T018 接管） -->
+  <div class="post-mortem-link">
+    <h3>事后复盘 (post-mortem)</h3>
+    <p>T018 将在决策执行后提供自动回填入口。</p>
+    <a href="/decisions/{{ decision.trade_id }}/post-mortem"
+       class="secondary"
+       aria-label="查看或填写 post-mortem">
+      填写事后复盘 →
+    </a>
+  </div>
+
+  <footer>
+    <a href="/decisions">← 返回决策列表</a>
+    &nbsp;|&nbsp;
+    <a href="/decisions/new">新建决策</a>
+  </footer>
+</article>
+{% endblock %}

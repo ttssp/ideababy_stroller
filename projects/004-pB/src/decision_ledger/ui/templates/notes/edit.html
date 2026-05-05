@@ -1,0 +1,83 @@
+{# notes/edit.html — T016
+   结论: 新建 / 编辑笔记表单页
+   细节:
+     - is_new=True: POST /notes (新建)
+     - is_new=False: POST /notes/{id}/edit (更新)
+     - dedup_hint=True: 顶部显示 "相同内容已存在" 黄色提示 (R3: 仅 hash 命中)
+     - tags 用逗号分隔字符串 (简单输入, v0.2+ 可改为 tag picker)
+#}
+{% extends "base.html" %}
+
+{% block title %}
+  {% if is_new %}新建笔记{% else %}编辑笔记{% endif %} — 决策账本
+{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <h2>{% if is_new %}新建笔记{% else %}编辑笔记{% endif %}</h2>
+    <a href="/notes">← 返回列表</a>
+  </header>
+
+  {# R3 dedup 提示: 仅 content_hash 命中时显示, 无 LLM 语义去重 #}
+  {% if dedup_hint %}
+  <div role="alert" style="background: var(--pico-ins-color, #fef9c3); border-left: 4px solid #ca8a04; padding: 0.75rem 1rem; margin-bottom: 1rem;">
+    <strong>提示：</strong> 检测到与此笔记内容相同的已有记录（基于 content hash）。
+    你正在查看已有笔记，可直接编辑更新，或 <a href="/notes/new">创建新笔记</a>。
+  </div>
+  {% endif %}
+
+  <form
+    method="post"
+    action="{% if is_new %}/notes{% else %}/notes/{{ note.note_id }}/edit{% endif %}"
+    id="note-form"
+  >
+    {# 标题 #}
+    <label for="note-title">
+      标题
+      <input
+        type="text"
+        id="note-title"
+        name="title"
+        placeholder="例如: P/E vs P/B 区别"
+        required
+        autocomplete="off"
+        value="{{ note.title if note else '' }}"
+        maxlength="200"
+      >
+    </label>
+
+    {# 内容 #}
+    <label for="note-content">
+      内容
+      <textarea
+        id="note-content"
+        name="content"
+        rows="10"
+        placeholder="用中文简述概念、推导、或个人理解…"
+        required
+      >{{ note.content if note else '' }}</textarea>
+    </label>
+
+    {# 标签 (逗号分隔) #}
+    <label for="note-tags">
+      标签 <small>（逗号分隔，例如: 估值, 基本面）</small>
+      <input
+        type="text"
+        id="note-tags"
+        name="tags"
+        placeholder="估值, FOMC, 货币政策"
+        autocomplete="off"
+        value="{{ note.tags | join(', ') if note and note.tags else '' }}"
+      >
+    </label>
+
+    <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+      <button type="submit">
+        {% if is_new %}保存笔记{% else %}更新笔记{% endif %}
+      </button>
+      <a href="/notes" role="button" class="secondary outline">取消</a>
+    </div>
+  </form>
+</article>
+{% endblock %}

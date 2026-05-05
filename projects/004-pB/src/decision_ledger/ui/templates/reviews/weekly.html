@@ -1,0 +1,140 @@
+{# reviews/weekly.html — T014
+   结论: 周度 review 全页, 5 个 section:
+     1. 本周决策总览 (total + action breakdown)
+     2. hold+wait 不动专区 (R11 独立 section)
+     3. LLM 使用成本
+     4. 维护工时填报 (OP-4 阈值 3h)
+     5. LLM 智能摘要 (失败时隐藏)
+   细节:
+     - hx-post="/reviews/weekly/maintenance" 提交维护工时表单 (HTMX)
+     - inactive_ratio 以百分比格式显示
+     - over_threshold 时显示警告徽标
+#}
+{% extends "base.html" %}
+
+{% block title %}{{ week_id }} 周报 — 决策账本{% endblock %}
+
+{% block content %}
+<article>
+  <header>
+    <hgroup>
+      <h2>{{ week_id }} 周度 Review</h2>
+      <p>决策纪律检视 &amp; 维护工时记录</p>
+    </hgroup>
+    <nav>
+      <a href="/reviews/weekly?week={{ prev_week }}" role="button" class="outline secondary" style="display:none">← 上周</a>
+    </nav>
+  </header>
+
+  {# ── Section 1: 本周决策总览 ─────────────────────────────────────────── #}
+  <section>
+    <h3>本周决策总览</h3>
+    <dl>
+      <dt>总决策数</dt>
+      <dd>{{ review.total_decisions }} 条</dd>
+    </dl>
+
+    {% if review.action_breakdown %}
+    <table>
+      <thead>
+        <tr>
+          <th>动作</th>
+          <th>数量</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for action, count in review.action_breakdown.items() | sort %}
+        <tr>
+          <td>
+            <span class="action-badge action-{{ action }}">{{ action }}</span>
+          </td>
+          <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty-state">本周暂无决策记录。</p>
+    {% endif %}
+  </section>
+
+  {# ── Section 2: hold+wait 不动专区 (R11) ─────────────────────────────── #}
+  <section>
+    <h3>不动专区 (hold + wait)</h3>
+    <p class="secondary">
+      R11: 不动/等待是纪律的体现，独立展示，不与 buy/sell 混合。
+    </p>
+    <dl>
+      <dt>hold + wait 合计</dt>
+      <dd>{{ review.hold_wait_count }} 条</dd>
+
+      <dt>不动占比</dt>
+      <dd>
+        {% if review.total_decisions > 0 %}
+          {{ "%.1f"|format(review.inactive_ratio * 100) }}%
+        {% else %}
+          —
+        {% endif %}
+      </dd>
+    </dl>
+  </section>
+
+  {# ── Section 3: LLM 使用成本 ─────────────────────────────────────────── #}
+  <section>
+    <h3>LLM 使用成本</h3>
+    <dl>
+      <dt>本周 LLM 总费用</dt>
+      <dd>
+        {% if review.llm_cost_usd > 0 %}
+          ${{ "%.4f"|format(review.llm_cost_usd) }} USD
+        {% else %}
+          $0 (本周无 LLM 调用)
+        {% endif %}
+      </dd>
+    </dl>
+  </section>
+
+  {# ── Section 4: 维护工时填报 (OP-4) ──────────────────────────────────── #}
+  <section id="maintenance-section">
+    <h3>
+      维护工时
+      {% if review.maintenance.over_threshold %}
+        <small class="pico-color-red-500">⚠ 超过 3h 阈值</small>
+      {% endif %}
+    </h3>
+    <p class="secondary">OP-4: 维护工时 ≥ 3h/周 时触发 review。</p>
+
+    <div id="maintenance-summary">
+      {% include "reviews/_weekly_maintenance_partial.html" %}
+    </div>
+
+    <form hx-post="/reviews/weekly/maintenance"
+          hx-target="#maintenance-summary"
+          hx-swap="innerHTML">
+      <input type="hidden" name="week_id" value="{{ week_id }}">
+      <fieldset role="group">
+        <input type="number"
+               name="hours"
+               placeholder="本周维护工时 (小时)"
+               step="0.5"
+               min="0"
+               max="168"
+               required>
+        <button type="submit">记录工时</button>
+      </fieldset>
+    </form>
+  </section>
+
+  {# ── Section 5: LLM 智能摘要 ──────────────────────────────────────────── #}
+  {% if review.llm_summary %}
+  <section>
+    <h3>AI 周报摘要</h3>
+    <blockquote>
+      {{ review.llm_summary }}
+    </blockquote>
+    <small class="secondary">由 Claude 自动生成 · 仅供参考</small>
+  </section>
+  {% endif %}
+
+</article>
+{% endblock %}

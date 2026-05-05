@@ -1,0 +1,52 @@
+{# matrix/_table.html — T011 (R3 简化版)
+   结论: 错位矩阵 HTML table，Pico CSS classless 渲染，无颜色/无图表库
+   细节:
+     - R3 真砍: 无 matrix-red/matrix-yellow/matrix-green 等颜色 class
+     - D16 红线: 无 plotly/matplotlib/d3.js/chart.js 引用
+     - 列: Ticker / 顾问 / 占位模型 / Agent 综合 / 持仓 %
+     - score 显示: +1 → ↑ / -1 → ↓ / 0 → —（纯符号，可读性佳）
+     - 无 rows 时显示 "暂无数据" 提示
+#}
+{% if rows %}
+<figure>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticker</th>
+        <th>顾问</th>
+        <th>占位模型</th>
+        <th>Agent 综合</th>
+        <th>持仓 %</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><strong>{{ row.ticker }}</strong></td>
+        <td>
+          {% if row.advisor_score == 1 %}↑
+          {% elif row.advisor_score == -1 %}↓
+          {% else %}—
+          {% endif %}
+        </td>
+        <td>
+          {% if row.placeholder_score == 1 %}↑
+          {% elif row.placeholder_score == -1 %}↓
+          {% else %}—
+          {% endif %}
+        </td>
+        <td>
+          {% if row.agent_score == 1 %}↑
+          {% elif row.agent_score == -1 %}↓
+          {% else %}—
+          {% endif %}
+        </td>
+        <td>{{ "%.1f"|format(row.holding_pct) }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</figure>
+{% else %}
+<p>暂无数据。</p>
+{% endif %}

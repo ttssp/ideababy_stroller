@@ -1,11 +1,11 @@
 # Spec — 004-pB · 决策账本 (承诺壳 · calibration engine first)
 
-**Version**: 0.2
+**Version**: 0.3.1
 **Created**: 2026-04-25T15:00:00+08:00
-**Updated**: 2026-04-25T19:30:00+08:00 (R2 surgical revision · Codex R1 修订)
+**Updated**: 2026-04-26T20:30:00+08:00 (R4 surgical patch · Codex R3 BLOCK 修订, package-level 收口)
 **Source PRD**: `discussion/004/004-pB/PRD.md` (v1.0, human-approved 2026-04-25)
 **Lineage**: 004 (root) → L3 Candidate B → fork `004-pB`
-**Status**: ready for adversarial review R2
+**Status**: ready for adversarial review R4
 
 ---
 
@@ -15,8 +15,12 @@
 |---------|------|---------|------|
 | 0.1 | 2026-04-25T15:00 | 初稿 (6-element contract + 20 prior decisions + O1-O10 verification) | spec-from-conclusion 首次 |
 | 0.2 | 2026-04-25T19:30 | **R2 修订, surgical**: B1/B2/B3 contract-level fix · H1-H5 high · M1-M5 medium/low. 改 §1 O5 度量口径 (commit 阶段 wall-clock); §4 D7 IDL 拆 (StrategyModule.analyze 唯一职责); §4 D13 录入 UX = draft → commit 双阶段; §4 D19 修正 LLM 调用时点; §4 新增 D21/D22/D23/D24 + 删 D18; §6 O5 verification 同步; §7 Glossary 修 B-lite 定义; §8 Q4/Q5 → RESOLVED, 新增 Q11; 与 PRD 无冲突 (PRD §S1/§S6 pre-commit framing 是修订动力) | Codex R1 BLOCK · 见 `.codex-outbox/20260425T030218-004-pB-L4-adversarial-r1.md` |
+| **0.3** | 2026-04-26T19:00 | **R3 surgical revision (路径 A · 守 PRD 原口径)**: 回退 R2 暗中改的 PRD §S1 / §6 O5 度量口径. R3 修向: <br/>(1) §0 删除"硬门槛重新定义"段, 改回 PRD 原口径 (GET → commit 全程 < 30s) <br/>(2) §1 O5 / §3 C11 重写, 守 PRD 原意: **wall-clock < 30s 包含 draft 阶段 LLM 调用** <br/>(3) §4 D13 / D19 / D21 重写, 诚实承认 Rebuttal 不可缓存 (因输入依赖 draft 内容); 强制 Rebuttal LLM 用最快 prompt + Sonnet 4.6 + max_tokens ≤ 100 + ≤ 3s 上限 <br/>(4) §5 task pack 真砍到 ≤ 160h 边界 (T011/T015/T016/T018/T019/T021/T022 共砍 21h, 181h → 160h) <br/>(5) §6 O5 verification 度量改为全程 wall-clock (从 GET /decisions/new 到 POST commit 200 OK) <br/>(6) §7 Glossary "录入 < 30 秒" 统一为 GET → commit 全程口径 <br/>(7) §8 删除 R2 引入的 Q11 (cache miss 5-10s 例外, 与 PRD 原口径冲突) <br/>(8) 与 PRD 无冲突 (PRD §S1 一句话 framing 是修订动力, R3 守它) | Codex R2 BLOCK · 见 `.codex-outbox/20260425T042650-004-pB-L4-adversarial-r2.md` |
+| **0.3.1** | 2026-04-26T20:30 | **R4 surgical patch · package-level 收口 (Codex R3 BLOCK 修订)**. 仅文字级澄清, 无 scope/outcome 变化. 改动: <br/>(1) §4 D16 改为"纯 HTML table" (R3 修订 T011 砍 CSS 着色, line 166) — close Codex R3 LOW finding #4 <br/>(2) §8 整段删除 R2 Q11 删除线小节 (line 312-319), Revision History v0.3 entry 已记 — close Codex R3 BLOCK B-R2-5 残留半套 <br/>**未触动**: PRD / 任何 task estimated_hours / risks.md / non-goals.md / dependency-graph.mmd | Codex R3 BLOCK · 见 `.codex-outbox/20260426T120622-004-pB-L4-adversarial-r3.md` |
 
-**与 v0.1 兼容性**: 本次修订均为**契约层修订**, 不动产品决策 (PRD 不动). Tasks 中 T007/T008/T009/T010/T013/T015/T020/T021/T022 同步修订. 其他 task 不动. dependency-graph.mmd 反映 T020 提前 + T021 解耦 T019.
+**与 v0.2 兼容性**: R3 修订是**回退 R2 暗中越权改 PRD 度量口径**. PRD 不动. Tasks 中 T007/T008/T009/T010/T011/T013/T015/T016/T017/T018/T019/T020/T021/T022 都 R3 同步修订 (含估时砍). dependency-graph.mmd 反映 T015/T017 不再 block T020.
+
+**与 v0.3 兼容性**: R4 patch 是 R3 落地动作的 package-level 收口, **不重启决策**. T020 banner 文案改 CLI/runbook (与 T022 R3 CLI-only 一致); architecture.md 全文清残留"≤10s" / "commit-only"字样; open-questions.md Q7 默认假设改为 (b) human 手编 (与 T019 一致); architecture.md §9 不变量 #15 新增 strict mode CI 默认.
 
 ---
 
@@ -29,15 +33,18 @@
 > calibration engine (帮你判断什么时候不该动), 其次才是 action engine**。Web-first
 > + log-heavy, 单用户 localhost, 5-6 周 / 100-160 小时交付。
 >
-> **核心 loop (pre-commit framing, R2 修订后)**: 每次 `动 / 不动 / 等待` 想法 →
-> **打开 draft 表单, 系统 ≤ 10s 同步生成**三路冲突报告 (咨询师 / 占位模型 / agent
-> 综合) **+ Devil's advocate 一句话** → human 看到三路 + 反方 → 选择 final action +
-> 写 1 行理由 + 显式 yes/no `如果没看 agent 我会 X` + commit (wall-clock < 1s) →
-> 档案入库 → 周末/月末 review。
+> **核心 loop (pre-commit framing, PRD §S1 原意 · R3 守口径)**: 每次 `动 / 不动 /
+> 等待` 想法 → **打开 draft 表单, 系统同步生成**三路冲突报告 (咨询师 / 占位模型 /
+> agent 综合) **+ Devil's advocate 一句话** → human 看到三路 + 反方 → 选择 final
+> action + 写 1 行理由 + 显式 yes/no `如果没看 agent 我会 X` + commit → 档案入库 →
+> 周末/月末 review。
 >
-> **硬门槛 (重新定义)**: **从看到 ConflictReport+Rebuttal 到 commit 完成 < 30 秒**
-> (违反即系统失败); draft 阶段同步 LLM 等待 cache 命中常态 < 1s, cache miss 上限 10s,
-> 例外见 §4 D21。
+> **硬门槛 (PRD §S1 / §6 O5 原口径, R3 不改)**: **单次决策录入 wall-clock < 30 秒**
+> (违反即系统失败) — 度量起点 = human 打开 `/decisions/new` (GET 200 OK), 度量终点 =
+> commit 完成入档 (`POST /decisions/{draft_id}/commit` 200 OK), **全程 wall-clock 含
+> draft 阶段 LLM 同步等待**. 系统达成此口径的工程路径见 §4 D13 / D21 (cache 预热 +
+> Rebuttal fast-path); cache miss 时 draft > 5s 是系统失败信号, 走 OP-1 mitigation,
+> 不允许 spec 自行宽容到 35-40s。
 
 ---
 
@@ -52,7 +59,7 @@ verification。
 | **O2** | 8 周稳定使用后, 决策档案条数 **≥ 15** | `SELECT COUNT(*) FROM decisions WHERE pre_commit_at >= ship_date AND status='committed'` | ship + 8 周 |
 | **O3** | 决策档案中可筛出 **≥ 3 条** "如果没有 agent 我会操作但实际没动" 的记录 | 档案有显式字段 `would_have_acted_without_agent: bool` (commit 阶段强制 yes/no, 见 D13/M1); SQL count ≥ 3 | ship + 8 周 |
 | **O4** | 学习检查能复述 **≥ 7 条**金融概念白话含义 (人工评分 ≥ 70%) | 季度自查表 (见 §6); human 自评 7/10 | ship + 12 周 |
-| **O5** | **commit 阶段 < 30 秒**: 从 human 看到 ConflictReport+Rebuttal 那一刻 (`/decisions/draft/{id}/preview` 200 OK), 到点击 commit 完成入档 (`POST /decisions/{draft_id}/commit` 200 OK) **wall-clock < 30s**。draft 阶段 LLM 同步等待**不算**在 30s 内 (cache 命中常态 < 1s, cache miss 上限 10s 接受). **violations 即系统失败** | (a) 自动化 timing test (E2E + UX bench, T009); (b) 连续 5 次手动录入压测全部 commit 阶段 < 30s | 每次 release + ship 后 ad-hoc |
+| **O5** | **单次决策录入 wall-clock < 30 秒** (PRD §S1 / §6 O5 原口径, R3 守): 度量起点 = human 打开 `/decisions/new` (GET 200 OK), 度量终点 = commit 完成入档 (`POST /decisions/{draft_id}/commit` 200 OK). **全程 wall-clock < 30s 包含 draft 阶段 LLM 同步等待** (D13/D21 工程路径: cache 预热让 ConflictReport 命中常态 ≤ 1s, miss 上限 5s; Rebuttal fast-path ≤ 3s; 双调用并发 ≈ max(3s, 5s) = 5s, 留 25s 给 commit 阶段 form 操作). **violations 即系统失败** (cache miss 让 draft > 5s 也算违反, 走 OP-1 mitigation, 不允许 spec 自行宽容) | (a) 自动化 timing test (E2E + UX bench, T009): 度量 GET /decisions/new 到 POST commit 200 OK 全程 wall-clock < 30s; (b) 连续 5 次手动录入压测全部全程 < 30s, 写入 release_log.jsonl | 每次 release + ship 后 ad-hoc |
 | **O6** | 首次 onboarding 在 **≤ 15 分钟**完成 (录入 30-50 关注股 + 持仓 + 1 份咨询师 PDF + 完成首次决策档案) | onboarding 流程内置计时, log 入库 | ship 后第一周 |
 | **O7** | 稳定期(ship 后第 4 周起)每周维护时间 **≤ 3 小时** | human 自报每周维护工时 | ship + 4 周起持续 |
 | **O8** | Telegram 主动推送严格遵守 **每周 1 次周报 + event 触发**上限, **per-market session window** (见 D24) | 监控统计 push 计数, 每周分组; per-market window 单测 | 持续 |
@@ -121,7 +128,7 @@ verification。
 | **C8** | 咨询师 pipeline 必含 (微信小程序源, **v0.1 仅 PDF/文本**, 视频/音频接口占位) | PRD §7.C8 | Hard |
 | **C9** | 🧭 策略类模块 = 接口 + 占位, 完全解耦, 不在策略准度上差异化 | PRD §7.C9, R9 | Hard |
 | **C10** | 单用户私用, localhost, 不商业化, 无 auth | PRD §7.C10, L2 moderator-notes | Hard |
-| **C11** | **commit 阶段 < 30 秒** (硬门槛, 违反即系统失败); draft 阶段 LLM 同步等待 ≤ 10s (cache 命中常态 < 1s) | PRD §6.O5 (R2 重新定义口径) | Hard (kill-switch) |
+| **C11** | **单次决策录入 < 30 秒** (硬门槛, 违反即系统失败) — wall-clock 起点 = GET `/decisions/new`, 终点 = POST `/decisions/{draft_id}/commit` 200 OK; **draft 阶段 LLM 等待包含在 30s 全程内** (无"preview 后才计时"的例外); cache miss 让 draft > 5s 是系统失败信号, 走 OP-1 mitigation | PRD §6.O5 / §S1 原口径 (R3 守) | Hard (kill-switch) |
 | **C12** | onboarding ≤ 15 分钟 | PRD §6.O6 | Hard |
 | **C13** | 稳定期维护 ≤ 3 小时/周 | PRD §6.O7, R5 | Hard |
 | **C14** | 数据预算 $500/年, LLM 开销合理 (无明确数字, 但需在 architecture 给出策略) | PRD §2 | Soft |
@@ -156,15 +163,15 @@ R2 修订标 `[R2 revised]` (含 v0.1 已存在但内容修改) 或 `[R2 new]` (
 | **D10** | 持久化 = **SQLite** (单文件、无运维、Python/JS 均原生支持、单用户并发足够) | HANDOFF §spec-writer 后续, PRD 留给 spec-writer 决 `[new in spec]` |
 | **D11** | LLM 调用策略 = **Anthropic Claude API (Sonnet 4.6) + 本地缓存 (按 advisor_week_id + ticker hash)**, 缓存命中率作为开销监控信号; **缓存预热: D9 流程末尾 enqueue 30-50 关注股的 conflict report 预生成 (R2 新增, 服务于 D21)** | PRD §11 留给 spec-writer; 预算 $500/年 data + 合理 LLM `[R2 revised]` |
 | **D12** | 主语言 = **Python 3.12 + uv** (因 LLM SDK ecosystem + pandas + Telegram bot 库成熟; Web UI 用 FastAPI + HTMX 轻量, 不引入 Next.js) | CLAUDE.md tool prefs (Python: uv); HANDOFF tech-stack 选项 `[new in spec]` |
-| **D13** | **commit < 30 秒的 UX 实现路径 (R2 修订, 双阶段)**: <br/>**阶段 1 draft**: human 打开 `/decisions/new` → 录 ticker + intended_action + draft_reason → POST `/decisions/draft` 创建 draft (status='draft') → server 同步触发 ConflictReport (D22) + Rebuttal (D23) 生成, cache 命中常态 < 1s, miss 时 spinner ≤ 10s → 返回 draft_id + 渲染三列冲突 (顺序 hash 随机化) + 反方一句话页面. <br/>**阶段 2 commit**: human 看完三路 + 反方 → 可改 final action + 写 final reason ≤ 80 char + **强制 yes/no `would_have_acted_without_agent`** (M1 修订) + Enter (commit) → POST `/decisions/{draft_id}/commit` → SQLite UPDATE status='committed', wall-clock < 1s. <br/>键盘快捷键 (1=buy / 2=sell / 3=hold / 4=wait) 仅在 commit 阶段生效 | PRD §S1; HANDOFF spec-writer #2 提示 (R2 revised: 解决 B1) `[R2 revised]` |
+| **D13** | **录入全程 < 30 秒的 UX 工程路径 (R3 修订, 守 PRD 原口径)**: <br/>**全程 wall-clock < 30s 包含 draft 阶段 LLM 调用**. **draft 阶段 LLM 调用必须 ≤ 5s** (cache 命中常态 ≤ 1s, miss 必须 ≤ 5s, 否则违反 C11). <br/>实现要求: <br/>(a) **ConflictCacheWarmer (D11)** 在 advisor_report 入库时预热 30-50 关注股 × 当周 advisor_week_id 的 conflict report (cache 命中目标 ≥ 95%). <br/>(b) **Rebuttal 因输入依赖 draft 内容不可缓存** (诚实承认), 故 Rebuttal LLM call **必须用最快配置: Sonnet 4.6 + max_tokens ≤ 100 + 极简 prompt + temperature 0.3, wall-clock 目标 ≤ 3s** (95th percentile). <br/>(c) draft + commit 两阶段总时长以 wall-clock 测量, **不分段**, 不允许 "preview 200 OK 之后才计时". <br/>**双阶段 UX 流**: <br/>**阶段 1 draft**: human 打开 `/decisions/new` → 录 ticker + intended_action + draft_reason → POST `/decisions/draft` 创建 draft (status='draft') → server 同步并发 (asyncio.gather) ConflictReport (D22) + Rebuttal (D23), wall-clock ≤ 5s 含 LLM 调用 → 渲染三列冲突 (顺序 hash 随机化) + 反方一句话页面. <br/>**阶段 2 commit**: human 看完三路 + 反方 → 可改 final action + 写 final reason ≤ 80 char + **强制 yes/no `would_have_acted_without_agent`** (M1) + Enter (commit) → POST `/decisions/{draft_id}/commit` → SQLite UPDATE status='committed', wall-clock < 1s. <br/>**若 draft 阶段 LLM 因 cache miss > 5s, 系统失败信号 → 走 OP-1 mitigation (UX 降级或 B-lite), 不允许 spec 自行扩大上限**. <br/>键盘快捷键 (1=buy / 2=sell / 3=hold / 4=wait) 在两阶段都可生效. | PRD §S1; HANDOFF spec-writer #2 提示 (R3 revised: 守 PRD 原口径, 不分段计时) `[R3 revised]` |
 | **D14** | Web UI tab 列表: 决策档案 (主场) / 冲突报告 / 错位矩阵 / 笔记 wiki / 周 review / 月 review / 学习检查 / 设置 | PRD §4.12 `[new in spec, 列表化]` |
 | **D15** | Telegram 仅承担: 周报推送 + event 通知 + 简单只读查询; **不承担**重操作 (录入 / 冲突报告 / review) | HANDOFF §spec-writer #4; PRD §S7 |
-| **D16** | 错位矩阵可视化 = **HTML table (server-rendered)** + 简单 CSS 着色; 不引入 plotly / matplotlib (5 秒看完原则) | PRD §11 留给 spec-writer `[new in spec]` |
+| **D16** | 错位矩阵可视化 = **纯 HTML table (server-rendered)** (R3 修订: T011 估时砍 3h, 删除 CSS 着色 / 排序; v0.2+ polish); 不引入 plotly / matplotlib (5 秒看完原则) | PRD §11 留给 spec-writer (R3 revised: 与 T011 R3 一致) `[new in spec, R3 revised]` |
 | **D17** | "若未来商业化, 红线 R1/R2 + 合规需重来" — v0.1 不为商业化做任何预留 | PRD §5 永远不做; risks.md COM-1 |
 | **D18** | ~~配偶可见度 v0.1 不实现, 但 ReviewGenerator 接口预留 audience 参数~~ **R2 删除** (M5 修订: PRD §11.4 把配偶可见度放到 v1.0+, v0.1 接口层预留属于弱 scope leak; partner audience 推后到 v1.0+ open question, 见 §8 Q4) | ~~PRD §11.4; L2 §4 v1.0 扩展~~ **R2 deleted** `[R2 deleted]` |
-| **D19** | **LLM 调用时点 (R2 修订, B1 解决)**: <br/>(a) **draft 阶段同步**: ConflictReport (D22) 与 Rebuttal (D23) 必须在 draft 创建时同步生成 (cache 命中常态 < 1s, miss 上限 10s); 不再 post-commit 异步 fill. <br/>(b) **commit 阶段无 LLM**: commit 路径只是 SQLite UPDATE status='committed', 不再调任何 LLM. <br/>(c) **post-commit 异步**: 仅 weekly/monthly review 摘要 + post_mortem 解析等非关键路径 LLM 调用走 BackgroundTask. | PRD §S1 < 30 秒 + PRD §UX 5 (R2 revised: 解决 B1) `[R2 revised]` |
+| **D19** | **LLM 调用时点 (R3 修订, 守 PRD 原口径)**: <br/>(a) **draft 阶段同步**: ConflictReport (D22) 与 Rebuttal (D23) 在 draft 创建时同步并发 (asyncio.gather), **总等待 ≤ 5s 包含在 30s 全程内** (R3: 删除 R2 "draft 阶段 LLM 同步等待 ≤ 10s 不算入 30s" 字样, 因为它越权改 PRD §S1 度量口径). <br/>(b) **commit 阶段无 LLM**: commit 路径只是 SQLite UPDATE status='committed', 不调任何 LLM, wall-clock < 1s. <br/>(c) **post-commit 异步**: 仅 weekly/monthly review 摘要 + post_mortem 解析等非关键路径 LLM 调用走 BackgroundTask. | PRD §S1 全程 30s 原口径 + PRD §UX 5 (R3 revised: 守 PRD 原意, 不分段) `[R3 revised]` |
 | **D20** | 咨询师内容版权: 本地缓存仅服务于自用, 不 export, 不 republish (合规边界) | risks.md SEC-2 / LEG-2 `[new in spec]` |
-| **D21** | **ConflictReport + Devil's Rebuttal 在 draft 阶段同步可见, commit 阶段只 store** (R2 新增, B1 解决): UI 流程严格 draft → preview → commit; commit 不重生成. cache miss 时 draft preview 阶段 wall-clock 可达 5-10s, 不算入 C11 30s; cache 预热 (D11) 让常态 < 1s. UI 在 spinner 阶段告知 "正在生成三路冲突报告 (cache miss)". | architecture.md §3.3 R2 重写 sequence diagram `[R2 new]` |
+| **D21** | **ConflictReport + Devil's Rebuttal 在 draft 阶段同步生成, 全程包含在 C11 30s 内 (R3 修订, 诚实承认 Rebuttal 不可缓存)**: <br/>**ConflictReport**: 可缓存. ConflictCacheWarmer (D11) 在 advisor_report 入库后预热 30-50 关注股 × 当周 advisor_week_id, 缓存命中目标 ≥ 95%, 命中场景 ≤ 1s; cache miss 时上限 5s (Sonnet 4.6 + 三路并发 + structured output). <br/>**Rebuttal**: **不可缓存** (输入依赖 `draft.intended_action` + `draft_reason`, 每次唯一). 故 Rebuttal LLM 调用必须用最快配置: **Sonnet 4.6 + max_tokens ≤ 100 + 极简 prompt + temperature 0.3**, wall-clock 目标 ≤ 3s (实测 95th percentile). <br/>**双调用并发** (asyncio.gather): 总 wall-clock ≈ max(ConflictReport latency, Rebuttal latency) = max(1s 命中 / 5s miss, 3s rebuttal) = ~3s 常态, ~5s miss. <br/>**留预算**: 25s 给 commit 阶段 form 操作 (常态) 或 25s commit (miss). <br/>**若实测 95th percentile draft 阶段 > 5s, 触发 OP-1 mitigation** (UX 降级或 B-lite), **不允许 spec 自行扩大上限到 10s 或更长**. | architecture.md §3.3 R3 重写 sequence diagram + §3.6 cache warmer fast-path 配置 `[R3 revised]` |
 | **D22** | **ConflictReportAssembler 是中立 domain service** (不是 StrategyModule lane, R2 新增, B2 解决): <br/>签名 `assemble(signals: list[StrategySignal], env_snapshot: EnvSnapshot) → ConflictReport`. <br/>实现 = LLM prompt 严格 instruction "不要选 winner, 仅描述 X/Y/Z 三方观点, 共同点 / 分歧点". <br/>Web UI 三列**等宽**, 顺序由 `hash(source_id + day) % 6` 随机化 (避免固定位置 = 固定权重). <br/>`ConflictReport.signals` 永远 ≥ 3 (即使有 confidence=0.0 占位). <br/>无 `priority` / `winner` / `recommended` 字段 (R10 红线). | architecture.md §3.1 R2 重写 IDL `[R2 new]` |
 | **D23** | **DevilAdvocateService 是独立服务** (不是 StrategyModule lane, R2 新增, B2 解决): <br/>签名 `generate(decision_draft: DecisionDraft, env_snapshot: EnvSnapshot) → Rebuttal`. <br/>实现 = LLM prompt ≤ 80 字反驳, R6 反诱导高频. <br/>调用时点 = draft 阶段同步 (与 ConflictReport 并行 asyncio.gather). | architecture.md §3.1 R2 重写 IDL `[R2 new]` |
 | **D24** | **Per-market session config (R2 新增, H4 解决)**: event push 必须按 ticker.market 字段判断 session window. <br/>US (NYSE/NASDAQ): 09:30-16:00 ET. <br/>HK (HKEX): 09:30-16:00 HKT. <br/>CN (SSE/SZSE): 09:30-15:00 CST. <br/>session window 由 `ticker.market` enum 决定; 默认 'US' 若未填 (兼容 v0.1 单市场启动). | PRD §2 + R4 节制 (R2 H4) `[R2 new]` |
@@ -177,39 +184,42 @@ R2 修订标 `[R2 revised]` (含 v0.1 已存在但内容修改) 或 `[R2 new]` (
 
 R2 修订: **T020 (失败告警 O10) 从 Phase 3 提前到 Phase 1 末段** (H1 解决), 与 T014 周度 review 并行启用. T021 解耦 T019 (H3 解决).
 
-### Phase 0 · 基础 (T001-T005, 估 25-35h)
-- 项目脚手架 (uv + pytest + ruff + pre-commit)
-- 数据 schema 定义 (Decision / EnvSnapshot / Watchlist / Holding / AdvisorReport / ConflictReport / Note); **加 decision_drafts 表 (R2 D8/D13)**
-- SQLite 存储层 (Repository pattern, migration 工具)
-- 配置层 (.env, secrets, watched folder path)
-- `StrategyModule` IDL (analyze 单一方法, R2 D7) + abstract base class
+### Phase 0 · 基础 (T001-T005, 估 40h)
+- T001 项目脚手架 (uv + pytest + ruff + pre-commit) — 6h
+- T002 数据 schema 定义 (Decision / DecisionDraft / EnvSnapshot / Watchlist / Holding / AdvisorReport / ConflictReport / Rebuttal / Note / Alert / LLMUsage) — 9h
+- T003 SQLite 持久化层 (Repository pattern, migration 工具) — 10h
+- T004 Web UI shell + 多 tab + 免责 footer + alert banner endpoint — 7h
+- T005 LLMClient 抽象 + 缓存 + 用量记账 — 8h
 
-### Phase 1 · 核心 pipeline + core loop (T006-T013 + T020-pre, 估 50-65h)
-- 咨询师 PDF/文本解析 (LLM prompt + structured output)
-- watched folder 监听 + Proxyman fetch 触发流程
-- 错位矩阵算法 (规则 + 加权占位)
-- 决策档案 **draft + commit 双阶段** UX (Web, R2 D13)
-- 三路冲突报告 UI (Web 三列等宽 + 顺序 hash 随机 + 默认空态)
-- StrategyModule 三个占位实现 (advisor_strategy / placeholder_model / agent_synthesis) — **analyze only, R2 D7**
-- ConflictReportAssembler 中立服务 (R2 D22)
-- DevilAdvocateService 独立服务 (R2 D23)
-- **T020 失败告警 O10 提前** (R2 H1, 与 T014 并行依赖 T002 schema)
+### Phase 1 · 核心 pipeline + core loop (T006-T013 + T020, 估 82h)
+- T006 咨询师 PDF/文本解析 + watched folder + Proxyman 触发 + paste fallback — 13h
+- T007 StrategyModule IDL (analyze only, R2 D7) + 三占位 + lane 隔离 — 12h
+- T008 决策档案 **draft + commit 双阶段** UX (Web, D13) — 16h
+- T009 全程 30 秒 timing test E2E + 手动压测脚本 (R3 守 PRD 原口径) — 6h
+- T010 ConflictReportAssembler 中立服务 + cache warmer + pause hook — 11h
+- T011 错位矩阵 HTML table (**R3 砍至 3h**: 仅 HTML table, 不做颜色着色 / 排序, v0.2+ polish) — 3h
+- T012 关注股 + 持仓快照录入 UI — 6h
+- T013 DevilAdvocateService 独立服务 (R3: fast-path 配置 max_tokens ≤ 100, ≤ 3s) — 4h
+- T020 失败告警 O10 + dashboard + pause_pipeline façade (R2 H1 提前到 Phase 1 末段) — 8h
 
-### Phase 2 · review / 学习 / Telegram (T014-T018, 估 25-40h)
-- 周度 review 生成器 (cron + Web view)
-- 月度 review 生成器 (校准证据聚合; **partner audience 删除, 仅 self, R2 M5**)
-- 个人金融笔记 wiki (自动去重 + agent 不重复解释)
-- Telegram bot (周报 + event + 简单只读查询; **per-market session window, R2 D24**)
-- 冲突报告 Telegram 叙事版 渲染
+### Phase 2 · review / 学习 / Telegram (T014-T018, 估 26h)
+- T014 周度 review 生成器 (cron + 维护工时, tz Asia/Taipei) — 8h
+- T015 月度 review 生成器 (**R3 砍至 3h**: 仅生成 markdown 文本汇总 + Web view, 不实现 PNG 图表 / 月度自定义; partner audience 删除) — 3h
+- T016 个人金融笔记 wiki (**R3 砍至 4h**: 仅 markdown 文件 + 简单全文搜索 grep, 不做 agent 自动去重 v0.1; v0.2+ 加 LLM 去重) — 4h
+- T017 Telegram bot (周报 + event + per-market session window, R2 D24) — 11h
+- T018 post-mortem 字段 UI (**R3 砍至 3h**: 仅 form 录入, 不做触发提醒 / 自动 N 天后弹窗 v0.2+) — 3h (重新调整 with T021)
 
-### Phase 3 · 学习检查 + onboarding + B-lite (T019/T021/T022, 估 10-25h)
-- 学习检查机制 (季度自查表生成 + UI; **可降级到 human 手编 master checklist, H2 cut list**)
-- onboarding 流程 (≤ 15 分钟首次完成; **解耦 T019, R2 H3**)
-- E2E timing test (commit < 30 秒自动化验证)
-- B-lite 降级路径 runbook (T022; **依赖 T010/T015 显式 pause_pipeline() hook, R2 H1**)
-- 文档 (本人使用手册, README runbook)
+注: T018 4h → 3h, R3 砍 1h.
 
-**总估**: ~110-165h (与 v0.1 估 100-160h 一致, R2 H2 cut list ≈ 13h 备选, 见 risks.md OP-2 mitigation)
+### Phase 3 · 学习检查 + onboarding + B-lite (T019/T021/T022, 估 12h)
+- T019 学习检查 (**R3 砍至 5h**: human 手编 master checklist, agent 仅按 checklist 抽问 + 评分; 不调 LLM 抽题) — 5h
+- T021 Onboarding 15 分钟 (**R3 砍至 4h**: 仅文档 + 1 个 setup wizard route, 不做 in-app tooltip; step 7 极简空态; runbook + README 极简) — 4h
+- T022 B-lite 降级路径 (**R3 砍至 3h**: 仅 `scripts/toggle_b_lite.py` CLI + runbook, 删除 `/settings/b-lite` UI toggle; pause_pipeline façade 已在 T020) — 3h
+
+**总估 (R3 cut 后)**: **~120-160h** (Phase 0: 40h + Phase 1: 82h + Phase 2: 26h + Phase 3: 12h ≈ **160h** 边界).
+- R3 共砍 21h: T011 -3h / T015 -5h / T016 -3h / T018 -1h / T019 -3h / T021 -4h / T022 -2h
+- 181h (R2 task header 实和) - 21h = **160h** 满足 C1 hard max
+- 详见 risks.md OP-2 mitigation (R3 修订)
 
 ---
 
@@ -223,7 +233,7 @@ R2 修订: **T020 (失败告警 O10) 从 Phase 3 提前到 Phase 1 末段** (H1 
 | **O2** | `pytest tests/integration/test_o2_decision_count.py` (在 ship + 8 周快照点对 production DB 跑) 断言 `count(*) where status='committed' >= 15` (R2 修订: 仅算 committed) |
 | **O3** | `pytest tests/integration/test_o3_calibration_evidence.py` 断言 `count(*) where would_have_acted_without_agent = true AND status='committed' >= 3` |
 | **O4** | `python -m scripts.learning_check --quarter Q1` 生成自查表; human 提交答案; 评分脚本 `scripts/grade_learning.py` 输出 ≥ 7/10 |
-| **O5** | **R2 修订, 双条件均须通过, 度量口径改为 commit 阶段 wall-clock**: <br/>(a) `pytest tests/e2e/test_decision_input_timing.py` 自动化模拟 commit 阶段 wall-clock < 30s (从 `/decisions/draft/{id}/preview` 200 OK 起, 到 `POST /decisions/{draft_id}/commit` 完成); 同时记录 draft 阶段 LLM 等待 (cache 命中常态 < 1s, miss 上限 10s, 例外见 D21) <br/>(b) `scripts/manual_press_test.py` 引导 human 连续 5 次手工录入, **commit 阶段** wall-clock 全部 < 30s, 写入 `release_log.jsonl` |
+| **O5** | **R3 修订, 守 PRD 原口径, 度量改为全程 wall-clock**: <br/>(a) `pytest tests/e2e/test_decision_input_timing.py` 自动化模拟全程 wall-clock < 30s (**起点 = GET `/decisions/new` 200 OK**, **终点 = `POST /decisions/{draft_id}/commit` 200 OK**); 同时分解记录 draft 阶段 LLM 等待 (≤ 5s D21 上限, cache 命中常态 ≤ 1s) 和 commit 阶段 (< 1s, 无 LLM); cache miss 让 draft > 5s 走 OP-1 mitigation. <br/>(b) `scripts/manual_press_test.py` 引导 human 连续 5 次手工录入, **全程** wall-clock 全部 < 30s, 写入 `release_log.jsonl` (schema 见 architecture.md §10) |
 | **O6** | `pytest tests/e2e/test_onboarding.py` 模拟首次启动 → 录入 → 首次决策 (含 draft → commit), 断言 elapsed < 900s |
 | **O7** | weekly maintenance log 每周 sign-off, 4 周滚动平均 ≤ 3h |
 | **O8** | `pytest tests/integration/test_telegram_cadence.py` 断言任意 7 天内 push 数 ≤ 1 + event 触发数; **per-market session window 单测 (US/HK/CN 三市场, R2 D24)** ; 监控 dashboard 周度图 |
@@ -257,7 +267,7 @@ R2 修订: **T020 (失败告警 O10) 从 Phase 3 提前到 Phase 1 末段** (H1 
 | **Devil's Advocate** | 每次 action 前 LLM 出一句反驳 (占位实现), 强制听一句反方意见; **由 DevilAdvocateService 实现** (R2) |
 | **学习假装 (Learning Pretense)** | 用户用了 3 个月仍然解释不清关键概念的现象; v0.1 必须能检测 (R7) |
 | **失败告警 (Failure Alert)** | 连续 2 周决策档案 < 2 条触发的红色告警, Telegram + Web banner 双通道 |
-| **B-lite** | **R2 修订, M2 解决**: 应急降级路径概念 = 砍冲突报告 + 月度 review, 保留档案 + 周度 review。**v0.1 不实现 UI toggle**, 但 `pause_pipeline()` / `resume_pipeline()` hook 在 T010 (ConflictWorker) + T015 (MonthlyScheduler) outputs **必须存在** (T020 提前后, T022 直接调这些 hook 而非"假设存在"). T022 仅在 hook 上加 runbook + meta_decisions UI. |
+| **B-lite** | **R3 修订, M2 真正解决**: 应急降级路径概念 = 砍冲突报告 + 月度 review, 保留档案 + 周度 review。**v0.1 不实现 UI toggle, 也不实现 `/settings/b-lite` 路由** (R3: 与 R2 不一致已统一); 仅 `scripts/toggle_b_lite.py` CLI + runbook 即可触发. `pause_pipeline()` / `resume_pipeline()` hook 在 T010 (ConflictWorker) + T015 (MonthlyScheduler) outputs **必须存在** (T020 提前后, CLI 直接调这些 hook 而非"假设存在"). T022 仅是 CLI + runbook + meta_decisions 历史表 (无 UI toggle). |
 | **Pause Pipeline Hook** | **R2 新增**: 在 T010/T015 显式暴露的接口 `pause_pipeline()` / `resume_pipeline()` / `is_paused()`, 用于 B-lite 等情境下停掉 ConflictWorker / MonthlyScheduler 而保留 Decision/Weekly review 流. 不在 v0.1 UI 暴露 toggle, 但 hook 必存在并单测覆盖. |
 
 ---
@@ -267,7 +277,9 @@ R2 修订: **T020 (失败告警 O10) 从 Phase 3 提前到 Phase 1 末段** (H1 
 直接复刻 PRD §11 的 4 条, spec 阶段未独立解决, 需 human 决定。**这些不阻塞 spec
 冻结, 但会影响 implementation 细节**。
 
-R2 修订: **Q4 推后到 v1.0+** (M5 解决, D18 删除); **Q5 RESOLVED** (H5 解决, D9 锁死路径); 新增 **Q11** (cache miss 例外审).
+R2 修订: **Q4 推后到 v1.0+** (M5 解决, D18 删除); **Q5 RESOLVED** (H5 解决, D9 锁死路径).
+
+R3 修订: **删除 Q11** (R2 引入的 "cache miss 5-10s 例外" 与 PRD §S1 / §6 O5 原口径冲突, 路径 A 守 PRD 不允许此例外; 改为 D13 / D21 的 fast-path + cache 预热, OP-1 mitigation 兜底).
 
 ### Q1. "稳定赚钱" benchmark 与时间尺度
 PRD §6.O9 给了 "跑赢标普 2-5%/年", 但**多少年算"稳定"**? 6 个月 / 12 个月 / 3 年?
@@ -300,19 +312,6 @@ PRD §6.O9 给了 "跑赢标普 2-5%/年", 但**多少年算"稳定"**? 6 个月
 
 详见 D9 + open-questions.md Q5. 不再 OPEN.
 
-### Q11. **(R2 新增)** Cache miss 时 draft 阶段 LLM 等待上限
-D21 给的 cache miss 上限 10s 是工程估算 (Sonnet 4.6 cold-start 约 5-8s, 三路并发 +
-rebuttal 约 8-10s p95). 若实际 ship 后发现 miss 率高 (新 ticker / 旧 advisor_week)
-or LLM API p95 飙升, **是否需要降级**:
-- (a) 缩短 prompt (减质换速)
-- (b) 仅生成 ConflictReport, Rebuttal 推后 commit 后再补
-- (c) cache miss 时给 human 选项 "等 / 跳过冲突报告先 commit"
-
-**默认假设 (spec 暂用)**: 不降级, 接受 cache miss 时 5-10s 等待 (估测 < 5% 场景);
-监控 `llm_usage` 表的 latency p95 + cache miss 率, 8 周后评估.
-
-**Block 状态**: 不阻塞 v0.1, 监控数据驱动 v0.2 决策.
-
 ---
 
 ## 9. spec-writer 自查 (交付前)
@@ -320,11 +319,13 @@ or LLM API p95 飙升, **是否需要降级**:
 - [x] 6 个核心 section 全部存在
 - [x] 每个 Outcome 引用 PRD §6 同名条目
 - [x] 没有出现 PRD scope OUT 中的功能 (R2 删除 D18 后修复)
-- [x] 每条 Prior Decision 都引 source (PRD / L2 moderator-notes / L3 stage / `[new in spec]` / `[R2 revised]` / `[R2 new]` / `[R2 deleted]` 标注)
+- [x] 每条 Prior Decision 都引 source (PRD / L2 moderator-notes / L3 stage / `[new in spec]` / `[R2 revised]` / `[R2 new]` / `[R2 deleted]` / `[R3 revised]` 标注)
 - [x] 每条 Verification 都给出可执行命令 / 度量数字 / 人工 sign-off
 - [x] Glossary 覆盖关键术语 (决策档案 / DecisionDraft / 错位矩阵 / 三路冲突报告 / StrategyModule / ConflictReportAssembler / DevilAdvocateService / 占位源 / calibration engine / 承诺壳 / Pause Pipeline Hook)
-- [x] Open Questions 都标注了 spec 默认假设 (避免实现卡死); R2 新增 Q11
-- [x] § 5 task phases 不写具体 T001-TXXX (留给 task-decomposer); 但反映 R2 phase 调整 (T020 提前 / T021 解耦)
+- [x] Open Questions 都标注了 spec 默认假设 (避免实现卡死); R3 删除 Q11
+- [x] § 5 task phases 不写具体 T001-TXXX (留给 task-decomposer); 但反映 R2/R3 phase 调整 (T020 提前 / T021 解耦 / R3 cut 21h)
 - [x] **R2 contract-level 修订**: B1 (pre-commit framing 修复) / B2 (agent_synthesis 拆) / B3 (IDL 自洽) 全部通过 D7/D13/D19/D21/D22/D23 解决
 - [x] **R2 H1-H5**: H1 (T010/T015 pause hook 显式) / H2 (cut list 在 risks.md OP-2) / H3 (T021 解耦 T019) / H4 (per-market session D24) / H5 (D9 RESOLVED) 全部解决
 - [x] **R2 M1-M5**: M1 (commit 阶段强制 yes/no) / M2 (B-lite glossary 统一) / M3 (Asia/Taipei + tzlocal fallback) / M4 (logs schema 在 architecture.md §10) / M5 (D18 删除) 全部解决
+- [x] **R3 修订, 守 PRD 原口径**: B-R2-1 (O5/C11 度量回退到全程 wall-clock) / B-R2-2 (T008 删除 placeholder fallback) / B-R2-3 (D21 诚实承认 Rebuttal 不可缓存 + fast-path) / B-R2-4 (task pack 真砍 21h 到 160h) / B-R2-5 (Q11 删除) 全部解决
+- [x] **R3 ⚠️ R1 残留**: ⚠️ B1 (与 B-R2-1 + B-R2-2 联合 close) / ⚠️ B3 (T007 加 contract-level 隔离 + runtime test) / ⚠️ H1 (T015/T017 删除旧 blocks [T020]) / ⚠️ M2 (B-lite 删 UI toggle) 全部解决

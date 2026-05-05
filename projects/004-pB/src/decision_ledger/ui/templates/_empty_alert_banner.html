@@ -1,0 +1,7 @@
+{# _empty_alert_banner.html — T004
+   结论: T004 阶段 alert-banner partial 内容为空（无激活告警）
+   细节:
+     - HTMX 从 base.html 的 hx-get="/_partials/alert-banner" 轮询此 partial
+     - T004 阶段无告警，返回空 HTML
+     - T020 接管后，此模板被替换为真实 banner partial
+#}{# 空 — T020 接管后替换 #}

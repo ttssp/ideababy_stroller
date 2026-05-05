@@ -1,13 +1,14 @@
 # Architecture — 004-pB · 决策账本
 
-**Version**: 0.2
+**Version**: 0.3.2
 **Created**: 2026-04-25T15:05:00+08:00
-**Updated**: 2026-04-25T19:30:00+08:00 (R2 surgical revision)
-**Companion**: `spec.md` v0.2 · 6-element contract
+**Updated**: 2026-04-26T20:30:00+08:00 (R4 surgical patch · package-level 收口)
+**Companion**: `spec.md` v0.3.2 · 6-element contract
 
-> **架构枢纽**: `StrategyModule` IDL (analyze 单一职责) + `ConflictReportAssembler`
-> 中立服务 + `DevilAdvocateService` 独立服务 + 决策档案 schema (含 draft/commit
-> 双阶段) + 完全解耦模块拓扑。任何"为赶时间合并模块成长函数"的建议**违反 PRD R9**, spec 必拒。
+> **架构枢纽**: `StrategyModule` IDL (analyze 单一职责, contract-level 隔离) +
+> `ConflictReportAssembler` 中立服务 + `DevilAdvocateService` 独立服务 (fast-path
+> Rebuttal) + 决策档案 schema (含 draft/commit 双阶段) + 完全解耦模块拓扑。任何
+> "为赶时间合并模块成长函数"的建议**违反 PRD R9**, spec 必拒。
 
 ---
 
@@ -17,6 +18,9 @@
 |---------|------|---------|
 | 0.1 | 2026-04-25T15:05 | 初稿 (C4 L1/L2 + IDL + 双阶段录入流 + tradeoff + 不变量) |
 | 0.2 | 2026-04-25T19:30 | **R2 surgical revision** (Codex R1 BLOCK 修订): <br/>(1) §3.1 IDL 重写: StrategyModule 仅 `analyze()`, conflict_resolve / devil_advocate 拆出到独立服务 (B2/B3) <br/>(2) §3.3 录入流重写为 draft → preview → commit 三步 sequence diagram, draft 阶段同步 LLM (cache 命中常态 < 1s, miss ≤ 10s), commit 阶段无 LLM (B1) <br/>(3) §3.5 加 per-market session config (H4 D24) <br/>(4) §9 不变量 #1/#2/#6 修正 <br/>(5) §10 新增 Logs Schema section (M4) <br/>(6) §3.6 新增 cache 预热流程 (D11/D21) |
+| **0.3** | 2026-04-26T19:00 | **R3 surgical revision** (Codex R2 BLOCK 修订, 守 PRD 原口径): <br/>(1) §3.1 IDL 加 **contract-level lane 隔离**: lane constructor 不接受 registry / 不接受其他 lane 实例; 仅接受 LLMClient + SourceDataProvider (只读) — 解决 R2 ⚠️ B3 (lane 隔离仅到 AST) <br/>(2) §3.3 sequence diagram 重画: **起点 = GET /decisions/new, 终点 = POST commit 200 OK, 全程 < 30s** (含 draft 阶段 LLM); cache miss > 5s 触发 503 而非 placeholder fallback <br/>(3) §3.6 cache warmer 修: **诚实承认 Rebuttal 不可缓存** + Rebuttal 走 fast-path (Sonnet 4.6 + max_tokens ≤ 100 + ≤ 3s) <br/>(4) §9 不变量 #13 新增: ConflictReport.signals 永远来自真实 LLM, 无 placeholder fallback (B-R2-2) <br/>(5) §3.3 删除 R2 "preview 200 OK 才计时"字样 |
+| **0.3.1** | 2026-04-26T20:30 | **R4 surgical patch · package-level 收口 (Codex R3 BLOCK 修订)**. 全文统一回 PRD §S1 原口径, 不动结构/决策. 改动: <br/>(1) §1 系统图 line 47: miss `≤ 10s` → `≤ 5s, R3` <br/>(2) §4 Tradeoff 1 line 635: 缓解措辞改为 "≥ 95% 命中 + miss 上限 5s + 超时 503 + OP-1 mitigation, 不再有 ≤10s 的宽容" <br/>(3) §6 集成点 line 711: Anthropic 故障处理改为 "draft 阶段超时 5s → 503 + 错误页, 不允许 placeholder fallback" <br/>(4) §9 不变量 #1 line 758: 改为 R3 守 PRD 口径表述 (commit < 1s, draft ≤ 5s, 全程 < 30s 含 draft LLM) <br/>(5) §10 release_log.jsonl schema line 782-788: `commits` 字段改为 `total_durations` (R3 主度量) + 拆 `commit_latencies`; draft sample 7.3s 改 4.7s 符合 ≤ 5s 上限 <br/>(6) §5 失败告警 B-lite 段 (line 684-687): 改为 "CLI + runbook" 全文统一, 不再混 UI toggle 叙事 <br/>(7) §9 不变量 **#15 新增 (R4 strict mode CI 收口)**: CI 默认 strict mode, T015 ship 前 skip mark, T015 PR 必须移除 skip — 收口 Codex R3 自查待审 #6 CONCERN |
+| **0.3.2** | 2026-04-26T20:50 | **R4.1 收口 patch · 横扫遗漏清除 (Codex R4 CONCERNS 修订)**. 仅文字级清扫, 不动结构/决策. 改动: <br/>(1) §3.3 sequence diagram line 492: `commit 阶段 wall-clock < 1s` → `commit 入档 wall-clock < 1s; 全程 wall-clock < 30s 含 draft (R3 守 PRD §S1 原口径)` <br/>(2) §4 Tradeoff 1 line 636: `不再有"miss ≤ 10s"的宽容` 字样改写为 `R3 不再有 R2 的 10 秒宽容期; 上限是 5s, 否则 503 + OP-1` (避免字面匹配 grep 误判) | Codex R4 CONCERNS · 见 `.codex-outbox/20260426T123538-004-pB-L4-adversarial-r4.md` |
 
 ---
 
@@ -42,7 +46,7 @@ flowchart LR
     Advisor -.- Proxyman
     Proxyman -- "PDF 文件落入<br/>~/decision_ledger/inbox/" --> System
 
-    System -- "draft 阶段同步 LLM<br/>(cache 命中常态 < 1s, miss ≤ 10s)" --> Anthropic
+    System -- "draft 阶段同步 LLM<br/>(cache 命中常态 < 1s, miss ≤ 5s, R3)" --> Anthropic
     System -- "推送 (≤ 1次/周 + event;<br/>per-market session, D24)" --> Telegram
 
     classDef actor fill:#fff4cc,stroke:#666
@@ -230,14 +234,30 @@ class DecisionDraft:
     status: str  # 'draft' | 'committed' | 'abandoned'
 
 
-# ───────────────── 服务 1: StrategyModule (R2 修订, 唯一职责 analyze) ─────────────────
+# ───────────────── 服务 1: StrategyModule (R2 修订 + R3 contract-level 隔离) ─────────────────
+
+@runtime_checkable
+class SourceDataProvider(Protocol):
+    """R3 新增: lane 唯一可读的数据来源接口 (只读, 不暴露其他 lane).
+    所有方法均返回**不可变** dataclass; lane 不能写入, 也不能拿到其他 lane 实例."""
+    async def get_advisor_report(self, advisor_week_id: str) -> "AdvisorWeeklyReport": ...
+    async def get_portfolio(self) -> "Portfolio": ...
+    async def get_ticker_meta(self, ticker: str) -> "TickerMeta": ...
+    async def get_env_snapshot(self) -> "EnvSnapshot": ...
+    # 注意: **不暴露** registry / list[StrategyModule] / 其他 lane / 其他 signal
+
 
 @runtime_checkable
 class StrategyModule(Protocol):
     """所有策略源实现此接口。
     单一职责: 输入 (advisor_report, portfolio, ticker, env_snapshot) → StrategySignal。
-    不知道其他 lane 存在, 不读其他 lane 输出。"""
+    R3 contract-level 隔离: __init__ 仅接受 (LLMClient, SourceDataProvider) — **不接受
+    registry, 不接受其他 lane 实例, 不接受 list[StrategyModule]**. 这从 contract 层
+    禁止 lane 通过 registry/DI 旁路接触其他 lane (Codex R2 ⚠️ B3 修复)."""
     source_id: str
+
+    def __init__(self, llm_client: "LLMClient", source_data_provider: "SourceDataProvider") -> None: ...
+    # ↑ 不接受其他参数. runtime contract test (T007) 通过 inspect.signature 强制.
 
     async def analyze(
         self,
@@ -297,13 +317,20 @@ class CustomStrategyModule(StrategyModule):
 | `PlaceholderModelStrategy` (source_id=`"placeholder_model"`) | Q6 默认: 永远 confidence=0.0 / direction="no_view" (最 conservative) | **不再承担 conflict_resolve / devil_advocate** |
 | `AgentSynthesisStrategy` (source_id=`"agent_synthesis"`) | LLM 综合 (advisor_report + portfolio + env_snapshot) 出 signal; **R2 修订: 仅 analyze, 不再是 conflict 总结者** | 与其他两个 lane 平权; **不读** AdvisorStrategy / PlaceholderModelStrategy 输出 |
 
-**关键解耦保证 (R2)**:
-- 每个 StrategyModule 实例独立可替换 (依赖注入 via FastAPI Depends + registry)
+**关键解耦保证 (R2 + R3 contract-level 强化)**:
+- 每个 StrategyModule 实例独立可替换 (依赖注入 via FastAPI Depends + registry; 但
+  registry **不传给 lane**, 仅 ConflictReportService 内部使用 registry 收集 signals)
 - 一个实例的修改/删除不影响其他实例 (单元测试覆盖每个接口契约)
 - 录制每条 signal 时记录 `source_id`, 永远可追溯
 - **ConflictReportAssembler 是中立聚合, 不是 lane** (R10 红线工程化体现)
 - **三列等宽 + 顺序按 `hash(source_id + day) % N` 随机化** — 避免固定位置 = 固定权重 (R10 心理层面 honor)
-- **StrategyModule 单元测试不能 mock/import 其他 lane** (R9 解耦工程化体现)
+- **StrategyModule 单元测试不能 mock/import 其他 lane** (R9 解耦工程化体现, AST 检测)
+- **R3 contract-level 隔离 (⚠️ B3 修复)**:
+  - lane `__init__` signature 强制 `(LLMClient, SourceDataProvider)`, 通过
+    `inspect.signature(...)` runtime test 验证 (T007)
+  - `SourceDataProvider` 接口**不暴露** registry / list[StrategyModule] / 其他 lane
+  - lane 调用方 (ConflictReportService) 不传 registry 给 lane; 仅传 LLMClient + DataProvider
+  - 任何 PR 想给 lane 加 `registry` / `list[Module]` 参数 → runtime test fail, 必拒
 
 ### 3.2 决策档案 Schema (D8, R2 修订加 status / decision_drafts 表)
 
@@ -404,12 +431,13 @@ CREATE INDEX idx_drafts_status_created ON decision_drafts(status, created_at);
 -- 服务层不变量: status='committed' 时 refs 必非空 (commit endpoint 校验)
 ```
 
-### 3.3 录入双阶段流程: draft → preview → commit (R2 重写, B1 解决, D13/D19/D21)
+### 3.3 录入双阶段流程: draft → preview → commit (R3 重写, 守 PRD 原口径, D13/D19/D21)
 
-**关键变化 (R2)**:
-- **draft 阶段同步生成** ConflictReport + Rebuttal (cache 命中常态 < 1s, miss 上限 10s)
+**关键变化 (R3, B-R2-1 + B-R2-2)**:
+- **C11 "< 30s" 度量改回 PRD §S1 原口径**: **起点 = GET /decisions/new, 终点 = POST commit 200 OK, 全程 wall-clock**, 包含 draft 阶段 LLM 调用
+- **draft 阶段同步生成** ConflictReport + Rebuttal: cache 命中常态 ≤ 1s, miss ≤ 5s; Rebuttal fast-path ≤ 3s; 双调用并发, max(5s, 3s) = ≤ 5s
 - **commit 阶段无 LLM 调用**, 仅 SQLite UPDATE status='committed', wall-clock < 1s
-- C11 "< 30s" 度量改为 **commit 阶段 wall-clock** (从 preview 200 OK 起算)
+- **draft 失败/超时 → 503**, **不允许 placeholder fallback** (B-R2-2 修复; 原 R2 placeholder-then-commit 路径删除)
 
 ```mermaid
 sequenceDiagram
@@ -424,51 +452,57 @@ sequenceDiagram
     participant CACHE as LLM Cache
     participant DB as SQLite
 
-    Note over H,W: 阶段 1 · 创建 draft (cache 命中常态 < 1s, miss ≤ 10s)
-    H->>W: 打开 /decisions/new (默认填 ticker / intended_action / draft_reason)
-    H->>W: Enter (创建 draft)
+    Note over H,W: ⏱️ C11 30s 计时起点 = GET /decisions/new (R3: 守 PRD §S1 全程口径)
+    H->>W: 打开 /decisions/new
+    W->>API: GET /decisions/new
+    API-->>W: 200 OK (默认填 ticker / intended_action / draft_reason)
+    H->>W: 填表单 + Enter (创建 draft)
     W->>API: POST /decisions/draft {ticker, intended_action, draft_reason}
     API->>DR: create_draft(payload)
     DR->>DB: INSERT decision_drafts (status='draft', refs=NULL placeholder)
-    par 同步并发: 三路 analyze + Rebuttal
+    par 同步并发: 三路 analyze + assemble + Rebuttal (asyncio.gather, ≤ 5s)
         DR->>SM: 三 lane analyze() (advisor / placeholder / agent_synthesis)
-        SM-->>CACHE: hash key 查 / miss → Anthropic
-        CACHE-->>SM: signals (≤ 1s 命中, ≤ 10s miss)
+        SM-->>CACHE: hash key 查 (cache warmer 已预热, ≥ 95% 命中)
+        CACHE-->>SM: signals (命中 ≤ 1s, miss ≤ 5s)
         SM-->>DR: list[StrategySignal] (3 条)
         DR->>CRA: assemble(signals, env_snapshot)
         CRA-->>CACHE: hash key 查 / miss → Anthropic
         CACHE-->>CRA: ConflictReport
         CRA-->>DR: ConflictReport
-    and 并行 Rebuttal
-        DR->>DAS: generate(draft, env_snapshot)
-        DAS-->>CACHE: hash key 查 / miss → Anthropic
-        CACHE-->>DAS: Rebuttal
+    and 并行 Rebuttal (fast-path, 不可缓存, ≤ 3s)
+        DR->>DAS: generate(draft, env_snapshot) [Sonnet 4.6 + max_tokens ≤ 100 + ≤ 3s]
+        DAS->>CACHE: bypass cache (R3: rebuttal 输入唯一, 不可预热)
         DAS-->>DR: Rebuttal
     end
-    DR->>DB: UPDATE decision_drafts SET conflict_report_ref=..., devils_rebuttal_ref=...
-    DR-->>API: draft_id + ConflictReport + Rebuttal
-    API-->>W: 302 → /decisions/draft/{draft_id}/preview
-    Note over H,W: 阶段 2 · preview (human 看到三列等宽 + 反方一句话; 顺序 hash 随机化)
+    Note over DR: 双调用并发完成 ≈ max(ConflictReport, Rebuttal) ≤ 5s
+    alt cache 命中常态 (≥ 95%)
+        DR->>DB: UPDATE decision_drafts SET refs
+        DR-->>API: draft_id + ConflictReport + Rebuttal
+        API-->>W: 302 → /decisions/draft/{draft_id}/preview
+    else cache miss + LLM > 5s 超时 (R3: B-R2-2, 不允许 placeholder fallback)
+        DR-->>API: TimeoutError
+        API-->>W: 503 + 错误页 "系统繁忙, 请等 cache warmer 完成或重试"
+        Note over H,W: 系统失败信号 → 走 OP-1 mitigation (B-lite 候选), 不放行 commit
+    end
     W->>API: GET /decisions/draft/{draft_id}/preview
-    API-->>W: 200 OK, 渲染三列 + 反方
-    Note over H,W: ⏱️ C11 30s 计时起点 = preview 200 OK 这一刻
+    API-->>W: 200 OK, 渲染三列 + 反方 (顺序 hash 随机化, 真实 LLM 内容)
     H->>W: 看完三路冲突 + 反方; 可改 final action; 写 final reason ≤ 80 char;<br/>**强制 yes/no would_have_acted_without_agent** (M1)<br/>键盘 1=buy / 2=sell / 3=hold / 4=wait; Enter
     W->>API: POST /decisions/{draft_id}/commit {final_action, final_reason, would_have_acted_without_agent}
     API->>DR: commit_draft(draft_id, payload)
     DR->>DB: BEGIN<br/>INSERT decisions (status='committed', refs=draft.refs)<br/>UPDATE decision_drafts SET status='committed', committed_at=now()<br/>COMMIT
-    Note over DR: 阶段 2 wall-clock < 1s (无 LLM 调用)
+    Note over DR: commit 入档 wall-clock < 1s (无 LLM 调用); 全程 wall-clock < 30s 含 draft (R3 守 PRD §S1 原口径)
     DR-->>API: trade_id
     API-->>W: 302 → /decisions/{trade_id} (success)
-    Note over H,W: ⏱️ C11 30s 计时终点 = commit 200 OK<br/>commit 阶段 wall-clock < 30s (常态 < 5s)
+    Note over H,W: ⏱️ C11 30s 计时终点 = POST commit 200 OK<br/>**全程 wall-clock < 30s 包含 draft 阶段 LLM** (PRD §S1 原口径)
 ```
 
-**UX 细节 (R2 修订)**:
+**UX 细节 (R3 修订, 守 PRD 原口径)**:
 - `/decisions/new` 第一屏只有 3 个字段 (ticker / intended_action / draft_reason); 默认填好
 - ticker 字段: HTMX autocomplete 关注股 30-50 (本地内存)
 - intended_action 字段: 4 个 radio button, 数字键 1/2/3/4 切换 (label 注明)
 - draft_reason: textarea, 字数限制 80, 显示倒数
 - submit (创建 draft): Enter 即触发
-- **draft 阶段 spinner**: cache 命中 < 1s 几乎不见 spinner; cache miss 时 spinner 5-10s, 显示 "正在生成三路冲突报告 (cache miss, 首次 ticker / 旧 advisor_week)" — 让 human 知情
+- **draft 阶段 spinner (R3 修订)**: cache 命中 ≤ 1s 几乎不见 spinner; cache miss 时 spinner ≤ 5s, 显示 "正在生成三路冲突报告 (首次 ticker / 旧 advisor_week)" — 让 human 知情. **超过 5s → 503 错误页 "系统繁忙, 请等 cache warmer 完成或重试", 不允许 placeholder fallback** (B-R2-2 修复).
 - preview 页: 三列等宽 (CSS grid 1fr 1fr 1fr); 顺序按 `hash(source_id + day) % 6` 排列; **不留"总结位"** (即不固定 advisor 第 1 / agent_synthesis 第 3); 一句反方在三列下方
 - commit 页字段:
   - final_action (默认 = intended_action, human 可改, 数字键 1-4)
@@ -477,7 +511,7 @@ sequenceDiagram
 - commit submit: Enter (commit 阶段无 LLM, wall-clock < 1s)
 - env_snapshot: draft 创建时**就**取 SQLite 中最近一条 holdings_snapshot + 最近一条 advisor_week_id; price 字段可空 (post-mortem 回填)
 - **GC**: 后台 task 5 分钟检查一次, status='draft' AND created_at < now()-30min → status='abandoned'
-- 验证测试: `tests/e2e/test_decision_input_timing.py` Playwright 模拟键盘输入, 测 **commit 阶段 wall-clock** 从 preview 200 OK 到 commit 200 OK < 30s
+- 验证测试: `tests/e2e/test_decision_input_timing.py` Playwright 模拟键盘输入, 测**全程 wall-clock** 从 GET /decisions/new 200 OK 到 POST commit 200 OK < 30s (R3 守 PRD 原口径)
 
 ### 3.4 咨询师 pipeline (D9, R2 RESOLVED)
 
@@ -541,25 +575,47 @@ flowchart LR
 - 全局 rate limiter: 7 天滚动窗口内最多 (1 周报 + 5 event)
 - 单元测试 `test_telegram_cadence.py` 验证 (O8) + `test_per_market_session.py` (R2 D24)
 
-### 3.6 LLM Cache 预热流程 (R2 新增, D11/D21 配套)
+### 3.6 LLM Cache 预热流程 (R3 修订, 诚实承认 Rebuttal 不可缓存)
 
-为让 D21 "draft 阶段同步 LLM cache 命中常态 < 1s" 实现:
+为让 D21 "draft 阶段同步 LLM cache 命中常态 ≤ 1s" 实现, **仅服务于 ConflictReport 路径**:
 
 ```mermaid
 flowchart LR
     Parser[AdvisorParser 完成<br/>新 advisor_report 入库] --> Warm[ConflictCacheWarmer<br/>enqueue 30-50 关注股]
     Warm -->|每个 ticker 一个 job| WarmQ[(warmer_jobs queue)]
     WarmQ --> WW[Warmer Worker<br/>低优先级]
-    WW -->|对每个 ticker:<br/>三路 analyze + assemble + rebuttal| LLM[Anthropic API]
+    WW -->|对每个 ticker:<br/>三路 analyze + assemble<br/>**不预热 Rebuttal**| LLM[Anthropic API]
     LLM --> CACHE[(LLM Cache)]
-    CACHE -.->|后续 draft 创建时<br/>cache 命中| DR[DecisionRecorder]
+    CACHE -.->|后续 draft 创建时<br/>cache 命中 ≥ 95%| DR[DecisionRecorder]
+
+    %% R3: Rebuttal 走 fast-path, 不进 cache
+    DR -.->|每次 draft 唯一<br/>不预热, 不查 cache| FastDAS[DevilAdvocateService<br/>Sonnet 4.6 + max_tokens ≤ 100<br/>极简 prompt + ≤ 3s]
+    FastDAS --> LLM
 ```
 
-**预热触发**: 每次 AdvisorParser 完成后 (D9 流程末尾), 自动 enqueue 当前 30-50 关注股 × (3 lanes analyze + 1 assemble + 1 rebuttal) ≈ 150-250 LLM call.
+**预热范围 (R3 修订, B-R2-3)**:
+- ✅ **ConflictReport 可缓存**: ConflictCacheWarmer 在 AdvisorParser 完成后, 自动
+  enqueue 当前 30-50 关注股 × (3 lanes analyze + 1 assemble) ≈ 120-200 LLM call
+  预生成. cache key = `sha256(advisor_week_id + ticker + signal_module_id +
+  prompt_template_version)`, 命中率目标 ≥ 95%.
+- ❌ **Rebuttal 不可缓存** (R3 诚实承认): Rebuttal 输入依赖 `draft.intended_action`
+  + `draft_reason`, 每次唯一. 不在预热范围. 故 Rebuttal LLM call **走 fast-path**:
+  - **Sonnet 4.6 (与主路径相同, 不降到 Haiku 避免质量风险)**
+  - **max_tokens ≤ 100** (强制短输出, ≤ 80 字反驳)
+  - **极简 prompt** (≤ 200 token 上下文, 删除 few-shot)
+  - **temperature 0.3** (减少采样开销)
+  - **wall-clock 目标 ≤ 3s 95th percentile** (实测 anthropic API + max_tokens 100
+    + 短 prompt 平均 ~2s, p95 ~3s)
 
-**预热成本估算**: 约 1-2 小时跑完 (Sonnet 平均 5-8s/call, asyncio 并发 5), $0.5-1/期 LLM 成本. 周一次, 月成本 $2-4, 在预算内.
+**预热成本估算**: 约 1-2 小时跑完 (Sonnet 平均 5-8s/call, asyncio 并发 5), 单期
+$0.5-1 LLM 成本. 周一次, 月成本 $2-4, 在预算内.
 
-**降级**: 若 cache 预热失败或 human 中途加新 ticker, draft 创建时 cache miss → spinner 5-10s, UI 告知 (D21 接受).
+**双调用并发** (asyncio.gather): 总 wall-clock ≈ max(ConflictReport, Rebuttal) =
+max(1s 命中 / 5s miss, 3s rebuttal) ≈ 3s 常态, 5s miss.
+
+**failure mode (R3 修订)**: 若 cache 预热失败或 human 中途加新 ticker, draft 创建时
+cache miss → 双调用并发 ≤ 5s 仍可接受; **超过 5s → 503 失败 (不允许 placeholder
+fallback, B-R2-2)**, 触发 OP-1 mitigation (B-lite 候选).
 
 ---
 
@@ -578,7 +634,7 @@ flowchart LR
 **代价**:
 - LLM 长任务卡 event loop 时, Web UI 响应可能延迟。**缓解**: LLM 调用全部 `asyncio.to_thread()` 隔离
 - 没有任务持久化 (重启丢未完成 job)。**缓解**: SQLite `pending_jobs` 表 + 启动时恢复
-- **R2 新增风险**: draft 阶段同步 LLM 调用 (D19/D21) 可能因 cache miss 阻塞 UI worker; 缓解 = cache 预热 (3.6) + miss 上限 10s + spinner 告知
+- **R2 引入 + R3 收紧的风险**: draft 阶段同步 LLM 调用 (D19/D21) 可能因 cache miss 阻塞 UI worker; 缓解 = cache 预热 (3.6) ≥ 95% 命中 + miss 上限 5s + 超时 503 + OP-1 mitigation (B-lite). **R3 不再有 R2 的 10 秒宽容期; 上限是 5s, 否则 503 + OP-1**
 
 **重审时机**: 若 LLM 调用 > 5s/次频繁出现 (cache miss 率 > 10%), 或 human 意外引入多用户场景 (违反 D5)
 
@@ -627,11 +683,11 @@ flowchart LR
     Alert -.->|optional, B-lite engage| PausePipeline["pause_pipeline()<br/>(T010 ConflictWorker.pause +<br/>T015 MonthlyScheduler.pause)<br/>**R2 H1: hook 显式存在**"]
 ```
 
-**B-lite 触发后的人工决策点 (R2 修订, M2 解决)**:
-- v0.1 **不实现 UI toggle** (B-lite engage 自动开关)
-- 但 `pause_pipeline()` / `resume_pipeline()` / `is_paused()` hook 在 T010 (ConflictWorker) 和 T015 (MonthlyScheduler) outputs **显式存在**, T020 提前到 Phase 1 末段时这些 hook 就已可用
-- T022 在 Phase 3 仅加 runbook + meta_decisions UI (一键 toggle), 不再"假设接口存在"
-- decision 本身记录到 `meta_decisions` 表 (元决策档案), 14 天 cooling-off
+**B-lite 触发后的人工决策点 (R3 修订, M2 + B-R2-4 收口)**:
+- human 选择: (a) UX 降级 (例: 调 cache 预热预算) / (b) 切换到 B-lite (砍冲突报告 + 月度 review). **均通过 CLI + runbook**: `scripts/toggle_b_lite.py engage` / `docs/runbooks/b_lite.md`. v0.1 不实现 `/settings/b-lite` UI toggle.
+- `pause_pipeline()` / `resume_pipeline()` / `is_paused()` hook 在 T010 (ConflictWorker) 和 T015 (MonthlyScheduler) outputs **显式存在** (R2 H1 保留), T020 提前到 Phase 1 末段时这些 hook 就已可用; CLI script 调用这些 hook
+- T022 在 Phase 3 仅加 runbook (CLI-only, R3 删除 UI toggle), 不再"假设接口存在"
+- 决策本身记录到 `meta_decisions` 表 (元决策档案), 14 天 cooling-off (audit 用, 非 UI)
 
 **测试** (verify O10):
 ```python
@@ -654,7 +710,7 @@ def test_conflict_worker_pause_resume():
 
 | 系统 | 协议 | 责任 | 故障处理 |
 |------|------|------|---------|
-| Anthropic API | HTTPS POST `/v1/messages` | LLM 调用 | retry with exponential backoff (3 次), fallback 写入 `parse_failures`; **R2: draft 阶段超时 10s 后 spinner 升级文案 "稍候, 首次 fetch 较慢"** |
+| Anthropic API | HTTPS POST `/v1/messages` | LLM 调用 | retry with exponential backoff (3 次), fallback 写入 `parse_failures`; **R3 (B-R2-2): draft 阶段超时 5s → 503 + 错误页 "系统繁忙, 请等 cache warmer 完成或重试"; 不允许 placeholder fallback** |
 | Telegram Bot API | HTTPS long-polling | push + receive; **per-market session enforcement (D24)** | retry 5min; 失败累计 > 3 次 触发 Web UI 错误 banner |
 | Proxyman | 文件系统 (PDF drop) | 半自动 fetch (D9 RESOLVED) | watched folder 5min idle 不触发任何处理 |
 | 本地浏览器 | HTTP + SSE | UI | localhost only |
@@ -701,7 +757,7 @@ cp ~/decision_ledger/db.sqlite ~/decision_ledger/backups/db.$(date +%Y%m%d).sqli
 
 ## 9. 关键不变量 (Invariants, 实现/review 都要守) — R2 修订
 
-1. **commit 阶段无 LLM 调用** (违反 → C11 commit < 30s 必死). **R2 修订**: 原"录入路径无 LLM"改为"commit 路径无 LLM, draft 路径 LLM 调用 ≤ 10s 上限 + 缓存预热保证常态命中". draft 路径**允许同步 LLM** (服务于 pre-commit framing).
+1. **commit 阶段无 LLM 调用** (违反 → 整体 wall-clock < 30s 不可保住). **R3 修订, 守 PRD §S1 / §6 O5 原口径**: commit 路径无 LLM (wall-clock < 1s), draft 路径 LLM 调用 ≤ 5s 上限 + cache 预热 ≥ 95% 命中保证常态 < 1s. draft + commit 全程 wall-clock < 30s 包含 draft 阶段 LLM 调用. draft 路径**允许同步 LLM** (服务于 pre-commit framing).
 2. **ConflictReport.signals 始终包含 ≥ 3 个 signal** (即使有 confidence=0.0); **R2**: 由 ConflictReportAssembler (中立服务, D22) 强制, 不是由任一 lane; 违反 → R10 红线
 3. **Decision.action enum 永远包含 hold + wait** (UI/schema/review 三处都不能去掉); 违反 → R11 红线
 4. **每条 StrategySignal 都有 rationale_plain 非空**; 违反 → R3 红线
@@ -713,6 +769,9 @@ cp ~/decision_ledger/db.sqlite ~/decision_ledger/backups/db.$(date +%Y%m%d).sqli
 10. **R2 新增**: `would_have_acted_without_agent` 在 commit 阶段强制 yes/no (M1), 无默认; 违反 → O3 度量失真
 11. **R2 新增**: `pause_pipeline()` / `resume_pipeline()` / `is_paused()` hook 在 T010 (ConflictWorker) + T015 (MonthlyScheduler) outputs 显式存在, 即使 v0.1 UI 不暴露 toggle (H1 解决)
 12. **R2 新增**: decision_drafts 30 分钟未 commit 自动 GC (status='draft' AND created_at < now()-30min → status='abandoned'), 防止堆积
+13. **R3 新增 (B-R2-2 解决)**: **`ConflictReport.signals` 永远来自真实 LLM 调用, 不允许 placeholder / no-divergence fallback 内容**. draft 创建时若 LLM 失败/超时 (> 5s), draft endpoint 返回 503, 不允许后续 commit 走 placeholder. 违反 → C11 (PRD §S1 原口径) 失效 + R10 红线 (human 在没看到真实冲突报告时完成提交)
+14. **R3 新增 (⚠️ B3 contract-level 隔离)**: StrategyModule constructor signature 强制 `__init__(llm_client, source_data_provider)`, 通过 `inspect.signature` runtime test (T007) 验证. **不接受** `registry` / `list[StrategyModule]` / 其他 lane. 违反 → R9 解耦红线工程化失效
+15. **R4 新增 (⚠️ H1 strict mode 收口)**: CI 默认 `DECISION_LEDGER_TEST_MODE=strict` (在 `.github/workflows/ci.yml` 设置); T015 (MonthlyScheduler) ship 前 `test_pause_all_in_strict_mode_raises` 标 `@pytest.mark.skip(reason="T015 not yet shipped")`, T015 ship 后移除 skip. T015 PR 必须同步移除 skip mark, 否则 CI fail. 违反 → ⚠️ R1 H1 wiring drift 静默失效
 
 ---
 
@@ -723,14 +782,15 @@ cp ~/decision_ledger/db.sqlite ~/decision_ledger/backups/db.$(date +%Y%m%d).sqli
 ### `release_log.jsonl` (Owner: T009 timing test + T019 grade_learning)
 
 ```jsonc
-// T009 (manual_press_test): commit 阶段 wall-clock 验证
+// T009 (manual_press_test): R3 守 PRD §S1 原口径, 度量改为 GET /decisions/new 到 commit 200 OK 全程 wall-clock
 {
   "type": "press_test",
-  "ts": "2026-04-25T19:00:00+08:00",
+  "ts": "2026-04-26T19:00:00+08:00",
   "git_sha": "abc1234",
-  "commits": [12.3, 8.7, 14.1, 9.2, 11.5],   // 单位秒, 5 次 commit 阶段 wall-clock
-  "draft_latencies": [0.8, 1.2, 0.5, 7.3, 0.9], // 单位秒, draft 阶段 LLM 等待 (D21 监控)
-  "pass": true,
+  "total_durations": [12.3, 8.7, 14.1, 9.2, 11.5],   // 单位秒, 5 次**全程** wall-clock (GET → commit) — R3 主度量
+  "draft_latencies": [0.8, 1.2, 0.5, 4.7, 0.9],      // 单位秒, draft 阶段 LLM 等待 (D21 监控, ≤ 5s 上限, R3 ≤5s 不再 10s)
+  "commit_latencies": [0.2, 0.1, 0.3, 0.2, 0.1],     // 单位秒, commit 阶段 (无 LLM, < 1s)
+  "pass": true,                                        // 5 次 total_durations 全部 < 30s
   "owner": "T009"
 }
 // T019 (grade_learning): 季度评分

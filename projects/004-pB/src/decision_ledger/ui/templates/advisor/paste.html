@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{# paste.html — T006 R2 新增
+   结论: Web fallback 上传入口，将 PDF base64 写入 inbox 触发同 pipeline
+   细节:
+     - R2: GET/POST /advisor/paste
+     - POST 接受 base64 编码的 PDF，写入 inbox 触发 watcher
+     - 主入口是 scripts/proxyman_fetch.sh；此页为 backup (D9 R2 锁路径)
+     - 支持拖拽上传（JS FileReader 转 base64）
+#}
+
+{% block title %}上传 PDF — 决策账本{% endblock %}
+
+{% block content %}
+<section>
+  <hgroup>
+    <h1>上传咨询师 PDF</h1>
+    <p>备用入口：直接上传 PDF 到收件箱，触发自动解析流程。</p>
+  </hgroup>
+
+  <article>
+    <header>主要入口说明</header>
+    <p>
+      推荐使用 <code>scripts/proxyman_fetch.sh</code> 将 PDF 放入
+      <code>~/decision_ledger/inbox/</code> 目录（可绑定 Alfred/Raycast 快捷键）。
+      此页面是备用手动入口。
+    </p>
+  </article>
+
+  <form id="paste-form">
+    <label for="pdf-file">
+      选择 PDF 文件
+      <input type="file"
+             id="pdf-file"
+             name="pdf_file"
+             accept=".pdf"
+             required>
+    </label>
+
+    <label for="filename-hint">
+      文件名（可选，默认使用原文件名）
+      <input type="text"
+             id="filename-hint"
+             name="filename"
+             placeholder="e.g. advisor_zhang_2026w17.pdf">
+    </label>
+
+    <button type="submit" id="upload-btn">上传到收件箱</button>
+  </form>
+
+  <div id="upload-status" style="margin-top: 1rem;"></div>
+
+  <script>
+    document.getElementById('paste-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('pdf-file');
+      const filenameInput = document.getElementById('filename-hint');
+      const statusDiv = document.getElementById('upload-status');
+      const uploadBtn = document.getElementById('upload-btn');
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        statusDiv.innerHTML = '<p style="color: red;">请选择 PDF 文件。</p>';
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const filename = filenameInput.value.trim() || file.name;
+
+      uploadBtn.disabled = true;
+      statusDiv.innerHTML = '<p>正在上传...</p>';
+
+      // FileReader 转 base64
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64 = reader.result.split(',')[1];
+        try {
+          const resp = await fetch('/advisor/paste', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({pdf_base64: base64, filename: filename}),
+          });
+          if (resp.ok) {
+            statusDiv.innerHTML = '<article style="background:#d4edda; border-color:#c3e6cb;"><p>PDF 已成功写入收件箱，正在处理中...</p></article>';
+          } else {
+            const data = await resp.json().catch(() => ({}));
+            statusDiv.innerHTML = `<article style="background:#f8d7da;"><p>上传失败: ${data.detail || resp.status}</p></article>`;
+          }
+        } catch (err) {
+          statusDiv.innerHTML = `<article style="background:#f8d7da;"><p>网络错误: ${err}</p></article>`;
+        }
+        uploadBtn.disabled = false;
+      };
+      reader.readAsDataURL(file);
+    });
+  </script>
+
+  <hr>
+  <p>
+    <a href="/advisor/parse-failures" class="secondary">查看解析失败记录</a>
+    &nbsp;·&nbsp;
+    <a href="/" class="secondary">返回首页</a>
+  </p>
+</section>
+{% endblock %}

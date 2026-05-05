@@ -1,0 +1,61 @@
+{# _nav.html — T004
+   结论: 8 个 tab 导航，顺序严格按 D14（错位矩阵第三，OP-6 mitigation）
+   细节:
+     - 顺序: 决策档案/冲突报告/错位矩阵/笔记wiki/周review/月review/学习检查/设置
+     - 错位矩阵故意排第三（OP-6: 防止 human 过度依赖矩阵，主场景是决策档案）
+     - active_tab 变量控制当前高亮
+     - 未实现的 tab 链接暂时指向 # (后续 task 接管真实路由)
+#}
+<nav>
+  <ul>
+    <li>
+      <a href="/decisions"
+         {% if active_tab == 'decisions' %}aria-current="page"{% endif %}>
+        决策档案
+      </a>
+    </li>
+    <li>
+      <a href="/conflicts"
+         {% if active_tab == 'conflicts' %}aria-current="page"{% endif %}>
+        冲突报告
+      </a>
+    </li>
+    <li>
+      {# 错位矩阵第三 — OP-6 mitigation: 避免 human 将矩阵视为主场景 #}
+      <a href="/matrix"
+         {% if active_tab == 'matrix' %}aria-current="page"{% endif %}>
+        错位矩阵
+      </a>
+    </li>
+    <li>
+      <a href="/notes"
+         {% if active_tab == 'notes' %}aria-current="page"{% endif %}>
+        笔记 wiki
+      </a>
+    </li>
+    <li>
+      <a href="/reviews/weekly"
+         {% if active_tab == 'weekly_review' %}aria-current="page"{% endif %}>
+        周 review
+      </a>
+    </li>
+    <li>
+      <a href="/reviews/monthly"
+         {% if active_tab == 'monthly_review' %}aria-current="page"{% endif %}>
+        月 review
+      </a>
+    </li>
+    <li>
+      <a href="/learning"
+         {% if active_tab == 'learning' %}aria-current="page"{% endif %}>
+        学习检查
+      </a>
+    </li>
+    <li>
+      <a href="/settings"
+         {% if active_tab == 'settings' %}aria-current="page"{% endif %}>
+        设置
+      </a>
+    </li>
+  </ul>
+</nav>

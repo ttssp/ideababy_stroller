@@ -1,0 +1,117 @@
+/* conflicts.css — T010
+   结论: 三列冲突报告视图样式，CSS grid 1fr 1fr 1fr，Pico CSS 兼容
+   细节:
+     - .conflict-three-columns: grid display，3 等宽列，gap 适配 Pico 间距
+     - .conflict-column: 各列容器，含 data-source 属性（测试验证点）
+     - .direction-badge: 方向标签，颜色中立（不暗示好坏）
+     - .conflict-empty-state: 空态平静样式（非错误状态）
+     - R10 红线: 无 winner / priority / recommended 相关样式类名
+*/
+
+/* ── 三列网格布局 ─────────────────────────────────────────────────────────── */
+
+.conflict-three-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--pico-grid-column-gap, 1.5rem);
+  margin-block: 1rem;
+}
+
+/* 窄屏自适应: 单列堆叠 */
+@media (max-width: 768px) {
+  .conflict-three-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 各列样式 ──────────────────────────────────────────────────────────────── */
+
+.conflict-column {
+  border: 1px solid var(--pico-border-color, #d1d5db);
+  border-radius: var(--pico-border-radius, 0.375rem);
+  padding: 1rem;
+}
+
+.conflict-column header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--pico-muted-border-color, #e5e7eb);
+}
+
+.conflict-column dl {
+  margin: 0;
+}
+
+.conflict-column dt {
+  font-size: 0.875rem;
+  color: var(--pico-muted-color, #6b7280);
+  margin-top: 0.5rem;
+}
+
+.conflict-column dd {
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+}
+
+.conflict-column .rationale {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  font-weight: normal;
+  color: var(--pico-color, inherit);
+}
+
+/* ── 方向标签（中立颜色，不暗示好坏）──────────────────────────────────────── */
+
+.direction-badge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--pico-secondary-background, #f3f4f6);
+  color: var(--pico-secondary-color, #374151);
+}
+
+/* 各方向颜色（描述性，非评价性）*/
+.direction-long     { background-color: #dbeafe; color: #1e40af; }
+.direction-short    { background-color: #fee2e2; color: #991b1b; }
+.direction-neutral  { background-color: #f3f4f6; color: #374151; }
+.direction-wait     { background-color: #fef9c3; color: #713f12; }
+.direction-no_view  { background-color: #f3f4f6; color: #9ca3af; }
+
+/* ── 分歧概要区 ──────────────────────────────────────────────────────────── */
+
+.divergence-summary {
+  background-color: var(--pico-card-background-color, #f9fafb);
+  border-radius: var(--pico-border-radius, 0.375rem);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.divergence-summary h3 {
+  margin-top: 0;
+  font-size: 1rem;
+}
+
+/* ── 空态样式 ────────────────────────────────────────────────────────────── */
+
+.conflict-empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--pico-muted-color, #6b7280);
+}
+
+.conflict-empty-state p:first-child {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* ── 报告详情页布局 ──────────────────────────────────────────────────────── */
+
+.conflict-detail .report-id {
+  font-size: 0.875rem;
+  color: var(--pico-muted-color, #6b7280);
+  margin-top: -0.5rem;
+}
