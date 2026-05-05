@@ -1,0 +1,1 @@
+- [003-pA R2 model routing](project_003_pA_r2.md) — 2026-04-24 R11 缓解:Opus ≤ 15%,仅留 T012/T017/T020

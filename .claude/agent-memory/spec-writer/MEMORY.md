@@ -1,0 +1,3 @@
+- [specs/NNN-pX layering](project_spec_layering.md) — specs/ 目录的 4 层（spec / architecture / tech-stack / reference）权限与对齐要求
+- [Table-count off-by-one lesson](feedback_table_count_drift.md) — 写 narrative 数字（"14 表"之类）时容易 off-by-one · 必须以 enumerated list 为权威
+- [003-pA R1 fix pattern](project_003pa_r1_fix.md) — Operator pre-decisions D-OP1/D-OP2/D-OP3 drove the v0.1→v0.2 bump; single-source-of-truth pattern for stuck state machine (architecture.md §8)
