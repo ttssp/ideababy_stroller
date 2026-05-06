@@ -193,14 +193,28 @@ for d in .codex-inbox/queues/*/; do
     [ -z "$found" ] && echo "PENDING  $q  $fname"
   done
 done
-# 注意!! 上面的 PENDING 是"原始信号", 渲染前必须做"产物兜底过滤":
-#   - 如果 inbox 任务标题含 LxRy → 检查 discussion/<id>/Lx/LxRy-{GPT54xHigh,Opus47Max}.md 是否存在,存在则当已完成
-#   - 如果 inbox 任务标题含 adversarial-r<N> 但 outbox 有更高 round → 当已完成 (Codex 跳过 round 直接 r_final)
+# 注意!! 上面的 PENDING 是"原始信号", 渲染前必须做"产物兜底过滤"。
+# 关键原则:**只有当所有应有产物齐全时才能视为完成**, 单边产物 = 真未完成。
+#
+#   - 如果 inbox 任务是 codex (gpt-5.4) 派工 → 检查的不是单边而是 GPT 侧 outbox。
+#     · L1R1/L1R2/L2R1/L2R2/L3R1/L3R2 codex 任务 → 产物 = discussion/<id>/Lx/LxRy-GPT54xHigh.md
+#       该文件存在 = 完成; 不存在 = 真 PENDING (即使 Opus47Max.md 已写)
+#     · 反例(必须避免): 002b-stablecoin-payroll L3R2 inbox 还在但只有 L3R2-Opus47Max.md
+#       缺 GPT 侧 → 这是真未完成, 不能因为"看到一个 round 文件"就过滤掉
+#   - L4 adversarial review: 看 outbox 里同一 fork 的 r1/r2/r_final/r_final2/r_final3 序列
+#     · 如果某 inbox 是 r2 但 outbox 已有更高 round (r_final / r_final2) → 当已完成
+#     · (Codex 在 r2 那次决定一并响应给 r_final, 跳过中间 round)
 #   - 如果 inbox 文件名含 DEFERRED → 单独标 "🟡 已搁置" 而非 "🔴 待跑"
+#
+# 当对"是否真完成"有疑问时 → 优先报告 PENDING, 让 human 看到原始信号自己判断,
+# 而不是过度过滤把真 PENDING 隐藏掉。
 
-# (f) Park / Abandon 标记
-find discussion -maxdepth 3 -name "PARK-RECORD.md" 2>/dev/null
-find discussion -maxdepth 3 -name "ABANDONED.md" 2>/dev/null
+# (f) Park / Abandon 标记 — 注意: 可能在 idea root 或 fork 内,两层都要检测
+#  · idea root parked: discussion/NNN/PARK-RECORD.md      → 整个 idea 树暂停 (含所有 fork)
+#  · fork parked:      discussion/NNN/<fork>/PARK-RECORD.md → 仅该 fork 暂停, 其它 fork 继续
+# 当前仓库示例: discussion/001/PARK-RECORD.md 是 idea-root 级
+find discussion -maxdepth 2 -name "PARK-RECORD.md" -o -name "ABANDONED.md" 2>/dev/null    # idea root
+find discussion -maxdepth 3 -name "PARK-RECORD.md" -o -name "ABANDONED.md" 2>/dev/null    # 含 fork 内
 
 # (g) 死 worktree 分支 (有 worktree-* 分支但 worktree list 中无对应)
 git branch -a 2>/dev/null | grep -oE 'worktree-[a-zA-Z0-9_-]+' | sort -u
@@ -257,15 +271,24 @@ git worktree list 2>/dev/null
 
 ### 5.3 折叠 Park / Abandon
 
+**parked 单位有两层** (5.1(f) 已说明):
+- idea-root 级 (`discussion/NNN/PARK-RECORD.md`) → 整个 idea 与其所有 fork 都暂停
+  矩阵渲染: idea 行 Status 列标 🅿️ + 折叠所有子 fork
+- fork 级 (`discussion/NNN/<fork>/PARK-RECORD.md`) → 该 fork 单独暂停, 同 idea 其它 fork 继续
+  矩阵渲染: 仅该 fork 行 Status 列标 🅿️
+
 默认输出 (无 `--include-parked` 时):
 
 ```
-🅿️ Parked (折叠 N): <fork-id-list>
-   复活条件 (一行各): <fork-id>: <revival-condition 截断 60 字>
-❌ Abandoned (折叠 N): <fork-id-list>
+🅿️ Parked (折叠 N): 001 (idea-root) · 002b-foo (fork) · ...
+   复活条件 (一行各): 001: <revival-condition 截断 60 字>
+                       002b-foo: <revival-condition>
+❌ Abandoned (折叠 N): <id-list>
 ```
 
-如果 `$ARGUMENTS == --include-parked`, 把 parked/abandoned 的 fork 当 active 一样画进矩阵, 标 🅿️/❌ 在 Status 列。
+`复活条件` 从对应 PARK-RECORD.md 的"复活条件" / "revival" 段提取。
+
+如果 `$ARGUMENTS == --include-parked`, 把 parked/abandoned 的 idea/fork 当 active 一样画进矩阵, 标 🅿️/❌ 在 Status 列。idea-root 级 parked 时其所有子 fork 也展开但都标 🅿️。
 
 ### 5.4 "Waiting on me" 段 (痛点 3)
 
@@ -324,27 +347,76 @@ days=${days:-7}
 
 ### 6.2 收集 commit 数据 (按 idea 分桶)
 
+**重要 macOS 兼容**: 默认 `/usr/bin/awk` 是 BSD awk, 不支持 gawk 三参 `match($0, /re/, m)`。
+统一用 POSIX `match() + RSTART + RLENGTH + substr()` 形式。
+
+**T-task commit 归属的真实约束** (重要, 不要试图绕过):
+
+仓库里大量 commit 是 `fix(T020)` / `feat(T013)` 这种纯 task 编号格式
+(typically L4 build 阶段). **`T<NNN>` 在每个 fork 内独立计数** — 即
+`specs/001-pA/tasks/T020.md`、`specs/003-pA/tasks/T020.md`、`specs/004-pB/tasks/T020.md`
+全都存在但是不同任务。所以**不能**用 task→fork 反查 (会得到错误的归属)。
+
+**唯一可靠的归属信息是 commit 所在分支** — 但 commit 一旦 merge 到 main, 分支信息丢失。
+`git branch --contains <sha>` 能查到的是 "包含此 commit 的所有分支", 包括 main, 不能
+唯一锁定原始 worktree。
+
+**解决方式**: T-task commits 全部归到一个 **`L4-build` 桶**, 不再细分 idea。
+理由:
+- 真相就是这个: 一旦 merge, 归属信息就丢了
+- 用户来跑 `--activity` 时主要是看"哪个 idea 在动 / 哪个沉默", L4-build 桶的存在恰好告诉
+  用户 "有 L4 build 工作正在发生但具体哪个 fork 看不到" — 这是诚实的状态信号
+
 ```bash
+# macOS BSD awk 兼容: 用 POSIX match() + RSTART/RLENGTH/substr(),  不用 gawk 三参 match()
+days=${days:-7}
 git log --all --since="${days}.days.ago" --pretty=format:'%h%x09%ai%x09%s' \
   | awk -F'\t' '
       {
-        # 从 subject 头部抽 idea/fork id: feat(NNN-XXX): 或 docs(NNN): 等
-        if (match($3, /\(([0-9]{3}[a-zA-Z0-9-]*)\)/, m)) {
-          idea = m[1]
-        } else if (match($3, /\b(spec|chore|docs|build|task|review)\b/)) {
+        s = $3
+        # 1) (NNN-fork) 显式归属 → 取 fork 名
+        if (match(s, /\([0-9]{3}[a-zA-Z0-9-]*\)/)) {
+          idea = substr(s, RSTART+1, RLENGTH-2)
+        }
+        # 2) (T<NNN>) → 归到 "L4-build" 桶 (无法可靠反查到 idea, 见上面说明)
+        else if (match(s, /\(T[0-9]+\)/)) {
+          idea = "L4-build"
+        }
+        # 3) Merge branch worktree-<id> → 归到对应 idea
+        # branch 命名约定: "worktree-idea<NNN>" (历史) 或 "worktree-<NNN-fork>" 都可能
+        else if (match(s, /Merge branch .worktree-[a-zA-Z0-9-]+./)) {
+          chunk = substr(s, RSTART, RLENGTH)
+          if (match(chunk, /worktree-idea([0-9]{3}[a-zA-Z0-9-]*)/)) {
+            # worktree-idea001 → 归到 001
+            idea = substr(chunk, RSTART+13, RLENGTH-13)
+          }
+          else if (match(chunk, /worktree-([0-9]{3}[a-zA-Z0-9-]*)/)) {
+            # worktree-001-pA → 归到 001-pA
+            idea = substr(chunk, RSTART+9, RLENGTH-9)
+          }
+          else { idea = "其他" }
+        }
+        # 4) 标准 conventional commit type(...) 但括号里不是 idea/T-id → 基础设施
+        else if (match(s, /^(spec|chore|docs|build|test|review|refactor|feat|fix)\(/)) {
           idea = "基础设施"
-        } else {
+        }
+        else {
           idea = "其他"
         }
         count[idea]++
-        last_subj[idea] = last_subj[idea] ? last_subj[idea] : $3
-        last_ts[idea] = last_ts[idea] ? last_ts[idea] : $2
+        if (!(idea in last_subj)) { last_subj[idea] = s; last_ts[idea] = $2 }
       }
       END {
         for (i in count) printf "%s\t%d\t%s\t%s\n", i, count[i], last_ts[i], last_subj[i]
       }' \
-  | sort -k2 -nr
+  | LC_ALL=C sort -k2 -nr
 ```
+
+**macOS 注意**:
+- `sort -t$'\t'` 在 macOS 默认 locale 下会因多字节字符报 `Illegal byte sequence`,
+  解决: 加 `LC_ALL=C` 前缀 (上方已加)
+- 默认 `/usr/bin/awk` 是 BSD awk, 不支持 gawk 三参 `match($0, /re/, m)`,
+  上方代码全部用 POSIX `match() + RSTART + RLENGTH + substr()` 形式
 
 ### 6.3 渲染横向 bar chart
 
