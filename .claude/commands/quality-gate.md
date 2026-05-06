@@ -78,12 +78,29 @@ PASS: p95 within SLA, no regression >10% vs previous main.
 ```
 PASS: 0 blockers in Codex's report.
 
-### G8 — Opus adversarial self-review
-Delegate to **adversarial-reviewer** subagent:
-> "Use adversarial-reviewer on the diff between main and HEAD. Three personas:
-> saboteur, new-hire, security-auditor. Each MUST find at least one issue."
+### G8 — Multi-reviewer full audit
+Run all three reviewer agents serially on the diff `main...HEAD`. Each must
+find at least one issue.
 
-PASS: overall score ≥ 85 / 100.
+a) Delegate to **code-reviewer** subagent:
+> "Use code-reviewer to review the diff `main...HEAD` for $ARGUMENTS. Output
+>  5-axis findings (correctness / clarity / consistency / test quality /
+>  scope). Classify by severity P:high / P:med / P:low.
+>  Read `specs/$ARGUMENTS-*/spec.md` for acceptance criteria reference."
+
+b) Delegate to **security-auditor** subagent:
+> "Use security-auditor on the diff `main...HEAD` for $ARGUMENTS. Audit
+>  OWASP Top 10, secrets, auth/crypto, dependency vulnerabilities. Read
+>  `specs/$ARGUMENTS-*/risks.md` and `compliance.md` for context."
+
+c) Delegate to **adversarial-reviewer** subagent:
+> "Use adversarial-reviewer on the diff between main and HEAD. Three personas:
+>  saboteur, new-hire, security-auditor. Each MUST find at least one issue."
+
+PASS criteria (all three):
+- code-reviewer: 0 P:high findings
+- security-auditor: 0 critical, 0 high
+- adversarial-reviewer: overall score ≥ 85 / 100, no persona returned "LGTM"
 
 ### G9 — Compliance checklist
 Read `specs/$ARGUMENTS-*/compliance.md` if it exists. For a consumer product typically:

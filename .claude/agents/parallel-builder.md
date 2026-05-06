@@ -105,6 +105,12 @@ When you finish (or stop on a blocker), return to the parent:
 
 ### (if BLOCKED) Suggested next step
 - <concrete recommendation>
+
+### Pre-merge review reminder (do NOT run review yourself)
+- [ ] Operator must run `/task-review <fork> T<NNN> [--reviewer=...]` before merging
+- [ ] Verdict ≠ BLOCK is mandated by repo iron rule (CLAUDE.md)
+- [ ] Default reviewer mode: `claude-full`. For high-risk tasks (auth / payment /
+      sensitive data) suggest `mixed`.
 ```
 
 ## Remember
