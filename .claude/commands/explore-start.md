@@ -1,7 +1,7 @@
 ---
 description: Start L2 Explore phase for a forked direction (or directly if /inspire was skipped). Opus writes L2R1 — deep unpacking of the idea, no search, no tech/feasibility content.
 argument-hint: "<fork-id-or-idea-number>  e.g. 001a  or  001"
-allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(ln:*), Bash(ls:*), Bash(date:*), Glob, Grep
+allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(echo:*), Bash(ls:*), Bash(date:*), Glob, Grep
 model: opus
 ---
 
@@ -71,17 +71,25 @@ Length: 700-1300 words. Specific > abstract.
 ## Step 5 — write Codex inbox task
 
 Compute timestamp `$(date -u +%Y%m%dT%H%M%S)`.
+Queue id: `QUEUE=<target>` (i.e. fork-id if forked, else root NNN).
 
-Write `.codex-inbox/<TS>-<target>-L2R1.md`:
+Ensure queue dirs:
+```bash
+mkdir -p .codex-inbox/queues/<target> .codex-outbox/queues/<target>
+```
+
+Write `.codex-inbox/queues/<target>/<TS>-<target>-L2R1.md`:
 
 ```markdown
 # Codex Task · <target> · L2R1 (Explore R1)
 
+**Queue**: <target>
 **Created**: <ISO>
 **Skip-mode**: <true|false>
 **Recommended model**: gpt-5.4
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~6-12k
+**Kickoff form**: oneshot
 
 ## Your role
 You are GPT-5.4 xhigh, Debater B, L2R1 on idea <target>. Deep unpack the idea —
@@ -112,16 +120,16 @@ discussion/.../<target>/L2/L2R1-GPT54xHigh.md using the L2R1 template:
 700-1300 words. Specific > abstract.
 
 ## When done
-Write .codex-outbox/<TS>-<target>-L2R1.md with:
+Write .codex-outbox/queues/<target>/<TS>-<target>-L2R1.md with:
 - Files written + word count
 - Headline: in 1 sentence, what the idea actually is after your unpacking
 - Top novelty claim and top limit you identified
 - Anything Claude Code should know
 ```
 
-Update symlink:
+Update queue HEAD pointer:
 ```bash
-cd .codex-inbox && ln -sf <TS>-<target>-L2R1.md latest.md
+echo "<TS>-<target>-L2R1.md" > .codex-inbox/queues/<target>/HEAD
 ```
 
 ## Step 6 — output next-step menu
@@ -140,21 +148,24 @@ Top limit: <from §5>
 
 📋 Next step: get Codex's L2R1.
 
-[1] Codex inbox is ready (recommended)
-    → in your Codex terminal:  cdx-run
+[1] (默认) 新开 Codex 终端跑 (oneshot)
+    → in your Codex terminal:  cdx-run <target>
 
-[2] I want to inject a steering note before Codex starts
+[2] reuse-session 选项 (仅当你已在 Codex 终端连贯讨论这个 idea 时有意义)
+    → 见 cdx-peek <target> 输出后自行粘贴；建议默认走 [1]
+
+[3] I want to inject a steering note before Codex starts
     → tell me what to add (will go to L2/moderator-notes.md)
 
-[3] Show full Codex kickoff for manual paste
-    → I'll display .codex-inbox/latest.md
+[4] Show full Codex kickoff for manual paste
+    → cdx-peek <target>
 
-[4] Show me Opus's L2R1 first
+[5] Show me Opus's L2R1 first
     → I'll display the file
 
-[5] Cancel — I want to revise something upstream
+[6] Cancel — I want to revise something upstream
     → tell me what
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5 or describe.
+Reply 1/2/3/4/5/6 or describe.
 ```

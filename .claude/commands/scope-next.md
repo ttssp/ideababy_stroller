@@ -1,7 +1,7 @@
 ---
 description: Run L3R2 (Opus side) — read opponent's L3R1, run scope-reality searches (what similar products include/exclude at v0.1), produce refined candidates + identify the one biggest tradeoff human must decide.
 argument-hint: "<fork-id-or-idea-number>  e.g. 001a"
-allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Bash(ln:*), WebSearch, WebFetch, Glob, Grep
+allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Bash(mkdir:*), Bash(echo:*), WebSearch, WebFetch, Glob, Grep
 model: opus
 ---
 
@@ -60,16 +60,32 @@ Length: 600-1000 words. Heavy on §2, §3, §4.
 ## Step 5 — write Codex inbox task
 
 Compute timestamp.
+Queue id: `QUEUE=<target>`.
 
-Write `.codex-inbox/<TS>-<target>-L3R2.md`:
+Ensure queue dirs:
+```bash
+mkdir -p .codex-inbox/queues/<target> .codex-outbox/queues/<target>
+```
+
+Write `.codex-inbox/queues/<target>/<TS>-<target>-L3R2.md`:
 
 ```markdown
 # Codex Task · <target> · L3R2
 
+**Queue**: <target>
 **Created**: <ISO>
 **Recommended model**: gpt-5.4
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~8-14k
+**Kickoff form**: reuse-session   ← 默认（R2 与 R1 上下文重叠 ~80%）
+
+## Session hint (only meaningful if Codex reuses session from L3R1)
+你已读过：scope-protocol SKILL, L3R0-intake.md, 自己的 L3R1, L2 stage doc.
+本轮新增需读：
+- discussion/.../<target>/L3/L3R1-Opus47Max.md  ← 对方的 R1
+- discussion/.../<target>/L3/moderator-notes.md（如存在）
+**HARD CONSTRAINT (reuse only)**: do NOT re-read files you read in the previous
+round of this Codex session unless this task explicitly lists them above.
 
 ## Your role
 You are GPT-5.4 xhigh, L3R2 on idea <target>. Read opponent's candidates,
@@ -103,7 +119,7 @@ discussion/.../<target>/L3/L3R2-GPT54xHigh.md using the L3R2 template:
 600-1000 words.
 
 ## When done
-Write .codex-outbox/<TS>-<target>-L3R2.md with:
+Write .codex-outbox/queues/<target>/<TS>-<target>-L3R2.md with:
 - Files written + word count
 - Each refined candidate headline
 - What the key tradeoff axis is (§4)
@@ -111,9 +127,9 @@ Write .codex-outbox/<TS>-<target>-L3R2.md with:
 - Anything Claude Code should know
 ```
 
-Update symlink:
+Update queue HEAD pointer:
 ```bash
-cd .codex-inbox && ln -sf <TS>-<target>-L3R2.md latest.md
+echo "<TS>-<target>-L3R2.md" > .codex-inbox/queues/<target>/HEAD
 ```
 
 ## Step 6 — output next-step menu
@@ -127,23 +143,36 @@ Scope-reality searches: <n> queries across <k> sources
 Opus's key tradeoff axis (§4): <one line>
 Refined candidates: <count> (down from/up from L3R1)
 
-📋 Next step:
+📋 Next step (两种 kickoff 形态任选):
 
-[1] Run Codex L3R2 (recommended)
-    → in your Codex terminal:  cdx-run
+[1] (默认) 在已开的 Codex 终端复用 L3R1 会话 — 省 ~60% token
+    → 粘贴这段进 Codex 终端：
 
-[2] Show Codex kickoff for manual paste
-    → I'll display .codex-inbox/latest.md
+    ```
+    继续 idea <target> 的 L3R2。
+    本轮只新读：
+    - discussion/.../<target>/L3/L3R1-Opus47Max.md  (对方 R1)
+    - discussion/.../<target>/L3/moderator-notes.md (如存在)
+    然后按 .codex-inbox/queues/<target>/HEAD 指向的任务文件执行；
+    把结果写到 .codex-outbox/queues/<target>/<HEAD-content>.md。
+    禁止重读你已读过的其他文件。
+    ```
 
-[3] Show me Opus L3R2 first
+[2] 新开 Codex 终端从零跑 (oneshot)
+    → in your Codex terminal:  cdx-run <target>
+
+[3] Show Codex kickoff for manual paste
+    → cdx-peek <target>
+
+[4] Show me Opus L3R2 first
     → I'll show the file
 
-[4] Inject a moderator note before Codex
+[5] Inject a moderator note before Codex
     → tell me what to add
 
-[5] Skip Codex L3R2 and synthesize what we have
+[6] Skip Codex L3R2 and synthesize what we have
     → /scope-advance <target>  (will note Codex L3R2 missing)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5 or describe.
+Reply 1/2/3/4/5/6 or describe.
 ```

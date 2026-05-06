@@ -1,7 +1,7 @@
 ---
 description: Run L2R2 (Opus side) — read opponent's L2R1, run value-validation searches only, produce sharpened picture + open questions for L3.
 argument-hint: "<fork-id-or-idea-number>  e.g. 001a"
-allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Bash(ln:*), WebSearch, WebFetch, Glob, Grep
+allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Bash(mkdir:*), Bash(echo:*), WebSearch, WebFetch, Glob, Grep
 model: opus
 ---
 
@@ -61,11 +61,32 @@ Length: 600-1100 words. Heavy on §3 and §4.
 ## Step 5 — write Codex inbox task
 
 Compute timestamp `$(date -u +%Y%m%dT%H%M%S)`.
+Queue id: `QUEUE=<target>`.
 
-Write `.codex-inbox/<TS>-<target>-L2R2.md` with the full Codex L2R2 kickoff
-(template in explore-protocol SKILL.md §"L2R2 Codex kickoff").
+Ensure queue dirs:
+```bash
+mkdir -p .codex-inbox/queues/<target> .codex-outbox/queues/<target>
+```
 
-Update `.codex-inbox/latest.md` symlink.
+Write `.codex-inbox/queues/<target>/<TS>-<target>-L2R2.md` with the full Codex
+L2R2 kickoff (template in explore-protocol SKILL.md §"L2R2 Codex kickoff").
+Frontmatter must include:
+```
+**Queue**: <target>
+**Kickoff form**: reuse-session   ← 默认（R2 与 R1 上下文重叠 ~80%）
+```
+And a `## Session hint` block listing only the new files vs L2R1 (typically:
+opponent's L2R1 + moderator-notes.md if any) plus the HARD CONSTRAINT:
+"Do NOT re-read files you read in the previous round of this Codex session
+unless this task explicitly lists them under Session hint."
+
+Tell Codex to write its outbox confirmation to
+`.codex-outbox/queues/<target>/<TS>-<target>-L2R2.md`.
+
+Update queue HEAD pointer:
+```bash
+echo "<TS>-<target>-L2R2.md" > .codex-inbox/queues/<target>/HEAD
+```
 
 ## Step 6 — output next-step menu
 
@@ -81,23 +102,36 @@ Refined picture (§4 in 1 sentence):
 Validation verdict: <Y / Y-with-conditions / unclear / N>
 Top open question for L3: <from §5>
 
-📋 Next step:
+📋 Next step (两种 kickoff 形态任选):
 
-[1] Run Codex L2R2 (recommended)
-    → in your Codex terminal:  cdx-run
+[1] (默认) 在已开的 Codex 终端复用 L2R1 会话 — 省 ~60% token
+    → 粘贴这段进 Codex 终端：
 
-[2] Show Codex kickoff for manual paste
-    → I'll display .codex-inbox/latest.md
+    ```
+    继续 idea <target> 的 L2R2。
+    本轮只新读：
+    - discussion/.../<target>/L2/L2R1-Opus47Max.md  (对方 R1)
+    - discussion/.../<target>/L2/moderator-notes.md (如存在)
+    然后按 .codex-inbox/queues/<target>/HEAD 指向的任务文件执行；
+    把结果写到 .codex-outbox/queues/<target>/<HEAD-content>.md。
+    禁止重读你已读过的其他文件。
+    ```
 
-[3] Show me Opus L2R2 first
+[2] 新开 Codex 终端从零跑 (oneshot)
+    → in your Codex terminal:  cdx-run <target>
+
+[3] Show Codex kickoff for manual paste
+    → cdx-peek <target>
+
+[4] Show me Opus L2R2 first
     → I'll display the file
 
-[4] Inject moderator note before Codex
+[5] Inject moderator note before Codex
     → tell me what to add
 
-[5] Skip Codex L2R2 and synthesize what we have
+[6] Skip Codex L2R2 and synthesize what we have
     → /explore-advance <target>  (will note Codex L2R2 missing)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5 or describe.
+Reply 1/2/3/4/5/6 or describe.
 ```

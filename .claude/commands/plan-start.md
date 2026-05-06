@@ -1,7 +1,7 @@
 ---
 description: Start L4 Plan phase for a forked PRD branch. Reads the chosen PRD.md, invokes spec-writer to produce the SDD package, runs task-decomposer, then triggers Codex adversarial review loop (up to 4 rounds). Output is a build-ready spec package.
 argument-hint: "<prd-fork-id>  e.g. 001a-pA"
-allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(ln:*), Bash(ls:*), Bash(date:*), Agent(spec-writer), Agent(task-decomposer), Glob, Grep
+allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(echo:*), Bash(ls:*), Bash(date:*), Agent(spec-writer), Agent(task-decomposer), Glob, Grep
 model: opus
 ---
 
@@ -100,15 +100,24 @@ Wait for completion.
 
 ## Step 6 — prepare Codex adversarial review
 
-Write `.codex-inbox/<TS>-<prd-fork-id>-L4-adversarial-r1.md`:
+Queue id: `QUEUE=<prd-fork-id>` (e.g. `001a-pA`).
+
+Ensure queue dirs:
+```bash
+mkdir -p .codex-inbox/queues/<prd-fork-id> .codex-outbox/queues/<prd-fork-id>
+```
+
+Write `.codex-inbox/queues/<prd-fork-id>/<TS>-<prd-fork-id>-L4-adversarial-r1.md`:
 
 ```markdown
 # Codex Task · <prd-fork-id> · L4 Adversarial Review Round 1
 
+**Queue**: <prd-fork-id>
 **Created**: <ISO>
 **Recommended model**: gpt-5.4
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~15-25k
+**Kickoff form**: oneshot
 
 ## Your role
 You are GPT-5.4 xhigh performing adversarial review on a just-generated spec
@@ -137,7 +146,7 @@ package. Your goal: find where this spec will fail in production.
 9. **Solo-operator viability** — can one human with AI agents actually execute this?
 
 ## Write
-.codex-outbox/<TS>-<prd-fork-id>-L4-adversarial-r1.md with:
+.codex-outbox/queues/<prd-fork-id>/<TS>-<prd-fork-id>-L4-adversarial-r1.md with:
 
 ```markdown
 # Adversarial Review · <prd-fork-id> · R1
@@ -169,9 +178,9 @@ One of:
 Quote ≤15 words verbatim from any file.
 ```
 
-Update symlink:
+Update queue HEAD pointer:
 ```bash
-cd .codex-inbox && ln -sf <TS>-<prd-fork-id>-L4-adversarial-r1.md latest.md
+echo "<TS>-<prd-fork-id>-L4-adversarial-r1.md" > .codex-inbox/queues/<prd-fork-id>/HEAD
 ```
 
 ## Step 7 — output next-step menu
@@ -201,27 +210,30 @@ Task distribution health: <from decomposer>
 
 📋 Next step: Codex adversarial review R1
 
-[1] Run Codex adversarial review (recommended)
-    → in your Codex terminal: cdx-run
+[1] (默认) 新开 Codex 终端跑 adversarial review R1 (oneshot)
+    → in your Codex terminal: cdx-run <prd-fork-id>
     (Codex reviews spec + tasks, writes blockers/concerns to outbox)
 
-[2] Show Codex kickoff for manual paste
-    → I'll display .codex-inbox/latest.md
+[2] reuse-session 选项 (R1 通常 oneshot 即可；R2-R4 由 plan-adversarial-next
+    自动走 reuse-session)
 
-[3] Show me the spec first
+[3] Show Codex kickoff for manual paste
+    → cdx-peek <prd-fork-id>
+
+[4] Show me the spec first
     → I'll display specs/<prd-fork-id>/spec.md
 
-[4] Show me the task list first
+[5] Show me the task list first
     → I'll display specs/<prd-fork-id>/dependency-graph.mmd
 
-[5] Review the task distribution
+[6] Review the task distribution
     → I'll display model assignments summary
 
-[6] Pause — I want to read everything before adversarial review
+[7] Pause — I want to read everything before adversarial review
     → run /status <prd-fork-id> to see state when ready
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5/6 or describe.
+Reply 1/2/3/4/5/6/7 or describe.
 ```
 
 ## After Codex adversarial review completes

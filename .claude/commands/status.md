@@ -36,13 +36,26 @@ For each layer dir (L1/, L2/, L3/, L4/) found:
 - Check if `stage-L<n>-*.md` synthesis exists
 - Last modified timestamp
 
-For pending Codex tasks:
+For pending Codex tasks (v2 — multi-queue):
 ```bash
-ls -lt .codex-inbox/ | head -10
-ls -lt .codex-outbox/ | head -10
+# 列出所有队列及当前 HEAD，并标注是否已被 Codex 完成
+for d in .codex-inbox/queues/*/; do
+  q=$(basename "$d")
+  h=$(cat "$d/HEAD" 2>/dev/null)
+  [ -z "$h" ] && continue
+  if [ -f ".codex-outbox/queues/$q/$h" ]; then
+    echo "$q  HEAD=$h  ✅ done"
+  else
+    echo "$q  HEAD=$h  ⏸ pending"
+  fi
+done
 ```
 
-If `latest.md` in inbox is newer than newest outbox file → there's an unread Codex task.
+每个 idea / fork 都有自己的队列，多个 idea 并行时彼此独立。
+判断规则：`queues/<id>/HEAD` 指向的任务文件**不存在于** outbox 对应路径 → 该
+队列有未读 Codex 任务（需要 `cdx-run <id>`）。
+
+如果 `$ARGUMENTS` 是具体 idea / fork-id，仅看对应队列即可（其他队列对它无意义）。
 
 ## Step 3 — render the tree
 
@@ -88,8 +101,8 @@ Based on the most recent action and what's missing, suggest the most likely next
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 Suggested next steps:
 
-[1] Wait for Codex 001a-L2R2 (the inbox task is ready)
-    → in your Codex terminal: cdx-run
+[1] Wait for Codex 001a-L2R2 (queue=001a is pending)
+    → in your Codex terminal: cdx-run 001a
 
 [2] Check Opus's L2R2 output in 001a
     → I'll show you discussion/001/001a/L2/L2R2-Opus47Max.md

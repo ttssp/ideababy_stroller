@@ -46,11 +46,18 @@ of thinking that's worth keeping. Park is normal; Abandon comes with a lesson do
   options for ❓ items, not pressure human to decide.
 - output in Chinese
 
-## Codex inbox/outbox bus
+## Codex inbox/outbox bus (v2 · 多队列)
 
-Cross-agent coordination uses `.codex-inbox/` and `.codex-outbox/` (see
-`.codex-inbox/README.md`). human runs `cdx-run` in Codex terminal — no
-copy-pasting kickoffs needed.
+Cross-agent coordination uses `.codex-inbox/queues/<id>/` 和
+`.codex-outbox/queues/<id>/`，每个 idea / fork-id 一个独立队列（见
+`.codex-inbox/README.md`）。human 在 Codex 终端运行：
+
+```
+cdx-run <queue-id>      # 例：cdx-run 003-pA
+cdx-queues              # 看所有队列与 HEAD 状态
+```
+
+旧的单一 `latest.md` symlink 在 v2 已废弃 —— 多 idea 并行/多 worktree 不再冲突。
 
 ## Tool preferences
 

@@ -68,8 +68,9 @@ tar xzf ~/Downloads/idea-incubator-v3.0-stage1.tar.gz
 bash install.sh
 bash scripts/codex-inbox-init.sh
 
-# 2. Configure Codex alias (once, in ~/.zshrc or ~/.bashrc)
-alias cdx-run='codex "read .codex-inbox/latest.md and execute exactly what it says, then write a corresponding .codex-outbox/<same-filename>.md confirming what you did"'
+# 2. Configure Codex shortcuts (once, in ~/.zshrc or ~/.bashrc)
+# 见 .codex-inbox/README.md §"Codex 端推荐 alias"，把里面的
+#   cdx-run() / cdx-peek() / cdx-queues()  三个函数粘贴进去
 source ~/.zshrc
 
 # 3. Drop an idea (one paragraph minimum)
@@ -78,37 +79,40 @@ claude
 
 # 4. L1 Inspire — let models break your cognitive limits
 > /inspire-start 001
-# (you'll see a menu when Opus done; choose [1] to send Codex)
-# in Codex terminal:  cdx-run
+# (你看到菜单时选 [1];Codex 队列已就绪)
+# in Codex terminal:  cdx-run 001
 # back in Claude Code:
 > /inspire-next 001
-# in Codex terminal:  cdx-run
+# in Codex terminal:  cdx-run 001     (默认 reuse-session,可粘菜单 [1] 段)
 > /inspire-advance 001
 # read the L1 menu; pick a direction:
 > /fork 001 from-L1 direction-3 as 001a
 
 # 5. L2 Explore — deep unpack the chosen direction
 > /explore-start 001a
-# in Codex terminal:  cdx-run
+# in Codex terminal:  cdx-run 001a
 > /explore-next 001a
-# in Codex terminal:  cdx-run
+# in Codex terminal:  cdx-run 001a    (默认 reuse-session)
 > /explore-advance 001a
 # read the explore report; if good:
 > /scope-start 001a         # L3 starts with interactive intake
 # answer 6-8 questions (each allows "not sure")
-# Opus writes L3R1 (candidate PRDs); Codex inbox is ready
-# in Codex terminal:  cdx-run
+# Opus writes L3R1 (candidate PRDs); Codex 队列已就绪
+# in Codex terminal:  cdx-run 001a
 > /scope-next 001a
-# in Codex terminal:  cdx-run
+# in Codex terminal:  cdx-run 001a    (默认 reuse-session)
 > /scope-advance 001a
 # read the PRD menu; fork the one you like:
 > /fork 001a from-L3 candidate-A as 001a-pA
 # this auto-generates PRD.md in the new fork
 > /plan-start 001a-pA       # L4 kicks off
 # spec-writer runs, task-decomposer runs, Codex adversarial review queued
-# in Codex terminal:  cdx-run    (adversarial review)
+# in Codex terminal:  cdx-run 001a-pA   (adversarial R1)
+# 若 BLOCK → 修后:  /plan-adversarial-next 001a-pA  (R2-R4,默认 reuse-session)
 # if CLEAN → proceed to build:
 > /parallel-kickoff 001a-pA T003,T004,T008
+# 每个 task worktree 合并前必跑 review gate (iron rule):
+> /task-review 001a-pA T003 --reviewer=claude-full
 > /quality-gate 001a-pA
 ```
 
@@ -176,12 +180,16 @@ Every command ends with a numbered menu. Reply with a digit or free text.
 Reply 1-5 or describe.
 ```
 
-## Codex inbox/outbox
+## Codex inbox/outbox (v2 · multi-queue)
 
 You **never copy-paste a long prompt** between terminals. Claude Code writes a
-self-contained task to `.codex-inbox/latest.md`; you run `cdx-run` in Codex;
-Codex reads the file, executes, writes confirmation to `.codex-outbox/`. See
-`.codex-inbox/README.md` for full details.
+self-contained task to `.codex-inbox/queues/<id>/<TS>-...md` and updates that
+queue's `HEAD`. You run `cdx-run <id>` in Codex; Codex reads the HEAD-pointed
+file, executes, writes confirmation to `.codex-outbox/queues/<id>/`.
+
+每个 idea / fork 一个独立队列(`<id>` = idea 编号或 fork-id)。多 idea 并行不
+冲突;`cdx-queues` 一行看完所有队列状态。两种 kickoff 形态(oneshot 与
+reuse-session)详见 `.codex-inbox/README.md`。
 
 ## Directory structure
 
@@ -198,8 +206,11 @@ my-incubator/
 │   ├── skills/                  # protocol skills (inspire-protocol, explore-protocol, ...)
 │   └── rules/                   # path-scoped rules
 │
-├── .codex-inbox/                # Claude→Codex tasks (cdx-run reads latest.md)
-├── .codex-outbox/               # Codex→Claude confirmations
+├── .codex-inbox/                # Claude→Codex tasks
+│   ├── queues/<id>/HEAD         #   每队列指针(普通文件,非 symlink)
+│   ├── queues/<id>/<TS>-*.md    #   每条任务自包含
+│   └── archive/                 #   v1 历史(latest.md 时代)
+├── .codex-outbox/               # Codex→Claude confirmations (queues/<id>/)
 ├── .codex/config.toml           # Codex project config
 │
 ├── proposals/proposals.md       # idea seeds (one-paragraph minimum)

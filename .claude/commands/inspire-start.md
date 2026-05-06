@@ -1,7 +1,7 @@
 ---
 description: Start L1 Inspire phase. Opus writes L1R1 (daydream, no search, four-section). Three modes — full (default, deep exploration), narrow (1-round only, close variations), or skip (bypass L1, go straight to L2 with proposal as direction).
 argument-hint: "<idea-number> [--mode=full|narrow|skip]  e.g. 001  or  001 --mode=narrow"
-allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(ln:*), Bash(ls:*), Bash(date:*), AskUserQuestion, Glob, Grep
+allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(mv:*), Bash(ls:*), Bash(date:*), Bash(echo:*), AskUserQuestion, Glob, Grep
 model: opus
 ---
 
@@ -72,17 +72,25 @@ Length: 600-1200 words (full) or 400-700 words (narrow).
 ## Step 6 — write Codex inbox task
 
 Compute timestamp: `$(date -u +%Y%m%dT%H%M%S)`
+Queue id: `QUEUE=$NNN` (L1 always lives at idea root, never on a fork).
 
-Write `.codex-inbox/<TS>-$NNN-L1R1.md`:
+Ensure queue dir exists:
+```bash
+mkdir -p .codex-inbox/queues/$NNN
+```
+
+Write `.codex-inbox/queues/$NNN/<TS>-$NNN-L1R1.md`:
 
 ```markdown
 # Codex Task · idea $NNN · L1R1 (Inspire R1)
 
+**Queue**: $NNN
 **Created**: <ISO>
 **Mode**: <full|narrow>
 **Recommended model**: gpt-5.4
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~5-10k
+**Kickoff form**: oneshot
 
 ## Your role
 You are GPT-5.4 xhigh, Debater B in a two-model debate on idea $NNN at the
@@ -108,15 +116,16 @@ Mode = <full|narrow>:
 - <if narrow>: 3 adjacent · 1-2 extended · 1-2 reframed · top 2-3 in Part D · 400-700 words
 
 ## When done
-Write `.codex-outbox/<TS>-$NNN-L1R1.md` confirming:
+Write `.codex-outbox/queues/$NNN/<TS>-$NNN-L1R1.md` confirming:
   - Files written and word count
   - Top 3 directions you put in Part D (one line each)
   - Anything Claude Code should know about
 ```
 
-Update `.codex-inbox/latest.md` symlink:
+Update queue HEAD pointer:
 ```bash
-cd .codex-inbox && ln -sf <TS>-$NNN-L1R1.md latest.md
+mkdir -p .codex-outbox/queues/$NNN
+echo "<TS>-$NNN-L1R1.md" > .codex-inbox/queues/$NNN/HEAD
 ```
 
 ## Step 7 — output next-step menu
@@ -134,27 +143,29 @@ Top 3 directions I put in Part D:
 2. <name> — <one line>
 3. <name> — <one line>
 
-📋 Next step: get Codex's L1R1 (it's already prepared in inbox).
+📋 Next step: get Codex's L1R1 (queue=$NNN is ready).
 
-[1] Codex inbox is ready (recommended)
-    → in your Codex terminal:  cdx-run
-    (or:  codex "read .codex-inbox/latest.md and execute exactly what it says,
-                 then write the outbox file")
+[1] (默认) 新开 Codex 终端跑 (oneshot — idea 第一次接触)
+    → in your Codex terminal:  cdx-run $NNN
 
-[2] I want to inject a steering note before Codex starts
+[2] 在已开的 Codex 终端粘贴自包含 prompt (reuse-session — 收益有限，
+    仅当你已经在用同一 Codex 会话连贯讨论这个 idea 时才有意义)
+    → cdx-peek $NNN  看到任务全文后粘贴
+
+[3] I want to inject a steering note before Codex starts
     → tell me what to add and I'll write it to L1-moderator-notes.md
 
-[3] Show me the full Codex kickoff so I can paste manually
-    → I'll display .codex-inbox/latest.md
+[4] Show me the full Codex kickoff so I can paste manually
+    → cdx-peek $NNN
 
-[4] Show me Opus's L1R1 first
+[5] Show me Opus's L1R1 first
     → I'll show discussion/$NNN/L1/L1R1-Opus47Max.md
 
-[5] Cancel — I want to revise the proposal first
+[6] Cancel — I want to revise the proposal first
     → /propose or edit proposals.md directly
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5 or describe what you want.
+Reply 1/2/3/4/5/6 or describe what you want.
 ```
 
 ## Notes for the Opus orchestrator (you, while running this command)

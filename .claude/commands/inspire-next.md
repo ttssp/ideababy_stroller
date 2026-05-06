@@ -1,7 +1,7 @@
 ---
 description: Run L1R2 (Opus side) — read opponent's L1R1, run value-validation searches only (NO tech/feasibility searches), produce refined direction list. Only meaningful in mode=full; mode=narrow ends after L1R1.
 argument-hint: "<idea-number>  e.g. 001"
-allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Bash(ln:*), WebSearch, WebFetch, Glob, Grep
+allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), Bash(mkdir:*), Bash(echo:*), WebSearch, WebFetch, Glob, Grep
 model: opus
 ---
 
@@ -60,16 +60,33 @@ Length: 500–900 words. Heavy on §3 and §4.
 ## Step 5 — write Codex inbox task
 
 Compute timestamp `$(date -u +%Y%m%dT%H%M%S)`.
+Queue id: `QUEUE=$ARGUMENTS` (L1 lives at idea root).
 
-Write `.codex-inbox/<TS>-$ARGUMENTS-L1R2.md`:
+Ensure queue dirs:
+```bash
+mkdir -p .codex-inbox/queues/$ARGUMENTS .codex-outbox/queues/$ARGUMENTS
+```
+
+Write `.codex-inbox/queues/$ARGUMENTS/<TS>-$ARGUMENTS-L1R2.md`:
 
 ```markdown
 # Codex Task · idea $ARGUMENTS · L1R2
 
+**Queue**: $ARGUMENTS
 **Created**: <ISO>
 **Recommended model**: gpt-5.4
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~6-12k
+**Kickoff form**: reuse-session   ← 默认（R2 与 R1 上下文重叠 ~80%；oneshot 也能跑）
+
+## Session hint (only meaningful if Codex reuses session from L1R1)
+你已读过：proposals/$ARGUMENTS, .claude/skills/inspire-protocol/SKILL.md,
+discussion/$ARGUMENTS/L1/L1R1-GPT54xHigh.md（自己的 R1）。
+本轮新增需读：
+- discussion/$ARGUMENTS/L1/L1R1-Opus47Max.md  ← 对方的 R1
+- discussion/$ARGUMENTS/L1/L1-moderator-notes.md（如存在）
+**HARD CONSTRAINT (reuse only)**: do NOT re-read files you read in the previous
+round of this Codex session unless this task explicitly lists them above.
 
 ## Your role
 You are GPT-5.4 xhigh, Debater B, L1R2 on idea $ARGUMENTS. Read opponent's
@@ -95,16 +112,16 @@ discussion/$ARGUMENTS/L1/L1R2-GPT54xHigh.md using the L1R2 5-section template.
 500-900 words.
 
 ## When done
-Write .codex-outbox/<TS>-$ARGUMENTS-L1R2.md with:
+Write .codex-outbox/queues/$ARGUMENTS/<TS>-$ARGUMENTS-L1R2.md with:
   - Files written + word count
   - Top 3 in your refined §4
   - Any directions you abandoned (with reason)
   - Note for Claude Code if needed
 ```
 
-Update symlink:
+Update queue HEAD pointer:
 ```bash
-cd .codex-inbox && ln -sf <TS>-$ARGUMENTS-L1R2.md latest.md
+echo "<TS>-$ARGUMENTS-L1R2.md" > .codex-inbox/queues/$ARGUMENTS/HEAD
 ```
 
 ## Step 6 — output next-step menu
@@ -120,23 +137,36 @@ Key updates this round:
   · Weakened: <direction or claim that evidence undermines>
   · New: <any direction sparked by reading opponent>
 
-📋 Next step:
+📋 Next step (两种 kickoff 形态任选):
 
-[1] Run Codex L1R2 (recommended)
-    → in your Codex terminal:  cdx-run
+[1] (默认) 在已开的 Codex 终端复用 L1R1 会话 — 省 ~60% token
+    → 粘贴这段进 Codex 终端：
 
-[2] Show Codex kickoff for manual paste
-    → I'll display .codex-inbox/latest.md
+    ```
+    继续 idea $ARGUMENTS 的 L1R2。
+    本轮只新读：
+    - discussion/$ARGUMENTS/L1/L1R1-Opus47Max.md
+    - discussion/$ARGUMENTS/L1/L1-moderator-notes.md (如存在)
+    然后按 .codex-inbox/queues/$ARGUMENTS/HEAD 指向的任务文件执行；
+    把结果写到 .codex-outbox/queues/$ARGUMENTS/<HEAD-content>.md。
+    禁止重读你已读过的其他文件。
+    ```
 
-[3] Show me Opus's L1R2 first
+[2] 新开 Codex 终端从零跑 (oneshot, 适合 R1 跑完很久 / 已退出)
+    → in your Codex terminal:  cdx-run $ARGUMENTS
+
+[3] Show Codex kickoff for manual paste
+    → cdx-peek $ARGUMENTS
+
+[4] Show me Opus's L1R2 first
     → I'll display discussion/$ARGUMENTS/L1/L1R2-Opus47Max.md
 
-[4] Inject a moderator note before Codex runs
+[5] Inject a moderator note before Codex runs
     → tell me what to add
 
-[5] Skip Codex L1R2 and synthesize what we have
+[6] Skip Codex L1R2 and synthesize what we have
     → /inspire-advance $ARGUMENTS  (will note Codex L1R2 missing)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5 or describe what you want.
+Reply 1/2/3/4/5/6 or describe what you want.
 ```

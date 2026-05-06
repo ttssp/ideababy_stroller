@@ -1,7 +1,7 @@
 ---
 description: Start L3 Scope phase. First runs L3R0 (human intake via AskUserQuestion — permissive of "not sure" answers), then Opus writes L3R1 (2-3 candidate PRD skeletons, no search, product-level only).
 argument-hint: "<fork-id-or-idea-number>  e.g. 001a"
-allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(ln:*), Bash(ls:*), Bash(date:*), AskUserQuestion, Glob, Grep
+allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(echo:*), Bash(ls:*), Bash(date:*), AskUserQuestion, Glob, Grep
 model: opus
 ---
 
@@ -171,16 +171,24 @@ Length: 800-1500 words. 2-3 candidates. Honest time estimates.
 ## Step 6 — write Codex inbox task
 
 Compute timestamp.
+Queue id: `QUEUE=<target>`.
 
-Write `.codex-inbox/<TS>-<target>-L3R1.md`:
+Ensure queue dirs:
+```bash
+mkdir -p .codex-inbox/queues/<target> .codex-outbox/queues/<target>
+```
+
+Write `.codex-inbox/queues/<target>/<TS>-<target>-L3R1.md`:
 
 ```markdown
 # Codex Task · <target> · L3R1 (Scope R1)
 
+**Queue**: <target>
 **Created**: <ISO>
 **Recommended model**: gpt-5.4
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~8-14k
+**Kickoff form**: oneshot
 
 ## Your role
 You are GPT-5.4 xhigh, Debater B, L3R1 on idea <target>. Propose 2-3 peer
@@ -212,7 +220,7 @@ discussion/.../<target>/L3/L3R1-GPT54xHigh.md using the L3R1 template:
 800-1500 words.
 
 ## When done
-Write .codex-outbox/<TS>-<target>-L3R1.md with:
+Write .codex-outbox/queues/<target>/<TS>-<target>-L3R1.md with:
 - Files written + word count
 - Headline: one-line description of each candidate
 - Which ❓ items you proposed options for
@@ -220,9 +228,9 @@ Write .codex-outbox/<TS>-<target>-L3R1.md with:
 - Anything Claude Code should know
 ```
 
-Update symlink:
+Update queue HEAD pointer:
 ```bash
-cd .codex-inbox && ln -sf <TS>-<target>-L3R1.md latest.md
+echo "<TS>-<target>-L3R1.md" > .codex-inbox/queues/<target>/HEAD
 ```
 
 ## Step 7 — output next-step menu
@@ -246,23 +254,26 @@ Key tradeoff axis across candidates: <what differs>
 
 📋 Next step: get Codex's L3R1.
 
-[1] Codex inbox is ready (recommended)
-    → in your Codex terminal:  cdx-run
+[1] (默认) 新开 Codex 终端跑 (oneshot)
+    → in your Codex terminal:  cdx-run <target>
 
-[2] Show Codex kickoff for manual paste
-    → I'll display .codex-inbox/latest.md
+[2] reuse-session 选项 (仅当你已在 Codex 终端连贯讨论这个 idea 时有意义)
+    → 见 cdx-peek <target> 输出后粘贴；通常 L3R1 直接 oneshot 即可
 
-[3] Show me Opus's L3R1 first
+[3] Show Codex kickoff for manual paste
+    → cdx-peek <target>
+
+[4] Show me Opus's L3R1 first
     → I'll show the file
 
-[4] Inject a moderator note before Codex starts
+[5] Inject a moderator note before Codex starts
     → tell me what to add (goes to L3/moderator-notes.md)
 
-[5] Revise my intake answers
+[6] Revise my intake answers
     → tell me what to change; I'll update L3R0-intake.md and we continue
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply 1/2/3/4/5 or describe.
+Reply 1/2/3/4/5/6 or describe.
 ```
 
 ## Notes for the Opus orchestrator
