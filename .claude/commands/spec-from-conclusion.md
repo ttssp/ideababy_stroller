@@ -41,7 +41,7 @@ Create directory: `specs/$ARGUMENTS-<kebab-case-project-name>/` with these files
 
 Step 1 — invoke `spec-writer` subagent:
 > "Use the spec-writer subagent with inputs:
->   - conclusion file: `conc/$ARGUMENTS-Opus47Max-GPT54xHigh-byOpus47Max-*.md`
+>   - conclusion file: `conc/$ARGUMENTS-Opus47Max-GPT55xHigh-byOpus47Max-*.md`
 >   - target directory: `specs/$ARGUMENTS-<name>/`
 >   - produce all files listed above EXCEPT tasks/ and dependency-graph.mmd"
 

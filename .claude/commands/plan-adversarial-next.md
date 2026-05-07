@@ -63,7 +63,7 @@ Write `.codex-inbox/queues/$FORK/<TS>-$FORK-L4-adversarial-r${NEXT_R}.md`:
 
 **Queue**: $FORK
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~5-10k (reuse-session 缩减自 R1 的 15-25k)
 **Kickoff form**: reuse-session   ← 默认 (R${NEXT_R} 与 R${LAST_R} 上下文重叠 ~85%)

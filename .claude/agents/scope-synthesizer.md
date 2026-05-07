@@ -13,9 +13,9 @@ decide which scope to fork into L4. Invoked by `/scope-advance`.
 
 - `discussion/.../<target>/L3/L3R0-intake.md` (human's constraints)
 - `discussion/.../<target>/L3/L3R1-Opus47Max.md`
-- `discussion/.../<target>/L3/L3R1-GPT54xHigh.md`
+- `discussion/.../<target>/L3/L3R1-GPT55xHigh.md`
 - `discussion/.../<target>/L3/L3R2-Opus47Max.md`
-- `discussion/.../<target>/L3/L3R2-GPT54xHigh.md`
+- `discussion/.../<target>/L3/L3R2-GPT55xHigh.md`
 - `discussion/.../<target>/L3/moderator-notes.md` (if exists)
 - `discussion/.../<target>/L2/stage-L2-explore-<target>.md` (context)
 - `discussion/.../<target>/FORK-ORIGIN.md` (if fork)

@@ -196,8 +196,8 @@ done
 # 注意!! 上面的 PENDING 是"原始信号", 渲染前必须做"产物兜底过滤"。
 # 关键原则:**只有当所有应有产物齐全时才能视为完成**, 单边产物 = 真未完成。
 #
-#   - 如果 inbox 任务是 codex (gpt-5.4) 派工 → 检查的不是单边而是 GPT 侧 outbox。
-#     · L1R1/L1R2/L2R1/L2R2/L3R1/L3R2 codex 任务 → 产物 = discussion/<id>/Lx/LxRy-GPT54xHigh.md
+#   - 如果 inbox 任务是 codex (gpt-5.5) 派工 → 检查的不是单边而是 GPT 侧 outbox。
+#     · L1R1/L1R2/L2R1/L2R2/L3R1/L3R2 codex 任务 → 产物 = discussion/<id>/Lx/LxRy-GPT55xHigh.md
 #       该文件存在 = 完成; 不存在 = 真 PENDING (即使 Opus47Max.md 已写)
 #     · 反例(必须避免): 002b-stablecoin-payroll L3R2 inbox 还在但只有 L3R2-Opus47Max.md
 #       缺 GPT 侧 → 这是真未完成, 不能因为"看到一个 round 文件"就过滤掉
@@ -290,7 +290,7 @@ git worktree list 2>/dev/null
 
 如果 `$ARGUMENTS == --include-parked`, 把 parked/abandoned 的 idea/fork 当 active 一样画进矩阵, 标 🅿️/❌ 在 Status 列。idea-root 级 parked 时其所有子 fork 也展开但都标 🅿️。
 
-### 5.4 "Waiting on me" 段 (痛点 3)
+### 5.5 "Waiting on me" 段 (痛点 3)
 
 5 类聚合, 每条带可执行的下一步:
 

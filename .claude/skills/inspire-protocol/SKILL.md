@@ -10,7 +10,7 @@ disable-model-invocation: false
 
 The original proposal is **a seed**. The human has cognitive limits — they can't
 have read everything, can't see every adjacent angle, can't reframe their own
-thinking easily. L1's job is to use two top-tier models (Opus 4.7 Max + GPT-5.4
+thinking easily. L1's job is to use two top-tier models (Opus 4.7 Max + GPT-5.5
 xhigh) to **expand the idea space** around the proposal.
 
 L1's output is an **inspired menu** — N candidate directions, each one a different
@@ -239,14 +239,14 @@ fallback:
 
 ### L1R1 (mode=full)
 ```
-You are GPT-5.4 xhigh, Debater B, L1R1 on idea NNN, mode=full.
+You are GPT-5.5 xhigh, Debater B, L1R1 on idea NNN, mode=full.
 
 HARD CONSTRAINT: NO web search this round. No WebSearch, no WebFetch.
 DO NOT read discussion/NNN/L1/L1R1-Opus47Max.md (parallel independence).
 
 Read: proposals/proposals.md (NNN), .claude/skills/inspire-protocol/SKILL.md, AGENTS.md
 
-Write discussion/NNN/L1/L1R1-GPT54xHigh.md using the L1R1 four-section template
+Write discussion/NNN/L1/L1R1-GPT55xHigh.md using the L1R1 four-section template
 (A · adjacent · 3-5, B · extended · 2-3, C · reframed · 2-3, D · top 3 with spark).
 
 600-1200 words. Bold and specific.
@@ -258,7 +258,7 @@ Same as above but tell model "mode=narrow → produce 3 adjacent, 1-2 extended,
 
 ### L1R2
 ```
-You are GPT-5.4 xhigh, L1R2 on idea NNN.
+You are GPT-5.5 xhigh, L1R2 on idea NNN.
 
 VALUE-VALIDATION SEARCH ONLY. Allowed: prior art, user demand, failure cases.
 Forbidden: tech stack, architecture, cost, feasibility (those are L4).
@@ -270,7 +270,7 @@ Read in order:
   your own L1R1
 
 Run ≥3 value-validation searches. Cite URLs.
-Write discussion/NNN/L1/L1R2-GPT54xHigh.md using the L1R2 5-section template.
+Write discussion/NNN/L1/L1R2-GPT55xHigh.md using the L1R2 5-section template.
 ```
 
 ## Quality bars for advancing L1 → fork → L2

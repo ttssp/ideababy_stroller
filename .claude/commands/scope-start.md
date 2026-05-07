@@ -185,13 +185,13 @@ Write `.codex-inbox/queues/<target>/<TS>-<target>-L3R1.md`:
 
 **Queue**: <target>
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~8-14k
 **Kickoff form**: oneshot
 
 ## Your role
-You are GPT-5.4 xhigh, Debater B, L3R1 on idea <target>. Propose 2-3 peer
+You are GPT-5.5 xhigh, Debater B, L3R1 on idea <target>. Propose 2-3 peer
 candidate scopes (PRD-skeleton level) under human's constraints from L3R0 intake.
 
 ## HARD CONSTRAINTS
@@ -210,7 +210,7 @@ candidate scopes (PRD-skeleton level) under human's constraints from L3R0 intake
 - AGENTS.md
 
 ## Write
-discussion/.../<target>/L3/L3R1-GPT54xHigh.md using the L3R1 template:
+discussion/.../<target>/L3/L3R1-GPT55xHigh.md using the L3R1 template:
 - §0 Reading of intake
 - §1-3 Candidates (2-3 peers, each with user/stories/IN/OUT/success/time/UX/risk)
 - §4 Options for ❓ items

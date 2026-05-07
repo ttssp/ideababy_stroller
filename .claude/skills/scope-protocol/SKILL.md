@@ -352,7 +352,7 @@ Honest concessions. This is not performative humility — genuine updates.
 
 ### L3R1
 ```
-You are GPT-5.4 xhigh, Debater B, L3R1 on idea <target>.
+You are GPT-5.5 xhigh, Debater B, L3R1 on idea <target>.
 
 HARD CONSTRAINTS:
 - NO web search this round
@@ -367,7 +367,7 @@ Read:
 - .claude/skills/scope-protocol/SKILL.md
 - AGENTS.md
 
-Write discussion/.../<target>/L3/L3R1-GPT54xHigh.md using the L3R1 template.
+Write discussion/.../<target>/L3/L3R1-GPT55xHigh.md using the L3R1 template.
 Produce 2-3 candidate scopes (peers), honest time estimates, proposals for ❓ items,
 and candidate red lines if intake didn't name any.
 800-1500 words.
@@ -375,7 +375,7 @@ and candidate red lines if intake didn't name any.
 
 ### L3R2
 ```
-You are GPT-5.4 xhigh, L3R2 on idea <target>.
+You are GPT-5.5 xhigh, L3R2 on idea <target>.
 
 SCOPE-REALITY SEARCH ONLY:
   Allowed: "what do similar products include/cut at v0.1"
@@ -391,7 +391,7 @@ Read:
 
 Run ≥3 scope-reality searches. Cite URLs. ≤15 word quotes.
 
-Write discussion/.../<target>/L3/L3R2-GPT54xHigh.md using the L3R2 template.
+Write discussion/.../<target>/L3/L3R2-GPT55xHigh.md using the L3R2 template.
 Focus on §2, §3, §4.
 600-1000 words.
 ```

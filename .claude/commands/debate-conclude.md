@@ -12,7 +12,7 @@ Idea **$ARGUMENTS**. Fold the full debate into a single decision document.
 ## Precondition check
 
 Before synthesizing, verify:
-1. Both `$ARGUMENTS-Opus47Max-final.md` and `$ARGUMENTS-GPT54xHigh-final.md` exist.
+1. Both `$ARGUMENTS-Opus47Max-final.md` and `$ARGUMENTS-GPT55xHigh-final.md` exist.
 2. If either is missing, **stop** and tell the human which one to produce first.
 
 Run: !`ls discussion/$ARGUMENTS/*-final.md 2>/dev/null || echo "MISSING"`
@@ -24,7 +24,7 @@ context window so the main session stays clean:
 
 > "Use the conclusion-synthesizer subagent to produce the conclusion for idea $ARGUMENTS.
 > Pass it the full path to `discussion/$ARGUMENTS/` and the target output path
-> `conc/$ARGUMENTS-Opus47Max-GPT54xHigh-byOpus47Max-<YYMMDD>.md` where YYMMDD is today's
+> `conc/$ARGUMENTS-Opus47Max-GPT55xHigh-byOpus47Max-<YYMMDD>.md` where YYMMDD is today's
 > date (UTC, 6-digit, e.g. 260421)."
 
 The subagent will read the whole folder and produce the conclusion file per the template

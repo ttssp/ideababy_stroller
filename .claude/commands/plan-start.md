@@ -114,13 +114,13 @@ Write `.codex-inbox/queues/<prd-fork-id>/<TS>-<prd-fork-id>-L4-adversarial-r1.md
 
 **Queue**: <prd-fork-id>
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~15-25k
 **Kickoff form**: oneshot
 
 ## Your role
-You are GPT-5.4 xhigh performing adversarial review on a just-generated spec
+You are GPT-5.5 xhigh performing adversarial review on a just-generated spec
 package. Your goal: find where this spec will fail in production.
 
 ## Read

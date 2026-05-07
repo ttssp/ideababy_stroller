@@ -10,7 +10,7 @@ type: project
 
 003-pA spec bumped to v0.2 on 2026-04-24 to absorb R1 adversarial review (BLOCK · 3 blocker + 5 high + 4 med-low).
 
-Why: Codex gpt-5.4 xhigh flagged contract gaps that would let builders ship a broken MVP. Operator pre-approved three key decisions before spec-writer round:
+Why: Codex gpt-5.5 xhigh flagged contract gaps that would let builders ship a broken MVP. Operator pre-approved three key decisions before spec-writer round:
 - D-OP1 USD < $30 = real hard cap → proxy pre-estimate + pre-reject (402/429), 60s polling SIGINT demoted to second line of defense
 - D-OP2 `.claude/` fail-closed → MacFUSE+bindfs preferred, chflags/chattr fallback, pure chmod rejected as prod path, refuse-to-start if neither available (new OQ5)
 - D-OP3 C9 cross-machine portability narrowed to "manual rsync + re-run training on remote"; cross-machine resume explicitly not supported (C22)

@@ -15,7 +15,7 @@ Idea **$ARGUMENTS**.
 ls discussion/.../<target>/L3/L3R1-*.md
 ```
 
-Need both `L3R1-Opus47Max.md` and `L3R1-GPT54xHigh.md`.
+Need both `L3R1-Opus47Max.md` and `L3R1-GPT55xHigh.md`.
 Need `L3R0-intake.md`.
 If any missing, stop and tell human (`/status <target>`).
 
@@ -24,7 +24,7 @@ If any missing, stop and tell human (`/status <target>`).
 1. `.claude/skills/scope-protocol/SKILL.md` (L3R2 template)
 2. `discussion/.../<target>/L3/moderator-notes.md` (if exists; binding)
 3. `discussion/.../<target>/L3/L3R0-intake.md` (re-check hard constraints)
-4. `discussion/.../<target>/L3/L3R1-GPT54xHigh.md` (opponent, all sections)
+4. `discussion/.../<target>/L3/L3R1-GPT55xHigh.md` (opponent, all sections)
 5. `discussion/.../<target>/L3/L3R1-Opus47Max.md` (self)
 6. `discussion/.../<target>/L2/stage-L2-explore-<target>.md` (context)
 
@@ -74,7 +74,7 @@ Write `.codex-inbox/queues/<target>/<TS>-<target>-L3R2.md`:
 
 **Queue**: <target>
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~8-14k
 **Kickoff form**: reuse-session   ← 默认（R2 与 R1 上下文重叠 ~80%）
@@ -88,7 +88,7 @@ Write `.codex-inbox/queues/<target>/<TS>-<target>-L3R2.md`:
 round of this Codex session unless this task explicitly lists them above.
 
 ## Your role
-You are GPT-5.4 xhigh, L3R2 on idea <target>. Read opponent's candidates,
+You are GPT-5.5 xhigh, L3R2 on idea <target>. Read opponent's candidates,
 search scope-reality, refine candidates, identify the key tradeoff axis.
 
 ## CONSTRAINTS
@@ -109,7 +109,7 @@ search scope-reality, refine candidates, identify the key tradeoff axis.
 ≥3 scope-reality queries. Cite URLs.
 
 ## Write
-discussion/.../<target>/L3/L3R2-GPT54xHigh.md using the L3R2 template:
+discussion/.../<target>/L3/L3R2-GPT55xHigh.md using the L3R2 template:
 - §1 What sharpened from opponent
 - §2 Scope-reality search (table)
 - §3 Refined candidates (2-3)

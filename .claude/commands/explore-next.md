@@ -37,7 +37,7 @@ Verify both L2R1 files exist:
 ls discussion/.../<target>/L2/L2R1-*.md
 ```
 
-Need both `L2R1-Opus47Max.md` and `L2R1-GPT54xHigh.md`.
+Need both `L2R1-Opus47Max.md` and `L2R1-GPT55xHigh.md`.
 If either missing, stop and tell human (`/status <target>` to see state).
 
 > Redebate context: 如果 Step 0 检测到 active redebate，确认 L2R1 文件是
@@ -48,7 +48,7 @@ If either missing, stop and tell human (`/status <target>` to see state).
 
 1. `.claude/skills/explore-protocol/SKILL.md` (L2R2 template)
 2. `discussion/.../<target>/L2/moderator-notes.md` (if exists; binding)
-3. `discussion/.../<target>/L2/L2R1-GPT54xHigh.md` (opponent — all sections)
+3. `discussion/.../<target>/L2/L2R1-GPT55xHigh.md` (opponent — all sections)
 4. `discussion/.../<target>/L2/L2R1-Opus47Max.md` (your own L2R1)
 5. (If forked) `discussion/<root>/L1/stage-L1-inspire.md` for L1 context
 6. **(Redebate only)** `_archive/v<prev>/stage-L2-explore-<target>.md` — baseline 参考

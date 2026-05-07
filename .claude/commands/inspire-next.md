@@ -14,7 +14,7 @@ Idea **$ARGUMENTS**.
 Verify both L1R1 files exist:
 ```bash
 test -f discussion/$ARGUMENTS/L1/L1R1-Opus47Max.md
-test -f discussion/$ARGUMENTS/L1/L1R1-GPT54xHigh.md
+test -f discussion/$ARGUMENTS/L1/L1R1-GPT55xHigh.md
 ```
 
 If either is missing, stop and tell the human:
@@ -24,7 +24,7 @@ If either is missing, stop and tell the human:
 
 1. `.claude/skills/inspire-protocol/SKILL.md` (L1R2 template)
 2. `discussion/$ARGUMENTS/L1/L1-moderator-notes.md` (if exists; **binding injections**)
-3. `discussion/$ARGUMENTS/L1/L1R1-GPT54xHigh.md` (opponent — all four parts)
+3. `discussion/$ARGUMENTS/L1/L1R1-GPT55xHigh.md` (opponent — all four parts)
 4. `discussion/$ARGUMENTS/L1/L1R1-Opus47Max.md` (your own L1R1)
 
 ## Step 3 — run value-validation searches
@@ -74,14 +74,14 @@ Write `.codex-inbox/queues/$ARGUMENTS/<TS>-$ARGUMENTS-L1R2.md`:
 
 **Queue**: $ARGUMENTS
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~6-12k
 **Kickoff form**: reuse-session   ← 默认（R2 与 R1 上下文重叠 ~80%；oneshot 也能跑）
 
 ## Session hint (only meaningful if Codex reuses session from L1R1)
 你已读过：proposals/$ARGUMENTS, .claude/skills/inspire-protocol/SKILL.md,
-discussion/$ARGUMENTS/L1/L1R1-GPT54xHigh.md（自己的 R1）。
+discussion/$ARGUMENTS/L1/L1R1-GPT55xHigh.md（自己的 R1）。
 本轮新增需读：
 - discussion/$ARGUMENTS/L1/L1R1-Opus47Max.md  ← 对方的 R1
 - discussion/$ARGUMENTS/L1/L1-moderator-notes.md（如存在）
@@ -89,7 +89,7 @@ discussion/$ARGUMENTS/L1/L1R1-GPT54xHigh.md（自己的 R1）。
 round of this Codex session unless this task explicitly lists them above.
 
 ## Your role
-You are GPT-5.4 xhigh, Debater B, L1R2 on idea $ARGUMENTS. Read opponent's
+You are GPT-5.5 xhigh, Debater B, L1R2 on idea $ARGUMENTS. Read opponent's
 L1R1, run value-validation searches only, produce a refined direction list.
 
 ## CONSTRAINTS
@@ -102,13 +102,13 @@ L1R1, run value-validation searches only, produce a refined direction list.
 1. .claude/skills/inspire-protocol/SKILL.md
 2. discussion/$ARGUMENTS/L1/L1-moderator-notes.md (if exists; binding)
 3. discussion/$ARGUMENTS/L1/L1R1-Opus47Max.md (opponent — all four parts)
-4. your own L1R1 (discussion/$ARGUMENTS/L1/L1R1-GPT54xHigh.md)
+4. your own L1R1 (discussion/$ARGUMENTS/L1/L1R1-GPT55xHigh.md)
 
 ## Search
 ≥3 value-validation searches. Cite URLs.
 
 ## Write
-discussion/$ARGUMENTS/L1/L1R2-GPT54xHigh.md using the L1R2 5-section template.
+discussion/$ARGUMENTS/L1/L1R2-GPT55xHigh.md using the L1R2 5-section template.
 500-900 words.
 
 ## When done

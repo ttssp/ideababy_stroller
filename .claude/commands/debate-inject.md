@@ -16,7 +16,7 @@ Ask the human (via AskUserQuestion if short, otherwise free text):
 1. "What question or constraint are you injecting?" (free text, 1–3 sentences)
 2. "Which side are you more skeptical of right now?"
    - Opus
-   - Codex / GPT-5.4
+   - Codex / GPT-5.5
    - Both equally
    - Neither — this is a new consideration
 3. "Is this a hard constraint or a softer nudge?"

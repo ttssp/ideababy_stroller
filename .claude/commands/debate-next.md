@@ -27,7 +27,7 @@ Read (in order):
 
 **Preconditions**:
 - `$1-Opus47Max-S1A.md` exists (your own daydream)
-- `$1-GPT54xHigh-S1A.md` exists (opponent's daydream)
+- `$1-GPT55xHigh-S1A.md` exists (opponent's daydream)
 
 If either is missing, stop and tell the moderator.
 

@@ -77,13 +77,13 @@ Override when one of these applies:
 - Task is the "spine" of a feature (the one others will depend on heavily)
 - The task file itself required the operator to think hard; impl will too
 
-### Use Codex 5.4 when:
+### Use Codex 5.5 when:
 - Heavy shell / CLI / PowerShell / Windows-specific work
 - Long autonomous runs (expected > 2h; Codex compaction handles this better)
 - CI/CD / GitHub Actions / Terraform / K8s manifests
 - Migration scripts that need to run against real data
 
-### Use Codex 5.4 mini when:
+### Use Codex 5.5 mini when:
 - Small, narrow bug fix (< 100 LOC change)
 - Specific lint / type error cleanup
 - Rename refactor within a file
@@ -102,7 +102,7 @@ Override when one of these applies:
 A healthy mix for a typical L/XL project:
 - Opus: 10–15% (spine tasks)
 - Sonnet: 55–70% (the bulk)
-- Codex 5.4: 10–15% (ops, long runs)
+- Codex 5.5: 10–15% (ops, long runs)
 - Codex mini: 5–10% (narrow fixes)
 - Haiku: 5–10% (boilerplate)
 
@@ -237,5 +237,5 @@ Total: 87 hours
 Critical path: 34 hours (tasks: T001 → T003 → T010 → T020 → T021 → T030)
 Speedup if max parallelism: 2.56x
 Max parallel width: 5 (Phase 1 peak)
-Model mix: Opus 12% · Sonnet 63% · Codex 5.4 12% · Codex mini 8% · Haiku 5% ✅
+Model mix: Opus 12% · Sonnet 63% · Codex 5.5 12% · Codex mini 8% · Haiku 5% ✅
 ```

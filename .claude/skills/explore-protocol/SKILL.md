@@ -264,7 +264,7 @@ Evidence in L2 says don't continue this direction (siblings still active):
 
 ### L2R1 (Daydream)
 ```
-You are GPT-5.4 xhigh, Debater B, L2R1 on idea NNN[/fork-id].
+You are GPT-5.5 xhigh, Debater B, L2R1 on idea NNN[/fork-id].
 
 HARD CONSTRAINTS:
 - NO web search this round
@@ -278,13 +278,13 @@ Read in order:
 - .claude/skills/explore-protocol/SKILL.md
 - AGENTS.md
 
-Write discussion/.../L2/L2R1-GPT54xHigh.md using the L2R1 template (sections 0
+Write discussion/.../L2/L2R1-GPT55xHigh.md using the L2R1 template (sections 0
 [skip-mode only], 1-6). 700-1300 words. Heavy on sections 1 and 3.
 ```
 
 ### L2R2 (Cross + value validation)
 ```
-You are GPT-5.4 xhigh, L2R2 on idea NNN[/fork-id].
+You are GPT-5.5 xhigh, L2R2 on idea NNN[/fork-id].
 
 VALUE-VALIDATION SEARCH ONLY:
   Allowed: prior art / demand signals / failure cases
@@ -298,7 +298,7 @@ Read:
 
 Run ≥3 value-validation searches. Cite URLs.
 
-Write discussion/.../L2/L2R2-GPT54xHigh.md using the L2R2 template (§1-§6).
+Write discussion/.../L2/L2R2-GPT55xHigh.md using the L2R2 template (§1-§6).
 600-1100 words. Heavy on §3 and §4.
 ```
 

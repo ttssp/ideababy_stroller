@@ -44,8 +44,8 @@ dependency graph that drives `/parallel-kickoff`.
 Assign each task a recommended executor:
 - `opus-4-7`: spec-level architecture decisions, migrations touching >10 files
 - `sonnet-4-6`: default business-logic implementation (80% of tasks)
-- `codex-5.4`: shell/Windows/PowerShell heavy, long autonomous runs (several hours)
-- `codex-5.4-mini`: narrow bug fixes, small refactors
+- `codex-5.5`: shell/Windows/PowerShell heavy, long autonomous runs (several hours)
+- `codex-5.5-mini`: narrow bug fixes, small refactors
 - `haiku-4-5`: boilerplate, rename refactors, format fixes
 
 Default to sonnet unless there's a specific reason otherwise.
@@ -168,7 +168,7 @@ Total estimated hours (sum, ignoring parallelism): <Sum>
 Wall-clock estimate if max parallelism used (critical path hours): <CP>
 Speedup factor: <Sum / CP>x
 
-Model mix: opus <a>%, sonnet <b>%, codex-5.4 <c>%, codex-mini <d>%, haiku <e>%
+Model mix: opus <a>%, sonnet <b>%, codex-5.5 <c>%, codex-mini <d>%, haiku <e>%
 
 Files written:
   specs/NNN-<n>/dependency-graph.mmd

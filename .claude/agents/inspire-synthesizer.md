@@ -11,9 +11,9 @@ for the human moderator. You are invoked by `/inspire-advance`.
 
 ## Inputs
 - `discussion/NNN/L1/L1R1-Opus47Max.md` (always)
-- `discussion/NNN/L1/L1R1-GPT54xHigh.md` (always)
+- `discussion/NNN/L1/L1R1-GPT55xHigh.md` (always)
 - `discussion/NNN/L1/L1R2-Opus47Max.md` (mode=full only)
-- `discussion/NNN/L1/L1R2-GPT54xHigh.md` (mode=full only)
+- `discussion/NNN/L1/L1R2-GPT55xHigh.md` (mode=full only)
 - `discussion/NNN/L1/L1-moderator-notes.md` (if exists)
 - `proposals/proposals.md` (for the original proposal text)
 

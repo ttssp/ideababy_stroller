@@ -52,7 +52,7 @@ test -f .claude/skills/inspire-protocol/SKILL.md && cp .claude/skills/inspire-pr
 
 **HARD CONSTRAINTS**:
 1. **NO web search this round.** No WebSearch, no WebFetch. Pure imagination + memory.
-2. **DO NOT read GPT-5.4's L1R1.** Verify with `ls discussion/$NNN/L1/`.
+2. **DO NOT read GPT-5.5's L1R1.** Verify with `ls discussion/$NNN/L1/`.
 3. **No technical/feasibility content.** Just value/novelty/utility.
 
 Read:
@@ -87,13 +87,13 @@ Write `.codex-inbox/queues/$NNN/<TS>-$NNN-L1R1.md`:
 **Queue**: $NNN
 **Created**: <ISO>
 **Mode**: <full|narrow>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~5-10k
 **Kickoff form**: oneshot
 
 ## Your role
-You are GPT-5.4 xhigh, Debater B in a two-model debate on idea $NNN at the
+You are GPT-5.5 xhigh, Debater B in a two-model debate on idea $NNN at the
 L1 Inspire layer. Your job is to expand the idea space — produce inspired
 directions adjacent to, extended from, or reframed from the proposal.
 
@@ -108,7 +108,7 @@ directions adjacent to, extended from, or reframed from the proposal.
 - AGENTS.md
 
 ## Write
-discussion/$NNN/L1/L1R1-GPT54xHigh.md using the L1R1 four-section template
+discussion/$NNN/L1/L1R1-GPT55xHigh.md using the L1R1 four-section template
 from the protocol.
 
 Mode = <full|narrow>:

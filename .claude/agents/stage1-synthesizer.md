@@ -17,9 +17,9 @@ valuable, but they're different things.
 ## Input
 A path like `discussion/NNN/` containing:
 - `NNN-Opus47Max-S1A.md` (Daydream, triple-section A+B+C)
-- `NNN-GPT54xHigh-S1A.md` (same)
+- `NNN-GPT55xHigh-S1A.md` (same)
 - `NNN-Opus47Max-S1B.md` (Ground, §1–§8)
-- `NNN-GPT54xHigh-S1B.md` (same)
+- `NNN-GPT55xHigh-S1B.md` (same)
 - `NNN-moderator-notes.md` (if exists)
 
 ## Output

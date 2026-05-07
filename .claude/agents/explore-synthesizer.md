@@ -11,9 +11,9 @@ You consolidate L2 Explore rounds into a single deep document about a single ide
 
 ## Inputs
 - `discussion/.../<target>/L2/L2R1-Opus47Max.md`
-- `discussion/.../<target>/L2/L2R1-GPT54xHigh.md`
+- `discussion/.../<target>/L2/L2R1-GPT55xHigh.md`
 - `discussion/.../<target>/L2/L2R2-Opus47Max.md`
-- `discussion/.../<target>/L2/L2R2-GPT54xHigh.md`
+- `discussion/.../<target>/L2/L2R2-GPT55xHigh.md`
 - `discussion/.../<target>/L2/moderator-notes.md` (if exists)
 - `discussion/.../<target>/FORK-ORIGIN.md` (if forked)
 - `discussion/<root>/L1/stage-L1-inspire.md` (if forked from L1)

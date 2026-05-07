@@ -86,13 +86,13 @@ Write `.codex-inbox/queues/<target>/<TS>-<target>-L2R1.md`:
 **Queue**: <target>
 **Created**: <ISO>
 **Skip-mode**: <true|false>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~6-12k
 **Kickoff form**: oneshot
 
 ## Your role
-You are GPT-5.4 xhigh, Debater B, L2R1 on idea <target>. Deep unpack the idea —
+You are GPT-5.5 xhigh, Debater B, L2R1 on idea <target>. Deep unpack the idea —
 its value, novelty, utility, extensions, limits. No tech/feasibility yet.
 
 ## HARD CONSTRAINTS
@@ -108,7 +108,7 @@ its value, novelty, utility, extensions, limits. No tech/feasibility yet.
 - AGENTS.md
 
 ## Write
-discussion/.../<target>/L2/L2R1-GPT54xHigh.md using the L2R1 template:
+discussion/.../<target>/L2/L2R1-GPT55xHigh.md using the L2R1 template:
 - §0 (only if skip-mode is true)
 - §1 The idea, unpacked (heart of the round, 4-8 paragraphs)
 - §2 Novelty

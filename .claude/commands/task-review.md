@@ -29,7 +29,7 @@ Q: Which reviewer mode for <fork>-<T>?
    Options:
    - claude-light  → 仅 code-reviewer (5 维度) — 小改 / UI / 文档
    - claude-full   → code-reviewer + security-auditor + adversarial-reviewer 串行 — 业务逻辑、API、状态机、并发 (Recommended)
-   - codex         → 写 inbox 让 GPT-5.4 跨模型审；catch Claude 盲点
+   - codex         → 写 inbox 让 GPT-5.5 跨模型审；catch Claude 盲点
    - mixed         → claude-full + codex 都跑、合并结果 — 高风险任务（auth / 付费 / 敏感数据）
 ```
 
@@ -86,13 +86,13 @@ Compute timestamp `$(date -u +%Y%m%dT%H%M%S)`. Write
 
 **Queue**: $FORK
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~10-20k
 **Kickoff form**: oneshot
 
 ## Your role
-You are GPT-5.4 xhigh, performing pre-merge review on a single task ($T) that
+You are GPT-5.5 xhigh, performing pre-merge review on a single task ($T) that
 parallel-builder just finished. Your goal is to find issues a friendly Claude
 reviewer might miss — concurrency, security, hidden side-effects, spec drift.
 

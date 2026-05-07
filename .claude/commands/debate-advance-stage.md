@@ -18,8 +18,8 @@ ls discussion/$1/*.md | sort
 
 ### If $2 == 2 (advancing from Stage 1 to Stage 2)
 Verify Stage 1 quality bar (from PROTOCOL.md §"Quality bars"):
-- Both debaters wrote **S1A** (daydream): `$1-Opus47Max-S1A.md` AND `$1-GPT54xHigh-S1A.md`
-- Both debaters wrote **S1B** (ground): `$1-Opus47Max-S1B.md` AND `$1-GPT54xHigh-S1B.md`
+- Both debaters wrote **S1A** (daydream): `$1-Opus47Max-S1A.md` AND `$1-GPT55xHigh-S1A.md`
+- Both debaters wrote **S1B** (ground): `$1-Opus47Max-S1B.md` AND `$1-GPT55xHigh-S1B.md`
 - Each S1A contains all three parts (A, B, C) — grep for `## Part A`, `## Part B`, `## Part C`
 - Each S1B cites ≥5 distinct URLs — grep for `http` occurrences
 

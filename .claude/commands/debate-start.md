@@ -8,7 +8,7 @@ model: opus
 # Debate · S1A (Daydream · Opus)
 
 You are Opus 4.7 Max, Debater A. Idea **$ARGUMENTS**. This is **S1A**, the
-daydream sub-phase of Stage 1. GPT-5.4 writes its own S1A in parallel; you do
+daydream sub-phase of Stage 1. GPT-5.5 writes its own S1A in parallel; you do
 not read it.
 
 ## HARD CONSTRAINTS (this round only)
@@ -46,7 +46,7 @@ Template:
 
 **Timestamp**: <from `date -u +"%Y-%m-%dT%H:%M:%SZ"`>
 **Search used**: NONE. This is imagination + memory only.
-**Visibility**: I did NOT read GPT-5.4's S1A.
+**Visibility**: I did NOT read GPT-5.5's S1A.
 
 ## Part A · Most-exciting version (POSITIVE pole)
 

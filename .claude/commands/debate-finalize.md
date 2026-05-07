@@ -13,7 +13,7 @@ Idea **$ARGUMENTS**. You are writing your **final position document**.
 Read every file in `discussion/$ARGUMENTS/`:
 - Protocol
 - All your own rounds
-- All GPT-5.4 rounds
+- All GPT-5.5 rounds
 - Moderator notes
 
 Use `ls discussion/$ARGUMENTS/ | sort`.
@@ -41,7 +41,7 @@ Pinned versions where it matters. Diagrams via Mermaid if they save words.
 ### 3.2 Phase 1 — v0.1 shippable (weeks)
 ### 3.3 Phase 2 — v1.0 commercial (weeks/months)
 
-## 4. Consensus with GPT-5.4
+## 4. Consensus with GPT-5.5
 Points where we genuinely agreed by the end. Be strict — "we both mentioned X" is
 not consensus; "we both committed to X as the way forward" is.
 
@@ -52,10 +52,10 @@ Where we still differ. For each:
 - My honest view on which of us is more likely right, and why
 - What experiment would settle it
 
-## 6. Where GPT-5.4 was stronger than me
+## 6. Where GPT-5.5 was stronger than me
 Intellectual honesty. Name ≥2 things where their framing or catch was better than mine.
 
-## 7. Where I was stronger than GPT-5.4
+## 7. Where I was stronger than GPT-5.5
 Name ≥2 things you caught that they didn't, and why it matters.
 
 ## 8. Top 5 actionable recommendations for the moderator (operator)

@@ -174,9 +174,9 @@ mkdir -p "$ARCHIVE_DIR"
 
 # 拷贝（不删原文件，保留供 re-run 时被同名覆盖）
 cp discussion/.../<target>/L2/L2R1-Opus47Max.md   "$ARCHIVE_DIR/" 2>/dev/null
-cp discussion/.../<target>/L2/L2R1-GPT54xHigh.md  "$ARCHIVE_DIR/" 2>/dev/null
+cp discussion/.../<target>/L2/L2R1-GPT55xHigh.md  "$ARCHIVE_DIR/" 2>/dev/null
 cp discussion/.../<target>/L2/L2R2-Opus47Max.md   "$ARCHIVE_DIR/" 2>/dev/null
-cp discussion/.../<target>/L2/L2R2-GPT54xHigh.md  "$ARCHIVE_DIR/" 2>/dev/null
+cp discussion/.../<target>/L2/L2R2-GPT55xHigh.md  "$ARCHIVE_DIR/" 2>/dev/null
 cp discussion/.../<target>/L2/stage-L2-explore-<target>.md "$ARCHIVE_DIR/" 2>/dev/null
 ```
 
@@ -197,9 +197,9 @@ cp discussion/.../<target>/L2/stage-L2-explore-<target>.md "$ARCHIVE_DIR/" 2>/de
 ## Files in this archive
 
 - L2R1-Opus47Max.md
-- L2R1-GPT54xHigh.md
+- L2R1-GPT55xHigh.md
 - L2R2-Opus47Max.md
-- L2R2-GPT54xHigh.md
+- L2R2-GPT55xHigh.md
 - stage-L2-explore-<target>.md
 
 ## How to revert
@@ -277,7 +277,7 @@ request. All claims rest on prior knowledge + trigger reason."
    `discussion/.../<target>/L2/L2R1-Opus47Max.md`（**覆盖旧文件**，不读旧文件）
 2. **可读** `_archive/${prev_v}/stage-L2-explore-<target>.md` 作为 baseline 参考
    （仅用来判断"哪些 framing 已变"，不抄袭其结构）
-3. **不读** `_archive/${prev_v}/L2R1-GPT54xHigh.md`（保持 R1 独立）
+3. **不读** `_archive/${prev_v}/L2R1-GPT55xHigh.md`（保持 R1 独立）
 4. 若 `no_search=false`：本轮可做 since-window search（≥3 次）
 5. 若 `no_search=true`：no web search this round
 6. NO tech / architecture / cost / feasibility content（L2 层级纪律）
@@ -336,18 +336,18 @@ Write `.codex-inbox/queues/<target>/<TS>-<target>-L2R1-redebate-${next_v}.md`：
 
 **Queue**: <target>
 **Created**: <ISO>
-**Recommended model**: gpt-5.4
+**Recommended model**: gpt-5.5
 **Recommended reasoning_effort**: xhigh
 **Estimated tokens**: ~7-13k（比标准 L2R1 多 redebate §0）
 **Kickoff form**: oneshot（**不**复用 session — redebate 强调对 baseline 的新审视，需新会话避免上文偏置）
 
 ## Your role
-You are GPT-5.4 xhigh, Debater B, L2R1 redebate ${next_v} on idea <target>.
+You are GPT-5.5 xhigh, Debater B, L2R1 redebate ${next_v} on idea <target>.
 This is a re-debate triggered by operator. Re-deeply unpack the idea —
 its value, novelty, utility, extensions, limits — under the new trigger reason.
 
 ## HARD CONSTRAINTS
-- Output file: discussion/.../<target>/L2/L2R1-GPT54xHigh.md（**覆盖旧文件**）
+- Output file: discussion/.../<target>/L2/L2R1-GPT55xHigh.md（**覆盖旧文件**）
 - 旧 R1 在 _archive/${prev_v}/，可读旧 stage-L2-explore-<target>.md 作 baseline 参考
 - **不读** _archive/${prev_v}/L2R1-Opus47Max.md（独立思考）
 - **不读** discussion/.../<target>/L2/L2R1-Opus47Max.md（同轮独立）
@@ -366,7 +366,7 @@ its value, novelty, utility, extensions, limits — under the new trigger reason
 - AGENTS.md
 
 ## Write
-discussion/.../<target>/L2/L2R1-GPT54xHigh.md（覆盖），结构：
+discussion/.../<target>/L2/L2R1-GPT55xHigh.md（覆盖），结构：
 - §0 Redebate response（§0.1 Time-window scan / §0.2 framing change / §0.3 stage doc revision）
 - §1-§6 标准 L2R1 模板（unpacked / novelty / utility / extensions / limits / three questions）
 
