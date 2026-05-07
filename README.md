@@ -173,6 +173,26 @@ discussion/001/                   ← 根 idea
 - 同理 L3：发现 PRD-A 选错了，回 L3 stage 文档 fork PRD-B，**L1/L2 不必重做**
 - 这意味着**早期决策的"机会成本"被压到接近零**——选错的代价是几小时的 L4 沉没成本，而不是从零开始重想
 
+#### 4 种 PRD 形态(L3→L4 的 fork 命令决定走哪条路)
+
+L3 fork 出 PRD 时,有 4 种形态可选 — 不同形态决定了 L4 spec-writer 怎么消化、task-decomposer 怎么切 DAG。这是把"v1 直接规划"和"多 candidate 合集"作为一等公民支持的机制。
+
+| 形态 | 命令 | 适用场景 | PRD 长什么样 | L4 产物差异 |
+|---|---|---|---|---|
+| **simple**(默认) | `/fork` | 单 candidate v0.1 — 没把握、要先打靶 | 单 candidate scope IN/OUT | 现有标准 7 文件 |
+| **phased** | `/fork-phased` | 单 candidate,已对 v1 形态有清晰想象但选先 ship v0.1 验证假设 | `**Phases**: [v0.1, v0.2, v1.0]` 任意 ≥2;每 phase 有独立 Scope IN | SLA / risks 按 phases 分段;DAG 按 phase 分层 |
+| **composite** | `/fork-composite` | 多 candidate **互补**(同一产品的不同器官,不是替代) | `**Modules**: [m1, m2, m3]`;每 module 一节 user stories / scope | 顶层 spec.md 是 INDEX + 每 module 独立 spec-`<m>`.md;DAG 按 module 用 subgraph 框 |
+| **v1-direct** | `/fork-v1` | 已对方向有把握 — 内部工具 / 同质市场已验证赛道 / v0.1 没独立可发布价值(SDK/平台) | `**Skip-rationale**: \|<≥100 字 prose,必含 C1/C2/C3 之一>`;Scope 直接 v1 | SLA.md 顶部 §"Skip rationale";risks.md 必含 R-skip-v0.1(fallback path 必填) |
+
+**怎么选?** scope-synthesizer 在 `stage-L3-scope-*.md` 末尾会强制产 §"Candidate relationships",分析 N candidate 之间是替代/互补/顺承,并**显式推荐**用哪个 fork 命令。这一节是机器人能给的"PRD-form 决策依据"。
+
+**关键判别**:
+- candidate 间是"替代" → 用多次 `/fork`(simple)做并行 sibling 子树,**不要**用 composite。sibling 允许 abandon 任一个,composite 一旦下注就要全做。
+- composite 中途要砍 module → `/fork-module-out <prd> <module>`(剩 1 module 自动建议降级为 simple)。
+- v1-direct 反悔 → next-step menu 里总有 `/fork-phased` 退路。
+
+例:idea 001 research radar 的"采集 / 解析 / 知识库 / 主动补齐 / 时间线"5 块本来就是同一产品的不同器官 — composite 合理;而 idea 005 三个 candidate 是替代关系 → 应该 parallel forking 或 simple 选一。
+
 ### 2.3 Codex inbox/outbox 总线（v2 多队列）
 
 human **从不在两个终端之间复制粘贴长 prompt**。Claude Code 把自包含任务写到 `.codex-inbox/queues/<id>/<TS>-...md` 并更新该队列的 `HEAD` 文件，Codex 终端只敲一个命令：
@@ -433,7 +453,11 @@ ideababy_stroller/
 
 | 命令 | 时机 |
 |---|---|
-| `/fork <src> from-L<n> <candidate> as <new-id>` | 任意层、任意时间，含历史回溯。from-L3 自动生成 PRD.md |
+| `/fork <src> from-L<n> <candidate> as <new-id>` | 任意层、任意时间，含历史回溯。from-L3 自动生成 simple PRD.md |
+| `/fork-phased <src> from-L3 <candidate> as <new-id>` | 单 candidate 但 PRD 内声明 ≥2 个命名 phase(v0.1+v0.2 / v0.1+v1.0 等) |
+| `/fork-composite <src> from-L3 <A,B,C> as <new-id>` | 多 candidate 合并成 1 PRD,各 candidate 变 module。**仅互补** — 替代关系请用 parallel /fork |
+| `/fork-v1 <src> from-L3 <candidate> as <new-id>` | 直奔 v1,跳过 v0.1。需填 skip-rationale ≥100 字 + 含 C1/C2/C3 之一 |
+| `/fork-module-out <prd-id> <module-id>` | composite 退路 — 砍 1 个 module(剩 1 个自动建议降级为 simple) |
 | `/status [<id>] [--activity N] [--include-parked]` | 看全局或某 idea 的真相 |
 | `/park <id>` | 暂搁(填复活条件) |
 | `/abandon <id>` | 放弃(写结构化 lesson) |

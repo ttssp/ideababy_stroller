@@ -208,6 +208,64 @@ collaboration live to adopt, A wins."
 | Fits your time budget | ✅ | ⚠ (tight) | ✅ |
 | Respects all red lines | ✅ | ✅ | ✅ |
 
+## Candidate relationships  *(强制章节,4 个子节都必须非空)*
+
+> 此章节是 PRD-form 推荐的依据。它分析 N candidate 之间到底是替代/互补/顺承,从而帮 operator 决定用哪种 fork 命令。**4 种 PRD 形态**:simple(单 candidate v0.1) / phased(单 candidate ≥2 phase) / composite(多 candidate 合 1 PRD) / v1-direct(单 candidate 直奔 v1)。
+
+### 1. Pairwise relationship matrix
+
+针对每对 candidate,标注关系类型 + 共享产物 + 时间依赖。
+
+| 关系维度 | A→B | A→C | B→C |
+|---|---|---|---|
+| **替代/互补/顺承** *(选一)* | ... | ... | ... |
+| **共享产物?** *(如 A 的 seed 可被 B 复用)* | ... | ... | ... |
+| **时间依赖?** *(如 A 必须先于 B 才有意义)* | ... | ... | ... |
+
+**关系定义**:
+- **替代**:做了 A 就不该做 B(同一需求的不同解决方案)
+- **互补**:A 和 B 服务同一产品的不同器官,合体后价值 > 单独
+- **顺承**:A 是 B 的前置(没有 A 的产出 B 无法启动)
+
+### 2. 如果合体,产品长什么样?
+
+(1-2 段。**假设 N candidate 全做掉**,描述合成产品的形态。这是 composite 形态的可行性预演 — 如果合体后产品很别扭、没有明显的合一逻辑,说明这些 candidate 是真正的"替代",不该 composite。)
+
+### 3. PRD-form 推荐
+
+**推荐**: simple | phased | composite | v1-direct
+
+**理由** *(2-3 句,引用 §1 的关系结论)*:
+<推理过程,如"A 和 B 是顺承(B 需要 A 的输出),建议 phased — A 作 v0.1 验证假设,B 作 v0.2 扩展">
+
+**不推荐**:
+- <列出明显不合适的形态及原因>
+
+### 4. 跳过 v0.1 的合理性评估
+
+**无论 §3 推荐什么,都必须答这 3 个 boolean** — 它们决定 v1-direct 是否合理:
+
+| 条件 | ✅/❌ | 证据 |
+|---|---|---|
+| **C1**:核心假设是否已外部验证?(同质市场/已有用户研究/已有 N 个验证赛道) | ✅/❌ | <来自 L2/intake 的证据> |
+| **C2**:v0.1 是否有独立可发布价值?(协议/SDK/平台类常没有) | ✅/❌ | <证据> |
+| **C3**:多 candidate 是否互补?(本来就是同一产品的不同器官) | ✅/❌ | <证据> |
+
+**判断**:
+- **0 条 ✅** → 必须走 v0.1(simple 或 phased)。v1-direct 无依据。
+- **1 条 ✅** → v1-direct 可考虑,但需 operator 在 fork-v1 时填详细 skip-rationale
+- **≥2 条 ✅** → v1-direct 强烈合理,推荐用 fork-v1
+
+### 5. composite vs parallel forking 区分(防误用)
+
+**composite 仅适用于**:N candidate 设计为同一产品的不同器官,合体后才完整(§2 已验证)。
+
+**如果 operator 想"同时试多个 peer 看哪个赢"** → 应该用多次 `/fork`(simple)创建并行 sibling 子树(`001a` + `001b` + `001c`),让它们各自独立跑 L4,**不要用 composite**。composite 一旦下注就要全做,parallel forking 允许 abandon 其中任意 sibling。
+
+本菜单的 §1 关系矩阵如果发现关系是"替代",**禁止推荐 composite** — 强制建议 parallel forking。
+
+---
+
 ## Synthesizer recommendation
 
 Pick ONE clear recommendation (even if qualified):
@@ -216,6 +274,12 @@ Pick ONE clear recommendation (even if qualified):
   Explain in 2-3 sentences why.
 - **"Fork both A and B"** when two are genuine peers serving different users,
   and parallel PRDs let human see which develops better. Explain the case.
+- **"Composite A+B(+C)"** when §"Candidate relationships" 推荐 composite,
+  且 §1 关系是"互补",§2 合体后产品形态清晰。引用关系矩阵证据。
+- **"Phased starting with A"** when §"Candidate relationships" 推荐 phased,
+  说明 phase 切分逻辑(v0.1 = 哪部分,v1.0 / v0.2 = 哪部分,phase 间需验证什么)。
+- **"v1-direct on A"** when §"Candidate relationships" §4 评估 ≥1 条 ✅,
+  说明哪条 C1/C2/C3 成立 + 引用证据。
 - **"Pause — user research needed"** when intake had critical ❓ and the menu
   can't resolve them without user input. Name the 1-2 things a user interview
   would tell.
@@ -238,14 +302,31 @@ noticed — menu is representative."
 
 ## Decision menu (for the human)
 
-### [F] Fork one or more candidates
+> **PRD-form 决定用哪个 fork 命令**。简表见 §"Candidate relationships" §3 推荐。
+
+### [F] Fork one candidate (simple form, single v0.1)
   /fork <target> from-L3 candidate-A as <target>-pA
   /plan-start <target>-pA
 
-### [MF] Fork multiple in parallel
+### [MF] Fork multiple in parallel (simple form × N, sibling 子树)
   /fork <target> from-L3 candidate-A as <target>-pA
   /fork <target> from-L3 candidate-B as <target>-pB
-  (you can /plan-start each independently)
+  (you can /plan-start each independently;allows abandon any sibling later)
+
+### [FP] Fork one candidate with phased planning (≥2 phase in same PRD)
+  /fork-phased <target> from-L3 candidate-A as <target>-pA
+  (interactive: declare phases like [v0.1, v1.0] or [v0.1, v0.2])
+
+### [FC] Fork composite (multiple candidates → one PRD with modules)
+  /fork-composite <target> from-L3 A,B,C as <target>-pAll
+  (interactive: name modules, declare module-forms)
+  /plan-start <target>-pAll
+  ⚠ 仅当 §"Candidate relationships" §1 关系是"互补",且 §2 合体后产品清晰
+
+### [F1] Fork v1-direct (skip v0.1, ship v1)
+  /fork-v1 <target> from-L3 candidate-A as <target>-pA
+  (interactive: must provide skip-rationale ≥100 字 + 含 C1/C2/C3 之一)
+  ⚠ 仅当 §"Candidate relationships" §4 评估 ≥1 条 ✅
 
 ### [R] Re-scope with new input
   /scope-inject <target> "<steering>"
@@ -263,7 +344,7 @@ noticed — menu is representative."
 ---
 
 ## Fork log
-(empty initially; updated by /fork command)
+(empty initially; updated by /fork* commands)
 ```
 
 ### Phase 7 — quality checks
@@ -274,6 +355,9 @@ Before returning:
 - [ ] No candidate violates a red line from intake
 - [ ] Comparison matrix complete
 - [ ] Key tradeoff axis named clearly
+- [ ] **§"Candidate relationships" 章节存在且 4 个子节都非空**(pairwise matrix / 合体形态 / PRD-form 推荐 / C1-C3 评估 / composite vs parallel 区分)
+- [ ] **§3 PRD-form 推荐是 4 种形态之一**(simple/phased/composite/v1-direct),有理由(2-3 句)
+- [ ] **§5 显式区分了 composite vs parallel forking**;若 §1 关系是"替代"则禁止推荐 composite
 - [ ] Single explicit recommendation (not "it depends")
 - [ ] Honesty-check section non-empty
 - [ ] ❓ items still open are surfaced

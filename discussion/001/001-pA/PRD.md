@@ -4,6 +4,8 @@
 **Created**: 2026-04-23T13:27:47Z
 **Source**: discussion/001/L3/stage-L3-scope-001.md · Candidate A
 **Approved by**: human moderator（通过 `/fork 001 from-L3 candidate-A as 001-pA` 确认）
+**PRD-form**: simple
+**Migrated**: 2026-05-07 (retroactive backfill — 当时无 PRD-form 字段,本 PRD 是 simple 形态)
 
 ---
 

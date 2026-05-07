@@ -5,6 +5,10 @@
 **Source**: `discussion/003/L3/stage-L3-scope-003.md` · 候选 A "RecallKit"
 **Approved by**: human moderator
 **Status**: 待 L4 / spec-writer 接手
+**PRD-form**: phased
+**Phases**: [v0.1, v0.2]
+**Phase-current**: v0.2
+**Migrated**: 2026-05-07 (retroactive backfill — v0.1 已 ship 2026-04-24 tag v0.1.0_idea003;v0.2 fleet mode 在 spec-v0.2-fleet.md 中规划。原 PRD 是当时的 v0.1 视图,phased 标识反映实际演化路径)
 
 ---
 

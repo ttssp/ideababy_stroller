@@ -4,6 +4,10 @@
 **Created**: 2026-04-29T03:35:31Z
 **Source**: discussion/004/L3/stage-L3-scope-004.md · Candidate B
 **Approved by**: human moderator (此版按更新后的 fork.md 模板再跑一次, v01 已归档为 PRD_v01.md)
+**PRD-form**: phased
+**Phases**: [v0.2, v0.5, v1.0, v1.5+]
+**Phase-current**: v0.2
+**Migrated**: 2026-05-07 (retroactive backfill — 本 PRD §6 已含 Phased roadmap,phased 标识反映 PRD 实际形态)
 
 > **本版与 v01 的关系**: 内容来源同 (Candidate B), 但结构按更新后的 scope-protocol 拆分:
 > - v01 的 §5 "Scope OUT" 把红线非目标 + v0.2/v0.5/v1.0/v1.5+ 阶段规划压在一起

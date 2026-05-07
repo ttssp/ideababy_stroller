@@ -1,11 +1,19 @@
 ---
-description: Fork an idea (or any sub-tree) into a new branch from any layer's stage document. Supports both "just-completed" forks and "historical retrospective" forks (revisit a past decision and try a different candidate).
+description: Fork an idea (or any sub-tree) into a new branch from any layer's stage document. Supports both "just-completed" forks and "historical retrospective" forks (revisit a past decision and try a different candidate). PRD-form = simple. For other forms see /fork-phased / /fork-composite / /fork-v1.
 argument-hint: "<source> from-L<n> <candidate-spec> as <new-id>  e.g. 001 from-L1 direction-3 as 001a"
 allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(ls:*), Bash(date:*), Glob, Grep
 model: sonnet
 ---
 
-# Fork · branch off a candidate from any layer
+# Fork · branch off a candidate from any layer (PRD-form: simple)
+
+> 本命令是 simple 形态的 fork(单 candidate · scope IN 仅 v0.1)。其他 PRD 形态用兄弟命令:
+> - `/fork-phased`     — 单 candidate,声明 ≥2 个命名 phase
+> - `/fork-composite`  — 多 candidate 合并成 1 PRD,各 candidate 变 module
+> - `/fork-v1`         — 直奔 v1,不走 v0.1(需填 skip-rationale)
+>
+> 这 4 个命令共用 Step 1-3(定位源/找候选/确认)和 Step 5-6(更新 fork log/输出菜单),只在 Step 4(PRD 生成)按形态分支。本文件 Step 4 = simple 形态。
+> 在 from-L1 / from-L2 时不生成 PRD.md,from-L3 时才生成。其他形态命令也只在 from-L3 才有差异。
 
 Parse `$ARGUMENTS` as: `<source-id> from-L<n> <candidate-spec> as <new-id>`
 
@@ -111,10 +119,10 @@ operate on the candidate above as if it were a fresh proposal. Run:
 - 001c — direction #7 (parked)
 ```
 
-### Special case: fork from L3 → also write PRD.md
+### Special case: fork from L3 → also write PRD.md (simple form)
 
 If the source layer is **L3** (from `from-L3 ...`), also produce a full PRD.md
-for the new fork by extracting the candidate section:
+for the new fork by extracting the candidate section. **本命令固定产 simple 形态 PRD**(其他形态请用 `/fork-phased` / `/fork-composite` / `/fork-v1`)。模板见 `.claude/skills/sdd-workflow/templates/PRD-simple.md`,实际写入字段同下:
 
 Write `discussion/.../<new-id>/PRD.md`:
 
@@ -125,6 +133,7 @@ Write `discussion/.../<new-id>/PRD.md`:
 **Created**: <ISO>
 **Source**: discussion/.../<source>/L3/stage-L3-scope-<source>.md · Candidate <X>
 **Approved by**: human moderator
+**PRD-form**: simple
 
 ## Problem / Context
 (From the candidate's v0.1-in-one-paragraph, expanded with L2 context as needed)

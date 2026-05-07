@@ -39,6 +39,20 @@ FORK-ORIGIN.md + the L3 stage doc now. OK?
 5. `CLAUDE.md`
 6. `.claude/skills/sdd-workflow/SKILL.md`
 
+## Step 2.5 — detect PRD-form (NEW, 透传到下游)
+
+读 PRD.md frontmatter,提取 `**PRD-form**`(缺失时默认 simple)。同时提取形态特异 frontmatter:
+- phased: `**Phases**` 数组
+- composite: `**Modules**`、`**Module-forms**`、`**Critical-path module**`(从 §"Critical-path module" 章节提取)
+- v1-direct: `**Skip-rationale**`(全文,要校验 ≥100 字 + 含 C1/C2/C3 之一,虽然 fork-v1 已校验过,这里再 sanity check 一次)
+
+**校验失败处理**(任一失败立即报错并停止,不调用 spec-writer):
+- composite 缺 `**Modules**` 或 module 数 <2
+- phased 缺 `**Phases**` 或数组长度 <2
+- v1-direct 的 skip-rationale <100 字 / 缺 C1/C2/C3 / PRD §"Risk: skip-v0.1" fallback path 仍是 `<待补充>`
+
+记录 `<PRD-FORM>` / `<PHASES>` / `<MODULES>` / `<MODULE-FORMS>` 等变量,Step 4 / 5 / 6 透传给下游。
+
 ## Step 3 — decide spec package location
 
 ```
@@ -57,26 +71,31 @@ Delegate to `spec-writer` subagent:
 > "Use spec-writer to produce a complete SDD package in `specs/<prd-fork-id>/`
 >  from the PRD at `discussion/.../<prd-fork-id>/PRD.md`.
 >
+>  **PRD-form awareness (REQUIRED)**:
+>  PRD frontmatter `**PRD-form**` = `<PRD-FORM>` (one of simple / phased / composite / v1-direct).
+>  - `<PHASES>` = <如 phased,数组如 [v0.1, v1.0]>
+>  - `<MODULES>` = <如 composite,数组如 [m1, m2, m3]>
+>  - `<MODULE-FORMS>` = <如 composite,字典>
+>  - `<CRITICAL-PATH>` = <如 composite,critical-path module 的 ID>
+>
+>  按 spec-writer Phase 0 分支:
+>  - simple    → 标准 7 文件输出
+>  - phased    → SLA / risks 按 PRD `**Phases**` 数组分段;spec.md §2 Scope Boundaries 也按 phase 分子节
+>  - composite → 顶层 spec.md 退化为 INDEX,**额外**为每 module 输出 spec-<m>.md;risks.md / SLA.md 加 Module 列
+>  - v1-direct → SLA.md 顶部加 §'Skip rationale';risks.md 必含 R-skip-v0.1 条目
+>
 >  Context to read:
->  - The PRD (source of truth for outcomes, scope, constraints)
+>  - The PRD (source of truth for outcomes, scope, constraints, form)
 >  - L3 stage doc for the menu context (why this cut was chosen vs siblings)
 >  - L2 stage doc for the idea texture
 >  - CLAUDE.md
 >  - sdd-workflow skill
 >
->  Produce:
->  - spec.md (6-element contract — use PRD outcomes as §1, PRD scope as §2,
->    PRD constraints as §3, synthesize §4 'prior decisions' from L2/L3 lineage,
->    §5 task breakdown skeleton, §6 verification criteria)
->  - architecture.md
->  - tech-stack.md (pinned versions with rationale)
->  - SLA.md (phased: v0.1 and v1.0)
->  - risks.md (technical, operational, security, commercial, bus-factor)
->  - non-goals.md (explicit from PRD scope OUT)
->  - compliance.md (if applicable — flag if PRD implies regulatory concerns)
+>  Produce(按形态产文件清单 — 见 spec-writer.md Phase 0 manifest 表)。
 >
 >  DO NOT yet create tasks/ — that's the next step (task-decomposer).
->  DO NOT start implementation — that's parallel-builder later."
+>  DO NOT start implementation — that's parallel-builder later.
+>  DO NOT modify the PRD — even if you find issues, escalate to operator."
 
 Wait for spec-writer to complete.
 
@@ -87,14 +106,19 @@ Delegate to `task-decomposer`:
 > "Use task-decomposer to break spec.md into tasks/T001.md ... T<NNN>.md and
 >  produce dependency-graph.mmd.
 >
->  Source: specs/<prd-fork-id>/spec.md
+>  **PRD-form awareness (REQUIRED)**:
+>  PRD-form = `<PRD-FORM>` (透传自 step 2.5)
+>  - composite 形态:**额外**读所有 spec-<m>.md(每 module 独立分解,顶层 INDEX 协调跨 module 任务)
+>  - phased 形态:每 task frontmatter 加 `phase_target: <phase-id>`;DAG 必须按 phase 分层(用 mermaid subgraph 框);v0.1 任务全完 + 通过 quality-gate 才允许进 v1.0 任务
+>  - composite 形态:每 task frontmatter 加 `module: <m> | shared`;file_domain 用 module 命名空间;DAG 用 mermaid subgraph 框各 module
+>
+>  Source: specs/<prd-fork-id>/spec.md(composite 时还包括 spec-*.md)
 >  Plus: architecture.md, tech-stack.md for file_domain decisions.
 >  Target dir: specs/<prd-fork-id>/tasks/
 >
->  Produce 10-30 tasks with phase labels (Phase 0/1/2/3). Apply model routing
->  heuristics from task-decomposer-skill (recommended_model per task).
+>  Produce 10-30 tasks with phase labels (build phase 0/1/2/3 + PRD-level phase_target if phased + module if composite). Apply model routing heuristics from task-decomposer-skill (recommended_model per task).
 >
->  Output distribution health report at end."
+>  Output distribution health report at end + (form-specific): 每 phase / 每 module 的 task 数分布。"
 
 Wait for completion.
 
