@@ -194,3 +194,29 @@ Karpathy的autoresearch
 我愿意为数据付费每年500美金，其他的数据尽量能自己搞定。每个股市集中看30～50只股票
 
 ---
+
+## **005**: auto agentic coding
+
+**提出日期**: 2026-05-06
+**状态**: menu-ready
+
+### 想法 (必填)
+给定一个PRD，claude code可以几乎没有人工干预的情况下自主完成开发任务。我需要一个**可靠的、自动化程度最高**解决方案。
+
+### 我为什么想做这个
+我是非软件开发背景。我可以将需求描述清楚，我也可以尝试构建较可靠的PRD。但是我缺少软件开发的经验，对各个规模（大中小型）的开发的方案、流程、规范等内容都没有把握。
+
+### 我已经想过的角度
+我最近一个月做了很多尝试：
+1. 第一个项目名idea_gamma2, @/Users/admin/codes/idea_gamma2 . 这个项目对我来说是一个大型项目，主要是构建一个人+agent共存的数字基建（通讯协议）。我尝试着梳理我的想法，并制定了一个technology roadmap @/Users/admin/codes/idea_gamma2/docs/_archive/technology_roadmap.md . 我会将开发分成几个phase来实现。每个phase开发前，我会用 @/Users/admin/codes/idea_gamma2/.claude/skills/pipeline/SKILL.md 生成 playbook，然后让claude code按照playbook去实现。每个phase结束后，会用 @/Users/admin/codes/idea_gamma2/.claude/skills/phase-retrospective/phase-retrospective-skill.md 更新 pipeline skill. 每个phase都会定制相应的subagent @/Users/admin/codes/idea_gamma2/.claude/agents，此外还构建了一部分skills @/Users/admin/codes/idea_gamma2/.claude/skills 
+
+2. 第二个项目为vibe-workflow @/Users/admin/codes/vibe-workflow/。我是通过一个engineer team协作完成自动化开发。核心内容可以参考 @/Users/admin/codes/vibe-workflow/.claude/ 
+
+3. 第三个项目是autodev_pipe @/Users/admin/codes/autodev_pipe 。该项目设计初衷是希望借鉴社区的vibe coding/agentic coding的最佳实践，实现一个agent自动化开发的piepline。 调研的一些结论、设想和计划记录在 @/Users/admin/codes/autodev_pipe/solo_ai_pipeline_v3.1.md 。其中主要借鉴最近流行的addy osmani的agent-skills，据说这套skills是把多年在 Google 级工程体系中沉淀出的工程纪律，迁移到 AI agent，让模型不只是更快地产出代码，而是在规格、测试、评审、验证和发布约束下产出更可信的软件。此外，本项目也吸收了superpowers的部分skills。核心目的是借助这些skills打造”专业的自动化开发流程“
+   
+4. 第四个项目为当前repo。核心是为尝试将一个idea转化成一个成型的产品/软件。本repo在idea成型（产出PRD）后，会进入自动开发阶段。
+
+### 我诉求
+我希望双方凭借最强的AI专业能力以及最丰富的软件开发经验，通过调研、论证、思辨、构思、设计、整理归纳等方式，达成一套基于claude code实现**可靠**自动化开发的framework/pipeline的共识方案
+
+---
