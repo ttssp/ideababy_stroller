@@ -6,6 +6,20 @@
 
 ---
 
+## 📌 What's new (2026-05-07)
+
+今天落地三项改进，把孵化器从"4 层主线"扩展到"4 层 + 横切层 + PRD 形态多元化"：
+
+| 改进 | 解决的问题 | 主要入口 |
+|---|---|---|
+| **横切层 `/expert-forge`** | 主线 L1-L4 不覆盖"已有 repo / 多份 stage 文档 / 外部材料"的双专家审阅 + SOTA 对标 + **强制收敛**到单一 verdict 的工作模式 | `/expert-forge <id>` · `/forge-inject <id>`（详见 §2.6） |
+| **4 种 PRD 形态** | L3→L4 fork 不再只能"单 candidate v0.1"，把 `phased / composite / v1-direct` 提升为一等公民，避免 operator 现场发明 | `/fork-phased` · `/fork-composite` · `/fork-v1` · `/fork-module-out`（详见 §2.2 的 4 种形态表） |
+| **GPT-5.4 → GPT-5.5 xhigh** | 统一升级所有 L1-L4 命令模板 / skill / agent 描述里的 Codex debater 模型名；新启动 idea 默认走新模型，已落盘文件保持原名 | 影响 30+ 文件的 docstring，无需 operator 操作 |
+
+下面 §2.2、§2.6、§5 已嵌入这些改动；想直接看每条怎么用，跳到 §5 命令速查表。
+
+---
+
 ## 0. 这个 repo 到底是什么
 
 它**不是一个普通软件项目**，而是一个**"想法 → 软件"的孵化器仓库**。一个仓库同时承载多个 idea 在不同阶段的全部产物：
@@ -243,7 +257,81 @@ cdx-peek 003-pA     # 偷看下一步要干嘛
 
 > **个人偏好已固化**：`003-pA` build 阶段 parallel-builder 一律用 sonnet，忽略 task 的 recommended_model。
 
-### 2.6 10 质量门（v0.1 → 商业化前的硬关卡）
+### 2.6 横切层：`/expert-forge`（双专家审阅 + SOTA 对标 + 强制收敛）
+
+L1-L4 主线是"从零生发"的工作流。但**已经存在的东西**也需要被审：repo 跑了几版要拍板 redesign 还是 incremental optimize、一份成熟 idea 文档要直接产出可执行 PRD、多个外部参考 repo 要被综合评估。这类工作 L1/L2 太发散、L3 给候选菜单 defer 给 human、`/code-review` 又只看代码——**没有合适的层**。
+
+`/expert-forge` 是一个**横切动作**(cross-cutting)，可以在 pipeline 任何位置触发。两个顶级模型扮演**审阅人**而非设计师：读现状 → SOTA 对标 → **强制收敛**到单一 verdict + W 形态可执行草案。
+
+#### Forge 与 L2/L3 的关键区别
+
+| 维度 | L2/L3 | forge |
+|---|---|---|
+| **输入** | 文档（proposal / stage doc） | repo 代码 + 多份 stage 文档 + 外部材料 + 用户关切 |
+| **双方姿态** | 设计师（daydreamer，从零想象） | 审阅人（reviewer，评判已存在物） |
+| **决策权** | defer 给 human（给候选菜单） | **强制收敛**（默认 strong-converge） |
+| **产出** | 候选 PRD 菜单 | 单一 verdict + W 形态草案 |
+| **搜索类型** | 价值验证 / scope-reality | SOTA 对标 / 实现路径调研 |
+| **是否进 pipeline** | 是（L1→L2→L3→L4） | 否（横切层，**不嵌入**主线） |
+
+#### 4+1 变量 + 收敛强度（Phase 0 intake 收集）
+
+| 变量 | 含义 | 例 |
+|---|---|---|
+| **X · 审阅标的** | 仓库子目录 / 外部 repo 路径 / URL / 直接粘贴文本 / 历史 stage 文档 | `discussion/005/L3/` + `/Users/admin/codes/idea_gamma2/` |
+| **Y · 审阅视角** | multi-select：产品价值 / 架构设计 / 工程纪律 / 安全 / 教学价值 / 商业可行 / UX / free-text | 架构设计 + 工程纪律 + UX |
+| **Z · 参照系** | single-select：对标 SOTA / 对标指定列表 / 不对标纯内部 | 对标 SOTA |
+| **W · 产出形态** | multi-select：verdict-only / decision-list / refactor-plan / **next-PRD** / next-dev-plan / free-essay | next-PRD + refactor-plan |
+| **K · 用户判准** | free-text，贯穿所有 phase 的"你最在乎什么" | "最少代码重写量、必须用上已验证的两个 novelty、v0.1 必须 polish 拿得出手" |
+| **收敛强度** | strong-converge（默认，单 verdict）/ preserve-disagreement（允许 ≤2 个并存 path） | strong-converge |
+
+#### 5 个 Phase（状态机模式：反复跑同一命令推进）
+
+```
+Phase 0 · intake          ── operator 答 4+1 变量 + 收敛强度
+   ▼
+Phase 1 · 独立审阅          ── 双方各自按 Y 视角审 X 标的（无 search）
+   ▼
+Phase 2 · SOTA 对标         ── 双方按 Z 检索 SOTA / 消化用户外部材料
+   ▼
+Phase 3 · 联合收敛 R1       ── 双方互读 P2，提出收敛草稿
+   ▼
+Phase 3 · 联合收敛 R2       ── 双方根据对方 R1 修订，对齐到单一 verdict
+   ▼
+Phase 4 · synthesizer       ── forge-synthesizer 子智能体出 stage doc
+                              输出: <DISCUSSION_PATH>/forge/v<N>/stage-forge-<id>-v<N>.md
+```
+
+每跑一次 `/expert-forge <id>`，状态机自动推进到下一个未完成的 Phase；中间夹 `cdx-run <id>` 让 Codex 完成它的 P1/P2/P3R1/P3R2 任务。
+
+#### 用法（2 个命令）
+
+```bash
+# 启动或推进（同一命令反复跑，每次推进一个 Phase）
+[A] /expert-forge 005           # 第 1 次：Phase 0 intake → Phase 1 Opus 写完 → 等 Codex
+[B] cdx-run 005                 # Codex 写 P1
+[A] /expert-forge 005           # 第 2 次：检测 P1 齐全 → Phase 2 Opus → 等 Codex
+[B] cdx-run 005                 # Codex 写 P2
+[A] /expert-forge 005           # 第 3 次：→ Phase 3R1 Opus → 等 Codex
+... 直到 Phase 4 synthesizer 出 stage doc
+
+# 在任意 Phase 转换前注入约束（同 scope-inject 风格）
+[A] /forge-inject 005           # 追加 moderator note 到 forge/v<N>/moderator-notes.md
+                                # 下一轮 Opus/Codex 必须读取并响应
+```
+
+**版本管理**：
+- `<DISCUSSION_PATH>/forge/v1/`、`v2/`、…—— 每次完整跑完是一个版本
+- `phase=done` → 询问 [查看 / 起 v<N+1> / cancel]
+- `phase=aborted` → 自动起 v<N+1>，Phase 0 重做 intake
+
+**适用场景例**：
+- idea 005（auto agentic coding）已经有几版 spec/exploration，想让两位专家拍板"哪些保留、哪些 redesign、下一版 PRD 应该长什么样" → `/expert-forge 005`，Z=对标 SOTA，W=`refactor-plan + next-PRD`
+- 一个 fork 的 v0.1 已经发布，想让专家审阅"现状 vs SOTA"，给出 refactor 路径 → `/expert-forge <fork-id>`，X 包含 repo 代码 + 用户使用反馈
+
+详细协议见 [`.claude/skills/forge-protocol/SKILL.md`](./.claude/skills/forge-protocol/SKILL.md)（808 行，覆盖每个 Phase 的契约 / 护栏 / 失败模式）。
+
+### 2.7 10 质量门（v0.1 → 商业化前的硬关卡）
 
 `/quality-gate <fork-id>` 依次跑（任一不过不能 ship）：
 
@@ -462,6 +550,13 @@ ideababy_stroller/
 | `/park <id>` | 暂搁(填复活条件) |
 | `/abandon <id>` | 放弃(写结构化 lesson) |
 
+### 横切层（不属于 L1-L4 主线）
+
+| 命令 | 时机 |
+|---|---|
+| `/expert-forge <id>` | 双专家审阅已有产物（repo / stage 文档 / 外部材料）+ SOTA 对标 + 强制收敛。**状态机模式**——同一命令反复跑，每次推进 1 个 Phase（intake → P1 → P2 → P3R1 → P3R2 → synthesizer）。详见 §2.6 |
+| `/forge-inject <id>` | 在任意 Phase 转换前注入 moderator 约束（同 `/scope-inject` 风格），下一轮 Opus + Codex 必须读取并响应 |
+
 ### Legacy v2.1（保留作 escape hatch，已标 DEPRECATED）
 
 `/debate-start` `/debate-next` `/debate-advance-stage` `/debate-conclude` `/debate-finalize` `/debate-inject` `/spec-from-conclusion` —— 用于"我不想走 4 层，直接辩→结论→spec"的旧流程。
@@ -509,7 +604,8 @@ ideababy_stroller/
 | 项目宪法（铁律全文） | [`CLAUDE.md`](./CLAUDE.md) |
 | Codex 总线机制细节 | [`.codex-inbox/README.md`](./.codex-inbox/README.md) |
 | 各层协议（L1-L4 怎么写每一轮） | [`.claude/skills/{inspire,explore,scope}-protocol/SKILL.md`](.claude/skills/) |
-| SDD 工件契约(6 要素 spec) | [`.claude/skills/sdd-workflow/SKILL.md`](.claude/skills/sdd-workflow/SKILL.md) |
+| 横切层 forge 协议（4+1 变量 / 5 phase / 状态机） | [`.claude/skills/forge-protocol/SKILL.md`](.claude/skills/forge-protocol/SKILL.md) |
+| SDD 工件契约(6 要素 spec) + 4 种 PRD 形态模板 | [`.claude/skills/sdd-workflow/SKILL.md`](.claude/skills/sdd-workflow/SKILL.md) · [`templates/PRD-{simple,phased,composite,v1-direct}.md`](.claude/skills/sdd-workflow/templates/) |
 | 任务分解启发式 | [`.claude/skills/task-decomposer-skill/SKILL.md`](.claude/skills/task-decomposer-skill/SKILL.md) |
 | 质量门跑哪些 | [`.claude/skills/quality-gate-runner/SKILL.md`](.claude/skills/quality-gate-runner/SKILL.md) |
 | 当前 001-pA 工程契约 | [`specs/001-pA/README.md`](./specs/001-pA/README.md) |
