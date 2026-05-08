@@ -246,3 +246,38 @@ Karpathy的autoresearch
 我希望双方凭借最强的AI专业能力以及最丰富的软件开发经验，通过调研、论证、思辨、构思、设计、整理归纳等方式，达成一套基于claude code实现**可靠**自动化开发的framework/pipeline的共识方案
 
 ---
+
+## **007**: friction-tap · 摩擦点速记 CLI
+
+**提出日期**: 2026-05-08
+**状态**: draft
+
+### 想法 (必填)
+一个超薄 CLI:`friction <message>` 自动把 `<UTC ISO timestamp> - <message>` append 到当前仓库的 `docs/dogfood/v4-friction-log.md`(若不存在就创建)。目标是**让 V4 dogfood 阶段记录工具链摩擦点的成本降到零** — 当下不记 = 后面再也想不起来;记需要 5 步 = 也不会真记。
+
+### 我为什么想做这个
+forge 006 路径 2 的 4 周 playbook 在 W2 step 4 明确要求"每次 V4 retrospective skill 跑得不顺畅就 jot 一笔到 friction-log"。但当前没有 ergonomic 工具,operator 必须 (1) 切到 docs/dogfood/ (2) 找 v4-friction-log.md (3) 算 ISO timestamp (4) append (5) 保存。这 5 步在"刚被工具坑了一下"的当下 90% 概率会被跳过 → friction-log 长期空 → checkpoint-01 没素材 → V4 dogfood 信号被稀释。
+
+### 我已经想过的角度
+- **不要做成跨仓自动检测最近 friction-log** — 太复杂;先做"显式指定路径或当前 cwd 找最近的"两条规则就够
+- **不要做 GUI / TUI** — 摩擦记录工具自己有摩擦就废了,纯 CLI 一行命令最好
+- **不要做云同步** — friction-log 是仓库内文档,跟 git 走
+
+### 我已知的相邻方案/竞品
+- `dlog` / `note` 类 CLI 太多,但都是通用 note tool,不专门挂 friction-log 语义
+- shell alias `frictlog` 自己一行 echo + redirect 也能做,但容易写错路径 / timestamp 格式
+
+### 我的初始约束
+- 实现:Python 单文件 + `~/bin/friction` 软链(或直接用 bash)
+- 时间:1 周内 L1 → L4 → ship v0.1
+- 平台:macOS 本机(operator 工作环境)
+- 必须用 UTC ISO 8601 timestamp(跟 v4-friction-log.md 既有格式一致)
+
+### 我的倾向
+Python(可读性)优于 bash;单文件 ≤ 100 行;无第三方依赖(stdlib only)。
+
+### 还在困扰我的问题
+- "找最近的 friction-log"在仓库 / 不在仓库两种情况怎么处理?`cwd 不在 git 仓库就 fallback 到 ~/.claude/global-friction-log.md` 还是 `直接报错让 operator 显式 -f`?
+- 是否要加 `friction --tail N` 看最近 N 条?(可能超出 v0.1 scope)
+
+---

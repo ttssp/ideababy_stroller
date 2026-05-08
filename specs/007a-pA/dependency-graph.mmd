@@ -1,0 +1,82 @@
+```mermaid
+graph TD
+    %% Phase 0 — Foundation (sequential)
+    T001[T001: paths.py · repo-root + log-path 探测]
+    T002[T002: state.py · state.json read/write]
+    T003[T003: format.py · entry 格式化 + 原子 append]
+
+    %% Phase 1 — Core (parallel after Phase 0)
+    T010[T010: judge.py · 静态规则判定 + threshold]
+    T011[T011: hook.py · PostToolUseFailure handler]
+    T012[T012: cli.py · friction message + control flags]
+    T013[T013: grep.py · 24h 窗口 + tag 统计]
+
+    %% Phase 2 — Trust summary + scheduling
+    T020[T020: trust_summary.py · 模板渲染 + self-interview prompt]
+    T021[T021: launchd plist + install_launchd.sh]
+
+    %% Phase 3 — Polish & ship (parallel)
+    T030[T030: 单元测试 · judge/state/format/paths]
+    T031[T031: 集成测试 · 并发 append + OQ-D fail-loud + worktree]
+    T032[T032: README + privacy + .gitignore 教学]
+    T033[T033: hook 注册 + install.sh + dogfood 起点]
+
+    %% Phase 0 dependencies (paths -> state -> format)
+    T001 --> T002
+    T001 --> T003
+    T002 --> T003
+
+    %% Phase 1 depends on Phase 0
+    T001 --> T010
+    T002 --> T010
+    T010 --> T011
+    T002 --> T011
+    T003 --> T011
+    T001 --> T012
+    T002 --> T012
+    T003 --> T012
+    T001 --> T013
+    T003 --> T013
+
+    %% Phase 2 depends on grep + state + format
+    T013 --> T020
+    T002 --> T020
+    T020 --> T021
+
+    %% Phase 3 — testing depends on units + integration; docs depend on full feature set
+    T010 --> T030
+    T002 --> T030
+    T003 --> T030
+    T001 --> T030
+    T011 --> T031
+    T012 --> T031
+    T020 --> T031
+    T011 --> T032
+    T012 --> T032
+    T020 --> T032
+    T021 --> T033
+    T032 --> T033
+```
+
+Notes:
+- Phase 0 (T001/T002/T003) is mostly sequential — paths is bottom layer, state + format depend on paths;
+  T002 + T003 partially parallelizable but T003 references state schema for atomic-write pattern.
+- Phase 1 fan-out: T011/T012/T013 parallelizable after T010 + T002 + T003 are green.
+- T020 (trust_summary) sits at integration point — needs grep + state + format-read-back.
+  R1 B2 fix:T020 内部提供 `--check-enabled` / `--check-self-interview` 两 CLI flag 作为 health/O6 verification 等价物
+  (替代 spec 引用但不存在的 `friction_tap.tools.count_entries` / `friction_tap.tools.health_check`)。
+  R1 B3 fix:O3 严格 binary(仅 state.enabled);activity freshness 单列 informational 不进 O3。
+  R2 B-R2-3 fix:O3 与 review_mode 正交(D20)— review session 期间 trust_summary --check-enabled 仍 PASS。
+- T021 (launchd) only needs trust_summary entry point ready.
+- T002/T011/T012/T031 contracts revised in R2 to support state.review_mode field
+  (B-R2-3:hook gate = enabled AND NOT review_mode;CLI 加 --review-mode-on/-off;TestO3PassesDuringReviewMode)。
+  T011 加显式空 stdin pre-read(H-R2-3:legal noop vs schema drift 区分)。
+- Phase 3 testing tasks parallelize cleanly because their file_domain (tests/*) is disjoint from
+  feature code, except for occasional fixture collision that worker is allowed to resolve.
+- Critical path (R2 修订:Schedule risk · 22.75h sum 在 PRD v1.1 C1 12-23h 预算内,余量 0.25h):
+    T001 → T002 → T003 → T010 → T011 → T031 → done (6 串行 nodes ≈ 11.25h);
+    剩余 ~11.5h 在并行分支 (T012/T013/T020/T021 + T030/T032/T033) 中。
+    详见 spec.md §5 Schedule risk 段。
+- Task ID 一致性(R1 H6 fix 后保持):tasks/ 目录共 13 个文件,本图共 13 个节点,
+  spec.md §5 共 13 个引用 — **完全一致,无 ghost T022**。
+  原 spec §5 引用的 T022(OQ-C 双指标)已合并到 T020(`--check-enabled` flag 实装)。
