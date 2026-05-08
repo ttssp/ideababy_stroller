@@ -62,6 +62,33 @@ forge 通过 **4+1 变量(X/Y/Z/W + K)+ 收敛强度** 的通用 Phase 0 抽象,
 
 每次 `/expert-forge` 启动时,Phase 0 collect 这 6 个值,持久化到 `forge-config.md`:
 
+### Phase 0 · Intake 增强:proposal-aware prefill
+
+如果 idea 在 `proposals/proposals.md` 已有 `## **<id>**:` 段落,`/expert-forge`
+不再要求 human 从零粘贴 X / 写 K — 它会自动跑 `forge-intake-prefill` 子代理,
+从 proposal 段落提取:
+
+- **K seed**(从 `### 想法` + `### 我为什么想做这个` + `### 我诉求` + `### 还在困扰我的问题` 等字段拼装)
+- **X candidates**(从 `### 我已经想过的角度` 中正则匹配 `@?(/[\w./\-]+)` 抽出的路径)
+- **Z candidates**(从 `### 我已知的相邻方案/竞品` 整段原文原样,仅当 mode=对标指定列表 时使用,human 手改为一行一项)
+- **Y/W recommendation**(从关键词信号给默认勾选项)
+- **中间层 X 候选**(若 `discussion/<id>/` 已有 L1/L2/L3 stage docs,作为可选 X 列出)
+
+human 在 AskUserQuestion 多选界面里增删 X 候选(含 Bundle 快选:pure-idea /
+from-L2 / from-L3 / full-history / custom)、编辑 K、确认 Y/Z/W 默认值。最终
+`forge-config.md` 里 X 是 human 拍板的(prefill 仅作建议),`prefill_source`
+frontmatter 字段标记数据来源(`proposals.md§<id>` 或 `manual`)。
+
+**bootstrap 行为**:若 proposal 段落存在但 `discussion/<id>/` 目录不存在,
+`/expert-forge` 自动 mkdir 该目录并写 `FORGE-ORIGIN.md` 标记(说明该目录由
+forge 在 L0 直接 bootstrap,而非 `/inspire-start` 链路)。
+
+**fallback**:若 proposal 段落不存在或提取失败(0 个 X 候选 / K seed < 80
+字 / `### 想法` 缺失),自动 fallback 到 legacy 手工 intake(原 Phase 0 流程
+不变,顶部加一行"proposals.md §<id> 未找到, 走手工 intake"说明)。
+
+详见 `.claude/agents/forge-intake-prefill.md`。
+
 ### X · 审阅标的(必填,free-text 粘贴)
 
 可包括(可多选):
@@ -70,6 +97,7 @@ forge 通过 **4+1 变量(X/Y/Z/W + K)+ 收敛强度** 的通用 Phase 0 抽象,
 - URL(双方用 WebFetch 抓)
 - 直接粘贴的文本块(用户在 intake 里贴一大段)
 - 历史 stage 文档引用(如 `discussion/005/L2/stage-L2-explore-005.md`)
+- **proposals.md 段落**(`proposals/proposals.md` 中的 `## **<id>**:` 章节)— 当 idea 通过 `/expert-forge` 直接 bootstrap(没有先跑 L1-L3)时,proposal 段落本身就是 X 的合法成员。`/expert-forge` Step 0.5 会自动从 proposal 提取 K seed + 外部路径列表 + 对标候选,产出 prefill draft 给 human 审阅。
 
 **沙箱约束**:Codex 默认沙箱在仓库内,读外部路径可能 BLOCK。用户负责处理沙箱(如 `cp -r` 拷贝外部 repo 到仓库内的 `_forge-targets/`),或在 Codex 端调整 scope。
 

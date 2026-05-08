@@ -41,8 +41,12 @@ fi
 test -d "$DISCUSSION_PATH"
 ```
 
-如果 `$DISCUSSION_PATH` 不存在 → 提示用户:
-> "找不到 idea/fork `$ARGUMENTS`(预期路径 `<DISCUSSION_PATH>`)。运行 `/status` 查看现有 idea/fork 列表,或先 `/propose` 创建。"
+如果 `$DISCUSSION_PATH` 不存在 → **不要立即报错**,先按下面顺序判断:
+
+1. 用 `grep -n "^## \*\*${ROOT_NUM}\*\*:" proposals/proposals.md | head -1`(其中 `${ROOT_NUM}` 是 Step 0.1 算出的前导数字串)看 proposals.md 是否有该 idea 的 entry。
+2. **若 grep 命中**(`${ROOT_NUM}` 在 proposals.md 中有段落)→ 跳到 Step 0.5(它会自动 mkdir + 写 `FORGE-ORIGIN.md` + 跑 prefill)。
+3. **若 grep 未命中**(proposals.md 也没这个 id)→ 才报错,提示用户:
+   > "找不到 idea/fork `$ARGUMENTS`(预期路径 `<DISCUSSION_PATH>`,proposals.md 也没有 §${ROOT_NUM} 段落)。运行 `/status` 查看现有 idea/fork 列表,或先 `/propose` 创建。"
 
 **注意**:fork-id 后缀格式由 `/fork` 命令自由决定,**不要假设固定形态**(如 `pA/pB/a/b`)— 仓库现有 fork 包括 `001-pA`、`002b-stablecoin-payroll`、`002f-payroll-er`、`002g-dao-bounty`、`003-pA`、`004-pB` 等多种命名习惯。
 
@@ -132,11 +136,233 @@ Reply A/B/C or describe.
 
 **注**:本检测只在 forge 即将写新 inbox 任务时触发,不影响 Step 1(intake)和 Step 6(synthesizer 主进程内)。Phase 0 intake 不写 inbox,所以即使 HEAD 被占用,intake 仍可完成 — 直到要写 P1 inbox 时才检测。这是有意为之:让用户先填好 forge-config 再决定要不要让队列等。
 
+## Step 0.5 — Bootstrap + Prefill(proposal-aware intake)
+
+只在 fresh run(Step 0.3 检测 `forge-config.md` 不存在 → 决定走 Step 1)时执行。
+若 forge-config 已存在(intake 已完成),跳过 Step 0.5 整段。
+
+本步把 `proposals/proposals.md` 中的 `## **${ROOT_NUM}**:` 段落作为预填来源,
+配合 `<DISCUSSION_PATH>/` 中已有的 L1/L2/L3 stage docs,产出 X/K/Z + Y/W
+默认勾选的草稿,让用户在 AskUserQuestion 界面增删/编辑后拍板,**而不是** 让
+用户从零粘贴(原 Step 1.2/1.3 流程)。
+
+### 0.5.1 Detect proposal entry
+
+```bash
+ROOT_NUM="<前导数字串,见 Step 0.1>"
+
+# 找 proposals.md 中该 root id 的 entry 行号
+PROP_LINE=$(grep -n "^## \*\*${ROOT_NUM}\*\*:" proposals/proposals.md | head -1 | cut -d: -f1)
+if [[ -n "$PROP_LINE" ]]; then
+  PROP_FOUND=true
+else
+  PROP_FOUND=false
+fi
+```
+
+两个 short-circuit 分支:
+
+- **PROP_FOUND=false ∧ `$DISCUSSION_PATH` 不存在** → 实际已被 Step 0.1 拦下报错(grep 命中才会到这里),本分支不会触发。
+- **PROP_FOUND=false ∧ `$DISCUSSION_PATH` 存在** → 跳过 0.5.2-0.5.5 整段,**直接进 Step 1**(legacy intake)。在 Step 1.2 prompt 顶部加一行警告:`(注:proposals.md §${ROOT_NUM} 未找到, 走手工 intake)`。
+
+否则继续 0.5.2。
+
+### 0.5.2 Auto-mkdir 若 proposal 存在但 `<DISCUSSION_PATH>` 不存在
+
+```bash
+if [[ "$PROP_FOUND" == "true" && ! -d "$DISCUSSION_PATH" ]]; then
+  mkdir -p "$DISCUSSION_PATH"
+  TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  # 写 FORGE-ORIGIN.md(根目录;与 fork 子目录的 FORK-ORIGIN.md 形成对称)
+  # 内容见下,用 Write 工具写
+fi
+```
+
+`<DISCUSSION_PATH>/FORGE-ORIGIN.md` 内容(用 Write 工具,变量替换实际值):
+
+```markdown
+# Forge origin
+
+**This directory**: $DISCUSSION_PATH
+**Bootstrapped by**: /expert-forge $ARGUMENTS @ <ISO>
+**Trigger**: proposals.md §${ROOT_NUM} exists; discussion/ did not.
+**Source proposal**: proposals/proposals.md (line ${PROP_LINE})
+**L1/L2/L3 status at bootstrap**: never run (forge-first 启动)
+
+## Why this file exists
+
+This idea entered the pipeline via /expert-forge directly, not via
+/inspire-start → /explore-start → /scope-start. The forge run treats
+the proposal section as its primary X target. If you later run L1-L4
+on this idea, those layers will populate L1/, L2/, L3/ alongside
+this forge/ directory normally.
+
+This file is informational; not read by phase-1/2/3 reviewers.
+```
+
+向用户输出一行确认:
+
+```
+ℹ proposals.md §${ROOT_NUM} 找到, $DISCUSSION_PATH 不存在 → 已自动创建并写 FORGE-ORIGIN.md。
+```
+
+### 0.5.3 Pre-create FORGE_DIR
+
+```bash
+# CURRENT_V 已在 Step 0.2 算好;fresh run 默认 v1
+CURRENT_V="${CURRENT_V:-v1}"
+FORGE_DIR="$DISCUSSION_PATH/forge/$CURRENT_V"
+mkdir -p "$FORGE_DIR"
+```
+
+(只 mkdir。`PROTOCOL.md` 拷贝和 `forge-config.md` 写入仍由 Step 1.1 / 1.9 做。)
+
+### 0.5.4 Task 调 forge-intake-prefill 子代理
+
+显式 Task 调用,prompt 必须把 5 个变量的实际值传给 subagent(它在 isolated worktree,不能再算 Step 0.1):
+
+```
+Task tool:
+  subagent_type: forge-intake-prefill
+  description: "Prefill forge intake for $ARGUMENTS"
+  prompt: """
+  forge-intake-prefill 启动。
+
+  实际 <DISCUSSION_PATH> = <Step 0.1 算出的值, e.g. discussion/005 或 discussion/005/005-pA>
+  实际 <id> = $ARGUMENTS
+  实际 <CURRENT_V> = v1(或 Step 0.2 算出的 v<N>)
+  实际 <ROOT_NUM> = <Step 0.1 算出的前导数字串>
+  proposals.md 路径 = proposals/proposals.md
+  proposal entry 行号 = <PROP_LINE 实际数字, 若 PROP_FOUND=false 则填 "n/a">
+
+  读 proposals.md §<ROOT_NUM>(从行 <PROP_LINE> 开始,到下一个 ## **NNN** 或 EOF),
+  glob <DISCUSSION_PATH>/L*/stage-*.md 和 L*/L*R*-*.md,按
+  .claude/agents/forge-intake-prefill.md 的 §"Extraction rules" 提取
+  X/K/Z 候选 + Y/W 推荐,写 <DISCUSSION_PATH>/forge/<CURRENT_V>/_prefill-draft.md,
+  返回 prefill summary string。
+
+  详见 .claude/agents/forge-intake-prefill.md。
+  """
+```
+
+子代理返回 summary string 后,主命令解析其中 `prefill_status`:
+
+- **`fallback_to_manual`** → 跳过 0.5.5,直接进 Step 1.2 legacy(在 prompt 顶部加 `(注:proposal §${ROOT_NUM} prefill 失败 — <reason>, 走手工 intake)`)
+- **`success` 或 `partial`** → 继续 0.5.5
+
+### 0.5.5 Preview + 用户确认(三个 sub-screen)
+
+#### 0.5.5.a Bundle quick-pick
+
+读 `$FORGE_DIR/_prefill-draft.md` §"Starting-point quick-pick groups",仅
+显示该 idea 实际存在的 stage doc 对应的 bundle:
+
+```
+AskUserQuestion(single-select):
+  question: "起点选哪一档?(决定 X 的初始勾选状态;后面还可以微调)"
+  multi_select: false
+  options(动态生成):
+    [Bundle:pure-idea]    只用 proposal §${ROOT_NUM} 的文本(忽略已存在的 L2/L3)
+    [Bundle:from-L2]      proposal + L2 stage doc            (只在 L2 stage 存在时显示)
+    [Bundle:from-L3]      proposal + L3 stage doc            (只在 L3 stage 存在时显示;若存在则 default 推荐)
+    [Bundle:full-history] proposal + 全部 L1/L2/L3 stage     (任一 stage 存在时显示)
+    [Bundle:custom]       我自己挑(下一步给完整 multi-select)
+```
+
+**Bundle 选定后**,如果选 `[Bundle:full-history]` 且子代理估算的
+`estimated_tokens_full_history` ≥ 8k,主命令打印**软警告**(非阻塞):
+
+```
+⚠ Full-history bundle 预计 Phase 1 Opus 读 ~<n>k tokens(<m> 个标的)。
+  Codex / Opus 不会 hard-fail,但单轮可能多次工具调用。
+  如果不需要全部 context,建议改 from-L3。要继续选 full-history 吗?
+  [继续 / 改 from-L3]
+```
+
+回继续就继续。回"改 from-L3"重置 bundle 选择并继续。
+
+#### 0.5.5.b X candidate 多选确认
+
+按选定 Bundle 的 pre-checked 列表展示完整 X 候选:
+
+```
+AskUserQuestion(multi-select):
+  question: "X 候选(根据 bundle:<X> 已预勾选;按需取舍。⚠ = 路径不可达,Codex 沙箱可能 BLOCK)"
+  multi_select: true
+  options: <逐条列 _prefill-draft.md §"X candidates (raw)" 的所有项>
+    每条前缀 ✅(reachable)/ ⚠(unreachable),后缀 [pre-checked] / [unchecked-default]
+```
+
+用户最终勾选数 = 0 → 自动 fallback 到 Step 1.2 legacy(在 prompt 顶部加来源警告)。
+否则记录 `X_FINAL`。
+
+#### 0.5.5.c K editor
+
+打印 `_prefill-draft.md` §"K seed (suggested, editable)" 的内容,然后:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+K · 用户判准 — 自动从 proposal §${ROOT_NUM} 拼装的草稿如下:
+
+<引用 _prefill-draft.md K seed 完整内容>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+请操作:
+  [Enter]  直接接受草稿(不修改)
+  [Edit]   粘贴你修改后的完整 K(替换草稿)
+  [Append] 在草稿基础上 append 新段(我会拼接)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reply Enter / Edit + 内容 / Append + 内容。
+```
+
+(K 是长 free-text,不走 AskUserQuestion;主命令解析首单词分流。)
+
+记录 `K_FINAL` 和 `K_PROVENANCE`(`verbatim` / `edited` / `appended`)。
+
+### 0.5.6 Merge prefill 进 Step 1
+
+记录"已 prefill 完成"的部分:✅ X / ✅ K。Step 1 改为:
+
+- **Step 1.1** Setup forge dir → 仍执行(`mkdir -p $FORGE_DIR` 幂等;`cp PROTOCOL.md` 仍执行)
+- **Step 1.2** X intake → **跳过**;forge-config.md §"X · 审阅标的" 直接由 X_FINAL + reachability 报告填
+- **Step 1.3** K intake → **跳过**;forge-config.md §"K · 用户判准" 直接由 K_FINAL 填
+- **Step 1.4** Y multi-select → 走;**默认勾选项 = prefill draft 的 Y recommendation**
+- **Step 1.5** Z mode → 走;若 prefill 检测到 Z 候选(`z_candidates_present: true`),"对标指定列表" 选项后加 `(推荐 — 已自动从 proposal 抓原文,请手改为一行一项)`。**用户选"对标指定列表"时**,把 prefill 的 Z 段原文原样拼进 forge-config 的 Z 字段(在 §"指定列表" 下),让用户在确认前手改
+- **Step 1.6** W multi-select → 走;**默认勾选项 = prefill draft 的 W recommendation**
+- **Step 1.7** 收敛模式 → 走(无 prefill)
+- **Step 1.8** 预览 → 字段后加来源标注:
+  ```
+  X · 标的(<n> 个)[来自 prefill — proposal §<ROOT_NUM> + bundle:<X>]:
+    - ...
+  K · 判准(<m> 字)[来自 prefill, <verbatim|edited|appended>]:
+    "<前 100 字>..."
+  Y · 视角 [用户选, prefill 推荐过 <list>]: <list>
+  Z · 参照系 [用户选, prefill 检测到 Z 候选: <true|false>]: <mode>
+  W · 产出 [用户选, prefill 推荐过 <list>]: <list>
+  ...
+  ```
+- **Step 1.9** 写 forge-config.md → frontmatter 加一行 `prefill_source: proposals.md§${ROOT_NUM}`(prefill 失败 fallback 时填 `manual`);`.forge-state.json` 加一行 `"prefill_used": true|false`
+
+### 0.5.7 Fallback 路径(汇总)
+
+任一子步骤异常都 fall through 到 Step 1.2 legacy 流程,**不阻塞 forge 进度**:
+
+| 触发点 | 触发条件 | 行为 |
+|---|---|---|
+| 0.5.1 | PROP_FOUND=false ∧ DISCUSSION_PATH 存在 | 跳过 0.5.2-0.5.5,Step 1.2 顶部加来源警告 |
+| 0.5.4 | 子代理返回 `prefill_status: fallback_to_manual` | 跳过 0.5.5,Step 1.2 顶部加来源警告(含 fallback reason) |
+| 0.5.5.b | 用户最终勾选数 = 0 | Step 1.2 顶部加 `(注:prefill X 候选全反勾, 走手工 intake)` |
+| 0.5.5.c | 用户回 Edit / Append 但提交空内容 | Step 1.3 顶部加 `(注:prefill K 提交空, 走手工 intake)` |
+
+fallback 时 forge-config.md frontmatter 的 `prefill_source` 字段填 `manual`,
+`.forge-state.json` 的 `prefill_used` 填 `false`。
+
 ## Step 1 — Phase 0 intake(仅 fresh run)
 
 ### 1.1 Setup forge dir
 
 ```bash
+# Step 0.5.3 may have already mkdir'd $FORGE_DIR; mkdir -p is idempotent
 mkdir -p $FORGE_DIR
 mkdir -p .codex-inbox/queues/<id> .codex-outbox/queues/<id>
 
@@ -147,11 +373,18 @@ test -f .claude/skills/forge-protocol/SKILL.md && \
 
 ### 1.2 X · 审阅标的(free-text)
 
-向用户输出说明 + 等待回复:
+**若 Step 0.5 已成功收集 X(prefill 路径)** → 跳过本步;`X_FINAL` 的内容会
+在 Step 1.9 直接写进 forge-config.md §"X"。
+
+否则(legacy / fallback 路径)向用户输出说明 + 等待回复。如果 fallback 路径
+来自 0.5.7,在 prompt 顶部多加一行警告(具体内容见 0.5.7 触发点表)。
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔨 Forge v<N> · idea $ARGUMENTS · Phase 0 intake (步骤 1/6)
+<若来自 fallback,这里加来源警告行,如:
+ (注:proposals.md §<ROOT_NUM> 未找到, 走手工 intake)
+>
 
 X · 审阅标的(粘贴格式不限,每行一个):
   - 本仓库子目录路径(相对或绝对)
@@ -184,9 +417,17 @@ X · 审阅标的(粘贴格式不限,每行一个):
 
 ### 1.3 K · 用户判准(free-text)
 
+**若 Step 0.5.5.c 已成功收集 K** → 跳过本步;`K_FINAL` 的内容会在 Step 1.9
+直接写进 forge-config.md §"K"。
+
+否则向用户输出说明 + 等待回复:
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 K · 用户判准(2/6) — 你最在乎什么?
+<若来自 fallback,加来源警告行,如:
+ (注:prefill K 提交空, 走手工 intake)
+>
 
 请用一段话(可多行)告诉双专家:
 - 你为什么要 forge 这个标的
@@ -214,7 +455,9 @@ Q: 你希望双专家从哪些视角审阅?(可多选)
 (后面有 Other 可补充自定义视角)
 ```
 
-multi_select=true。建议默认推荐前 3 项。
+multi_select=true。**默认勾选项**:
+- 若 Step 0.5 prefill 跑过(success / partial)→ 用 prefill draft §"Y default recommendation" 中标 ✅ 的项作为默认勾选,并在 question description 中附 prefill evidence 引文(如"`架构设计`:命中关键词 framework / pipeline")
+- 否则 → 默认推荐前 3 项(产品价值 / 架构设计 / 工程纪律)
 
 ### 1.5 Z · 参照系(AskUserQuestion single-select)
 
@@ -230,7 +473,15 @@ Q: 双专家在 Phase 2 怎么对比参照?
 
 ```
 Q: 你想对标哪些项目?(每行一个,可空)
+<若 Step 0.5 prefill 检测到 Z 候选(z_candidates_present=true)→ 在 prompt 末尾
+  贴出 _prefill-draft.md §"Z candidates" 的原文段,并加提示:
+  "(已自动从 proposal §<ROOT_NUM> §"我已知的相邻方案/竞品" 抓原文如下;请手改为一行一项)"
+>
 ```
+
+如果 prefill 检测到 Z 候选 + 用户选"对标指定列表",在 forge-config.md 的
+§"Z" 中先写 prefill 的原文段(标 "[来自 prefill 原文]"),用户在 Step 1.8
+预览阶段可以再调整。
 
 ### 1.6 W · 产出形态(AskUserQuestion multi-select)
 
@@ -245,7 +496,9 @@ Q: 你希望最终 stage 文档包含哪些产出形态?(可多选)
   □ free-essay — 长篇综合(800-1500 字)
 ```
 
-multi_select=true。强制至少选 1 项。
+multi_select=true。强制至少选 1 项。**默认勾选项**:
+- 若 Step 0.5 prefill 跑过(success / partial)→ 用 prefill draft §"W default recommendation" 中标 ✅ 的项作为默认勾选
+- 否则 → 默认 verdict-only + decision-list + next-PRD(三件套适合大多数 idea)
 
 ### 1.7 收敛强度(AskUserQuestion single-select)
 
@@ -258,17 +511,21 @@ Q: 双专家最终要怎么收敛?
 
 ### 1.8 拼装预览给用户确认
 
+每行字段后加来源标注(prefill 路径 / legacy 手工)。如果 X 或 K 来自 prefill,
+显式标注 bundle 类型 + K 的 provenance(verbatim / edited / appended)。
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ Phase 0 intake 收齐。预览:
 
-X · 标的(<n> 个):
+X · 标的(<n> 个) [<来自 prefill — proposal §<ROOT_NUM> + bundle:<X> | 手工 intake>]:
   - <list 摘要>
 
-Y · 视角:<list>
-Z · 参照系:<mode>
-W · 产出:<list>
-K · 判准:<前 100 字...>
+Y · 视角 [用户选 <若 prefill 推荐过, 加 ", prefill 推荐过 <list>">]: <list>
+Z · 参照系 [用户选 <若 prefill 检测到 Z 候选, 加 ", prefill 检测到 Z 原文段">]: <mode>
+W · 产出 [用户选 <若 prefill 推荐过, 加 ", prefill 推荐过 <list>">]: <list>
+K · 判准(<m> 字) [<来自 prefill, <verbatim|edited|appended> | 手工 intake>]:
+  "<前 100 字...>"
 收敛模式:<strong-converge | preserve-disagreement>
 
 确认无误回复 'go';要修改告诉我哪里。
@@ -280,6 +537,9 @@ K · 判准:<前 100 字...>
 确认后,计算 X 路径列表字符串的 md5 哈希。写两个文件:
 
 **forge-config.md** 格式见 forge-protocol/SKILL.md §"forge-config.md output format"。
+frontmatter 中**新增一行** `prefill_source`:
+- 若 Step 0.5 走通(success / partial)→ `prefill_source: proposals.md§<ROOT_NUM>`
+- 若 fallback 到 legacy intake → `prefill_source: manual`
 
 **.forge-state.json**:
 ```json
@@ -288,6 +548,7 @@ K · 判准:<前 100 字...>
   "phase": "1",
   "convergence_mode": "strong-converge",
   "x_hash": "<md5>",
+  "prefill_used": true | false,
   "created": "<ISO>",
   "last_updated": "<ISO>"
 }
