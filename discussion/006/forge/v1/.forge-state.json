@@ -1,0 +1,19 @@
+{
+  "version": "v1",
+  "phase": "done",
+  "convergence_mode": "preserve-disagreement",
+  "convergence_outcome": "converged-with-tempo-options",
+  "x_hash": "e45d68ee6dcc74d2c667976a28940c91",
+  "prefill_used": true,
+  "prefill_source": "proposals.md§006",
+  "stage_doc": "stage-forge-006-v1.md",
+  "stage_doc_lines": 465,
+  "stage_doc_words_approx": 9000,
+  "p1_codex_outbox": "20260507T150527-006-forge-v1-p1.md (CLEAN)",
+  "p2_codex_outbox": "20260507T152621-006-forge-v1-p2.md (CLEAN)",
+  "p3r1_codex_outbox": "20260507T153919-006-forge-v1-p3r1.md (CLEAN)",
+  "p3r2_codex_outbox": "20260507T155612-006-forge-v1-p3r2.md (CLEAN)",
+  "quality_check": "all_pass_except_length_warn",
+  "created": "2026-05-07T14:59:42Z",
+  "last_updated": "2026-05-08T00:00:00Z"
+}
