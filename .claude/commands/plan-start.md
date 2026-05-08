@@ -1,7 +1,7 @@
 ---
 description: Start L4 Plan phase for a forked PRD branch. Reads the chosen PRD.md, invokes spec-writer to produce the SDD package, runs task-decomposer, then triggers Codex adversarial review loop (up to 4 rounds). Output is a build-ready spec package.
 argument-hint: "<prd-fork-id>  e.g. 001a-pA"
-allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(echo:*), Bash(ls:*), Bash(date:*), Agent(spec-writer), Agent(task-decomposer), Glob, Grep
+allowed-tools: Read, Write, Bash(mkdir:*), Bash(cp:*), Bash(echo:*), Bash(ls:*), Bash(date:*), Bash(realpath:*), Agent(spec-writer), Agent(task-decomposer), Glob, Grep
 model: opus
 ---
 
@@ -122,6 +122,112 @@ Delegate to `task-decomposer`:
 
 Wait for completion.
 
+## Step 5.5 — write HANDOFF.md (NEW · v2.2,SHARED-CONTRACT §3 实装)
+
+依据:`framework/SHARED-CONTRACT.md` §3 Hand-off 协议(contract_version 1.1.0)。
+
+写 `specs/<prd-fork-id>/HANDOFF.md`(operator-readable 格式,跨仓切到 ADP 时使用)。HANDOFF.md 必须在 spec.md + tasks/T*.md 已生成后产出(它的 Schema 转换表引用 §5 Task Breakdown);也必须在 Codex adversarial review(Step 6)之前产出,以便 review 同时核查 hand-off 协议。
+
+### 模板(替换 `<...>` 占位为真实值)
+
+```markdown
+# Hand-off · <prd-fork-id> → autodev_pipe
+
+**Handed off at**: <ISO timestamp · `date -u +%Y-%m-%dT%H:%M:%SZ`>
+**IDS spec path**: <`realpath specs/<prd-fork-id>`>
+**PRD source**: <`realpath discussion/<root>/<parent-fork>/<prd-fork-id>/PRD.md`>
+**ADP repo path** (operator 自填): /Users/admin/codes/autodev_pipe
+**SHARED-CONTRACT version honored**: 1.1.0
+
+## Operator manual steps(切仓后)
+
+1. cd <ADP repo path>
+2. 阅读 IDS PRD 与 IDS spec:
+   - `cat <PRD source>`
+   - `cat <IDS spec path>/spec.md`
+3. 在 ADP 起新 feature(真实入口 = skill,不是 Makefile target):
+   - 在 ADP Claude Code session 里,触发 `.claude/skills/sdd-workflow/SKILL.md`
+   - **operator 必须人工转写**:把 IDS PRD §"User persona" + §"Core user stories" 提炼为 1-2 段 short feature description 作为 sdd-workflow input
+4. sdd-workflow 产出 `specs/<feature>/spec.md`(7 元素骨架,schema_version: 0.2,reviewed-by: pending)后,operator 按下表强制项填入:
+
+| IDS 来源 | ADP spec 节 | 强制? |
+|---|---|---|
+| IDS PRD frontmatter | spec.md frontmatter (`spec_id` / `status: draft` / `schema_version: 0.2` / `reviewed-by: pending`) | 强制 |
+| IDS PRD §"User persona" + §"Core user stories" | §1 Outcomes(O1, O2, ...) | 强制 |
+| IDS PRD §"Scope IN" | §2.1 Scope IN | 强制 |
+| IDS PRD §"Scope OUT" | §2.2 Scope OUT | 强制 |
+| IDS PRD §"Real constraints" | §3 Constraints(C1, C2, ... 数字化) | 强制 |
+| IDS spec §"Prior Decisions" 或 architecture.md | §4 Prior Decisions(PD1, PD2, ... 引用源) | 强制 |
+| IDS spec §"phases" 或 dependency-graph | §5 Task Breakdown(高层 phase + 依赖) | 强制 |
+| IDS PRD §"Success looks like" | §6 Verification Criteria(每条 V_n 可执行 shell) | 强制 |
+| **operator 须补**(IDS 不产出,见 step 4.5) | §7 Production Path Verification | **强制(v3.3 起)** |
+| IDS PRD §"Open questions" 中**关于 constraint 数字**的 | ADP spec §3 Constraints 末尾 "Open" 小节(C-OQ-1 ...) | 可选 |
+| IDS PRD §"Open questions" 中**关于 build 路径选择**的 | 不进 ADP spec,留在本 HANDOFF.md §"Open questions for build phase" | 可选 |
+
+4.5. **operator 在 ADP 写 §7 Production Path Verification**(IDS 不越界产出,ADP 强制):
+   - 参考样本:`<ADP repo>/specs/v3.3/spec.md` §7 真路径 P1-P4 example
+   - 模板:`<ADP repo>/templates/spec.template.md` §7 骨架
+   - 最小要求:列至少 1 条 P_i 描述"真路径起点 → 终点 + 必经环节 + 可执行验证命令"
+   - 失败模式:不写或只写 mock-pass-prod-fail 的样本 → ADP `scripts/spec_validator.py` reject + status 无法转 frozen
+   - 第一性原因:所有 mock-pass-prod-fail 都因为 mock 满足 spec 真路径不满足(灵感来源 stroller idea004 12 routes 404 失败案例)
+
+5. 在 ADP 跑 reviewed-by:
+   - frontmatter `reviewed-by: pending` → 触发 ADP `/codex:adversarial-review` 或 plugin 路径
+   - review 通过 → frontmatter 改 `reviewed-by: codex`(或 gpt-5.5 / gemini)
+   - status: draft → review → frozen
+6. 任务分解(ADP 这边的 task-decomposer skill,不复用 IDS task DAG):
+   - 在 ADP Claude Code session 触发 `.claude/skills/task-decomposer/SKILL.md`
+   - 产出 `specs/<feature>/tasks/T*.md`(9 字段 frontmatter)
+7. parallel-builder 跑 task(走 ADP 5 hard rule + Safety Floor)
+8. ship 走 ADP 自己规则(不回 IDS)
+
+## ADP-side prerequisites(operator 切仓前自查)
+
+- ADP 仓库为 v3.2+(含 `.claude/skills/sdd-workflow/` + `.claude/skills/task-decomposer/` skill)
+- ADP `make doctor` exit 0
+- ADP `pre-commit install` 已跑(spec-validator + check-spec-review + check-constraint-references hooks 装齐)
+- **operator 已读 ADP `templates/spec.template.md` §7 + `specs/v3.3/spec.md` §7 真实样本**(为 step 4.5 写 §7 PPV 做准备)
+- ADP V4 dogfood 状态:**首次切仓前确认 V4 checkpoint-01 已出**(2026-06-03 ±);切仓时机过早会污染 dogfood signal(ADR 0008 D2)
+
+## Schema 转换说明
+
+详见 `framework/SHARED-CONTRACT.md` §3 HANDOFF.md schema(contract_version 1.1.0)。
+
+## Open questions for ADP build phase
+
+(IDS PRD 中**关于 build 路径选择**的 OQ 在此承载;ADP build 自然遇到时再解决,不污染 ADP spec frozen)
+
+(由 operator 从 IDS PRD §"Open questions" 手工分流后填入)
+
+## Rollback plan
+
+如果 ADP build 失败:
+- (a) 回到 IDS 修 PRD,重跑 `/plan-start`
+- (b) 改 ADP spec(不改 IDS PRD),用 ADP 自己的 W-* 修订机制
+- (c) 起 forge v2 重新审整个 idea
+```
+
+### 实装
+
+写文件:`specs/<prd-fork-id>/HANDOFF.md`,用上面模板。具体动作:
+
+```bash
+TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+IDS_SPEC_PATH="$(realpath specs/<prd-fork-id>)"
+PRD_SOURCE="$(realpath discussion/<root>/<parent-fork>/<prd-fork-id>/PRD.md)"
+# 然后用 Write 工具落盘上面模板的实化版本
+```
+
+### 验收
+
+```bash
+test -f specs/<prd-fork-id>/HANDOFF.md && \
+  grep -q "SHARED-CONTRACT version honored: 1.1.0" specs/<prd-fork-id>/HANDOFF.md && \
+  grep -q "sdd-workflow" specs/<prd-fork-id>/HANDOFF.md && \
+  grep -q "task-decomposer" specs/<prd-fork-id>/HANDOFF.md && \
+  echo "HANDOFF.md OK"
+```
+
 ## Step 6 — prepare Codex adversarial review
 
 Queue id: `QUEUE=<prd-fork-id>` (e.g. `001a-pA`).
@@ -223,7 +329,8 @@ Generated:
     ├─ non-goals.md
     ├─ compliance.md     [if applicable]
     ├─ dependency-graph.mmd
-    └─ tasks/T001..T<NNN>.md  (<n> tasks across <k> phases)
+    ├─ tasks/T001..T<NNN>.md  (<n> tasks across <k> phases)
+    └─ HANDOFF.md        (跨仓切到 ADP 用,SHARED-CONTRACT v1.1.0)
 
 Task distribution health: <from decomposer>
   Opus:   X%

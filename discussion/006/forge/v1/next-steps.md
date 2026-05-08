@@ -453,8 +453,50 @@ autodev_pipe/  (若可访问)
 
 ---
 
+## v3 修订记录(路径 2 启动前 IDS 范围 4 件事,2026-05-08)
+
+operator 在 sanity-v2 后选择走**路径 2**(在 ADP 那边补 3 个真 gap)。本会话先做了**跨仓 ADP 现状审计**(`framework/ADP-AUDIT-2026-05-08.md`),发现:
+
+1. 3 个真 gap 在 ADP 全部 0 实装(grep 实证;sanity-v2 描述准确)
+2. ADP V4 dogfood 在第 0 周(2026-05-06 frozen,首份 checkpoint-01 应在 2026-06-03 ± 出);ADR 0008 D2 + sanity-v2 显式警告 "插入新 build 工作 = 100% 概率污染最初 4 周 dogfood signal"
+3. SHARED-CONTRACT §3 假设的 ADP 入口名 `make sdd-init` / `make decompose` 也不存在(audit 实证 Makefile 无此 target;它们只是 v3.2 spec.md L31 outcome 描述里的 example 字串);**真实入口是 `.claude/skills/sdd-workflow/` + `.claude/skills/task-decomposer/` 两个 skill**;PRD → spec 之间必须有 operator 人工转写步骤
+
+### 决定:4 周等待 + IDS 范围 4 件事(本次 commit)
+
+| 事 | 文件 | 估时 |
+|---|---|---|
+| 1 | `framework/SHARED-CONTRACT.md`(§3 hand-off / §1 字段对齐 / §5 残留 / §2 实装现状 / contract_version 1.0.0 → 1.1.0;含 OQ 双路分流 + §7 PPV 归属两决议) | 2-3h |
+| 2 | `.claude/commands/plan-start.md`(新增 Step 5.5 写 HANDOFF.md;frontmatter 加 `Bash(realpath:*)`;Step 7 menu 加 HANDOFF.md 行) | 1.5-2h |
+| 3 | grep 校验 14 项(结果追加到 ADP-AUDIT.md §8) | 0.5-1h |
+| 4 | 本节 + ADP-AUDIT 索引 | 1h |
+
+### 4 周等待期(2026-05-08 → 2026-06-03 ±)
+
+- 不切到 ADP 仓库做任何动作
+- 等 V4 checkpoint-01 报告产出
+- 读 checkpoint-01 后锁 gap 取舍方案 A(全做)/ B(只做 P0 = gap-1 + gap-2)/ C(只做 gap-1)
+- **当前初步倾向 C**(只做 gap-1 production credential 隔离 + 备份破坏检测;Cursor 9 秒删库硬约束)
+
+### 4 周等待期内 IDS 这边可做的(本次 4 件事之外,可选)
+
+- 真实跑一个 idea 完整 L1 → L4(暴露 SHARED-CONTRACT §3 真实 gap;同时本身就是路径 1 的实施)
+- IDS framework `framework/constraints/` 目录(参考 ADP v3.3 Constraint Index;P2)
+- IDS `/scope-start` 读 `~/.claude/lessons/anti-pattern-*.md`(消费 ADP v4 已 ship lesson;P2)
+
+### 触发立即切到 ADP(放弃 4 周等待)的条件
+
+只有以下情况:
+1. operator 显式接受污染 V4 dogfood signal 的代价(不推荐)
+2. gap-1 出现真实安全事件(eg 实际跑生产任务触发凭据泄漏)
+3. operator 决定 V4 dogfood 走 fail-fast 路径,需新 ADR 0010 显式锁定
+
+任一未触发 → 走 4 周等待。
+
+---
+
 ## Changelog
 
 - 2026-05-08 v1: 初稿 — forge 006 v1 verdict 落地的第一阶段计划,3 天 5 件事
 - 2026-05-08 v1.1: sanity check 后追加 Followup 节,记录 2 处已修 + 1 处待修
 - 2026-05-08 v2: sanity check v2(纳入 ADP v3.2/v3.3/v4)后修订 6 处;核心立场仍对;真 gap 3 条标在 ADP 范围;不回滚 commit / 不起 v2 / 不去 ADP 同步 / 不实装 gap
+- 2026-05-08 v3: 路径 2 启动前的 IDS 范围 4 件事;ADP 现状审计 + SHARED-CONTRACT §3/§1/§5 修订(contract_version 1.1.0)+ plan-start 加 HANDOFF.md(Step 5.5)+ grep 校验 14 项;4 周等待至 V4 checkpoint-01
