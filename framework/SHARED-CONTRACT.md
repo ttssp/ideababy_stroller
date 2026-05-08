@@ -1,5 +1,6 @@
 ---
 doc_type: framework-shared-contract
+contract_version: 1.0.0
 status: v1
 generated: 2026-05-08
 upstream: discussion/006/forge/v1/stage-forge-006-v1.md
@@ -39,7 +40,7 @@ ideababy_stroller(idea→PRD)与 autodev_pipe(PRD→code)是**两个独立 relea
 
 **PRD-form**: simple | phased | composite | v1-direct
 **Status**: draft | reviewed | approved | superseded
-**Source**: <upstream stage doc path>(L3 candidate / forge stage / direct)
+**Sources**: <upstream stage doc path(s) — comma-separated if multiple>(L3 candidate / forge stage / direct bootstrap)
 **Forked-from**: <parent PRD or "root">
 
 ## User persona
@@ -89,7 +90,7 @@ ideababy_stroller(idea→PRD)与 autodev_pipe(PRD→code)是**两个独立 relea
 
 | 字段 | required? | 说明 |
 |---|---|---|
-| frontmatter (PRD-form / Status / Source / Forked-from) | required | autodev_pipe 用于路由判断 |
+| frontmatter (PRD-form / Status / Sources / Forked-from) | required | autodev_pipe 用于路由判断 |
 | User persona | required | 没有 persona 的 PRD 不可执行 |
 | Core user stories | required | 至少 3 条 |
 | Scope IN | required | |
@@ -284,6 +285,16 @@ autodev_pipe-cli build \
 
 (如果 build 失败,回到 ideababy_stroller 哪一层 / 哪个命令)
 ```
+
+### Implementation status (2026-05-08)
+
+⚠ **Contract v1.0 declared, /plan-start implementation pending**:
+
+- 当前 `.claude/commands/plan-start.md` **不产出 HANDOFF.md**
+- `/plan-start` 已存在(产出 `specs/<NNN>-<fork>-<prd>/{spec.md, architecture.md, tasks/T*.md}`)
+- HANDOFF.md 产出是本契约 v1.0 新增条款,需 follow-up 改造 `/plan-start.md` Step N
+- 在改造完成前,operator 可 manually 创建 HANDOFF.md(按上述 schema 填字段)
+- Tracking: 见 `discussion/006/forge/v1/next-steps.md` followup 区(待加)
 
 ### 客观依据
 

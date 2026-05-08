@@ -378,6 +378,34 @@ autodev_pipe/  (若可访问)
 
 ---
 
+## Followup(sanity check 后发现的契约 vs 实现差距)
+
+2026-05-08 sanity check 跑完 5 件事 commit 后,发现 3 处契约 vs 实现的差距,修了 2 处 / 留 1 处给 follow-up:
+
+| # | 差距 | 修复 |
+|---|---|---|
+| 1 | SHARED-CONTRACT §4 写"frontmatter 含 `contract_version`",但 frontmatter 实际只有 `status` 字段 | ✅ 已修(frontmatter 加 `contract_version: 1.0.0`) |
+| 2 | SHARED-CONTRACT §1 PRD schema 用 `Source`(单数);stage v1 §4 PRD draft 用 `Sources`(复数) | ✅ 已修(SHARED-CONTRACT 改用 `Sources` 与 stage v1 锚点一致) |
+| 3 | SHARED-CONTRACT §3 假设 `/plan-start` 命令产出 `HANDOFF.md`;实际 `.claude/commands/plan-start.md` 不含此逻辑 | ⏸ 留作 followup —— 已在 SHARED-CONTRACT §3 加 "Implementation status" 小节标注 |
+
+### Followup task 1 · /plan-start 加 HANDOFF.md 产出步骤
+
+- **触发条件**:决定走 plan §"完成判定点 · 结果 A"(启动 stage §5 Phase 1 build)
+- **动作**:在 `.claude/commands/plan-start.md` Step N(spec/tasks 写完之后)加一步,按 SHARED-CONTRACT §3 schema 写 `specs/<NNN>-<fork>-<prd>/HANDOFF.md`
+- **依赖**:autodev_pipe-cli 命令名稳定(目前 SHARED-CONTRACT 假设 `autodev_pipe-cli build`,如果 ADP 实际命令不同,先确认再写)
+- **估时**:~2h(plan-start.md 既有结构清晰,加一步不复杂)
+- **优先级**:P1(framework v1.0 release 前必须做,但不阻塞当前 commit)
+
+### Followup task 2 · 检查 5 件事 commit 后是否还有其他契约 vs 实现 drift
+
+- **动作**:跑一次完整 grep 找 SHARED-CONTRACT 假设的命令 / 字段 / 文件路径,逐一在 `.claude/commands/` 和 `.claude/skills/` 验证是否存在
+- **触发条件**:启动 framework v1.0 release 前
+- **估时**:~1h
+- **优先级**:P2
+
+---
+
 ## Changelog
 
 - 2026-05-08 v1: 初稿 — forge 006 v1 verdict 落地的第一阶段计划,3 天 5 件事
+- 2026-05-08 v1.1: sanity check 后追加 Followup 节,记录 2 处已修 + 1 处待修
