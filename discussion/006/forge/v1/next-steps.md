@@ -405,7 +405,56 @@ autodev_pipe/  (若可访问)
 
 ---
 
+## v2 修订记录(sanity check v2 后,2026-05-08)
+
+5 件事 + sanity check v1 完成 + commit 后,operator 提示"forge 用的 v3.1,但 ADP 已有 v3.2/v3.3/v4"。完整 audit 见 `discussion/006/forge/v1/sanity-check-v2-2026-05-08.md`。
+
+### v2 修订 6 处(已落地)
+
+| 修 | 文件 | 修订内容 |
+|---|---|---|
+| 修 1 | `framework/SHARED-CONTRACT.md` §1 | 加 PRD vs Spec 区分(SDLC 不同阶段);采纳 ADP 实际入口是 `make sdd-init`/`make decompose`(非 v1 假设的 `autodev_pipe-cli build`);Schema 转换表(IDS PRD 8 字段 → ADP spec 7 元素) |
+| 修 2 | `framework/SHARED-CONTRACT.md` §2 | SSOT 归属修正:从"IDS 拥有 SSOT,ADP binding from IDS"改为"双层独立 SSOT"(IDS = 上游约束声明 / ADP = 实装);加"ADP 实装现状"表(audit ADP 三层防御已落地状态 + 真 gap) |
+| 修 3 | `framework/SHARED-CONTRACT.md` §3 | 整段重写 Hand-off 协议:删除 `autodev_pipe-cli build` 假设;改为基于 ADP `make sdd-init` / `make decompose` 真实入口的 operator-readable HANDOFF.md schema;加 PRD → ADP spec schema 转换表 |
+| 修 4 | `framework/AUTODEV-PIPE-SYNC-PROPOSAL.md` 全文 | 整体方向逆转:从"ADP 同步 IDS 加 binding"改为"IDS framework 文档单向参考 ADP 实践";撤回 v1 的 3 节同步动作;ADP 不需要做任何同步 |
+| 修 5 | `discussion/006/forge/v1/stage-forge-006-v1.md` §2 | 加 v2 增补段:#4/#5/#15/#16/#18 时间维度过时但 L/P/C 分类不变;补 4 项 forge 没纳入的真 SOTA(L29 Production Path Verification / P30 Constraint Index / L31 cross-LLM review 双尺度 / L32 self-parasitic 验证) |
+| 修 6 | 本文件 | 加 v2 修订记录(本节) |
+
+### 真 gap 三条(应在 ADP 做,非 IDS)
+
+经核查 autodev_pipe v3.2/v3.3/v4 真实实装状态(2026-05-08):
+
+1. **Production credential 物理隔离 + 备份破坏检测**(P0)— 1-2 周,ADP 那边补
+2. **Risk tier 分类器**(P0)— 4-5 天,ADP 那边补
+3. **Eval Score micro-benchmark**(P1)— 1 周,ADP 那边补
+
+**IDS 这边不应包揽这 3 个 gap**(都是运行时实装,IDS 阶段无运行时)。
+
+### 核心立场仍对(v2 sanity check 确认)
+
+- 分仓(NG-2):IDS = idea→PRD / ADP = PRD→code,工程客观结论
+- L/P/C 分层(事 5):分类方法论不变,部分项时间维度过时
+- 8KB AGENTS.md(事 3):Vercel benchmark 阈值,ADP AGENTS.md 94 行印证可行
+- Safety Floor(事 1 NG-4 + 事 2 §2):Cursor 9 秒删库案例不依赖 ADP 哪个版本
+- SHARED-CONTRACT 范式(事 2):跨仓必须显式契约,Newman ch.7 + Pact + Linux+glibc 30 年印证
+
+### 不做的事
+
+- 不回滚 commit(核心立场仍对)
+- 不立刻起 forge v2(没有新 X 输入到能驱动 v2 价值)
+- 不立刻去 ADP 做同步(ADP 不需要)
+- 不实装 3 个真 gap(在 ADP 范围,operator 切到 ADP 时再做)
+
+### 触发起 forge v2 的明确条件
+
+1. operator 用真实 idea 走完 IDS L1→L4 + 切到 ADP 实测 schema 转换流程,**暴露的接口缺陷**作为 v2 X 输入
+2. 或:autodev_pipe v4 12 周 dogfood 完成 + ship checkpoint 03 后,新事实可作为 v2 X 输入
+3. 或:出现新 SOTA 需重审某条 NG(如 Anthropic Claude Skills SDK v2 推出)
+
+---
+
 ## Changelog
 
 - 2026-05-08 v1: 初稿 — forge 006 v1 verdict 落地的第一阶段计划,3 天 5 件事
 - 2026-05-08 v1.1: sanity check 后追加 Followup 节,记录 2 处已修 + 1 处待修
+- 2026-05-08 v2: sanity check v2(纳入 ADP v3.2/v3.3/v4)后修订 6 处;核心立场仍对;真 gap 3 条标在 ADP 范围;不回滚 commit / 不起 v2 / 不去 ADP 同步 / 不实装 gap

@@ -239,6 +239,51 @@ next-steps 预估 L=11/P=8/C=8,**实际 L=9 P=11 C=5**(相对 L 略少 / P 多 /
 
 **总采纳项 = 28**,符合 next-steps 中预估 27 ± 1。
 
+### v2 增补(2026-05-08 sanity check v2)
+
+> **重要**:本表 cutoff 2026-05-07(forge 006 v1 跑用的 X 标的截止 autodev_pipe v3.1)。**autodev_pipe v3.2/v3.3/v4 frozen 状态使部分项的"理由"和"时间维度"过时,但 L/P/C 分类不变**。
+
+#### 已被 ADP v3.2/v3.3/v4 实装(原表"待启动改造"立场过时)
+
+| 原表 # | 项 | 原立场 | v2 增补:ADP 真实状态 |
+|---|---|---|---|
+| #4 | autodev_pipe v3.1 STARTER_KIT 🟢 项 | C / 留 ADP 不 cp 到 IDS | ADP **v3.2 已 port stroller 五件套**(PD1),STARTER_KIT 部分被覆盖;立场不变,但理由从"v3.1 已物化"改为"v3.2-v4 已升级" |
+| #5 | idea_gamma2 phase-retrospective 五维 + §2.6 | P / ADP 借鉴自己实现 | **ADP v4 已 frozen 代码层**(2026-05-06):retrospective skill + L1/L2 + append_lesson;立场对,但已是历史 — 不再是"未来要做" |
+| #15 | Safety Floor 三件套 | L+P / IDS SSOT + ADP 实现 | **SSOT 归属修正**:ADP 早于本 framework 文档,不应 binding from IDS;改为双层独立 SSOT(IDS = 上游约束声明 / ADP = 实装,分散在 hook + agent rule + spec validator);见 SHARED-CONTRACT §2 v2 修订 |
+| #16 | in-process brakes | P / ADP | ADP next_draft §3.3 改进 4 标"半推论未实证";v4 spec C8 不修;**显式推 V4.2**;立场对,实装时间维度过时 |
+| #18 | Eval Score 层 | P / ADP | **ADP 没有 SWE-bench Pro 计划**(用 G1-G10 + audit-consistency + reviewed-by 三层质量门);立场没问题但 ADP 未必采纳;真 gap 之一 |
+
+#### ADP v3.2/v3.3/v4 已识别但 forge 没纳入的真 SOTA(应补入 §2 表)
+
+四个被 next_draft §3 三方共同盲区点出但 forge 006 v1 没纳入的项:
+
+| 补 # | 项 | Layer | Repo | 来源 |
+|---|---|---|---|---|
+| **L29** | spec 第 7 元素 Production Path Verification | **L** | IDS framework 文档采纳(SHARED-CONTRACT §3 HANDOFF schema 转换表已含)+ ADP v3.3 实装 | autodev_pipe v3.3 W2.2 + stroller idea004 12 路由 404 失败案例 |
+| **P30** | Constraint Index 跨多 agent 引用范式(`docs/constraints/<id>.md` + check_constraint_references.py) | **P** | ADP v3.3 已实装 + IDS framework follow-up(`framework/constraints/` 留作未来) | autodev_pipe v3.3 W2.5 + idea_gamma2 W18 4 文件 cp 漂移失败案例 |
+| **L31** | cross-LLM review 双尺度同构(forge 横切 = idea 阶段;reviewed-by hook = build 阶段) | **L** | IDS forge 横切 + ADP v3.3 reviewed-by hook | autodev_pipe v3.3 W2.4 + IDS forge 006 v1 自身实例 |
+| **L32** | self-parasitic 验证(用工具自己跑自己)是 SOTA | **L** | IDS forge / ADP v3.2 sdd-workflow / ADP v3.3 spec-validator / ADP v4 retrospective | autodev_pipe v3.3 spec 自我寄生(2026-05-06 codex review)+ v4 phase 4 T008(用 v4 retrospective 跑 v3.3 W2.7) |
+
+加这 4 项后,实际分布(28+4=32 项):
+- **L 级 = 11 项**(原 9 + L29 + L31 + L32)
+- **P 级 = 12 项**(原 11 + P30)
+- **C 级 = 5 项**(不变)
+- 删除 3 项(不计层)
+
+更新后:**L=11 / P=12 / C=5**,与 next-steps 原预估 L=11/P=8/C=8 的差距进一步缩小(L 完全一致,P 多 4,C 少 3,因为 ADP 已替 IDS 实装了大部分,IDS 自己 cp 的少)。
+
+#### Sanity-check-v2 真 gap 三条(应在 ADP 做)
+
+1. **Production credential 物理隔离 + 备份破坏检测**(P0,1-2 周,ADP)
+2. **Risk tier 分类器**(P0,4-5 天,ADP)
+3. **Eval Score micro-benchmark**(P1,1 周,ADP)
+
+这 3 个 gap 不在 IDS 范围内,IDS framework 文档不应包揽。
+
+详见 `discussion/006/forge/v1/sanity-check-v2-2026-05-08.md`。
+
+---
+
 ### Self-critique(2026-05-08 重写说明)
 
 本次重写修正了原 §2 表格的 3 个模糊点:

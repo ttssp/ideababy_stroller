@@ -1,286 +1,177 @@
 ---
-doc_type: framework-cross-repo-sync-proposal
-status: draft-pending-execution
+doc_type: framework-cross-repo-reference
+status: v2 (rewritten 2026-05-08 after sanity-check-v2 finding)
 target_repo: autodev_pipe
 generated: 2026-05-08
-upstream: ideababy_stroller framework/SHARED-CONTRACT.md (v1)
-purpose: 当 operator 切到 autodev_pipe 仓库工作时,按本文档落地 3 节同步动作
+upstream: ideababy_stroller framework/SHARED-CONTRACT.md (v1, contract_version 1.0.0)
+purpose: 描述 ideababy_stroller framework 文档如何参考 autodev_pipe 已落地实践;**不要求 ADP 做任何同步动作**
 ---
 
-# autodev_pipe 同步提案 — 落地 SHARED-CONTRACT v1
+# autodev_pipe 关系参考(v2,2026-05-08)
 
-## 本文档定位
+## v2 重写说明(必读)
 
-本文档是 **autodev_pipe 仓库需要做的同步动作清单**。它写在 ideababy_stroller(idea→PRD repo)这边,因为本会话 cwd 在 ideababy_stroller,**无法直接编辑 autodev_pipe 仓库**。
+本文件 **2026-05-08 v2 sanity check 发现 v1 整体方向错误,全文重写**。
 
-**operator 后续切到 autodev_pipe 时,按本文档逐节执行**。
+### v1 错误(已撤回)
 
-> **Why this proposal exists, not direct edits**:跨 repo 工作时,在源仓库这边写一份"建议清单"是工业范式(参见 GitHub PR template / Backstage migration guide / Helm chart 升级 checklist)。避免 operator 切仓后忘记跨仓变更,也保留 audit trail。
->
-> **Why bind contract bidirectionally**:Newman *Building Microservices* ch.7 Consumer-Driven Contracts — 契约必须 consumer 端也声明,producer 单方面声明无效。Pact framework / Linux kernel + glibc syscall ABI 范式同样原则。仅在 ideababy_stroller 这边声明 "autodev_pipe 应 honor X" 不构成有效契约,**autodev_pipe 仓库自身的 AGENTS.md 也必须复述并标注 binding 来源**。
+v1 错误地把 IDS framework 文档当成 autodev_pipe 的"上游 binding contract",要求 ADP 做 3 节同步动作:
+- 节 1:ADP README 加"消费 IDS PRD,honor IDS Safety Floor" 段
+- 节 2:ADP AGENTS.md 加 "binding from ideababy_stroller framework/SHARED-CONTRACT.md §2"
+- 节 3:ADP 持有 SHARED-CONTRACT.md byte-level mirror + 同步检查脚本
 
----
+### v2 修正(本文件)
 
-## 同步前置条件
+经核查 autodev_pipe 真实状态(2026-05-08):
+- **autodev_pipe 早于本 framework 文档存在**(v3.1 设计稿 2025-Q4 / v3.2 frozen 2026-04-29 / v3.3 frozen 2026-04-29 / v4 frozen 代码层 2026-05-06 / 12 周 dogfood 进行中)
+- **autodev_pipe 不消费 IDS PRD**(它 self-parasitic,用自己的 spec 跑)
+- **autodev_pipe Safety Floor 已多层实装**(`block-dangerous.sh` + parallel-builder 5 hard rule + spec-validator + reviewed-by hook),不需要 IDS 给它 SSOT
+- **要求 ADP "binding from IDS" 是 retroactive 倒置因果** — 一个早于 framework 文档存在 6 个月的成熟系统不需要新文档说"它必须遵守"
 
-执行本文档动作前,确认:
-
-- ✅ ideababy_stroller `framework/SHARED-CONTRACT.md` v1 已存在
-- ✅ ideababy_stroller `framework/NON-GOALS.md` v1 已存在
-- ✅ ideababy_stroller `AGENTS.md` 已升级 ≤8KB(`wc -c AGENTS.md`)
-- ✅ operator 已 `cd <autodev_pipe path>`(本会话不会代切目录)
-- ✅ operator 已通读 `discussion/006/forge/v1/stage-forge-006-v1.md` §2 重写后的 L/P/C 分层表(知道 autodev_pipe 在 L/P/C 矩阵中的归属)
-
----
-
-## 同步动作清单(3 节)
-
-### 节 1 · autodev_pipe README.md 改版
-
-#### 当前状态(predicted)
-
-autodev_pipe 仓库的 README.md 大概率还在描述 v3.1 design doc / STARTER_KIT 视角,未显式声明它的"角色"是 PRD→code build harness。
-
-#### 改版动作
-
-在 autodev_pipe README.md 的开头(在任何 v3.1 / STARTER_KIT 内容之前)插入**关系段落**:
-
-```markdown
-## Repo role(2026-05-08+)
-
-This repo is the **build harness** half of a two-repo framework:
-
-- **`ideababy_stroller`** — idea→PRD harness (L1 inspire / L2 explore / L3 scope / L4 plan + forge cross-cutting layer)
-- **`autodev_pipe`** (this repo) — PRD→code harness (build worker / review coordinator / runtime safety)
-
-The two repos are **independently released**, **no version pinning**, coordinated only via `SHARED-CONTRACT.md` (SSOT in ideababy_stroller, mirror in this repo).
-
-**This repo consumes**:
-- PRD documents (plain markdown, 8 required fields per `SHARED-CONTRACT.md` §1) produced by `ideababy_stroller /plan-start`
-- HANDOFF.md instructions (per SHARED-CONTRACT §3) telling operator how to invoke `autodev_pipe-cli build`
-
-**This repo honors as binding**:
-- `ideababy_stroller framework/SHARED-CONTRACT.md` §2 Safety Floor (production credential isolation / irreversible command hard block / backup destruction detection) — non-overridable in any sandbox mode
-
-**This repo does NOT do**:
-- Idea generation / inspire / explore / scope (those happen in `ideababy_stroller`)
-- PRD writing (PRD comes from `ideababy_stroller /plan-start`, immutable here)
-
-For contract version + breaking change protocol, see `SHARED-CONTRACT.md` (mirrored from ideababy_stroller).
-```
-
-#### 完成标准
-
-- README.md 第一节(在 v3.1 / STARTER_KIT 段之前)是 "Repo role"
-- 段落明确"消费 PRD"和"honor Safety Floor"两件事
-- 段落引用 ideababy_stroller `framework/SHARED-CONTRACT.md` 完整路径
+**本文件 v2 方向**:**framework 文档参考 ADP 实践**(单向引用),**ADP 不需要做任何同步动作**。
 
 ---
 
-### 节 2 · autodev_pipe AGENTS.md 创建/升级
+## §1 · ADP 真实状态参考(IDS framework 文档单向引用)
 
-#### 当前状态(predicted)
+### autodev_pipe 版本演进时间线(2026-05-08 核查)
 
-autodev_pipe 仓库可能已经有 `templates/AGENTS.md`(stage v1 §2 表 #5 提及),但**根目录 AGENTS.md** 状态未知。如果不存在,创建;如果存在,升级。
+| 版本 | 状态 | 主旨 | 对 IDS framework 的参考价值 |
+|---|---|---|---|
+| v3.1 | 设计稿 | 11 阶段流水线 + 三层成本控制 | 提供失败案例(gap-audit 11 项 ×)的反面教材 |
+| v3.1-gap-audit | 完成 | 11 × / 5 △ / 13 √ 真实落地盘点 | 揭示"设计稿 ≠ 已运行系统"的范式;影响 IDS NG-1 论证 |
+| v3.2 | frozen 2026-04-29 | port stroller 五件套(sdd / decompose / quality-gate / parallel-builder / check-disjoint) | IDS framework SHARED-CONTRACT §3 hand-off 流程**实际终点**;IDS PRD → ADP `make sdd-init` 流程的 ADP 半边 |
+| v3.3 | frozen 2026-04-29 / 真审 2026-05-06 | spec-validator + reviewed-by hook + Constraint Index + 7 元素 + Production Path Verification | IDS framework 文档应**参考**而非重新发明:Constraint Index / cross-LLM review / 第 7 元素 |
+| v4 | frozen 代码层 2026-05-06 / 12 周 dogfood 进行中 | retrospective L1+L2 + lesson 反哺 + append_lesson + ~/.claude/lessons/ | IDS framework Learning Loop 立场已被 ADP v4 实装,不需要 IDS 重做 |
+| ADR 0008 → 0009 | 2026-05-06 | dogfood 路径 B 真外部 → C Hybrid | 影响 IDS framework 对"跨仓 dogfood 节奏"的预期(不是 IDS 单方面驱动) |
+| next_draft §3 | reference | 三方共同盲区:Production Path / Constraint Index / cross-LLM review / lesson 反哺 | IDS framework SHARED-CONTRACT 应在 §1 PRD schema 加 Production Path 字段 |
 
-#### 创建/升级动作
+### 核心事实(IDS framework 文档必须采纳)
 
-autodev_pipe 根目录 `AGENTS.md` 必须包含**至少 6 节**,**总字节 ≤ 8KB**(同 Vercel benchmark 阈值,适用于 autodev_pipe 自己的 AGENTS.md):
-
-```markdown
-# autodev_pipe — PRD→code build harness SSOT
-
-> **Repo role**: PRD→code build harness (build worker / review coordinator / runtime safety / cost control / Learning Loop)
-> **Companion repo**: `ideababy_stroller`(idea→PRD)
-> **Updated**: <ISO date> — restructured per ideababy_stroller framework/SHARED-CONTRACT.md v1
-> **Constraint**: ≤ 8KB(Vercel benchmark)
-
-## §1 · Safety Floor (binding from ideababy_stroller)
-
-The following three rules are **binding from ideababy_stroller framework/SHARED-CONTRACT.md §2**. They are non-overridable in any sandbox mode (`suggest` / `auto-edit` / `full-auto`). No prompt / config / sandbox setting can disable them. SSOT lives in ideababy_stroller; this section is a mirror.
-
-1. **Production credential isolation** — [verbatim from SHARED-CONTRACT §2 件 1]
-2. **Irreversible command hard block** — [verbatim from SHARED-CONTRACT §2 件 2]
-3. **Backup destruction detection** — [verbatim from SHARED-CONTRACT §2 件 3]
-
-If autodev_pipe-cli detects ideababy_stroller's SHARED-CONTRACT.md `contract_version` is incompatible with `supported_contract_versions` (this file §3), it must REFUSE to start, not "尽力解析".
-
-**Failure case prevented**: Cursor + Claude 9-second database deletion (tomshardware 2025).
-
-## §2 · Sandbox modes (Codex CLI Pattern)
-
-Three modes (Pattern borrowed from OpenAI Codex CLI 2025 design):
-
-- `suggest` — agent proposes edits, operator approves each
-- `auto-edit` — agent edits + commits within file_domain, operator approves push
-- `full-auto` — agent edits + commits + pushes to non-protected branches
-
-**All three honor Safety Floor (§1)**. `full-auto` does NOT mean "bypass Safety Floor".
-
-## §3 · Contract versioning
-
-This repo is independently released, no version pinning to ideababy_stroller. Coordinated via SHARED-CONTRACT.md.
-
-- **`supported_contract_versions`**: <semver range, e.g., `>=1.0.0 <2.0.0`>
-- **Breaking change protocol** (binding from ideababy_stroller): deprecation ≥ 4 weeks + migration ≥ 4 weeks + cutover ≥ 1 week
-- **Mirror policy**: this repo's `SHARED-CONTRACT.md` (§4 below) is byte-level cp from ideababy_stroller; never edit here, edit there
-
-## §4 · SHARED-CONTRACT mirror
-
-See `SHARED-CONTRACT.md` in this repo (mirror of `ideababy_stroller framework/SHARED-CONTRACT.md`).
-
-## §5 · Build pipeline modules
-
-(autodev_pipe-internal — references stage-forge-006-v1.md §3 模块 2-4 归属此 repo)
-
-- Module 2 · Safety / Permission layer — implements Safety Floor §1
-- Module 3 · Quality / Review layer — review coordinator MVP 4 件套
-- Module 4 · Learning Loop layer — retrospective + Eval Score
-- (Plus internal modules: in-process brakes / cost circuit breaker / sandbox modes / etc.)
-
-## §6 · Iron rules
-
-- Honor Safety Floor (§1) — non-overridable
-- Refuse to start if SHARED-CONTRACT.md mirror is missing or `contract_version` outside supported range
-- Output build / review verdicts in machine-parseable format (TBD: JSON or structured markdown)
-- Cross-model review for v1.0 paths (Opus + Codex)
-- Default deny: `full-auto` requires explicit operator opt-in per session
-
-(Continue with tool defaults / directory ownership / prohibitions if space permits)
-```
-
-#### 完成标准
-
-- autodev_pipe 根 `AGENTS.md` 存在
-- `wc -c AGENTS.md` ≤ 8192
-- ≥ 6 节,且 §1 显式标 "binding from ideababy_stroller"
-- §3 显式声明 `supported_contract_versions`(semver 区间)
-- 总字节字段不允许 verbatim cp ideababy_stroller AGENTS.md(那是 IDS 视角,这是 ADP 视角)
+1. **ADP 实际入口 ≠ `autodev_pipe-cli build`** — 实际是 `make sdd-init` / `make decompose` / `parallel-builder` agent
+2. **ADP spec ≠ IDS PRD** — ADP 用 7 元素 schema(Outcomes / Scope / Constraints / Prior Decisions / Tasks / Verification / Production Path Verification);IDS 用 8 字段 PRD schema;两者不是同一文件
+3. **ADP self-parasitic** — v4 第一个 dogfood 客户是 ADP 自己的 v3.3 W2.7 retrospective,不是 IDS 的 PRD
+4. **ADP 不读 IDS framework 文档** — IDS 这边的 NON-GOALS / SHARED-CONTRACT / AGENTS.md 是 IDS 内部 SSOT,ADP 不需要消费
 
 ---
 
-### 节 3 · autodev_pipe SHARED-CONTRACT.md mirror
+## §2 · IDS framework 文档应参考 ADP 实践的具体点
 
-#### 当前状态(predicted)
+按 sanity-check-v2 的 5 个真发现逐条:
 
-autodev_pipe 仓库当前没有 SHARED-CONTRACT.md(因为它是本次 v1 才在 ideababy_stroller 这边产生的)。
+### 参考 1 · spec 第 7 元素 Production Path Verification
 
-#### 创建动作
+- **ADP 实践**:`autodev_pipe/templates/spec.template.md` §7(2026-05-06 加)+ `autodev_pipe/specs/v3.3/spec.md` §7(自我寄生 dogfood)
+- **失败案例**:`autodev_pipe/docs/case-studies/stroller-idea004-12-routes-404.md`
+- **核心**:所有 mock-pass-prod-fail 都因为 mock 满足 spec,真路径不满足 → spec 必须强制描述真路径上 X 起点 Y 终点的可达性证据
+- **IDS framework 已采纳**(v2 修订):SHARED-CONTRACT §3 HANDOFF.md schema 中"Schema 转换"表已包含"§7 Production Path Verification(operator 必须补)"行
 
-在 autodev_pipe 根目录创建 `SHARED-CONTRACT.md`,**字节级 cp** ideababy_stroller `framework/SHARED-CONTRACT.md`,加 mirror 标记:
+### 参考 2 · Constraint Index 跨多 agent 引用范式
 
-```markdown
----
-doc_type: framework-shared-contract-mirror
-mirror_of: ideababy_stroller/framework/SHARED-CONTRACT.md
-mirror_synced: <ISO date>
-mirror_policy: byte-level cp; never edit here, edit upstream
-status: v1
----
+- **ADP 实践**:`autodev_pipe/docs/constraints/<id>.md` + `autodev_pipe/scripts/check_constraint_references.py`(v3.3 W2.5)
+- **失败案例**:`autodev_pipe/docs/case-studies/gamma2-w18-cp-drift.md`(idea_gamma2 同字段约束在 4 文件 cp 漂移)
+- **核心**:跨多 agent 引用的业务约束抽到单一 `docs/constraints/` 目录,agent 文件**只引用不 cp**
+- **IDS framework follow-up**(v2 sanity check 暴露的 gap):IDS 这边的 forge stage v1 §2 Decision matrix 28 项里**有跨多 agent 引用的约束**(eg "Safety Floor 不可被覆写"出现多处);可参考 ADP 实践把它们抽到 `framework/constraints/` 目录。**v2 不强制现在做**,留作 follow-up
 
-> **Mirror notice**: 这是 ideababy_stroller `framework/SHARED-CONTRACT.md` 的 mirror。
-> SSOT 在 ideababy_stroller 仓库。本文件**永不直接编辑**——任何变更必须先在
-> upstream 完成(走三阶段 breaking change 流程),再 cp 到这里。
-> 如发现 mirror 与 upstream 字节级不一致,以 upstream 为准。
+### 参考 3 · cross-LLM review 实装机制
 
-[verbatim cp of ideababy_stroller/framework/SHARED-CONTRACT.md content from §"## 本文档定位" onwards]
-```
+- **ADP 实践**:v3.3 reviewed-by hook(`scripts/check_spec_review.py`)+ pre-commit reject + `/codex:adversarial-review` plugin 路径
+- **核心**:spec frontmatter 必须含 `reviewed-by: <peer-llm>` 字段;status: review/frozen 时不允许 pending
+- **IDS framework 同构**:forge protocol 横切层(`/expert-forge`)是同一范式的另一尺度 — Opus + GPT-5.5 双专家审 = ADP 的 reviewed-by hook 在 idea 阶段的等价物
+- **建议**:IDS framework 文档明确"forge 横切层 = idea 阶段的 cross-LLM review 实装",指向 ADP v3.3 hook 作为 build 阶段的对应实装
 
-#### 同步检查脚本(autodev_pipe 仓库根)
+### 参考 4 · ADP v4 已实装 retrospective + lesson 反哺
 
-可在 autodev_pipe 加一个脚本 `scripts/check-contract-sync.sh`(或对应语言版本):
+- **ADP 实践**:`.claude/skills/retrospective/SKILL.md`(L1+L2 触发)+ `scripts/append_lesson.py`(状态机 APPENDED/SKIPPED/MATERIALIZED/REPAIRED/MISSING)+ `~/.claude/lessons/<category>-<slug>.md`(user scope 跨项目复用)
+- **自寄生证据**:`docs/dogfood/v3.3-w27-retrospective.md`(v4 用自己的 retrospective skill 处理 v3.3 W2.7 phase)
+- **核心**:retrospective 多触发器(phase / 上下文阈值 / 失败事件 / 周期);lesson 跨项目复用通过 user scope `~/.claude/lessons/`(不进项目 git)
+- **对 IDS framework 的影响**:**stage-forge-006-v1.md §3 模块 4 "Learning Loop 层" 描述 90% 已被 ADP v4 实装**;IDS 这边不需要重做 Learning Loop 模块。IDS 自己范畴 = 在 idea→PRD 阶段使用 lesson(eg `/scope-start` 时读 `~/.claude/lessons/anti-pattern-*.md`),而不是实现 lesson 反哺机制本身
 
-```bash
-#!/bin/bash
-# Check SHARED-CONTRACT mirror is byte-level identical to upstream
+### 参考 5 · ADR 0008 → 0009 路径修正(B → C Hybrid)
 
-UPSTREAM="${IDEABABY_STROLLER_PATH:-../ideababy_stroller}/framework/SHARED-CONTRACT.md"
-LOCAL="./SHARED-CONTRACT.md"
-
-if [ ! -f "$UPSTREAM" ]; then
-  echo "ERROR: upstream not found at $UPSTREAM"
-  echo "Set IDEABABY_STROLLER_PATH env var or place repo at sibling location"
-  exit 1
-fi
-
-# Strip the mirror frontmatter from local copy before diffing
-LOCAL_BODY=$(awk '/^# SHARED-CONTRACT/,EOF' "$LOCAL")
-UPSTREAM_BODY=$(awk '/^# SHARED-CONTRACT/,EOF' "$UPSTREAM")
-
-if [ "$LOCAL_BODY" != "$UPSTREAM_BODY" ]; then
-  echo "DRIFT DETECTED: $LOCAL is not a byte-level mirror of $UPSTREAM"
-  diff <(echo "$LOCAL_BODY") <(echo "$UPSTREAM_BODY")
-  exit 1
-fi
-
-echo "OK: SHARED-CONTRACT mirror in sync"
-```
-
-可以挂在 autodev_pipe pre-commit hook 或 CI gate 上。
-
-#### 完成标准
-
-- autodev_pipe 根 `SHARED-CONTRACT.md` 存在
-- frontmatter 标 `mirror_of` + `mirror_policy: byte-level cp; never edit here`
-- body 与 ideababy_stroller `framework/SHARED-CONTRACT.md` 从 `# SHARED-CONTRACT` heading 之后字节级一致(可用 `diff` 验证)
-- (推荐)有 `scripts/check-contract-sync.sh` + pre-commit hook,防止 drift
+- **ADP 决策**:V4 dogfood 从"≥ 2 真自用业务项目"降级为"1 真自用 + 1 ADP 自身 retrospective 周期";真跨项目反哺主张推 V4.2
+- **影响**:IDS 不能假设"ADP 在等 IDS 的 PRD 作为 dogfood 输入" — ADP 已自己跑自己的 dogfood
+- **IDS framework 立场修正**:跨仓 hand-off 是**未来某天**真实跑 IDS L1→L4 + 切仓走 ADP 流程的事;不是 ADP 现在就在等 IDS 输入。本文件 v2 修订采纳此事实
 
 ---
 
-## 客观依据汇总
+## §3 · 真 gap(IDS 和 ADP 各自的真实工作)
 
-| 同步动作 | 依据 | 来源 |
-|---|---|---|
-| 节 1 README "Repo role" 段 | Microservice repo split 范式必须显式声明角色 | Newman *Building Microservices* ch.4 |
-| 节 1 引用 ideababy_stroller path | Linux kernel + glibc 30 年 ABI 协调范式;明确 SSOT 位置 | Linux kernel 文档 |
-| 节 2 AGENTS.md ≤ 8KB | Vercel benchmark 100% activation 阈值 | Vercel 2025 工程博客 |
-| 节 2 §1 binding 声明 | Consumer-Driven Contracts:契约必须 consumer 端也声明 | Newman ch.7 / Pact framework |
-| 节 2 §3 contract_version semver 区间 | npm/pip/cargo 生态共识 | semver.org |
-| 节 2 拒绝运行(版本不兼容)而非"尽力解析" | Fail-fast 范式 | Erlang/OTP 设计哲学 |
-| 节 3 byte-level mirror | Linux kernel `include/uapi/` headers 对 libc 的 mirror 范式(30 年验证) | Linux kernel 历史 |
-| 节 3 同步检查脚本 | drift detection 是 contract testing 标配 | Pact / OpenAPI ecosystem |
+sanity-check-v2 §3 模块 1-4 对照表已揭示 3 个真 gap。本节明确各 gap 应在哪一仓做:
 
----
+### Gap 1 · Production credential 物理隔离 + 备份破坏检测
 
-## 风险与化解
+- **应在 ADP 做**(运行时阻断必须有运行时,只有 ADP 有)
+- **不在 IDS 做**(IDS 阶段没运行时,只能"声明 PRD 不允许提出违反 Safety Floor 的需求")
+- **优先级**:P0(Cursor 9 秒删库案例直接对应)
+- **估时**:1-2 周(ADP 那边)
 
-| 风险 | 化解 |
-|---|---|
-| autodev_pipe 当前 README 已有内容,改版冲突 | 在 README 顶部新增 "Repo role" 节,不删原内容,用 `> **Latest update**` 标注新增 |
-| autodev_pipe 已有 AGENTS.md(在 templates 下不在根),路径冲突 | 区分 `templates/AGENTS.md`(给 ADP 用户的模板)与根 `AGENTS.md`(ADP 自己的 SSOT) |
-| Mirror drift(operator 不小心改了 autodev_pipe SHARED-CONTRACT.md) | 节 3 的同步检查脚本 + pre-commit hook + CI gate 三层防御 |
-| autodev_pipe 还在 v3.1 design 阶段,没有 build/cli 实现 | 同步动作不阻塞 — AGENTS.md / README / mirror 都是文档,可在没有实现的情况下写;实现按 stage v1 §5 dev plan 推进 |
-| 跨仓 contract 升级时,mirror 需要手动 sync | 长期可考虑 git submodule 或 monorepo subtree split 自动化;v1 阶段手工 cp 即可 |
+### Gap 2 · Risk tier 分类器(file_domain / spec section / 危险命令 → tier 1/2/3)
 
----
+- **应在 ADP 做**(routing 在 build 阶段)
+- **不在 IDS 做**
+- **优先级**:P0(stage v1 §3 模块 3 剩余 25%)
+- **估时**:4-5 天(ADP 那边)
 
-## 执行顺序建议
+### Gap 3 · Eval Score micro-benchmark(SWE-bench Pro 任务集 + recall/precision)
 
-operator 切到 autodev_pipe 时:
+- **应在 ADP 做**(eval 跑代码,只有 ADP 有运行时)
+- **不在 IDS 做**(IDS 阶段无代码可 eval)
+- **优先级**:P1(framework v1.0 release 前必做,v0.1 可推)
+- **估时**:1 周(ADP 那边)
 
-1. 节 1 README 改版(0.5h,纯文档)
-2. 节 3 SHARED-CONTRACT mirror 创建(0.5h,文件 cp)
-3. 节 2 AGENTS.md 创建/升级(1-2h,需要根据 autodev_pipe 当前实际状态适配)
-4. 测试 `scripts/check-contract-sync.sh`(0.5h)
-5. commit + push autodev_pipe(取决于 operator)
+### IDS 自己的 follow-up(独立于上述 3 gap)
 
-总时长:**~3h**(对应 plan 中事 4 估时 0.5d)。
+- IDS framework `framework/constraints/` 目录(参考 ADP v3.3 Constraint Index)— P2,留作 follow-up
+- IDS `/plan-start` 加 HANDOFF.md 产出步骤(SHARED-CONTRACT §3 v2 修订后改为 operator-readable 格式)— P1,真实跑过 1 个 idea 后再做
+- IDS `/scope-start` 读 `~/.claude/lessons/anti-pattern-*.md`(消费 ADP v4 已 ship 的 lesson)— P2
 
 ---
 
-## 验证(在 autodev_pipe 仓库)
+## §4 · 推荐 operator 行动路径(v2)
 
-```bash
-# 在 autodev_pipe 仓库根
-test -f README.md && grep -c '## Repo role' README.md  # 应 = 1
-test -f AGENTS.md && wc -c AGENTS.md  # ≤ 8192
-test -f AGENTS.md && grep -c 'binding from ideababy_stroller' AGENTS.md  # ≥ 1
-test -f SHARED-CONTRACT.md && grep -c '^mirror_of:' SHARED-CONTRACT.md  # = 1
-bash scripts/check-contract-sync.sh  # 应 echo "OK: SHARED-CONTRACT mirror in sync"
-```
+### 短期(1 周内)
+
+- **不切到 ADP 仓库做任何同步动作** — ADP 不需要,framework 文档单向引用即可
+- **接受 sanity-check-v2 修订后的 5 件事产物** — SHARED-CONTRACT 已修 §1/§2/§3,本文件 v2 重写,stage v1 §2 加 v2 增补
+- **最早机会跑一个真实 idea 的完整 L1→L4** — 暴露 SHARED-CONTRACT §3 HANDOFF.md schema 的真实 gap
+
+### 中期(1-3 月内)
+
+- 在跑过的真实 idea 暴露的 gap 基础上,改造 `/plan-start` 加 HANDOFF.md 产出步骤(估时 ~2h)
+- 视 ADP v4 dogfood 12 周进度,决定是否启动 IDS framework 的 follow-up(constraints / lesson 消费)
+
+### 长期(3-12 月)
+
+- ADP v4 dogfood 完成 + ship checkpoint 03 后,起 forge v2 重审 framework v0.2(把 v3.2/v3.3/v4 + ADR + dogfood 实测 + 新 SOTA 全部纳入 X)
+- 视 forge v2 verdict,决定 framework v1.0 是否需要新增模块
+
+---
+
+## §5 · 客观依据
+
+- **Linux kernel + glibc 30 年 ABI 协调范式** — 两者独立 release,只共享 syscall ABI 契约;**不要求一方"binding from"另一方**;本文件 v2 方向参考此范式
+- **Pact framework / Newman *Building Microservices* ch.7 Consumer-Driven Contracts** — Consumer-Driven 不是"Producer 强加 contract 给 Consumer";是"Consumer 主动声明它需要 Producer 满足什么"。ADP 没声明它需要 IDS 提供 SHARED-CONTRACT,**所以 IDS 不应单方面写 binding 给它**
+- **autodev_pipe v3.2 PD1**(spec/task 工具链 = stroller schema)— ADP 用 stroller schema 是 ADP 自己的决策,不是 IDS 强加
+- **autodev_pipe AGENTS.md L48**(危险命令唯一防线 = block-dangerous.sh)— ADP 已有 Safety Floor SSOT;不需要 IDS 提供
+- **autodev_pipe ADR 0009 D5**(真自用候选 12 周内浮现硬条件)— ADP self-parasitic + 真自用候选 TBD,**不在等 IDS 的 PRD 作为 dogfood 候选**
+
+---
+
+## §6 · v1 → v2 修订对照
+
+| 维度 | v1 立场 | v2 修订 | 修订理由 |
+|---|---|---|---|
+| 文档性质 | 同步提案(action plan) | 关系参考(reference doc) | ADP 不需要做同步动作,文档只是单向引用 |
+| 方向 | IDS → ADP(IDS 给 ADP 加 binding) | ADP → IDS(IDS 参考 ADP 实践) | ADP 早于 framework 文档,retroactive binding 不合理 |
+| operator 切仓动作 | 3 节强制同步(README + AGENTS + mirror) | 0 节强制 + 真实跑 idea 时按 SHARED-CONTRACT §3 HANDOFF.md schema 操作 | 不污染 ADP self-parasitic 状态 |
+| 同步检查脚本 | byte-level mirror diff | 删除(无 mirror 了) | 没有 mirror 文件,无需检查 |
+| autodev_pipe 命令假设 | `autodev_pipe-cli build` | `make sdd-init` / `make decompose`(v3.2 V1+V2) | 真实命令 |
+| Safety Floor SSOT 归属 | IDS 拥有 | 双层独立(IDS = 上游约束声明 / ADP = 实装) | 实装必须有运行时 |
 
 ---
 
 ## Changelog
 
-- 2026-05-08 v1: 初稿,3 节同步动作 + 同步检查脚本
+- 2026-05-08 v1: 初稿,3 节同步动作 + 同步检查脚本(后被 v2 重写撤回)
+- 2026-05-08 v2: **全文重写**。撤回 v1 的"binding contract"方向;改为单向引用 ADP 实践。基于 sanity-check-v2-2026-05-08.md 发现

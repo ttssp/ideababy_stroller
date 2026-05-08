@@ -27,11 +27,30 @@ ideababy_stroller(idea→PRD)与 autodev_pipe(PRD→code)是**两个独立 relea
 
 ## §1 · PRD schema(plain markdown)
 
+> **2026-05-08 v2 sanity check 修订**:本节明确 **PRD vs Spec 区分**,并修正 v1 的 cli 假设。
+
+### PRD vs Spec(SDLC 不同阶段,不同产物)
+
+ideababy_stroller(IDS)产出的是 **PRD**;autodev_pipe(ADP)消费的是 **它自己的 spec**(v3.2/v3.3/v4 schema 0.2 的 7 元素 spec.template.md)。**两者不是同一文件**:
+
+| 阶段 | 产物 | 仓库 | Schema | 入口命令 |
+|---|---|---|---|---|
+| L3 Scope(IDS) | PRD-v\<n\>.md(本节定义,8 字段) | ideababy_stroller | 本节 §1 | `/scope-start` |
+| L4 Plan(IDS) | spec.md / architecture.md / tasks/T\*.md | ideababy_stroller | (IDS L4 规范) | `/plan-start` |
+| Build(ADP) | autodev_pipe 自己的 spec.md(7 元素) | autodev_pipe | ADP `templates/spec.template.md`(schema_version 0.2) | `make sdd-init <feature>` 或 `make decompose <spec>`(ADP v3.2 V1+V2) |
+
+**关键澄清(v2 修订前 v1 的错误假设)**:
+- ❌ v1 假设有 `autodev_pipe-cli build` 命令直接消费 PRD — **该命令不存在**
+- ✅ 实际:ADP 入口是 `make sdd-init` / `make decompose`(stroller-port 的 sdd-workflow / task-decomposer skill 实现)
+- ✅ 跨仓 hand-off **不是 IDS PRD 直送 ADP cli**,而是:**IDS PRD → operator 切到 ADP 仓库 → 在 ADP 那边用 sdd-workflow skill 把 PRD 转成 ADP spec → 跑 make decompose 产 task**
+- ✅ ADP 的 spec 7 元素与本节 PRD 8 字段是**不同 schema**(PRD 在前,Spec 在后,SDLC 经典分阶段)
+
 ### 设计原则
 
 - PRD 是 plain markdown 文件,**不是任何 DSL / YAML / JSON / 自定义格式**
 - 这样保证跨 IDE / 跨 agent / 人类可直接编辑
 - 字段顺序固定,但允许扩展子节(以下 8 字段必须存在)
+- **PRD 是 ADP spec 的输入,但 ADP spec 自有 schema(7 元素 + Production Path Verification),IDS 不规定 ADP spec 内部结构**
 
 ### Schema(8 个 required 字段)
 
@@ -90,7 +109,7 @@ ideababy_stroller(idea→PRD)与 autodev_pipe(PRD→code)是**两个独立 relea
 
 | 字段 | required? | 说明 |
 |---|---|---|
-| frontmatter (PRD-form / Status / Sources / Forked-from) | required | autodev_pipe 用于路由判断 |
+| frontmatter (PRD-form / Status / Sources / Forked-from) | required | operator 切到 ADP 时,用此 frontmatter 判断 PRD 适用形态(simple / phased / composite / v1-direct)→ 选 ADP `make sdd-init` 还是 `make decompose` 等不同入口 |
 | User persona | required | 没有 persona 的 PRD 不可执行 |
 | Core user stories | required | 至少 3 条 |
 | Scope IN | required | |
@@ -106,16 +125,32 @@ ideababy_stroller(idea→PRD)与 autodev_pipe(PRD→code)是**两个独立 relea
 - **idea_gamma2 interface-contract 五元组借鉴**(producer/consumer/schema/version/error-handling) — 本节 schema 是 producer 端定义
 - **Anthropic 2026 Trends "上游需求工程化"** 是 5 个核心 agentic coding 工作流之一 — PRD 必须是工程化产物,不是自由格式
 - **stage-forge-006-v1.md §4** 已示范完整 PRD 结构
+- **autodev_pipe v3.2 PD1**(spec/task 工具链 = stroller schema) — ADP 实际入口是 `make sdd-init` / `make decompose`,**v2 修订采纳此事实**
+
+### v2 修订记录(2026-05-08 sanity check)
+
+| 修订点 | v1 描述 | v2 修订 |
+|---|---|---|
+| ADP 入口命令 | 假设 `autodev_pipe-cli build` 存在 | 实际是 `make sdd-init` / `make decompose`(ADP v3.2 V1+V2) |
+| PRD 与 Spec 关系 | 隐含为同一物 | 显式区分:PRD 在 IDS,spec 在 ADP,SDLC 不同阶段 |
+| Schema 单一性 | 隐含 PRD 直接喂给 build cli | 修正:PRD 是 ADP sdd-workflow skill 的输入,不是 ADP build worker 的输入 |
 
 ---
 
 ## §2 · Safety Floor 三件套定义
 
+> **2026-05-08 v2 sanity check 修订**:**SSOT 归属修正** — autodev_pipe 早于本 framework 文档存在,且已实装多层防御(`block-dangerous.sh` + `parallel-builder` 5 hard rule + `request-approval.sh` + `spec-validator`)。本节**不再要求 ADP "binding from IDS"**;改为:**IDS 这边声明上游一致性约束(写 PRD 时必须考虑这三件套),ADP 这边持续维护实装 SSOT**。
+
 ### 设计原则
 
-Safety Floor 是 framework **不可妥协的硬约束**(NG-4):无论 autodev_pipe 在哪个 sandbox mode,这三件套**必须 hard block**。**ideababy_stroller 是 SSOT 拥有方**——任何 Safety Floor 定义变更必须先改这里,autodev_pipe 跟随。
+Safety Floor 是 framework **不可妥协的硬约束**(NG-4):无论在 IDS 写 PRD 还是 ADP build 时,这三件套**必须 hard block**。
 
-> **Why ideababy_stroller 拥有 SSOT**:idea→PRD 阶段比 build 阶段更早接触 idea 全貌,能更早识别 production-related 风险点;且 ideababy_stroller release cadence 慢(per-idea 数天),适合做不变量层。
+**SSOT 归属(v2 修订)**:
+- **实装 SSOT 在 autodev_pipe**(因为 hard block 发生在运行时,只有 ADP 有运行时):`autodev_pipe/.claude/hooks/block-dangerous.sh` + `autodev_pipe/.claude/agents/parallel-builder.md` 5 hard rule + `autodev_pipe/scripts/spec_validator.py`
+- **上游约束 SSOT 在 ideababy_stroller**(PRD 阶段必须考虑):本节定义 PRD 在写 Scope IN / Real constraints 时必须满足三件套**约束声明**(eg "本 PRD 不要求 production credential 直连");IDS 的 `framework/SHARED-CONTRACT.md` §2 是这一层的 SSOT
+- **两层不同**:实装 SSOT 决定运行时阻断;上游约束 SSOT 决定 PRD 不允许提出违反三件套的需求
+
+> **Why 双 SSOT 而非单一**:idea→PRD 阶段无运行时,只能"声明约束",没法 hard block;build 阶段有运行时,才能真正 hard block。把它们捏成一个 SSOT 会要么"PRD 阶段管不到运行时"要么"build 阶段不知道 PRD 上游约束"。本 framework 范式是**双层独立 SSOT,语义对齐**。
 
 ### 三件套清单
 
@@ -195,113 +230,143 @@ revoke production cert / rotate prod key without backup
 - **AWS / GCP / Azure 共识**:production 凭据应通过 IAM least-privilege 设计,本文件把这条业界共识 hardcode 进 framework
 - **OWASP Top 10 (2021/2024) A01 Broken Access Control**:Safety Floor 三件套是 access control 在 agentic coding 上下文的实例化
 
-### autodev_pipe 实现 contract
+### autodev_pipe 实装现状(v2 修订:不再要求 binding,而是审计已落地)
 
-autodev_pipe 仓库的 AGENTS.md 必须包含一节(完整文本见 `framework/AUTODEV-PIPE-SYNC-PROPOSAL.md`):
+autodev_pipe 已实装的 Safety Floor 多层防御(2026-05-08 核查):
 
-```markdown
-## Safety Floor (binding from ideababy_stroller framework/SHARED-CONTRACT.md §2)
+| 件 | ADP 实装位置 | 实装状态 |
+|---|---|---|
+| 件 1 · Production credential 物理隔离 | (无显式实装) | **gap** — `block-dangerous.sh` 没扫 .env.production 模式;需补 |
+| 件 2 · 不可逆命令 hard block | `autodev_pipe/.claude/hooks/block-dangerous.sh` | ✅ 已实装(`rm -rf` 类) |
+| 件 2 (扩展) · 5 hard rule(file_domain 越界 / spec 漂移) | `autodev_pipe/.claude/agents/parallel-builder.md` | ✅ 已实装(v3.2 V3) |
+| 件 3 · 备份破坏检测 | (无显式实装) | **gap** — 没有同凭据双 API 隔离机制;需补 |
 
-The following three rules are non-overridable. No prompt / config / sandbox
-mode can disable them. See SSOT at: <ideababy_stroller path>.
+**v2 修订采纳的事实**:autodev_pipe 实装比 v1 描述的更分散(hook + agent rule + spec validator 三层),件 1+件 3 是**真 gap**(sanity-check-v2 §3 模块 2 标的 80% 完成度的剩余 20%)。
 
-1. Production credential isolation: ...
-2. Irreversible command hard block: ...
-3. Backup destruction detection: ...
-```
+**v1 假设的 binding 要求(已删除)**:不再要求 ADP AGENTS.md 加 "binding from ideababy_stroller" 段;ADP 自己维护实装 SSOT。
+- 修订理由:ADP 早于本 framework 文档存在,要求它 binding 是 retroactive 倒置因果;且 ADP self-parasitic(它用自己的 spec 而非 IDS PRD 跑 dogfood),没有实质消费 IDS 的 SHARED-CONTRACT 内容
+- 替代机制:**审计** — IDS 这边定期跑 sanity check 对照 ADP 实装,记录 gap(本节"实装现状"表 + sanity-check-v2)而非要求 binding
 
 ---
 
 ## §3 · Hand-off 协议
 
+> **2026-05-08 v2 sanity check 全节重写**:删除 `autodev_pipe-cli build` 假设(该命令不存在);改为基于 ADP v3.2/v3.3/v4 真实入口(`make sdd-init` / `make decompose`)的 hand-off 流程。
+
 ### 设计原则
 
-ideababy_stroller `/plan-start` 命令在产出 spec / tasks 后,**输出明确的"下一步在 autodev_pipe 跑哪个命令"指引**。用户不需要记忆跨仓 workflow,机器告诉机器。
+跨仓 hand-off 不是"IDS 直接调用 ADP cli";是**operator 切到 ADP 仓库,把 IDS 的 PRD 作为输入,在 ADP 自己的 sdd-workflow skill 上跑**。
 
-### Hand-off 数据流
+PRD 是上游产物;ADP 自己产 spec(7 元素 + Production Path Verification)是 build 阶段产物。**两阶段独立,不共享 schema**。
+
+### Hand-off 数据流(v2 修订)
 
 ```
-ideababy_stroller                       autodev_pipe
-─────────────                       ──────────────
+ideababy_stroller                              autodev_pipe (独立运作)
+─────────────                              ──────────────
 proposal.md
   ↓ /inspire-start
 L1 stage doc
   ↓ /explore-start
 L2 stage doc
   ↓ /scope-start
-L3 stage doc → PRD
+L3 stage doc → PRD-v<n>.md
   ↓ /plan-start
 specs/<NNN>-<fork>-<prd>/
-  ├── spec.md
+  ├── spec.md           (IDS 内部 spec, 给 IDS L4 用)
   ├── architecture.md
   ├── tasks/T001.md ... T0NN.md
-  └── HANDOFF.md  ← 这是 hand-off 协议产物
-
-                                   ← 用户切到 autodev_pipe 仓库
-                                   autodev_pipe-cli build \
-                                     --spec-path <path> \
-                                     --safety-floor binding
-                                       ↓
-                                   parallel-builder workers
-                                       ↓
-                                   review coordinator MVP
-                                       ↓
-                                   ship
+  └── HANDOFF.md        (operator 读这份,人工切仓)
+       │
+       │ operator 读 HANDOFF.md 中给的 PRD 路径 + 推荐 ADP 命令
+       │ 切到 autodev_pipe 仓库
+       ▼
+                                          cd <autodev_pipe path>
+                                          # operator 把 PRD 内容 cp 进 ADP 的 sdd-workflow 输入位置
+                                          # 或: 让 ADP sdd-workflow skill 直接读 IDS PRD 路径
+                                          make sdd-init <feature>      # ADP v3.2 V1 入口
+                                            ↓ 产出 ADP 自己的 spec.md (7 元素 schema)
+                                          make decompose <spec>        # ADP v3.2 V2 入口
+                                            ↓ 产出 ADP tasks/T*.md
+                                          .claude/agents/parallel-builder      # ADP v3.2 V3 跑 task
+                                            ↓ + 5 hard rule + Safety Floor
+                                          # 测试 + review (ADP v3.3 reviewed-by hook)
+                                          # ship
 ```
 
-### HANDOFF.md schema
+### HANDOFF.md schema(v2 修订)
 
-`/plan-start` 在 spec 目录下生成 `HANDOFF.md`:
+`/plan-start` 在 spec 目录下生成 `HANDOFF.md`,**为 operator 切仓后做事提供指引**(不是机器读的 cli 配置):
 
 ```markdown
 # Hand-off · <NNN>-<fork>-<prd> → autodev_pipe
 
 **Handed off at**: <ISO timestamp>
-**spec_id**: <NNN>-<fork>-<prd>
-**spec_path**: <absolute path in ideababy_stroller>
-**PRD source**: discussion/<NNN>/<fork>/<prd>/PRD.md
-**Tasks**: <count> tasks in tasks/
+**IDS spec path**: <absolute path>/specs/<NNN>-<fork>-<prd>/
+**PRD source**: <absolute path>/discussion/<NNN>/<fork>/<prd>/PRD.md
+**ADP repo path** (operator 自填): <autodev_pipe absolute path>
 
-## Recommended autodev_pipe command
+## Operator manual steps(切仓后)
 
-```bash
-cd <autodev_pipe path>
-autodev_pipe-cli build \
-  --spec-path <ideababy_stroller spec absolute path> \
-  --safety-floor binding \
-  --reviewer-mode <mixed | claude-full | codex>
-```
+1. cd <autodev_pipe path>
+2. 阅读 IDS PRD: cat <PRD source>
+3. 在 ADP 这边起新 feature:
+   make sdd-init <feature-name>     # 产出 ADP 自己的 spec.md (7 元素)
+4. 把 IDS PRD 内容**人工转写**进 ADP spec.md 的 §1 Outcomes / §2 Scope / §3 Constraints
+   (PRD 8 字段 → ADP spec 7 元素:Outcomes / Scope / Constraints / Prior Decisions / Tasks / Verification / Production Path Verification)
+5. ADP spec frontmatter 加 reviewed-by 走 v3.3 codex review 路径(若需要)
+6. 任务分解: make decompose specs/<feature>/spec.md
+7. parallel-builder 跑 tasks
+8. ship 流程按 ADP 自己规则
 
-## Required autodev_pipe state
+## Schema 转换(IDS PRD 8 字段 → ADP spec 7 元素)
 
-- autodev_pipe AGENTS.md must reference ideababy_stroller framework/SHARED-CONTRACT.md §2 (Safety Floor)
-- autodev_pipe contract version >= <semver from this hand-off>
+| IDS PRD 字段 | ADP spec 7 元素映射 |
+|---|---|
+| User persona + Core user stories | §1 Outcomes(每个 story → outcome ID) |
+| Scope IN | §2 Scope IN |
+| Scope OUT | §2 Scope OUT |
+| Real constraints | §3 Constraints(数字,不是形容词) |
+| Success looks like | §6 Verification(每条对应 PASS 命令) |
+| (新增,IDS PRD 没有) | §7 Production Path Verification(operator 必须补) |
+| Open questions | §3 Constraints 中"Open"小节 / §"Risks" |
+| frontmatter (PRD-form / Status / Sources / Forked-from) | ADP spec frontmatter (spec_id / status / schema_version / reviewed-by) |
+
+## ADP-side prerequisites
+
+- ADP 仓库为 v3.2+ (含 sdd-workflow / task-decomposer skill)
+- ADP `make doctor` exit 0(`pyproject.toml` deps 装齐)
+- ADP `pre-commit install` 已跑(spec-validator + check-spec-review + check-constraint-references hooks)
 
 ## Open questions for build phase
 
-(任何 spec 没解决,留给 build phase 的 OQ)
+(IDS PRD 没解决,留给 ADP build 阶段的 OQ)
 
 ## Rollback plan
 
-(如果 build 失败,回到 ideababy_stroller 哪一层 / 哪个命令)
+如果 ADP build 失败:
+- (a) 回到 IDS 修 PRD,重跑 /plan-start
+- (b) 改 ADP spec(不改 IDS PRD),用 ADP 自己的 W-* 修订机制
+- (c) 起 forge v2 重新审整个 idea
 ```
 
-### Implementation status (2026-05-08)
+### Implementation status (2026-05-08 v2 修订)
 
-⚠ **Contract v1.0 declared, /plan-start implementation pending**:
+✅ **HANDOFF.md schema 已重写为 operator-readable 格式**(不再依赖不存在的 `autodev_pipe-cli build`)。
 
-- 当前 `.claude/commands/plan-start.md` **不产出 HANDOFF.md**
-- `/plan-start` 已存在(产出 `specs/<NNN>-<fork>-<prd>/{spec.md, architecture.md, tasks/T*.md}`)
-- HANDOFF.md 产出是本契约 v1.0 新增条款,需 follow-up 改造 `/plan-start.md` Step N
-- 在改造完成前,operator 可 manually 创建 HANDOFF.md(按上述 schema 填字段)
-- Tracking: 见 `discussion/006/forge/v1/next-steps.md` followup 区(待加)
+⚠ **`/plan-start` 命令仍未实装产出 HANDOFF.md** — follow-up:
+- 当前 `.claude/commands/plan-start.md` 不产出 HANDOFF.md
+- 改造工作量:~2h(在 spec/tasks 写完后加一步)
+- 触发条件:operator 真实跑 1 个 idea 走完 IDS L1→L4 + 切到 ADP 实测 schema 转换流程后,再改造 `/plan-start.md`(避免预先猜错)
+- 在改造完成前,operator 跑完 `/plan-start` 后**手工创建** HANDOFF.md(按上述 schema 填字段)
 
 ### 客观依据
 
-- **机器告诉机器**:工业范式 — CI 系统通常打印明确的"下一步命令",不让人记忆。来源:GitHub Actions / GitLab CI 等
-- **跨仓 workflow 必须显式协议**:Newman *Building Microservices* ch.7,Consumer-Driven Contracts 不仅声明 schema,也声明 invocation
-- **rollback plan 是 SOTA 实践**:Forsgren 2018 *Accelerate* 4 个核心实践之一是 "automated change failure recovery"
-- **stage-forge-006-v1.md §"Decision menu"** 已示范类似 hand-off 结构(进 L4 / 跑 v2 / park / abandon 各带具体命令)
+- **autodev_pipe v3.2 V1+V2** — `make sdd-init` / `make decompose` 是 ADP 实际入口,**v2 修订采纳此事实**
+- **autodev_pipe v3.3 7 元素 spec schema**(含 Production Path Verification) — ADP spec 与 IDS PRD 是不同 schema 的事实根据
+- **stroller idea004 12 路由 404 失败案例** — Production Path Verification 第 7 元素的设计动机
+- **机器告诉机器**:GitHub Actions / GitLab CI / Backstage 范式
+- **rollback plan**:Forsgren 2018 *Accelerate*
 
 ---
 
