@@ -658,7 +658,7 @@ related_spec_section: <spec section anchor, optional>
 ---
 ```
 
-> **producer 写入 frontmatter 前**,必须按 §6.2.1 五条约束(canonical-path containment / symlink reject / repo identity check / id consistency / hard-fail)校验路径与 id;校验失败 hard-fail,不产 hand-back 包。
+> **producer 写入 frontmatter 前**,必须按 §6.2.1 六条约束(canonical-path containment / symlink reject / repo identity check / id consistency / id 字符集 + final-path containment / hard-fail)校验路径与 id;校验失败 hard-fail,不产 hand-back 包。
 
 **body 章节**(Markdown,3 节固定结构):
 
@@ -717,6 +717,7 @@ cutover 时按此清单逐条勾选,确保所有 v1.1.0 consumer 同步迁移:
 - [ ] M2 cutover commit 同步 bump frontmatter `contract_version: 1.1.0` → `2.0`
 - [ ] M2 cutover commit 同步追加 §"Changelog" v2.0 entry(列本节所有 breaking change)
 - [ ] M2 cutover commit 同步在本节(§6)顶部把 `Status: DRAFT-pending-cutover` 改为 `Status: ACTIVE`,删除 `⚠ 本节未生效` warning 段
+- [ ] M2 改 §3 forward hand-off schema 加 `source_repo_identity` 字段(`expected_remote_url` + `repo_marker` + 可选 `git_common_dir_hash`),由 IDS forward 产源时填入;§6.2.1 约束 3 同步改为用该字段做 normative 比对(替代当前依赖 producer 自查 `remote.origin.url` 但无 expected 值的弱实装);定义 remote / no-remote / hash-only 三种比对规则。**第一性原因**:回应 codex Round 4 (HEAD~6) Finding 2 — 当前 `to_source_repo: <absolute path>` 不构成可校验的仓 identity,producer 实装无 ground truth → 退化成 `.git` 存在 = PASS 的弱 check,IDS 副本 / test clone 全通过
 
 ### §6.6 · 与 §3 现有 hand-off 协议的关系
 
