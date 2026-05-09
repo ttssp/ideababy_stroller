@@ -22,8 +22,8 @@ L3 · Scope     — real requirements, what to build, what NOT to build
   │  output: PRD-v<n>.md (real product requirements with human's constraints)
   │  fork: different PRD interpretations
   ▼
-L4 · Plan      — spec, architecture, tasks, parallel build, quality gates
-  │  output: working code + ship
+L4 · Hand-off  — produce hand-off package; downstream build runtime (XenoDev) does spec/tasks/build/quality
+  │  output: HANDOFF.md → XenoDev consumes (per framework/SHARED-CONTRACT.md §6 v2.0)
 ```
 
 Every layer's output is **independently valuable**. An L1 inspire menu may stay
@@ -79,15 +79,16 @@ cdx-queues              # 看所有队列与 HEAD 状态
 - `discussion/NNN/<fork-id>/L2/` — explore layer per fork
 - `discussion/NNN/<fork-id>/L3/` — scope layer per fork
 - `discussion/NNN/<fork-id>/<prd-version>/L4/` — plan layer per PRD version
-- `specs/NNN-<fork-id>-<prd>/` — only spec-writer + task-decomposer write
-- `projects/NNN-<fork-id>/` — parallel-builder workers (scoped to task file_domain)
+- `discussion/NNN/<fork-id>/<prd-version>/L4/HANDOFF.md` — produced by `/plan-start` (v3.0+, M2 cutover);XenoDev build runtime consumes
+- `specs/NNN-<fork-id>-<prd>/` — **DEPRECATED M3** (commit d3194a0):4 fork specs/ archived as forge v2 evidence;IDS no longer produces specs/(see SHARED-CONTRACT §6 v2.0)
+- `projects/NNN-<fork-id>/` — historical parallel-builder worktrees (pre-M2);new builds happen in XenoDev repo
 - `.codex-inbox/`, `.codex-outbox/` — agent coordination bus
 
 ## Prohibited
 
 - L1/L2 emitting tech/feasibility content (re-route to L4)
 - Auto-generating `AGENTS.md` or `CLAUDE.md` (LLM-generated context hurts quality)
-- Modifying `specs/` from a build worker
+- Modifying `specs/` at all (M3 verdict 2026-05-10 commit d3194a0: 4 fork specs/ archived as forge v2 evidence;no further task additions / reviews)
 - Committing `.env*` files
 - Forking >3 levels deep without strong reason
 
