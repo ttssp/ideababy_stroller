@@ -335,6 +335,59 @@ specs/<NNN>-<fork>-<prd>/
 **ADP repo path** (operator 自填): <autodev_pipe absolute path,默认 /Users/admin/codes/autodev_pipe>
 **SHARED-CONTRACT version honored**: 1.1.0
 
+> **v2.0 cutover 后(M2,2026-05-10)**:本 §3 schema 是 v1.1 历史 active 描述(IDS → ADP 流程)。v2.0 后 forward hand-off 由 plan-start v3.0 产 `discussion/<id>/<prd>/L4/HANDOFF.md`(目标仓改为 XenoDev),frontmatter 必加 §6.2 `workspace:` 块 + 下方 §3.1 `source_repo_identity:` 块。详见 §6 + Changelog v2.0。
+
+### §3.1 · source_repo_identity 字段(v2.0 新增,forward hand-off frontmatter)
+
+> **v2.0 新增**(M2 cutover,Block E)。响应 codex Round 4 (HEAD~6) Finding 2 — v1.1 `to_source_repo: <absolute path>` 不构成可校验的仓 identity,producer 实装无 ground truth → 退化成"`.git` 存在 = PASS"的弱 check,IDS 副本 / test clone 全通过。v2.0 加本字段提供可校验的 normative ground truth。
+
+由 IDS forward hand-off producer(`/plan-start` v3.0)产源时填入,XenoDev hand-back producer 写包前按 §6.2.1 约束 3 三模式比对。
+
+**字段结构**(YAML,嵌入 hand-off 包 frontmatter):
+
+```yaml
+source_repo_identity:
+  expected_remote_url: <git remote.origin.url 输出;无 remote 时留空字符串>
+  repo_marker: <head -c 30 CLAUDE.md 输出;MUST contain "Idea Incubator">
+  git_common_dir_hash: <可选;sha256 of .git/HEAD + .git/config 前 16 字符>
+```
+
+**三个字段的产生命令**(IDS forward 端):
+
+```bash
+EXPECTED_REMOTE="$(git config remote.origin.url 2>/dev/null || echo '')"
+REPO_MARKER="$(head -c 30 CLAUDE.md)"
+GIT_HASH="$(cat .git/HEAD .git/config 2>/dev/null | shasum -a 256 | head -c 16)"
+```
+
+**约束 3 三模式比对规则**(per §6.2.1 约束 3,v2.0 normative spec):
+
+- **remote 模式**(producer 端有 git remote):
+  - 比对 `git config remote.origin.url` ∈ source_repo == `expected_remote_url`(精确字符串等)
+  - PASS = 字面相等(包括 `git@` vs `https://` 等同 host 也算 PASS — 加 normalize:strip protocol prefix + trailing `.git`)
+  - 失败 = 当前仓不是 hand-off 包预期的仓(IDS 副本 / test clone / 误移动)
+- **no-remote 模式**(producer 端无 git remote,或 hand-off 包 expected_remote_url 为空):
+  - 比对 `head -c 30 CLAUDE.md` ∈ source_repo 含 `repo_marker` 子串
+  - `repo_marker` 必含 "Idea Incubator"(IDS CLAUDE.md L1 永久标识)
+  - PASS = 子串匹配
+  - 第一性原因:`single-developer / local-only` 场景无 remote 是常态;repo_marker 提供 fallback ground truth
+- **hash-only 模式**(operator 显式开启;两个 repo 是 fork 关系无法靠 remote 区分):
+  - 比对 `sha256(.git/HEAD + .git/config)` ∈ source_repo 前 16 字符 == `git_common_dir_hash`
+  - PASS = hash 等
+  - 适用场景:operator 在同 host 跑 IDS prod + IDS test clone,两者 remote 相同但 .git/HEAD(branch)+ .git/config(local user.name/email)总有差异
+
+**任一模式 PASS 即满足约束 3**。三模式优先级:remote > no-remote > hash-only(operator 不显式开启 hash-only 时不跑该模式)。
+
+**hard-fail 行为**(per §6.2.1 约束 4):任一模式都 PASS 不了 → producer 不写 hand-back 包 / consumer 不读 hand-back 包,只 stderr 报"约束 3 (repo identity) 失败:三模式全 FAIL"+ handback_id + exit 非 0。
+
+**实装位置**(本协议 + 命令实装):
+- 协议层(本节):normative spec(M2 Block E 落地)
+- IDS 端 producer(forward hand-off):`/plan-start` v3.0 frontmatter 已填(M2 Block A2 落地,见 .claude/commands/plan-start.md)
+- XenoDev 端 producer(hand-back):B2.1 阶段实装(XenoDev bootstrap)
+- IDS 端 consumer(hand-back review):`/handback-review` v2.0 contract-only 引(M2 Block D 落地);可调 validator B2.1 阶段实装
+
+**与 v1.1.0 §3 关系**:v1.1.0 §3 HANDOFF.md schema 不含 `source_repo_identity` 字段;v2.0 加本字段是 forward direction adapter,IDS forward hand-off frontmatter 必填,XenoDev hand-back producer 必读必校验。v1.1.0 历史 hand-off 包(specs/{007a-pA, 001-pA, 003-pA, 004-pB}/HANDOFF.md)是 ADP 范式,M3 已标 DEPRECATED,不需追溯加本字段。
+
 ## Operator manual steps(切仓后)
 
 1. cd <ADP repo path>
@@ -587,10 +640,11 @@ workspace:
 - 第一性原因:symlink 是 confused-deputy 攻击的经典载体;single-developer / local-only 场景看似无威胁,但 operator 自己手动建过的 dev symlink(eg `~/codes/ideababy_stroller -> ~/Dropbox/...`)会让 fs.write 静默落到 Dropbox,Dropbox 的 sync conflict resolver 可能覆盖 append-only 评审产物。
 - 例外:**operator 在 IDS 仓根本身**(`source_repo`)可以是 symlink(operator 的 dev workflow 决定);校验从 `source_repo`(canonicalized 后)往下走,只校验 `<source_repo>/discussion/...` 这部分路径段不含 symlink。
 
-**约束 3 · repo identity check**:
-- 写入前 producer 必须验证 `<source_repo>/.git` 存在且其 `config remote.origin.url`(若有)与 hand-off 包 frontmatter 中 `to_source_repo` 隐含的仓 identity 一致。
-- 单人本地 + 无 remote 场景下:验证 `<source_repo>/CLAUDE.md` 存在且首行含 `Idea Incubator`(本仓的 identity marker,见 CLAUDE.md L1)。
-- 失败 = `source_repo` 指向了一个看起来像 IDS 仓但其实是别人的 fork / 误移动的副本,**reject**。
+**约束 3 · repo identity check(v2.0 normative · 三模式)**:
+- 写入前 producer 必须按 hand-off 包 frontmatter `source_repo_identity:` 字段(§3.1)三模式之一比对:**remote 模式**(`git config remote.origin.url` == `expected_remote_url`)/ **no-remote 模式**(`head -c 30 CLAUDE.md` 含 `repo_marker`,marker 必含 "Idea Incubator")/ **hash-only 模式**(`sha256(.git/HEAD + .git/config)` 前 16 字符 == `git_common_dir_hash`)。
+- **任一模式 PASS 即满足约束 3**。三模式完整规则、产生命令、字段语义见 §3.1。
+- 失败 = `source_repo` 指向了一个看起来像 IDS 仓但其实是别人的 fork / 误移动的副本 / IDS 副本 / test clone,**reject**(per 约束 4 hard-fail)。
+- v1.1.0 弱实装(`.git` 存在 = PASS)在 v2.0 已废弃,本约束改为依赖 §3.1 normative ground truth 字段。
 
 **约束 5 · id consistency check**:
 - hand-back 包必须满足 **三处 id 严格一致**:
@@ -717,7 +771,7 @@ cutover 时按此清单逐条勾选,确保所有 v1.1.0 consumer 同步迁移:
 - [ ] M2 cutover commit 同步 bump frontmatter `contract_version: 1.1.0` → `2.0`
 - [ ] M2 cutover commit 同步追加 §"Changelog" v2.0 entry(列本节所有 breaking change)
 - [ ] M2 cutover commit 同步在本节(§6)顶部把 `Status: DRAFT-pending-cutover` 改为 `Status: ACTIVE`,删除 `⚠ 本节未生效` warning 段
-- [ ] M2 改 §3 forward hand-off schema 加 `source_repo_identity` 字段(`expected_remote_url` + `repo_marker` + 可选 `git_common_dir_hash`),由 IDS forward 产源时填入;§6.2.1 约束 3 同步改为用该字段做 normative 比对(替代当前依赖 producer 自查 `remote.origin.url` 但无 expected 值的弱实装);定义 remote / no-remote / hash-only 三种比对规则。**第一性原因**:回应 codex Round 4 (HEAD~6) Finding 2 — 当前 `to_source_repo: <absolute path>` 不构成可校验的仓 identity,producer 实装无 ground truth → 退化成 `.git` 存在 = PASS 的弱 check,IDS 副本 / test clone 全通过
+- [x] M2 改 §3 forward hand-off schema 加 `source_repo_identity` 字段(`expected_remote_url` + `repo_marker` + 可选 `git_common_dir_hash`),由 IDS forward 产源时填入;§6.2.1 约束 3 同步改为用该字段做 normative 比对(替代当前依赖 producer 自查 `remote.origin.url` 但无 expected 值的弱实装);定义 remote / no-remote / hash-only 三种比对规则。**第一性原因**:回应 codex Round 4 (HEAD~6) Finding 2 — 当前 `to_source_repo: <absolute path>` 不构成可校验的仓 identity,producer 实装无 ground truth → 退化成 `.git` 存在 = PASS 的弱 check,IDS 副本 / test clone 全通过 — **M2 Block E 落地**(commit pending),§3.1 新增,§6.2.1 约束 3 改 normative
 
 ### §6.6 · 与 §3 现有 hand-off 协议的关系
 
