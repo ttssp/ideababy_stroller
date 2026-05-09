@@ -1,3 +1,11 @@
+> ⚠ **DEPRECATED — 2026-05-10 起不再维护**
+>
+> forge 006 v2 verdict(`discussion/006/forge/v2/stage-forge-006-v2.md`)决议 IDS 退回 idea→PRD + 治理,
+> 不再产 `specs/`;build runtime 由新建的 XenoDev 仓承担(per `framework/SHARED-CONTRACT.md` §6 v2.0 草稿)。
+>
+> 本 spec 保留作 forge v2 evidence(stage doc §"Evidence map" row 13);
+> 不再加新 task,不再做 review。新 PRD 走 `discussion/<id>/<fork>/L4/HANDOFF.md` → XenoDev 消费。
+
 # Spec · 001-pA · PI Briefing Console
 
 **版本**: 0.4.0
