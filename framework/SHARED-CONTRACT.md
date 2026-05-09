@@ -592,9 +592,18 @@ workspace:
 - 单人本地 + 无 remote 场景下:验证 `<source_repo>/CLAUDE.md` 存在且首行含 `Idea Incubator`(本仓的 identity marker,见 CLAUDE.md L1)。
 - 失败 = `source_repo` 指向了一个看起来像 IDS 仓但其实是别人的 fork / 误移动的副本,**reject**。
 
+**约束 5 · id consistency check**:
+- hand-back 包必须满足 **三处 id 严格一致**:
+  1. 物理路径中 `discussion/<X>/handback/` 的 `<X>` 段
+  2. 文件名 `<ISO ts>-<handback_id>.md` 中 `handback_id` 解出的 `<prd_fork_id>` 前缀的 `discussion_id` 部分(`prd_fork_id` 形如 `008a-pA`,前缀 `008` = `discussion_id`)
+  3. frontmatter `discussion_id` 字段 + `prd_fork_id` 字段 + `handback_id` derived 公式 (`<prd_fork_id>-<ts>`)
+- 三处任一不匹配 = `Drop`(producer 不写 / consumer 不读)。
+- 第一性原因:hand-back 是 IDS ↔ XenoDev 双向学习闭环的反馈源;若路径在容器内但 idea id 错位,`/handback-review <id>` 会把无关 build 证据当作 PRD `<id>` 反馈处理,驱动 PRD 做不该做的修订(corruption-of-corpus 失效模式)。Pact framework 风格 explicit contract(本文档开头已引 Newman 原则)要求 invariant 在协议层双向声明,producer 与 consumer 都按此实装。
+- 失败模式典型场景:operator 在多 idea fork 间切换,XenoDev 跑 PRD 008a-pA 时 handback_target 误填 `discussion/006/handback/`;或自动化 script 把 `<id>` 参数化时变量串错。
+
 **约束 4 · hard-fail 行为**:
 - 任一约束失败,producer **不写**任何文件,**不创建**任何目录,**不做** stderr 之外的副作用。
-- consumer(`/handback-review`)读到不符合约束 1-3 的 hand-back 包,**不读取**其内容,只在 stderr 报具体哪条约束失败 + 该 hand-back 包的 `handback_id`,然后 exit 非 0。
+- consumer(`/handback-review`)读到不符合约束 1-3 + 5 的 hand-back 包,**不读取**其内容,只在 stderr 报具体哪条约束失败 + 该 hand-back 包的 `handback_id`,然后 exit 非 0。
 - 第一性原因:hand-back 通道是跨仓写入,silent error 在跨仓场景下永远诊断不到;hard-fail 比 silent corruption 便宜两个数量级。
 
 **约束实装位置**(M2 cutover 时):
@@ -612,7 +621,9 @@ build 仓(XenoDev)在每个 task ship / spec violation / drift detection 时产 
 
 ```yaml
 ---
-handback_id: <prd-fork-id>-<ISO ts>      # eg "008-20260520T103015Z"
+discussion_id: <id>                      # eg "008";必须与路径 discussion/<X>/ 中 <X> 严格一致(§6.2.1 约束 5)
+prd_fork_id: <prd-fork-id>               # eg "008a-pA";discussion_id 之下的 fork 标识
+handback_id: <prd_fork_id>-<ISO ts>      # eg "008a-pA-20260520T103015Z";derived = prd_fork_id + "-" + ts
 from_build_repo: <absolute path>
 to_source_repo: <absolute path>
 workspace:                               # §6.2 4 字段嵌入
@@ -631,7 +642,7 @@ related_spec_section: <spec section anchor, optional>
 ---
 ```
 
-> **producer 写入 frontmatter 中 `workspace.handback_target` 前**,必须按 §6.2.1 四条约束(canonical-path containment / symlink reject / repo identity check / hard-fail)校验该路径;校验失败 hard-fail,不产 hand-back 包。
+> **producer 写入 frontmatter 前**,必须按 §6.2.1 五条约束(canonical-path containment / symlink reject / repo identity check / id consistency / hard-fail)校验路径与 id;校验失败 hard-fail,不产 hand-back 包。
 
 **body 章节**(Markdown,3 节固定结构):
 
@@ -661,7 +672,9 @@ operator 收到本 hand-back 后可选的动作(选 1-N):
 
 **IDS 端目录**:`<source_repo>/discussion/<id>/handback/`
 
-**文件命名**:`<ISO ts>-<handback_id>.md`(eg `20260520T103015Z-008-20260520T103015Z.md` — ts 重复以便 ls 排序与 frontmatter 匹配)
+**文件命名**:`<ISO ts>-<handback_id>.md`(eg `20260520T103015Z-008a-pA-20260520T103015Z.md` — ts 重复以便 ls 排序与 frontmatter 匹配)
+
+**id 一致性**:文件名中 `handback_id` 解出的 `<discussion_id>` 前缀必须与物理路径 `discussion/<X>/` 的 `<X>` 严格相等,且与 frontmatter `discussion_id` 字段相等;否则 `/handback-review` hard-fail(§6.2.1 约束 5)。
 
 **operator 操作**:在 IDS 仓运行 `/handback-review <id>`(M2 同期产命令)读 `discussion/<id>/handback/` 目录,逐条决议 §3 建议清单,写入 `discussion/<id>/handback/HANDBACK-LOG.md`(append-only 决议日志)。
 
