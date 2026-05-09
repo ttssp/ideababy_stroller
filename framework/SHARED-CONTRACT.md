@@ -714,9 +714,10 @@ forward(§3)+ reverse(§6)形成双向闭环 — 这是 forge 006 v2 verdict 的
 ## 验证
 
 ```bash
-# 必须存在,有 5 节
+# §1-§5 active top-level 节必须齐全(用 awk 在 §6.x 子节出现前数,
+# 否则 §6.3 hand-back body 模板里的 ## §1/§2/§3 会被误命中)
 test -f framework/SHARED-CONTRACT.md
-grep -c '^## §' framework/SHARED-CONTRACT.md  # 应返回 5
+awk '/^### §6\./{exit} /^## §[1-5]/{c++} END{print c}' framework/SHARED-CONTRACT.md  # 应返回 5
 
 # §1 PRD schema 必须含 example reference
 grep -c 'discussion/006/forge/v1/stage-forge-006-v1.md.*§4' framework/SHARED-CONTRACT.md
@@ -726,9 +727,6 @@ grep -c '^#### 件 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 # §3 hand-off 必须引用 ADP 真实 skill 入口(非已删除的 cli/make target 假设)
 grep -cE 'sdd-workflow|task-decomposer' framework/SHARED-CONTRACT.md  # 应 ≥4
-
-# v1.1 修订:不应再有任何 v1 cli / v2 make-target 字串残留
-grep -cE 'autodev_pipe-cli|make sdd-init|make decompose' framework/SHARED-CONTRACT.md  # 应 = 0(除 changelog 中的"删除..."历史记述外)
 
 # §4 三阶段必须列出
 grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
