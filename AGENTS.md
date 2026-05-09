@@ -1,13 +1,13 @@
 # ideababy_stroller — Idea→PRD framework SSOT
 
 > **Repo role**: idea→PRD harness(L1 inspire / L2 explore / L3 scope / L4 plan + forge cross-cutting)
-> **Companion repo**: `autodev_pipe`(PRD→code build harness — see §4)
+> **Companion repo**: `XenoDev`(PRD→code build harness — see §4 + framework/SHARED-CONTRACT.md §6 v2.0)
 > **Updated**: 2026-05-08 — restructured per `discussion/006/forge/v1/stage-forge-006-v1.md` verdict
 > **Constraint**: ≤ 8KB(Vercel benchmark: 8KB AGENTS.md = 100% activation; > 8KB drops)
 
 ## §1 · Safety Floor(non-overridable hard rules)
 
-These three rules **hard block in any sandbox mode**, including `full-auto`. No prompt / config / sandbox setting disables them. SSOT here; `autodev_pipe` mirrors. Full spec + failure-case provenance in `framework/SHARED-CONTRACT.md` §2.
+These three rules **hard block in any sandbox mode**, including `full-auto`. No prompt / config / sandbox setting disables them. SSOT here; `XenoDev` mirrors. Full spec + failure-case provenance in `framework/SHARED-CONTRACT.md` §2.
 
 1. **Production credential isolation** — `.env.production` / `.env.prod` / `secrets/production/*` / `prod://` connection strings must NOT enter agent context. Enforced at file-system path filter, agent context loader, pre-commit hook.
 2. **Irreversible command hard block** — `rm -rf /`, `DROP TABLE` (non-test prefix), `git push --force` to protected branches (`main` / `master` / `production` / `release-*`), `aws rds delete-db-*`, `aws s3 rm --recursive <prod-bucket>`, key revocation, GCP/Azure equivalents. Escape only via human escape hatch (typed declaration + 2nd confirmation).
@@ -37,16 +37,17 @@ Tiered harness: light entry for small projects, heavy upgrade for idea-incubatio
 
 When in doubt, upgrade. Downgrade only after retrospective confirms previous tier was sufficient.
 
-## §4 · Cross-repo contract(ideababy_stroller ↔ autodev_pipe)
+## §4 · Cross-repo contract(ideababy_stroller ↔ XenoDev)
 
-Two repos, **independent release**, no version pinning. Coordinated via `framework/SHARED-CONTRACT.md` (SSOT here, mirror in autodev_pipe).
+Two repos, **independent release**, no version pinning. Coordinated via `framework/SHARED-CONTRACT.md` (SSOT here, mirror in XenoDev).
 
-- **PRD schema** (plain markdown, 8 required fields) → produced by `/plan-start`, consumed by `autodev_pipe-cli build`
-- **Hand-off** → `/plan-start` writes `specs/<NNN>-<fork>-<prd>/HANDOFF.md` with the exact build command
-- **Safety Floor binding** → autodev_pipe AGENTS.md must reference §1 with `binding from ideababy_stroller framework/SHARED-CONTRACT.md §2`
+- **PRD schema** (plain markdown, 8 required fields) → produced by `/plan-start`, consumed by XenoDev build runtime (per SHARED-CONTRACT §6 v2.0)
+- **Hand-off** → `/plan-start` v3.0 writes `discussion/<id>/<fork>/<prd>/L4/HANDOFF.md` (workspace + source_repo_identity blocks per §6.2 / §6.5)
+- **Hand-back** → XenoDev writes `discussion/<id>/handback/*.md` back to IDS per §6.3 schema; operator runs `/handback-review <id>` to decide
+- **Safety Floor binding** → XenoDev AGENTS.md must reference §1 with `binding from ideababy_stroller framework/SHARED-CONTRACT.md §2`
 - **Versioning** → semver on `contract_version` frontmatter; breaking change = deprecation ≥ 4 weeks + migration ≥ 4 weeks + cutover ≥ 1 week (idea_gamma2 three-stage Pattern)
 
-If autodev_pipe unavailable, PRD is itself a deliverable; build can proceed in any harness honoring the schema.
+If XenoDev unavailable, PRD + hand-off package are themselves deliverables; build can proceed in any harness honoring the schema.
 
 ## §5 · Pipeline & forge entry points
 
@@ -54,9 +55,11 @@ If autodev_pipe unavailable, PRD is itself a deliverable; build can proceed in a
 proposal → /inspire-start → L1 stage doc → fork
                           → /explore-start → L2 stage doc → fork
                           → /scope-start → L3 PRD → fork
-                          → /plan-start → spec + tasks + HANDOFF.md
+                          → /plan-start → discussion/<id>/<prd>/L4/HANDOFF.md (v3.0)
                                           ↓
-                                          autodev_pipe-cli build (cross-repo)
+                                          XenoDev build runtime (per SHARED-CONTRACT §6 v2.0)
+                                          ↓
+                                          discussion/<id>/handback/*.md → /handback-review <id>
 
 (orthogonal) /expert-forge <id> → cross-cutting audit + SOTA benchmark + forced convergence
                                 → discussion/<id>/forge/v<n>/stage-forge-<id>-v<n>.md
@@ -70,11 +73,11 @@ proposal → /inspire-start → L1 stage doc → fork
 
 **Operator-level**:
 - Output in Chinese (this file is English so it functions as cross-agent SSOT; user-facing dialog is Chinese)
-- No code without a spec (L4 only)
+- No code without a hand-off package (L4 produces hand-off; XenoDev produces spec/tasks/code)
 - TDD for production code (L4): test → red → implement → green
 - Pre-merge review mandatory (L4): `/task-review <fork> T<NNN>` verdict ≠ BLOCK
 - Cross-model review mandatory for v1.0 paths
-- Specs immutable from build workers — only operator + spec-writer touch them
+- Specs immutable: M3 (commit d3194a0, 2026-05-10) archived 4 fork specs/ as forge v2 evidence; no further task additions / reviews (XenoDev produces its own specs going forward)
 - "Not sure" is a first-class L3R0 answer
 - Every command outputs a next-step menu
 
@@ -88,7 +91,7 @@ proposal → /inspire-start → L1 stage doc → fork
 - `.codex-inbox/queues/<id>/` + `.codex-outbox/queues/<id>/` — coordination bus (v2 multi-queue)
 - `framework/` — framework SSOT documents
 
-**Prohibitions**: L1/L2 emitting tech content; ad-hoc LLM auto-generation of AGENTS.md / CLAUDE.md (updates require plan + operator approval); modifying `specs/` from build worker; committing `.env*`; forking > 3 levels deep without reason; Skills as fact SSOT (facts go HERE; Skills = activatable processes only).
+**Prohibitions**: L1/L2 emitting tech content; ad-hoc LLM auto-generation of AGENTS.md / CLAUDE.md (updates require plan + operator approval); modifying `specs/` at all (M3 archived); committing `.env*`; forking > 3 levels deep without reason; Skills as fact SSOT (facts go HERE; Skills = activatable processes only).
 
 **When things feel off**:
 1. `/status NNN` for tree state
@@ -101,7 +104,7 @@ proposal → /inspire-start → L1 stage doc → fork
 **Read for full provenance**:
 - `framework/NON-GOALS.md` — 7 explicit non-goals with failure cases
 - `framework/SHARED-CONTRACT.md` — full cross-repo contract
-- `framework/AUTODEV-PIPE-SYNC-PROPOSAL.md` — autodev_pipe-side actions
+- `framework/AUTODEV-PIPE-SYNC-PROPOSAL.md` — historical (pre-M2 cutover); XenoDev coordination per §6 v2.0 supersedes
 - `CLAUDE.md` — Claude-Code-specific working notes (Chinese, overlaps but adds operational details)
 - `discussion/006/forge/v1/stage-forge-006-v1.md` — dual-expert verdict that produced this restructure
 - `discussion/006/forge/v1/next-steps.md` — 5-document plan provenance
@@ -110,4 +113,4 @@ proposal → /inspire-start → L1 stage doc → fork
 - Per-project: `projects/<fork>/AGENTS.md`
 - Personal: `~/.claude/CLAUDE.md`
 - Path-scoped: `.claude/rules/*.md`
-- Build harness internals: `autodev_pipe` repo
+- Build harness internals: `XenoDev` repo
