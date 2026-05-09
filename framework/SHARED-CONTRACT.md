@@ -601,9 +601,25 @@ workspace:
 - 第一性原因:hand-back 是 IDS ↔ XenoDev 双向学习闭环的反馈源;若路径在容器内但 idea id 错位,`/handback-review <id>` 会把无关 build 证据当作 PRD `<id>` 反馈处理,驱动 PRD 做不该做的修订(corruption-of-corpus 失效模式)。Pact framework 风格 explicit contract(本文档开头已引 Newman 原则)要求 invariant 在协议层双向声明,producer 与 consumer 都按此实装。
 - 失败模式典型场景:operator 在多 idea fork 间切换,XenoDev 跑 PRD 008a-pA 时 handback_target 误填 `discussion/006/handback/`;或自动化 script 把 `<id>` 参数化时变量串错。
 
+**约束 6 · id 字符集 + final-path containment**:
+- **id 字符集 regex**(producer 写入前 + consumer 读取前都必须校验):
+  - `discussion_id` 必须匹配 `^[0-9]{3}$`(eg `008`)
+  - `prd_fork_id` 必须匹配 `^[0-9]{3}[a-z]?(-p[A-Z])?$`(eg `008` / `008a` / `008a-pA`)
+  - `<ISO ts>` 必须匹配 `^[0-9]{8}T[0-9]{6}Z$`(eg `20260520T103015Z`,UTC,无毫秒)
+  - `handback_id` 必须严格等于 `<prd_fork_id> + "-" + <ISO ts>` 的拼接结果
+  - 三个 id token 任意一处含 `/` `\` `..` 控制字符 (`\x00-\x1f\x7f`) 或绝对路径前缀 = `Drop`
+- **filename basename 校验**(拼接后写入前):
+  - 拼出的 `filename = "<ts>-<handback_id>.md"` 必须满足 `os.path.basename(filename) == filename`(自身不含任何 separator)
+  - 失败 = `Drop`,不写入
+- **final-path containment 二次校验**(写入前最后一道):
+  - `realpath(target_dir + "/" + filename)` 必须严格落在 `realpath(source_repo) + "/discussion/" + discussion_id + "/handback/"` 之下(同约束 1 的 prefix 语义)
+  - 失败 = `Drop`,不写入
+- 第一性原因:约束 1 只校验 `handback_target` 这个**目录**字串,filename 是后置 derived 拼接;若 `prd_fork_id` 含 `/` 或 `..`,filename 会把目录 prefix 拆破 → 写入逃逸 `source_repo`(eg `prd_fork_id = "008a-pA/../../../etc/evil"` → 三处 id 一致 check 5 PASS,但 filename 拼出来逃逸目录)。OWASP path traversal 标准防御要求 input shape validation(字符集 regex)+ defense in depth(写入前最后一道 realpath containment),producer 与 consumer 都必须按此实装。
+- 失败模式典型场景:shell `${var}` 未 quote 含空格 / unicode 反斜杠;XenoDev 自动化 script 把 git branch name / file path 当 `prd_fork_id` 来源;consumer 实装时自由解读 "id 应该长这样" 导致与 producer 行为分叉。
+
 **约束 4 · hard-fail 行为**:
 - 任一约束失败,producer **不写**任何文件,**不创建**任何目录,**不做** stderr 之外的副作用。
-- consumer(`/handback-review`)读到不符合约束 1-3 + 5 的 hand-back 包,**不读取**其内容,只在 stderr 报具体哪条约束失败 + 该 hand-back 包的 `handback_id`,然后 exit 非 0。
+- consumer(`/handback-review`)读到不符合约束 1-3 + 5-6 的 hand-back 包,**不读取**其内容,只在 stderr 报具体哪条约束失败 + 该 hand-back 包的 `handback_id`,然后 exit 非 0。
 - 第一性原因:hand-back 通道是跨仓写入,silent error 在跨仓场景下永远诊断不到;hard-fail 比 silent corruption 便宜两个数量级。
 
 **约束实装位置**(M2 cutover 时):
@@ -675,6 +691,8 @@ operator 收到本 hand-back 后可选的动作(选 1-N):
 **文件命名**:`<ISO ts>-<handback_id>.md`(eg `20260520T103015Z-008a-pA-20260520T103015Z.md` — ts 重复以便 ls 排序与 frontmatter 匹配)
 
 **id 一致性**:文件名中 `handback_id` 解出的 `<discussion_id>` 前缀必须与物理路径 `discussion/<X>/` 的 `<X>` 严格相等,且与 frontmatter `discussion_id` 字段相等;否则 `/handback-review` hard-fail(§6.2.1 约束 5)。
+
+**字符集与 final-path**:`discussion_id` / `prd_fork_id` / `<ISO ts>` / `handback_id` 必须匹配 §6.2.1 约束 6 定义的安全 regex(reject `/` `\` `..` 控制字符 绝对路径);拼出的 `<filename>` 必须自身不含 separator;`realpath(目录 + "/" + 文件)` 写入前必须再做一次 prefix 校验(防 `prd_fork_id` 含 `/..` 时 filename 把目录 prefix 拆破而逃逸 source_repo)。
 
 **operator 操作**:在 IDS 仓运行 `/handback-review <id>`(M2 同期产命令)读 `discussion/<id>/handback/` 目录,逐条决议 §3 建议清单,写入 `discussion/<id>/handback/HANDBACK-LOG.md`(append-only 决议日志)。
 
