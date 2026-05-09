@@ -705,9 +705,9 @@ operator 收到本 hand-back 后可选的动作(选 1-N):
 
 cutover 时按此清单逐条勾选,确保所有 v1.1.0 consumer 同步迁移:
 
-- [ ] M2 改 `.claude/commands/plan-start.md` L140 / L194 / L225 三处 `version honored: 1.1.0` → `2.0`
+- [ ] M2 改 `.claude/commands/plan-start.md` L140 1 处 frontmatter `SHARED-CONTRACT version honored: 1.1.0` → `2.0`(实证后修正:v8 plan 写"L140 / L194 / L225 三处"是错的,L194/L225 是文字引用 + 验证 grep,L127/L333 也是引用,真"version honored"字段只 L140 一处;A2 重写时所有 5 处都需同步改)
 - [ ] M2 改 `.claude/commands/plan-start.md` Step 5.5 HANDOFF.md 模板 frontmatter 增加 `workspace:` 块(§6.2 4 字段)
-- [ ] M2 改 `.claude/commands/plan-start.md` Step 5 不再产 `specs/<prd-fork-id>/` 完整 SDD 包(spec/architecture/tasks/SLA/etc),改为只产 hand-off 包(`discussion/<id>/<prd>/L4/HANDOFF.md` + 引用 §6.3 schema)
+- [ ] M2 改 `.claude/commands/plan-start.md` Step 5 不再产 `specs/<prd-fork-id>/` 完整 SDD 包(spec/architecture/tasks/SLA/etc),改为只产 hand-off 包(`discussion/<id>/<prd>/L4/HANDOFF.md` + 引用 §6.3 schema)。**实证修正**:plan-start.md 引 `specs/` 20+ 处(Step 3 mkdir / Step 4 spec-writer / Step 5 task-decomposer / Step 5.5 HANDOFF / Step 6 Codex review 全依赖),Block A 实际是 plan-start.md 几乎重写 ~200 行,非 5 行 fix
 - [ ] M2 改 `CLAUDE.md` L25 `L4 · Plan      — spec, architecture, tasks, parallel build, quality gates` → `L4 · Hand-off    — produce hand-off package; downstream build runtime (XenoDev) does spec/tasks/build/quality`
 - [ ] M2 改 `CLAUDE.md` §"Directory ownership" 移除 `specs/NNN-<fork-id>-<prd>/` 行(IDS 不再产)
 - [ ] M2 改 `AGENTS.md` §4/§5 旧命令(若有引用 plan-start 产 specs/ 的描述)
