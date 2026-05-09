@@ -573,6 +573,35 @@ workspace:
   handback_target: /Users/admin/codes/ideababy_stroller/discussion/008/handback/
 ```
 
+#### §6.2.1 · handback_target 路径约束(consumer 必须校验)
+
+> **本子节是 normative constraints,非 convention**。任何 hand-back 包 producer(build runtime,如 XenoDev)与 consumer(`/handback-review` 命令)实装时,**必须**对 `handback_target` 执行下列校验,任一失败即 **hard-fail**(拒绝写入 / 拒绝读取 / 不进行任何 retry)。
+
+**约束 1 · canonical-path containment**:
+- `realpath(handback_target)` 必须严格落在 `realpath(source_repo) + "/discussion/" + <id> + "/handback/"` 之下(包含正好等于该目录)。
+- "严格落在之下"含义:resolve symlink 后做 prefix 比较,字符串前缀匹配 + 边界字符为 `/` 或字符串末尾。
+- 失败模式:`handback_target = "/tmp/whatever"` / `handback_target = "<source_repo>/../other-repo/..."` / `handback_target = "<source_repo>/discussion/006/handback/../../specs/..."` 三种典型 path traversal 全部 reject。
+
+**约束 2 · symlink reject**:
+- `handback_target` 路径上的任意一段(从 `source_repo` 起到目标目录止)若是 symlink,**reject**(不要 follow,不要 resolve 后通过校验)。
+- 第一性原因:symlink 是 confused-deputy 攻击的经典载体;single-developer / local-only 场景看似无威胁,但 operator 自己手动建过的 dev symlink(eg `~/codes/ideababy_stroller -> ~/Dropbox/...`)会让 fs.write 静默落到 Dropbox,Dropbox 的 sync conflict resolver 可能覆盖 append-only 评审产物。
+- 例外:**operator 在 IDS 仓根本身**(`source_repo`)可以是 symlink(operator 的 dev workflow 决定);校验从 `source_repo`(canonicalized 后)往下走,只校验 `<source_repo>/discussion/...` 这部分路径段不含 symlink。
+
+**约束 3 · repo identity check**:
+- 写入前 producer 必须验证 `<source_repo>/.git` 存在且其 `config remote.origin.url`(若有)与 hand-off 包 frontmatter 中 `to_source_repo` 隐含的仓 identity 一致。
+- 单人本地 + 无 remote 场景下:验证 `<source_repo>/CLAUDE.md` 存在且首行含 `Idea Incubator`(本仓的 identity marker,见 CLAUDE.md L1)。
+- 失败 = `source_repo` 指向了一个看起来像 IDS 仓但其实是别人的 fork / 误移动的副本,**reject**。
+
+**约束 4 · hard-fail 行为**:
+- 任一约束失败,producer **不写**任何文件,**不创建**任何目录,**不做** stderr 之外的副作用。
+- consumer(`/handback-review`)读到不符合约束 1-3 的 hand-back 包,**不读取**其内容,只在 stderr 报具体哪条约束失败 + 该 hand-back 包的 `handback_id`,然后 exit 非 0。
+- 第一性原因:hand-back 通道是跨仓写入,silent error 在跨仓场景下永远诊断不到;hard-fail 比 silent corruption 便宜两个数量级。
+
+**约束实装位置**(M2 cutover 时):
+- producer 校验:M2 新建 XenoDev 仓时,在产 hand-back 包的 skill / 命令实装(B2 范围)。
+- consumer 校验:M2 新建 `.claude/commands/handback-review.md` 命令(§6.5 breaking change 清单条目)实装。
+- 协议层(本节)只定义约束语义,具体校验代码由 M2 实装时落地。
+
 **与 v1.1.0 §3 关系**:v1.1.0 §3 `HANDOFF.md` 隐式假设"operator 知道当前在哪个仓",从未显式记录;v2.0 显式 4 字段后,`HANDOFF.md` frontmatter 增加 `workspace:` 块,任意 agent 读 hand-off 包都能确认上下文(不靠 operator 记忆)。
 
 ### §6.3 · hand-back 包 schema
@@ -601,6 +630,8 @@ related_task: <task id, optional>        # eg "T013"
 related_spec_section: <spec section anchor, optional>
 ---
 ```
+
+> **producer 写入 frontmatter 中 `workspace.handback_target` 前**,必须按 §6.2.1 四条约束(canonical-path containment / symlink reject / repo identity check / hard-fail)校验该路径;校验失败 hard-fail,不产 hand-back 包。
 
 **body 章节**(Markdown,3 节固定结构):
 
