@@ -536,6 +536,137 @@ SHARED-CONTRACT 的 frontmatter 含 `contract_version: <semver>`(本文件 v1):
 
 ---
 
+## §6 · v2.0 草稿(workspace schema + hand-back 通道,待 cutover)
+
+**Status**: DRAFT-pending-cutover
+**Cutover trigger**: M2 plan-start v2 ship 同日(届时 contract_version 1.1.0 → 2.0 同步 bump,Changelog 同步追加 v2.0 entry,本节顶部 Status 改为 ACTIVE 并删除下方 ⚠ warning)
+**依据**: forge 006 v2 verdict — `discussion/006/forge/v2/stage-forge-006-v2.md` §"Evidence map" row 11(hand-back 包结构化)+ row 12(workspace schema 4 字段)+ §"Refactor plan(W3)" 模块 A step 1 + 模块 C 全节
+
+> ⚠ **本节未生效**;active 仍是 §1-§5 v1.1.0。本节仅作为 M2/M3 cutover 的 spec source 引用(eg M2 改 plan-start v2 时引"按 §6.3 schema 产 hand-off 包")。任何当前 consumer(`/plan-start` 命令 / `specs/007a-pA/HANDOFF.md` / autodev_pipe 仓)继续遵 v1.1.0,**不应**读本节作为协议事实。
+
+### §6.1 · v2.0 motivation
+
+forge 006 v2 verdict 中心命题(GPT P2 §1 row 5 headline):**"目标方向没错,但 gap 是 harness 产品化,不是再补一份流程文档"**。SOTA 共同方向(Anthropic Agent SDK + Skills / Cursor 3 multi-root + worktrees / Spec Kit 0.8.7 spec-first / MSR 2026 失败实证)全部指向**运行时 harness + 4-phase + 跨仓 workspace + 可观测 + 可学习**。
+
+v2.0 协议升级回应 2 件 SOTA gap:
+1. **跨仓 workspace 一等建模**(Cursor multi-root 范式)— v1.1.0 hand-off 是单向 IDS → ADP 切仓人工转写,无 workspace 概念;Cursor 3.2 changelog 把 async subagents / worktrees / multi-root workspace 合在一个 agent window,跨 repo change 是 SOTA 一等能力。ADP-AUDIT §9 DRIFT-4 emergent `working_repo` 字段是该 schema 缺失的实证信号。
+2. **反向 hand-back 学习闭环**(MSR 2026 agentic PR failure corpus 共识)— v1.1.0 单向 hand-off 后 IDS 收不到 build 反馈,无法学习 PRD 哪些约束在 build 时不可达;33k agent PR 失败研究表明,无 hand-back 通道 = 重复犯同类 PRD-spec mismatch。
+
+### §6.2 · workspace schema 4 字段
+
+跨仓 build 上下文显式建模。**4 字段全必填**(避免 v1.1.0 隐式假设单仓的同类问题)。
+
+| 字段 | 类型 | 必填 | 含义 | 用例 |
+|---|---|---|---|---|
+| `source_repo` | string (absolute path) | ✅ | PRD 源仓(IDS 仓路径) | `/Users/admin/codes/ideababy_stroller` |
+| `build_repo` | string (absolute path) | ✅ | build 目标仓(XenoDev 仓路径) | `/Users/admin/codes/XenoDev` |
+| `working_repo` | string (absolute path) | ✅ | 当前 operator 所在仓(支持单 session 跨多仓 workspace) | 通常 = `source_repo` 或 `build_repo`;hand-off 中途切仓时显式记录 |
+| `handback_target` | string (absolute path) | ✅ | hand-back 包写回路径 | `<source_repo>/discussion/<id>/handback/` |
+
+YAML 表达(出现在 hand-off 包 / hand-back 包 frontmatter 中):
+
+```yaml
+workspace:
+  source_repo: /Users/admin/codes/ideababy_stroller
+  build_repo: /Users/admin/codes/XenoDev
+  working_repo: /Users/admin/codes/XenoDev
+  handback_target: /Users/admin/codes/ideababy_stroller/discussion/008/handback/
+```
+
+**与 v1.1.0 §3 关系**:v1.1.0 §3 `HANDOFF.md` 隐式假设"operator 知道当前在哪个仓",从未显式记录;v2.0 显式 4 字段后,`HANDOFF.md` frontmatter 增加 `workspace:` 块,任意 agent 读 hand-off 包都能确认上下文(不靠 operator 记忆)。
+
+### §6.3 · hand-back 包 schema
+
+build 仓(XenoDev)在每个 task ship / spec violation / drift detection 时产 hand-back 包,写回 `source_repo`(IDS)的 `handback_target/`。
+
+**frontmatter**(YAML):
+
+```yaml
+---
+handback_id: <prd-fork-id>-<ISO ts>      # eg "008-20260520T103015Z"
+from_build_repo: <absolute path>
+to_source_repo: <absolute path>
+workspace:                               # §6.2 4 字段嵌入
+  source_repo: ...
+  build_repo: ...
+  working_repo: ...
+  handback_target: ...
+tags:                                    # 三标签 enum,至少 1
+  - drift                                # build 时发现 spec/PRD 与实际不符
+  - prd-revision-trigger                 # PRD 某条约束需 IDS 修订才能继续
+  - practice-stats                       # 跑完 N task 的成功率/干预率统计
+severity: low | medium | high            # high = 阻断 build / medium = 可继续但需 IDS 关注 / low = 信息式
+created: <ISO>
+related_task: <task id, optional>        # eg "T013"
+related_spec_section: <spec section anchor, optional>
+---
+```
+
+**body 章节**(Markdown,3 节固定结构):
+
+```markdown
+## §1 · Build-side 上下文(发生了什么)
+
+哪个 task / 哪个文件 / 哪段 spec / 哪条 PRD outcome 触发了本 hand-back。
+最少 50 字,最多 500 字。引具体 file:line 或 task ID。
+
+## §2 · 触发理由(三标签对应描述)
+
+按 frontmatter `tags` 列出的标签逐条说明:
+- 若有 `drift`:具体 drift 描述(预期 vs 实际)+ 证据(测试输出 / log)
+- 若有 `prd-revision-trigger`:PRD 哪条 outcome / scope / constraint 不可达 + 建议修订方向
+- 若有 `practice-stats`:统计区间 + 数字(eg "T001-T013 共 13 task,intervention 5 次,平均 22min/task,2 task hit Safety Floor")
+
+## §3 · 给 IDS 的建议
+
+operator 收到本 hand-back 后可选的动作(选 1-N):
+- [ ] 修 PRD §"<section>"(具体改动建议)
+- [ ] 修 SHARED-CONTRACT §"<section>"(若是协议级 drift)
+- [ ] 修 XenoDev spec(本仓内,不需 IDS 介入,本 hand-back 仅信息式)
+- [ ] 无操作(收悉,作为 practice-stats 入库)
+```
+
+### §6.4 · hand-back 接收路径约定
+
+**IDS 端目录**:`<source_repo>/discussion/<id>/handback/`
+
+**文件命名**:`<ISO ts>-<handback_id>.md`(eg `20260520T103015Z-008-20260520T103015Z.md` — ts 重复以便 ls 排序与 frontmatter 匹配)
+
+**operator 操作**:在 IDS 仓运行 `/handback-review <id>`(M2 同期产命令)读 `discussion/<id>/handback/` 目录,逐条决议 §3 建议清单,写入 `discussion/<id>/handback/HANDBACK-LOG.md`(append-only 决议日志)。
+
+**与 forge / L1-L4 关系**:
+- hand-back **不**触发新 forge run(不是重大架构转向);
+- hand-back **可**触发 PRD 修订(走 `/scope-inject` 或新 PRD 版本);
+- hand-back 累积 N 条且呈现系统性 drift → operator 决定起 forge v3。
+
+### §6.5 · v1.1.0 → v2.0 breaking change 清单(供 M2/M3 cutover 勾选)
+
+cutover 时按此清单逐条勾选,确保所有 v1.1.0 consumer 同步迁移:
+
+- [ ] M2 改 `.claude/commands/plan-start.md` L140 / L194 / L225 三处 `version honored: 1.1.0` → `2.0`
+- [ ] M2 改 `.claude/commands/plan-start.md` Step 5.5 HANDOFF.md 模板 frontmatter 增加 `workspace:` 块(§6.2 4 字段)
+- [ ] M2 改 `.claude/commands/plan-start.md` Step 5 不再产 `specs/<prd-fork-id>/` 完整 SDD 包(spec/architecture/tasks/SLA/etc),改为只产 hand-off 包(`discussion/<id>/<prd>/L4/HANDOFF.md` + 引用 §6.3 schema)
+- [ ] M2 改 `CLAUDE.md` L25 `L4 · Plan      — spec, architecture, tasks, parallel build, quality gates` → `L4 · Hand-off    — produce hand-off package; downstream build runtime (XenoDev) does spec/tasks/build/quality`
+- [ ] M2 改 `CLAUDE.md` §"Directory ownership" 移除 `specs/NNN-<fork-id>-<prd>/` 行(IDS 不再产)
+- [ ] M2 改 `AGENTS.md` §4/§5 旧命令(若有引用 plan-start 产 specs/ 的描述)
+- [ ] M2 新建 `.claude/commands/handback-review.md` 命令(§6.4 operator 操作入口)
+- [ ] M3 给 `specs/007a-pA/` 顶部加 `NOTICE.md` 或在 `spec.md` 顶部加段(标 DEPRECATED;保留 spec.md / tasks/ / HANDOFF.md 全部内容作 forge v2 evidence row 13 引用对象;新 PRD 不再走 IDS specs/)
+- [ ] M3 给同级 `specs/{001-pA, 003-pA, 004-pB}/` 同样加 NOTICE(已 ship 的历史 fork,不再维护新 task)
+- [ ] M2 cutover commit 同步 bump frontmatter `contract_version: 1.1.0` → `2.0`
+- [ ] M2 cutover commit 同步追加 §"Changelog" v2.0 entry(列本节所有 breaking change)
+- [ ] M2 cutover commit 同步在本节(§6)顶部把 `Status: DRAFT-pending-cutover` 改为 `Status: ACTIVE`,删除 `⚠ 本节未生效` warning 段
+
+### §6.6 · 与 §3 现有 hand-off 协议的关系
+
+§3(v1.1.0)规定 IDS → ADP **单向** hand-off(operator 切仓人工转写)。§6 v2.0 **不删** §3,而是:
+
+- **§3 forward hand-off 继续存在**:producer/consumer 改为 IDS → XenoDev(仓名变,流程不变 — operator 仍切仓,XenoDev 仍跑 sdd-workflow / task-decomposer);M2 cutover 时 §3 内容只需把 "autodev_pipe" 字面替换为 "XenoDev",HANDOFF.md frontmatter 增加 §6.2 workspace 块
+- **§6 reverse hand-back 新增**:producer/consumer 为 XenoDev → IDS,通过 §6.3 schema + §6.4 路径约定流转
+
+forward(§3)+ reverse(§6)形成双向闭环 — 这是 forge 006 v2 verdict 的核心 binding(P3R2 双方完全合一,见 stage doc §"Evidence map" row 11)。
+
+---
+
 ## 验证
 
 ```bash
