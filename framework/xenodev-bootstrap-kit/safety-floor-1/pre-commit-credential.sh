@@ -26,17 +26,26 @@ set -euo pipefail
 FOUND=0
 MATCHED=()
 
-# B2.2 Block A.6 fix(与 scan-credentials.sh 同步):
-# SSOT 文档 + Safety Floor 件 1 自身组件含 prod:// 字面串作模式定义,非真凭据
-declare -a SKIP_BASENAMES=(
-    "scan-credentials.sh"
-    "pre-commit-credential.sh"
-    "context-loader-filter.md"
-    "README.md"
-    "README.md.template"
+# B2.2 Block A.7 codex round 4 finding #1 fix:
+# 旧 SKIP_BASENAMES(基名)误 skip docs/README.md;旧 SKIP_PATH_SUFFIXES suffix 通配
+# 仍误 skip vendor/lib/AGENTS.md。新 SKIP_PATHS:**精确仓根相对路径**(== 比对)。
+# git diff --cached --name-only 输出本就是 repo-root-relative,直接精确匹配即可。
+declare -a SKIP_PATHS=(
+    "framework/xenodev-bootstrap-kit/safety-floor-1/scan-credentials.sh"
+    "framework/xenodev-bootstrap-kit/safety-floor-1/pre-commit-credential.sh"
+    "framework/xenodev-bootstrap-kit/safety-floor-1/context-loader-filter.md"
+    "framework/xenodev-bootstrap-kit/safety-floor-1/README.md"
+    "framework/xenodev-bootstrap-kit/AGENTS.md"
+    "framework/xenodev-bootstrap-kit/CLAUDE.md"
+    "framework/xenodev-bootstrap-kit/README.md.template"
+    "framework/SHARED-CONTRACT.md"
+    "framework/AUTODEV-PIPE-SYNC-PROPOSAL.md"
     "AGENTS.md"
     "CLAUDE.md"
-    "SHARED-CONTRACT.md"
+    ".claude/safety-floor/credential-isolation/scan-credentials.sh"
+    ".claude/safety-floor/credential-isolation/pre-commit-credential.sh"
+    ".claude/safety-floor/credential-isolation/context-loader-filter.md"
+    ".claude/safety-floor/credential-isolation/README.md"
 )
 
 # 用 process substitution + git -z 的 NUL-delimited 流;read -d '' 期望每条以 NUL 终止
@@ -58,10 +67,10 @@ while IFS= read -r -d '' file; do
             MATCHED+=("$file (staged: secrets/production/ path)")
             ;;
     esac
-    # skip SSOT 文档 + 件 1 自身的 prod:// 内容检查(只跳第 3 项,前两项 filename / path 仍生效)
+    # skip 白名单(精确仓根相对路径;前两项 filename / path 仍生效,只跳第 3 项内容扫描)
     skip_content=0
-    for sk in "${SKIP_BASENAMES[@]}"; do
-        if [[ "$base" == "$sk" ]]; then
+    for p in "${SKIP_PATHS[@]}"; do
+        if [[ "$file" == "$p" ]]; then
             skip_content=1
             break
         fi

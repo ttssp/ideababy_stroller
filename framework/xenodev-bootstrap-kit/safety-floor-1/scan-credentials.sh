@@ -58,28 +58,45 @@ fi
 
 # === 检测 3:文件内含 prod:// 连接字串 ===
 # (只扫文本文件,跳过二进制 / 大文件 / .git / node_modules)
-# B2.2 Block A.6 fix:扩 skip 列表,涵盖 SSOT 文档 + Safety Floor 件 1 自身组件
-# (这些文件含 prod:// 字面串作模式定义 / 规则说明,非真凭据)
-declare -a SKIP_BASENAMES=(
-    "scan-credentials.sh"               # 件 1 主扫描脚本
-    "pre-commit-credential.sh"          # 件 1 pre-commit hook(含模式)
-    "context-loader-filter.md"          # 件 1 装机文档
-    "README.md"                          # 任意 README
-    "README.md.template"                 # bootstrap kit 模板
-    "AGENTS.md"                          # SSOT 文档
-    "CLAUDE.md"                          # SSOT 文档
-    "SHARED-CONTRACT.md"                 # SSOT 协议
+#
+# B2.2 Block A.7 codex round 4 finding #1 fix:
+# 旧 SKIP_BASENAMES(基名)误 skip 任意位置的 README.md / AGENTS.md / CLAUDE.md →
+# docs/README.md 含真 prod:// 不被检测,等于绕过 Safety Floor 件 1。
+# 新 SKIP_PATH_SUFFIXES:精确路径(以 suffix 匹配,容纳 IDS 与 XenoDev 两种位置)。
+# SKIP_PATHS:相对仓根的精确路径(必须 == 形如 "AGENTS.md" 或 "framework/...");
+# 不允许 suffix 通配,防 vendor/lib/AGENTS.md 误 skip。
+# 路径形式:相对 SCAN_DIR 的 normalized 路径(用 realpath 后比对)。
+declare -a SKIP_PATHS=(
+    "framework/xenodev-bootstrap-kit/safety-floor-1/scan-credentials.sh"
+    "framework/xenodev-bootstrap-kit/safety-floor-1/pre-commit-credential.sh"
+    "framework/xenodev-bootstrap-kit/safety-floor-1/context-loader-filter.md"
+    "framework/xenodev-bootstrap-kit/safety-floor-1/README.md"
+    "framework/xenodev-bootstrap-kit/AGENTS.md"
+    "framework/xenodev-bootstrap-kit/CLAUDE.md"
+    "framework/xenodev-bootstrap-kit/README.md.template"
+    "framework/SHARED-CONTRACT.md"
+    "framework/AUTODEV-PIPE-SYNC-PROPOSAL.md"
+    "AGENTS.md"
+    "CLAUDE.md"
+    ".claude/safety-floor/credential-isolation/scan-credentials.sh"
+    ".claude/safety-floor/credential-isolation/pre-commit-credential.sh"
+    ".claude/safety-floor/credential-isolation/context-loader-filter.md"
+    ".claude/safety-floor/credential-isolation/README.md"
 )
+# 解析 SCAN_DIR 的 realpath,后续把 file 转 SCAN_DIR-relative 再比对
+SCAN_DIR_REAL="$(cd "$SCAN_DIR" 2>/dev/null && pwd -P)"
 while IFS= read -r file; do
     # skip .fake / 测试 fixtures 中预期含 prod:// 的位置
     if [[ "$file" == *.fake ]] || [[ "$file" == *test-fixtures* ]]; then
         continue
     fi
-    # skip basename 在白名单中的(SSOT 文档 + 件 1 自身组件)
-    base="$(basename "$file")"
+    # 把 file 转换成 SCAN_DIR-relative 路径(grep -rIl 输出的是 SCAN_DIR/path 形式)
+    file_real="$(cd "$(dirname "$file")" 2>/dev/null && pwd -P)/$(basename "$file")"
+    rel="${file_real#$SCAN_DIR_REAL/}"
+    # skip 白名单(精确相对路径匹配,不允许 suffix 通配)
     skip=0
-    for sk in "${SKIP_BASENAMES[@]}"; do
-        if [[ "$base" == "$sk" ]]; then
+    for p in "${SKIP_PATHS[@]}"; do
+        if [[ "$rel" == "$p" ]]; then
             skip=1
             break
         fi
