@@ -70,6 +70,68 @@ cp -r "$IDS_KIT/eval-event-log/"     lib/eval-event-log/
 cp -r "$IDS_KIT/handback-validator/" lib/handback-validator/
 echo "✓ Step 6: lib/ installed (workspace-schema + eval-event-log + handback-validator)"
 
+# === Step 6.5: cp framework SSOT mirror(SHARED-CONTRACT.md 字节级 mirror + provenance 文件)===
+# B2.2 Block D friction F3 fix(006a-pM session 实证):
+# AGENTS.md §4 + CLAUDE.md §"跨仓引用" 写 "framework/SHARED-CONTRACT.md 是 IDS SSOT 字节级 mirror",
+# 但 bootstrap.sh 之前不带 framework/ 目录 → 每个 XenoDev session 首跑都重发现 mirror 缺位。
+# 本 Step 在 bootstrap 时就落 mirror + 校验 + 落 provenance,避免重复 friction。
+IDS_FRAMEWORK_DIR="$(cd "$IDS_KIT/.." && pwd)"
+IDS_REPO_ROOT="$(cd "$IDS_FRAMEWORK_DIR/.." && pwd)"
+SSOT_SRC="$IDS_FRAMEWORK_DIR/SHARED-CONTRACT.md"
+if [[ ! -f "$SSOT_SRC" ]]; then
+    echo "ERROR: Step 6.5 IDS SSOT not found: $SSOT_SRC"
+    exit 1
+fi
+mkdir -p framework
+cp "$SSOT_SRC" framework/SHARED-CONTRACT.md
+# 字节级校验
+SSOT_BYTES="$(wc -c < "$SSOT_SRC" | tr -d ' ')"
+MIRROR_BYTES="$(wc -c < framework/SHARED-CONTRACT.md | tr -d ' ')"
+SSOT_SHA="$(shasum -a 256 "$SSOT_SRC" | awk '{print $1}')"
+MIRROR_SHA="$(shasum -a 256 framework/SHARED-CONTRACT.md | awk '{print $1}')"
+if [[ "$SSOT_BYTES" != "$MIRROR_BYTES" || "$SSOT_SHA" != "$MIRROR_SHA" ]]; then
+    echo "ERROR: Step 6.5 mirror integrity check FAILED"
+    echo "  SSOT bytes=$SSOT_BYTES sha=$SSOT_SHA"
+    echo "  mirror bytes=$MIRROR_BYTES sha=$MIRROR_SHA"
+    exit 1
+fi
+# 落 MIRROR-PROVENANCE.md(per 006a-pM friction-report D2 闭环范式)
+cat > framework/MIRROR-PROVENANCE.md <<EOF
+# framework/ mirror provenance
+
+> framework/ 下的文件是 ideababy_stroller(IDS · SSOT)的**只读字节级 mirror**。XenoDev 不修改这些文件;只在 IDS 改后由 operator 重新 cp。
+
+## Mirror 列表
+
+| 文件 | IDS 源路径 | mirror bootstrap 时 sha256 | bytes |
+|---|---|---|---|
+| SHARED-CONTRACT.md | $SSOT_SRC | $MIRROR_SHA | $MIRROR_BYTES |
+
+## 校验命令(operator 任意时点跑,验是否 drift)
+
+\`\`\`bash
+diff -q $SSOT_SRC framework/SHARED-CONTRACT.md
+shasum -a 256 framework/SHARED-CONTRACT.md
+# 期望 sha256: $MIRROR_SHA
+\`\`\`
+
+## 重 cp 触发条件
+
+- IDS \`framework/SHARED-CONTRACT.md\` 改了(operator 在 IDS commit 后通知 / XenoDev session 跑 \`diff -q\` 发现 drift)
+- 重 cp 命令:\`cp $SSOT_SRC framework/SHARED-CONTRACT.md && shasum -a 256 framework/SHARED-CONTRACT.md\`
+
+## 失败处置
+
+- diff 不一致 = drift → operator 决:从 IDS 重 cp(若 IDS 是真新版本)/ 不动(若 XenoDev 仍按旧 contract 跑且无 break)
+- bootstrap 时 sha 不一致 = bootstrap.sh bug → 报 IDS
+
+## bootstrap 时点
+
+- 时间:$(date -u +%Y-%m-%dT%H:%M:%SZ)
+- IDS 仓:$IDS_REPO_ROOT
+EOF
+echo "✓ Step 6.5: framework/SHARED-CONTRACT.md mirror installed (sha256: ${MIRROR_SHA:0:16}... · $MIRROR_BYTES bytes) + MIRROR-PROVENANCE.md"
+
 # === Step 7: 创建 .claude/settings.json 模板(注册 block-dangerous.sh hook)===
 if [[ ! -f .claude/settings.json ]]; then
     cat > .claude/settings.json <<'EOF'
