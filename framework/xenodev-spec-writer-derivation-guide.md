@@ -81,6 +81,30 @@ operator 起 `XenoDev/.claude/skills/parallel-builder/SKILL.md`:
 - TDD:test → red → implement → green
 - /task-review verdict ≠ BLOCK 才 merge
 
+## 首跑 self-test 阶段 codex review N=1 实证(006a-pM 2026-05-10)
+
+> 本节是**单次实证记录**(N=1),不是"推荐节奏"。不可作 operator 心理预期基线 — 后续 XenoDev session 实证累积再上升为 guideline。
+
+### 实证数据(006a-pM 首跑 · 1 个 prd_form=simple · 1 个 operator)
+
+| Round | Verdict | Findings 数 | finding 类型 | actionable 率 |
+|---|---|---|---|---|
+| 1 | BLOCK | 3 high | P1 不写盘 / P2 终点非持久化 / O2 hook 调用错 | 100% |
+| 2 | BLOCK | 2 high | P1 借 008 fixture 冒名 / O2 jq 语法错 | 100% |
+| 3 | BLOCK | 1 high | P1 schema 不符 validator | 100% |
+| 4 | needs-attention | 1 high + 1 medium | P1 HTML 包裹 / O1 文件名 schema | 100% |
+| 5 | BLOCK | 1 high | P1 弱化 source_repo_identity 绕 ground truth | 100% |
+
+5 轮 finding 全 actionable,无打转空 review。
+
+### operator 决策记录(per 006a-pM friction-report D1 已闭环)
+
+operator 在 round 5 后基于本机真跑 evidence(`discussion/006/handback/20260510T123452Z-...md` 884 字节 producer + consumer 双 6 约束 PASS)突破 SKILL §3.2 标的"4 轮上限",升 spec status 为 frozen + reviewed-by codex@2026-05-10。**这是合规处置** — SKILL §3.2 "4 轮上限"语义是机器自跑收敛上限,operator 凭真证据介入决策不在此约束内。
+
+### XenoDev SKILL §3.2 自身 contract 改写位置(本指南不替代)
+
+若 XenoDev session 未来发现 SKILL §3.2 对"4 轮上限 vs operator 凭证据破"的语义需要更明确,**应在 XenoDev `.claude/skills/spec-writer/SKILL.md` §3.2 自家改 contract 文字**,而非依赖本 IDS guide 替代说明。本节仅记录已发生事实,不输出"应然"或"推荐"。
+
 ## operator 在 XenoDev 跑 Block D 的 checklist
 
 ```bash
