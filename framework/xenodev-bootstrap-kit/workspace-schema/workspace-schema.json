@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ideababy_stroller/framework/workspace-schema.json",
+  "title": "SHARED-CONTRACT §6.2 workspace 4 字段",
+  "description": "跨仓 build workspace 显式建模(per Cursor multi-root + worktrees 范式)。所有 4 字段必填,所有路径必须 absolute(以 / 开头)。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_repo": {
+      "type": "string",
+      "pattern": "^/",
+      "description": "PRD 源仓(IDS 仓路径 absolute)。eg /Users/admin/codes/ideababy_stroller"
+    },
+    "build_repo": {
+      "type": "string",
+      "pattern": "^/",
+      "description": "build 目标仓(XenoDev 仓路径 absolute)。eg /Users/admin/codes/XenoDev"
+    },
+    "working_repo": {
+      "type": "string",
+      "pattern": "^/",
+      "description": "当前 operator 所在仓(支持单 session 跨多仓 workspace)。通常 = source_repo 或 build_repo;hand-off 中途切仓时显式记录"
+    },
+    "handback_target": {
+      "type": "string",
+      "pattern": "^/",
+      "description": "hand-back 包写回路径(absolute)。eg <source_repo>/discussion/<id>/handback/"
+    }
+  },
+  "required": ["source_repo", "build_repo", "working_repo", "handback_target"]
+}

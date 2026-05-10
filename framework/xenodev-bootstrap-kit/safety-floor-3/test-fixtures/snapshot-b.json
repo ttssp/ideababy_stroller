@@ -1,0 +1,9 @@
+{
+  "ts": "20260510T120000Z",
+  "pwd": "/Users/admin/codes/XenoDev",
+  "scope_version": "v0.1-local-dev",
+  "git_config_b64": "W2NvcmVdCglyZXBvc2l0b3J5Zm9ybWF0dmVyc2lvbiA9IDAKW3JlbW90ZSAib3JpZ2luIl0KCXVybCA9IGdpdEBnaXRodWIuY29tOnVzZXIvWGVub0Rldi5naXQK",
+  "claude_settings_b64": "eyJwZXJtaXNzaW9ucyI6eyJkZW55IjpbIlJlYWQoLmVudi5wcm9kdWN0aW9uKSJdfX0=",
+  "backup_file_paths": [
+  ]
+}
