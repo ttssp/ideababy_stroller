@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ideababy_stroller/framework/xenodev-bootstrap-kit/eval-event-log.json",
+  "title": "Eval append-only event log entry schema",
+  "description": "per stage-forge-006-v2.md L255 / L329 + IN-5: 3 类 event tag enum。v0.1 不实装 scoring 算法(per OUT-2 + v0.2 note 2),只产 schema + writer/reader。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ts": {
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{6}Z$",
+      "description": "ISO ts UTC 无毫秒 (eg 20260510T120000Z),per §6.2.1 约束 6 同 regex"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["review_failures", "operator_interventions", "handback_drift"],
+      "description": "3 类 event(stage doc IN-5):review_failures / operator_interventions / handback_drift"
+    },
+    "task_id": {
+      "type": "string",
+      "description": "可选;若 event 关联具体 task,记 task ID(eg T013)"
+    },
+    "details": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "事件细节,自由 text。max 500 字符防 log bloat"
+    },
+    "discussion_id": {
+      "type": "string",
+      "pattern": "^[0-9]{3}$",
+      "description": "可选;若 event 关联具体 idea,记 discussion id (eg 008)"
+    },
+    "prd_fork_id": {
+      "type": "string",
+      "pattern": "^[0-9]{3}[a-z]?(-p[A-Z])?$",
+      "description": "可选;若 event 关联具体 PRD fork,记 fork id (eg 008a-pA)"
+    }
+  },
+  "required": ["ts", "event_type", "details"]
+}
