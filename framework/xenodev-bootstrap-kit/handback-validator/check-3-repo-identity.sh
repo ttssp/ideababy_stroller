@@ -32,20 +32,39 @@ fi
 REASONS=()
 
 # === 模式 1: remote 模式(若 expected_remote_url 非空)===
+#
+# codex review B2.2 Block A.5 finding #3 fix:
+# 旧 normalize 删掉 host(`url="${url#git@*:}"` 等),导致 git@github.com:owner/repo.git
+# 与 https://evil.example/owner/repo.git 比对相等 — 攻击者起同名 fork 即可冒充 source repo。
+# 新 normalize 保留 host,统一为 host/owner/repo 形式;只剥协议层 + 用户名 + 端口 + trailing .git。
 if [[ -n "$EXPECTED_REMOTE" ]]; then
     if [[ -d "$SOURCE_REPO/.git" ]]; then
         ACTUAL_REMOTE="$(cd "$SOURCE_REPO" && git config remote.origin.url 2>/dev/null || echo "")"
-        # normalize:strip protocol prefix + trailing .git
+        # normalize:统一为 host[:port]/path 形式(host 必须保留并比对)
         normalize() {
             local url="$1"
-            # 移除 git@host: 或 https://host/ prefix
-            url="${url#git@*:}"
-            url="${url#http://*/}"
-            url="${url#https://*/}"
-            url="${url#ssh://*/}"
-            # 移除 trailing .git
+            # 1. 剥 scp-like 形式 user@host:path → host/path
+            #    e.g. git@github.com:ttssp/ideababy_stroller.git → github.com/ttssp/ideababy_stroller.git
+            if [[ "$url" =~ ^[^/]+@[^:/]+:[^/].*$ ]]; then
+                local user_host="${url%%:*}"           # git@github.com
+                local host="${user_host#*@}"            # github.com
+                local path="${url#*:}"                  # ttssp/ideababy_stroller.git
+                url="${host}/${path}"
+            fi
+            # 2. 剥 URL 形式 scheme://[user@]host[:port]/path → host[:port]/path
+            #    e.g. https://github.com/ttssp/ideababy_stroller.git → github.com/ttssp/ideababy_stroller.git
+            #    e.g. ssh://git@github.com:22/ttssp/ideababy_stroller.git → github.com:22/ttssp/ideababy_stroller.git
+            if [[ "$url" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*:// ]]; then
+                url="${url#*://}"                       # 删 scheme://
+                url="${url#*@}"                         # 删 user@(若有);若无则不变(参数展开 #*@ 在无匹配时返回原串)
+                # 上面 #*@ 在无 @ 时会返回原串 — bash 行为;但若 url 中本无 @ 则原样保留,正确
+            fi
+            # 3. 删 trailing .git + 末尾 /
             url="${url%.git}"
-            echo "$url"
+            url="${url%/}"
+            # 4. 转小写(host 不区分大小写;path 通常区分但 GitHub 等大平台不区分,统一小写更稳)
+            url="$(printf '%s' "$url" | tr '[:upper:]' '[:lower:]')"
+            printf '%s' "$url"
         }
         N_ACTUAL="$(normalize "$ACTUAL_REMOTE")"
         N_EXPECTED="$(normalize "$EXPECTED_REMOTE")"
