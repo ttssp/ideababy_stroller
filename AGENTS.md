@@ -11,7 +11,7 @@ These three rules **hard block in any sandbox mode**, including `full-auto`. No 
 
 1. **Production credential isolation** — `.env.production` / `.env.prod` / `secrets/production/*` / `prod://` connection strings must NOT enter agent context. Enforced at file-system path filter, agent context loader, pre-commit hook.
 2. **Irreversible command hard block** — `rm -rf /`, `DROP TABLE` (non-test prefix), `git push --force` to protected branches (`main` / `master` / `production` / `release-*`), `aws rds delete-db-*`, `aws s3 rm --recursive <prod-bucket>`, key revocation, GCP/Azure equivalents. Escape only via human escape hatch (typed declaration + 2nd confirmation).
-3. **Backup destruction detection** — same credential / API must NOT have authority to delete primary AND backup storage. Detected at IAM lint + runtime API interceptor.
+3. **Backup destruction detection** — same credential / API must NOT have authority to delete primary AND backup storage. **v0.1**: local snapshot+diff (filesystem + git config + permissions.deny). **v0.2 trigger**: IAM lint + cloud-API interceptor (when XenoDev uses cloud — per `safety-floor-3/README.md`).
 
 **Failure case prevented**: Cursor + Claude 9-second database deletion (tomshardware 2025).
 

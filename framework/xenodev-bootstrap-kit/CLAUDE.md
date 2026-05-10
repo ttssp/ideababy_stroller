@@ -17,7 +17,7 @@ per `ideababy_stroller/framework/SHARED-CONTRACT.md` §1 + §2:
 
 1. **凭据隔离** — `.env.production*` / `secrets/production/*` / `prod://` 不进 agent context(`.claude/safety-floor/credential-isolation/`)
 2. **不可逆命令 hard block** — `rm -rf /` / `DROP TABLE` / force-push main 等 24 类(`.claude/hooks/block-dangerous.sh`)
-3. **备份破坏检测** — IAM 不允许同凭据删主存 + 备份(`.claude/safety-floor/backup-detection/`)
+3. **备份破坏检测** — v0.1 实装为本地 snapshot+diff(filesystem `*.backup`/`*.bak`/`*.snapshot` + `.git/config` push policy + permissions.deny diff;`.claude/safety-floor/backup-detection/`)。**v0.2 trigger**:IAM lint + runtime cloud-API interceptor(用云时加,per `safety-floor-3/README.md` OQ-backup-1)
 
 ## 关键实装位置
 

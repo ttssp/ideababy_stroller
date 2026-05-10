@@ -234,7 +234,15 @@ revoke production cert / rotate prod key without backup
 
 #### 件 3 · 备份破坏检测
 
-**规则**:任何场景下,**同一凭据 / 同一 API 不可同时拥有"删除主存储 + 删除备份存储"权限**。检测方式:
+**规则**:任何场景下,**同一凭据 / 同一 API 不可同时拥有"删除主存储 + 删除备份存储"权限**。
+
+> **B2.2 Block A.7 codex round 4 finding #3 状态降级**(2026-05-10):本节 normative 描述
+> 是**协议层目标**;v0.1 实装是**子集**(本地 snapshot+diff,见
+> `framework/xenodev-bootstrap-kit/safety-floor-3/`)。完整 IAM lint + cloud API interceptor
+> 是 v0.2 trigger(operator 单人 + 本地 v0.1 阶段无 cloud,完整实装无收益;XenoDev 真用云时
+> 必须升级)。AGENTS.md §1 第 3 条已同步此降级语言。
+
+检测方式:
 
 - 在 agent context loading 时,扫描凭据 scope(IAM policy / db role)
 - 如果检测到一个凭据可同时操作 production storage + backup storage → hard block
@@ -242,9 +250,10 @@ revoke production cert / rotate prod key without backup
 
 **Failure case 防御**:Cursor + Claude 9 秒删库案例**核心创伤**——AI 通过同一 API 9 秒内删除主库 + 备份。如果有"凭据物理隔离主备"约束,事故不会发生。
 
-**实现层**(在 autodev_pipe):
-- IAM policy linter(static analysis 阶段)
-- runtime API call interceptor(hook on backup-related API)
+**实现层**:
+- v0.1 实装(单人本地 dev):filesystem snapshot+diff(`*.backup` / `*.bak` / `*.snapshot` + `.git/config` push policy + `.claude/settings.json` permissions.deny diff)— `framework/xenodev-bootstrap-kit/safety-floor-3/`
+- v0.2 trigger(用云时):IAM policy linter(static analysis)+ runtime API call interceptor(hook on backup-related API)— per `safety-floor-3/README.md` OQ-backup-1
+- 历史(autodev_pipe 范式):IAM policy linter + runtime API interceptor — 该 V4 范式未完整落地,XenoDev v0.2 重新设计
 
 ### 客观依据
 
@@ -834,6 +843,8 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #3)**:§2 件 3 备份破坏检测加 v0.1/v0.2 状态标注 — declared 协议(IAM lint + runtime API interceptor)与 v0.1 实装(本地 snapshot+diff)不一致;本 patch 不删 normative 目标,加显式 v0.1 子集说明 + v0.2 trigger 说明。AGENTS.md §1 第 3 条 + xenodev-bootstrap-kit/CLAUDE.md 同步降级语言。非 BREAKING(v0.1 范围内无变化,只把已发生的实装状态写入文档)。
+- **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #4)**:check-3-repo-identity.sh no-remote 模式加 marker 强度校验 — 长度 ≥ 10 + 必含 "Idea Incubator"。修复 §3.1 normative ("marker 必含 Idea Incubator")与实装的不一致 — 旧版 `repo_marker: "I"`(1 字符)+ CLAUDE.md 含 I 即 PASS。新加 5 测试 case(3 攻击 + 2 合法),test 总数 13 → 18。
 - **2026-05-10 v2.0 patch (B2.2 Block A.6 codex round 3 finding #2)**:§3.1 + §6.2.1 约束 3 由 "任一模式 PASS" 改 fail-closed 优先级链 — `expected_remote_url` 非空 → 锁定 remote 模式;空 + marker 非空 → 要求 source_repo 也无 origin remote(防 downgrade);防同 marker 冒充攻击。check-3-repo-identity.sh 同步重写 + 加 4 攻击场景测试(remote-mismatch+marker-match / downgrade / 都无 remote 合法 / 三字段全空)。**语义 BREAKING**:之前合法的"remote 不匹配但 marker 匹配 → PASS"现在 FAIL;但 plan-start v3.0 producer 一直 fill 三字段 + valid fixture 走 marker 模式(remote 留空)→ 实战 producer 实装无 break。
 - **2026-05-10 v2.0 patch (B2.2 Block A.5 codex finding #4)**:§6.3 hand-back schema 加 `source_repo_identity:` 块(三字段),与 §6.2 workspace 块对齐;增加 producer 来源说明(forward HANDOFF.md 透传)。修复 contract 与 validator + valid fixture 的隐式漂移 — 之前 producer 按 §6.3 schema 写漏 identity 块 → check-3 必拒;按 fixture 写则成"undocumented schema drift"。本 patch 不改 §6.2.1 约束 3 行为,只把已发生的实装写进 schema。非 BREAKING(producer 实装本就携带,fixture 已含)。
 - **2026-05-10 v2.0 (BREAKING · M2 cutover)**:contract_version 1.1.0 → 2.0,§6 cutover from DRAFT-pending-cutover → ACTIVE-but-not-battle-tested。
