@@ -1,0 +1,66 @@
+# XenoDev .gitignore
+# per ideababy_stroller framework/xenodev-bootstrap-kit/
+
+# === Safety Floor 件 1:凭据隔离 ===
+# 这些文件不应进入 git history(per SHARED-CONTRACT.md §1 第 1 件)
+.env.production
+.env.production.*
+.env.prod
+.env.prod.*
+.env.local
+secrets/production/
+secrets/prod/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# === macOS ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.claude/settings.local.json
+
+# === XenoDev runtime ===
+# Eval event log 不应进 git history(append-only,本地分析用)
+.eval/events.jsonl
+
+# Worktrees(parallel-builder 用)
+.worktrees/
+
+# Logs
+logs/
+*.log
+
+# === 测试产出 ===
+.coverage
+htmlcov/
+.tox/
+
+# === Node(若 XenoDev 用 TS/JS skill 实装)===
+node_modules/
+*.tsbuildinfo
+.next/
+out/

@@ -1,0 +1,36 @@
+# XenoDev
+
+> **ADP-next runtime harness**
+> **Genesis**: `ideababy_stroller/discussion/006/forge/v2/stage-forge-006-v2.md` verdict
+> **Bootstrapped**: 2026-05-10 via `ideababy_stroller/framework/xenodev-bootstrap-kit/bootstrap.sh`
+
+## 这是什么
+
+XenoDev 是 [ideababy_stroller (IDS)](file:///Users/admin/codes/ideababy_stroller) 的 L4 build runtime 仓。
+
+**架构关系**:
+- `ideababy_stroller`(IDS)= idea→PRD + governance + forge + SHARED-CONTRACT SSOT
+- `XenoDev`(本仓)= consume hand-off from IDS,produce code,produce hand-back back to IDS
+- `autodev_pipe`(V4,archived)= 历史 build 仓(本仓只 mirror block-dangerous.sh)
+
+**v2 verdict reframe**:V4 失败不是代码失败,是元层转向无锁;v2 verdict 重新画线 = IDS 是治理 + 评判仓,XenoDev 是执行仓。
+
+## 跨仓协议
+
+per `ideababy_stroller/framework/SHARED-CONTRACT.md` §6 v2.0(contract_version 2.0)。
+
+- **Forward hand-off**:IDS `/plan-start` v3.0 → `discussion/<id>/<prd>/L4/HANDOFF.md`
+- **Reverse hand-back**:XenoDev → `discussion/<id>/handback/<ts>-<id>.md`(per §6.3 schema)
+
+## 装机
+
+由 IDS bootstrap-kit 落地。当前仓种子文件全部从 `ideababy_stroller/framework/xenodev-bootstrap-kit/` cp 而来。
+
+## License
+
+MIT(见 LICENSE)。
+
+## 状态
+
+- Status: ACTIVE-but-not-battle-tested(per IDS SHARED-CONTRACT.md §6 v2.0)
+- 待 B2.2 首个真 PRD ship + hand-back 闭环验证 → 升级 ACTIVE
