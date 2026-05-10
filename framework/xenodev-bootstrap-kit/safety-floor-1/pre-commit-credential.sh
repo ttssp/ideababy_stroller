@@ -20,41 +20,45 @@ if [[ ! -x "$SCAN_SCRIPT" ]]; then
     exit 2
 fi
 
-# 取 staged files(每 commit 跑)
-STAGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)"
+# 取 staged files(每 commit 跑)— NUL-delimited 防文件名含空格 / 换行
+# codex review (B2.2 Block A.5 finding #2 fix):
+# - 旧实现读 working tree 的 $file → 攻击者可 stage prod:// 后清 working tree 绕过
+# - 新实现读 staged blob (`git show :$file`)→ 真审 index 内容,与 commit 落地一致
 
-if [[ -z "$STAGED_FILES" ]]; then
-    # 无 staged files(可能是 merge commit / amend 等)— 跳过
-    exit 0
-fi
-
-# 检测 1:staged file 名匹配 production env / secrets/production
+# 检测:staged file 名匹配 production env / secrets/production / staged blob 含 prod://
 FOUND=0
 MATCHED=()
 
-while IFS= read -r file; do
-    # filename pattern
+# 用 process substitution + git -z 的 NUL-delimited 流;read -d '' 期望每条以 NUL 终止
+# git diff --cached -z 用 NUL 分隔(每条后跟 NUL),read -d '' 正确
+while IFS= read -r -d '' file; do
+    [[ -z "$file" ]] && continue
+    # filename pattern(纯文件名判定 — 用 staged path,不读 working tree)
     case "$(basename "$file")" in
         .env.production|.env.production.*|.env.prod|.env.prod.*|.env.local)
             FOUND=1
             MATCHED+=("$file (staged: production env file)")
             ;;
     esac
-    # path pattern
+    # path pattern(staged path)
     case "$file" in
         secrets/production/*|secrets/prod/*)
             FOUND=1
             MATCHED+=("$file (staged: secrets/production/ path)")
             ;;
     esac
-    # 文件内含 prod://(只查文本文件,跳过二进制)
-    if [[ -f "$file" ]] && file -b --mime "$file" | grep -q 'text/'; then
-        if grep -q 'prod://' "$file" 2>/dev/null; then
-            FOUND=1
-            MATCHED+=("$file (staged: contains prod:// connection string)")
-        fi
+    # 文件内含 prod://(读 staged blob;不读 working tree — 防 add 后 clean 绕过)
+    # git show ":$file" 输出 staged blob 内容;grep -I 跳过 binary;|| true 防 grep 不匹配 + set -e 杀
+    if { git show ":$file" 2>/dev/null | grep -I -q 'prod://'; } 2>/dev/null; then
+        FOUND=1
+        MATCHED+=("$file (staged blob: contains prod:// connection string)")
     fi
-done <<< "$STAGED_FILES"
+done < <(git diff --cached --name-only --diff-filter=ACMR -z 2>/dev/null)
+
+if [[ ${#MATCHED[@]} -eq 0 && $FOUND -eq 0 ]]; then
+    # 无 staged files 或全干净 — 跳过(成功路径)
+    :
+fi
 
 if [[ "$FOUND" == 1 ]]; then
     echo "ERROR: production credentials detected in staged files (Safety Floor 件 1)" >&2
