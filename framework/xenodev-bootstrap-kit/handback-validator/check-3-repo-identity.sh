@@ -31,95 +31,114 @@ fi
 
 REASONS=()
 
-# === 模式 1: remote 模式(若 expected_remote_url 非空)===
+# normalize 函数(remote 模式比对前用):统一为 host[:port]/path 形式,host 必须保留比对
+# codex review B2.2 Block A.5 finding #3 fix(host 比对)
+normalize_remote() {
+    local url="$1"
+    # 1. 剥 scp-like 形式 user@host:path → host/path
+    if [[ "$url" =~ ^[^/]+@[^:/]+:[^/].*$ ]]; then
+        local user_host="${url%%:*}"
+        local host="${user_host#*@}"
+        local path="${url#*:}"
+        url="${host}/${path}"
+    fi
+    # 2. 剥 URL 形式 scheme://[user@]host[:port]/path → host[:port]/path
+    if [[ "$url" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*:// ]]; then
+        url="${url#*://}"
+        url="${url#*@}"
+    fi
+    # 3. 删 trailing .git + 末尾 /
+    url="${url%.git}"
+    url="${url%/}"
+    # 4. 转小写
+    url="$(printf '%s' "$url" | tr '[:upper:]' '[:lower:]')"
+    printf '%s' "$url"
+}
+
+# === 优先级链(codex round 3 finding #2 fix · fail-closed)===
 #
-# codex review B2.2 Block A.5 finding #3 fix:
-# 旧 normalize 删掉 host(`url="${url#git@*:}"` 等),导致 git@github.com:owner/repo.git
-# 与 https://evil.example/owner/repo.git 比对相等 — 攻击者起同名 fork 即可冒充 source repo。
-# 新 normalize 保留 host,统一为 host/owner/repo 形式;只剥协议层 + 用户名 + 端口 + trailing .git。
+# 旧版:三模式 OR 关系,任一 PASS 即满足。漏洞:expected_remote_url 非空但 actual remote 不同时,
+# 仍能 fall through 到 no-remote 模式 + repo_marker(只要 marker 也匹配)→ 攻击者只要保留前 30 字
+# CLAUDE.md header 就能冒充。
+#
+# 新版:优先级 + fail-closed
+# - 若 EXPECTED_REMOTE 非空 → **必须** remote 模式 PASS(无 fall through)
+# - 若 EXPECTED_REMOTE 空 + REPO_MARKER 非空 → no-remote 模式;且要求 source_repo 真无 origin remote
+# - 若上述都空 + GIT_HASH 非空 → hash-only 模式
+# - 三字段全空 → FAIL(无 ground truth)
+
+# === 模式 1: remote 模式(EXPECTED_REMOTE 非空时锁定本模式,fail-closed)===
 if [[ -n "$EXPECTED_REMOTE" ]]; then
+    if [[ ! -d "$SOURCE_REPO/.git" ]]; then
+        echo "FAIL · §6.2.1 约束 3 (remote 模式锁定 · source_repo/.git not found): $SOURCE_REPO" >&2
+        exit 1
+    fi
+    ACTUAL_REMOTE="$(cd "$SOURCE_REPO" && git config remote.origin.url 2>/dev/null || echo "")"
+    if [[ -z "$ACTUAL_REMOTE" ]]; then
+        echo "FAIL · §6.2.1 约束 3 (remote 模式锁定 · source_repo 无 origin remote 但 expected_remote_url 非空)" >&2
+        echo "  expected: $EXPECTED_REMOTE" >&2
+        echo "  hint:若本仓真无 remote,producer 应在 hand-off 包写空 expected_remote_url + 走 no-remote 模式" >&2
+        exit 1
+    fi
+    N_ACTUAL="$(normalize_remote "$ACTUAL_REMOTE")"
+    N_EXPECTED="$(normalize_remote "$EXPECTED_REMOTE")"
+    if [[ "$N_ACTUAL" == "$N_EXPECTED" ]]; then
+        exit 0  # remote 模式 PASS
+    fi
+    echo "FAIL · §6.2.1 约束 3 (remote 模式锁定 mismatch · 不允许 fall through)" >&2
+    echo "  actual:   $ACTUAL_REMOTE (norm: $N_ACTUAL)" >&2
+    echo "  expected: $EXPECTED_REMOTE (norm: $N_EXPECTED)" >&2
+    echo "  问题:source_repo 的 origin remote 与 hand-off 包预期不符(IDS 副本 / fork / 误移动)" >&2
+    exit 1
+fi
+
+# === 模式 2: no-remote 模式(EXPECTED_REMOTE 空 + REPO_MARKER 非空)===
+# 要求:source_repo 也真无 origin remote,防 "有 remote 但 producer 故意填空 expected" 的 downgrade
+if [[ -n "$REPO_MARKER" ]]; then
     if [[ -d "$SOURCE_REPO/.git" ]]; then
         ACTUAL_REMOTE="$(cd "$SOURCE_REPO" && git config remote.origin.url 2>/dev/null || echo "")"
-        # normalize:统一为 host[:port]/path 形式(host 必须保留并比对)
-        normalize() {
-            local url="$1"
-            # 1. 剥 scp-like 形式 user@host:path → host/path
-            #    e.g. git@github.com:ttssp/ideababy_stroller.git → github.com/ttssp/ideababy_stroller.git
-            if [[ "$url" =~ ^[^/]+@[^:/]+:[^/].*$ ]]; then
-                local user_host="${url%%:*}"           # git@github.com
-                local host="${user_host#*@}"            # github.com
-                local path="${url#*:}"                  # ttssp/ideababy_stroller.git
-                url="${host}/${path}"
-            fi
-            # 2. 剥 URL 形式 scheme://[user@]host[:port]/path → host[:port]/path
-            #    e.g. https://github.com/ttssp/ideababy_stroller.git → github.com/ttssp/ideababy_stroller.git
-            #    e.g. ssh://git@github.com:22/ttssp/ideababy_stroller.git → github.com:22/ttssp/ideababy_stroller.git
-            if [[ "$url" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*:// ]]; then
-                url="${url#*://}"                       # 删 scheme://
-                url="${url#*@}"                         # 删 user@(若有);若无则不变(参数展开 #*@ 在无匹配时返回原串)
-                # 上面 #*@ 在无 @ 时会返回原串 — bash 行为;但若 url 中本无 @ 则原样保留,正确
-            fi
-            # 3. 删 trailing .git + 末尾 /
-            url="${url%.git}"
-            url="${url%/}"
-            # 4. 转小写(host 不区分大小写;path 通常区分但 GitHub 等大平台不区分,统一小写更稳)
-            url="$(printf '%s' "$url" | tr '[:upper:]' '[:lower:]')"
-            printf '%s' "$url"
-        }
-        N_ACTUAL="$(normalize "$ACTUAL_REMOTE")"
-        N_EXPECTED="$(normalize "$EXPECTED_REMOTE")"
-        if [[ -n "$N_ACTUAL" && "$N_ACTUAL" == "$N_EXPECTED" ]]; then
-            exit 0  # remote 模式 PASS
-        else
-            REASONS+=("remote 模式 FAIL: actual=$ACTUAL_REMOTE (norm: $N_ACTUAL) vs expected=$EXPECTED_REMOTE (norm: $N_EXPECTED)")
+        if [[ -n "$ACTUAL_REMOTE" ]]; then
+            echo "FAIL · §6.2.1 约束 3 (no-remote 模式 downgrade · source_repo 有 origin remote 但 expected 留空)" >&2
+            echo "  actual remote: $ACTUAL_REMOTE" >&2
+            echo "  hint:producer 应填 expected_remote_url 并走 remote 模式" >&2
+            exit 1
         fi
-    else
-        REASONS+=("remote 模式 N/A: source_repo/.git not found")
     fi
-fi
-
-# === 模式 2: no-remote 模式(若 repo_marker 非空)===
-if [[ -n "$REPO_MARKER" ]]; then
     CLAUDE_FILE="$SOURCE_REPO/CLAUDE.md"
-    if [[ -f "$CLAUDE_FILE" ]]; then
-        ACTUAL_MARKER="$(head -c 30 "$CLAUDE_FILE")"
-        if echo "$ACTUAL_MARKER" | grep -qF "$REPO_MARKER"; then
-            exit 0  # no-remote 模式 PASS
-        else
-            REASONS+=("no-remote 模式 FAIL: CLAUDE.md L1 head -c 30 = '$ACTUAL_MARKER' does not contain '$REPO_MARKER'")
-        fi
-    else
-        REASONS+=("no-remote 模式 N/A: CLAUDE.md not found at $CLAUDE_FILE")
+    if [[ ! -f "$CLAUDE_FILE" ]]; then
+        echo "FAIL · §6.2.1 约束 3 (no-remote 模式 · CLAUDE.md not found): $CLAUDE_FILE" >&2
+        exit 1
     fi
+    ACTUAL_MARKER="$(head -c 30 "$CLAUDE_FILE")"
+    if echo "$ACTUAL_MARKER" | grep -qF "$REPO_MARKER"; then
+        exit 0  # no-remote 模式 PASS
+    fi
+    echo "FAIL · §6.2.1 约束 3 (no-remote 模式 marker mismatch)" >&2
+    echo "  actual:   '$ACTUAL_MARKER'" >&2
+    echo "  expected to contain: '$REPO_MARKER'" >&2
+    exit 1
 fi
 
-# === 模式 3: hash-only 模式(若 git_common_dir_hash 非空)===
+# === 模式 3: hash-only 模式(EXPECTED_REMOTE + REPO_MARKER 都空 + GIT_HASH 非空)===
 if [[ -n "$GIT_HASH" ]]; then
     GIT_HEAD="$SOURCE_REPO/.git/HEAD"
     GIT_CONFIG="$SOURCE_REPO/.git/config"
-    if [[ -f "$GIT_HEAD" && -f "$GIT_CONFIG" ]]; then
-        ACTUAL_HASH="$(cat "$GIT_HEAD" "$GIT_CONFIG" | shasum -a 256 | head -c 16)"
-        if [[ "$ACTUAL_HASH" == "$GIT_HASH" ]]; then
-            exit 0  # hash-only 模式 PASS
-        else
-            REASONS+=("hash-only 模式 FAIL: actual=$ACTUAL_HASH vs expected=$GIT_HASH")
-        fi
-    else
-        REASONS+=("hash-only 模式 N/A: .git/HEAD or .git/config not found")
+    if [[ ! -f "$GIT_HEAD" || ! -f "$GIT_CONFIG" ]]; then
+        echo "FAIL · §6.2.1 约束 3 (hash-only 模式 · .git/HEAD or .git/config not found)" >&2
+        exit 1
     fi
+    ACTUAL_HASH="$(cat "$GIT_HEAD" "$GIT_CONFIG" | shasum -a 256 | head -c 16)"
+    if [[ "$ACTUAL_HASH" == "$GIT_HASH" ]]; then
+        exit 0  # hash-only 模式 PASS
+    fi
+    echo "FAIL · §6.2.1 约束 3 (hash-only 模式 hash mismatch)" >&2
+    echo "  actual:   $ACTUAL_HASH" >&2
+    echo "  expected: $GIT_HASH" >&2
+    exit 1
 fi
 
-# === 所有模式都没 PASS ===
-echo "FAIL · §6.2.1 约束 3 (repo identity check, all 3 modes failed or N/A):" >&2
-for r in "${REASONS[@]}"; do
-    echo "  - $r" >&2
-done
+# === 三字段全空 → 无 ground truth,FAIL(per §3.1 normative)===
+echo "FAIL · §6.2.1 约束 3 · 三字段(expected_remote_url / repo_marker / git_common_dir_hash)全空,无 ground truth 可比对" >&2
 echo "  source_repo: $SOURCE_REPO" >&2
-echo "  问题:source_repo 与 hand-off 包预期身份不符(IDS 副本 / test clone / 误移动)" >&2
-
-# 若 3 个 expected 字段全空 → 无 ground truth,也算 FAIL(per §3.1 normative)
-if [[ -z "$EXPECTED_REMOTE" && -z "$REPO_MARKER" && -z "$GIT_HASH" ]]; then
-    echo "  ⚠ all 3 expected fields empty — no ground truth to compare against" >&2
-fi
-
+echo "  hint:hand-off 包 frontmatter source_repo_identity 块至少需 1 字段非空" >&2
 exit 1

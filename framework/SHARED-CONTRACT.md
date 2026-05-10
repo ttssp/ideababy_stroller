@@ -378,9 +378,17 @@ GIT_HASH="$(cat .git/HEAD .git/config 2>/dev/null | shasum -a 256 | head -c 16)"
   - PASS = hash 等
   - 适用场景:operator 在同 host 跑 IDS prod + IDS test clone,两者 remote 相同但 .git/HEAD(branch)+ .git/config(local user.name/email)总有差异
 
-**任一模式 PASS 即满足约束 3**。三模式优先级:remote > no-remote > hash-only(operator 不显式开启 hash-only 时不跑该模式)。
+**fail-closed 优先级链**(B2.2 Block A.6 codex round 3 finding #2 修订;旧版"任一 PASS"已废弃):
+- 若 `expected_remote_url` 非空 → **锁定** remote 模式;mismatch 直接 FAIL,**不允许** fall through 到 no-remote / hash-only(防同 marker 冒充)
+- 若 `expected_remote_url` 空 + `repo_marker` 非空 → no-remote 模式;**额外要求** source_repo 也真无 origin remote(防 downgrade attack:有 remote 但故意填空 expected)
+- 若 `expected_remote_url` + `repo_marker` 都空 + `git_common_dir_hash` 非空 → hash-only 模式
+- 三字段全空 → FAIL(无 ground truth)
 
-**hard-fail 行为**(per §6.2.1 约束 4):任一模式都 PASS 不了 → producer 不写 hand-back 包 / consumer 不读 hand-back 包,只 stderr 报"约束 3 (repo identity) 失败:三模式全 FAIL"+ handback_id + exit 非 0。
+**为什么 fail-closed 而非 OR**(第一性论证):
+- 旧 OR 模型下,攻击者只要保留 IDS CLAUDE.md 前 30 字 header 就能在任意 fork 通过 no-remote 模式(remote 不同也无所谓)→ 与 no-remote fallback 的设计意图("真无 remote 时才用 marker")相违
+- fail-closed 保证 producer 一旦 declared 用 remote 模式(填 expected_remote_url),consumer 必须强制走 remote 比对;marker / hash 仅作 producer declared 的 fallback,不作"任一通过即可"的逃生口
+
+**hard-fail 行为**(per §6.2.1 约束 4):优先级链锁定的模式 FAIL → producer 不写 hand-back 包 / consumer 不读 hand-back 包,只 stderr 报具体模式失败原因 + handback_id + exit 非 0。
 
 **实装位置**(本协议 + 命令实装):
 - 协议层(本节):normative spec(M2 Block E 落地)
@@ -647,11 +655,15 @@ workspace:
 - 第一性原因:symlink 是 confused-deputy 攻击的经典载体;single-developer / local-only 场景看似无威胁,但 operator 自己手动建过的 dev symlink(eg `~/codes/ideababy_stroller -> ~/Dropbox/...`)会让 fs.write 静默落到 Dropbox,Dropbox 的 sync conflict resolver 可能覆盖 append-only 评审产物。
 - 例外:**operator 在 IDS 仓根本身**(`source_repo`)可以是 symlink(operator 的 dev workflow 决定);校验从 `source_repo`(canonicalized 后)往下走,只校验 `<source_repo>/discussion/...` 这部分路径段不含 symlink。
 
-**约束 3 · repo identity check(v2.0 normative · 三模式)**:
-- 写入前 producer 必须按 hand-off 包 frontmatter `source_repo_identity:` 字段(§3.1)三模式之一比对:**remote 模式**(`git config remote.origin.url` == `expected_remote_url`)/ **no-remote 模式**(`head -c 30 CLAUDE.md` 含 `repo_marker`,marker 必含 "Idea Incubator")/ **hash-only 模式**(`sha256(.git/HEAD + .git/config)` 前 16 字符 == `git_common_dir_hash`)。
-- **任一模式 PASS 即满足约束 3**。三模式完整规则、产生命令、字段语义见 §3.1。
+**约束 3 · repo identity check(v2.0 normative · fail-closed 优先级链)**:
+- 写入前 producer 必须按 hand-off 包 frontmatter `source_repo_identity:` 字段(§3.1)按 fail-closed 优先级链比对:
+  - `expected_remote_url` 非空 → **锁定 remote 模式**;mismatch FAIL,不允许 fall through
+  - `expected_remote_url` 空 + `repo_marker` 非空 → no-remote 模式;额外要求 source_repo 也无 origin remote(防 downgrade)
+  - 仅 `git_common_dir_hash` 非空 → hash-only 模式
+  - 三字段全空 → FAIL(无 ground truth)
+- 完整规则、产生命令、字段语义、攻击场景论证见 §3.1。
 - 失败 = `source_repo` 指向了一个看起来像 IDS 仓但其实是别人的 fork / 误移动的副本 / IDS 副本 / test clone,**reject**(per 约束 4 hard-fail)。
-- v1.1.0 弱实装(`.git` 存在 = PASS)在 v2.0 已废弃,本约束改为依赖 §3.1 normative ground truth 字段。
+- v1.1.0 弱实装(`.git` 存在 = PASS)在 v2.0 已废弃;v2.0 早期"任一模式 PASS"已在 B2.2 Block A.6 改 fail-closed 优先级链(codex round 3 finding #2)。
 
 **约束 5 · id consistency check**:
 - hand-back 包必须满足 **三处 id 严格一致**:
@@ -822,6 +834,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-10 v2.0 patch (B2.2 Block A.6 codex round 3 finding #2)**:§3.1 + §6.2.1 约束 3 由 "任一模式 PASS" 改 fail-closed 优先级链 — `expected_remote_url` 非空 → 锁定 remote 模式;空 + marker 非空 → 要求 source_repo 也无 origin remote(防 downgrade);防同 marker 冒充攻击。check-3-repo-identity.sh 同步重写 + 加 4 攻击场景测试(remote-mismatch+marker-match / downgrade / 都无 remote 合法 / 三字段全空)。**语义 BREAKING**:之前合法的"remote 不匹配但 marker 匹配 → PASS"现在 FAIL;但 plan-start v3.0 producer 一直 fill 三字段 + valid fixture 走 marker 模式(remote 留空)→ 实战 producer 实装无 break。
 - **2026-05-10 v2.0 patch (B2.2 Block A.5 codex finding #4)**:§6.3 hand-back schema 加 `source_repo_identity:` 块(三字段),与 §6.2 workspace 块对齐;增加 producer 来源说明(forward HANDOFF.md 透传)。修复 contract 与 validator + valid fixture 的隐式漂移 — 之前 producer 按 §6.3 schema 写漏 identity 块 → check-3 必拒;按 fixture 写则成"undocumented schema drift"。本 patch 不改 §6.2.1 约束 3 行为,只把已发生的实装写进 schema。非 BREAKING(producer 实装本就携带,fixture 已含)。
 - **2026-05-10 v2.0 (BREAKING · M2 cutover)**:contract_version 1.1.0 → 2.0,§6 cutover from DRAFT-pending-cutover → ACTIVE-but-not-battle-tested。
   Breaking changes(7 个 commit:850dd8f / bb188d9 / 2744354 / 6722c8f / b78ea5e / c73febb / 本 commit):

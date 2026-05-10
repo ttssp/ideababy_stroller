@@ -10,7 +10,7 @@ workspace:
   working_repo: /Users/admin/codes/XenoDev
   handback_target: /tmp/whatever/handback/
 source_repo_identity:
-  expected_remote_url: ""
+  expected_remote_url: "git@github.com:ttssp/ideababy_stroller.git"
   repo_marker: "# Idea Incubator"
   git_common_dir_hash: ""
 tags:

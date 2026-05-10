@@ -25,20 +25,27 @@ FAIL_COUNT=0
 
 # 临时 git repo 工厂
 make_repo() {
-    local dir="$1" remote="$2"
+    local dir="$1" remote="$2" claude_marker="${3:-}"
     mkdir -p "$dir"
-    (cd "$dir" && git init -q && git remote add origin "$remote") || return 1
+    (cd "$dir" && git init -q) || return 1
+    if [[ -n "$remote" ]]; then
+        (cd "$dir" && git remote add origin "$remote") || return 1
+    fi
+    if [[ -n "$claude_marker" ]]; then
+        printf '%s\n' "$claude_marker" > "$dir/CLAUDE.md"
+    fi
 }
 
 TMP_BASE="$(mktemp -d -t check3-test-XXXXXX)"
 trap 'rm -rf "$TMP_BASE"' EXIT
 
 run_case() {
-    local name="$1" expected_exit="$2" actual_remote="$3" expected_remote="$4"
+    local name="$1" expected_exit="$2" actual_remote="$3" expected_remote="$4" \
+          repo_marker="${5:-}" claude_content="${6:-}"
     local repo_dir="$TMP_BASE/$(printf '%s' "$name" | tr ' /' '_')"
-    make_repo "$repo_dir" "$actual_remote"
+    make_repo "$repo_dir" "$actual_remote" "$claude_content"
     set +e
-    bash "$CHECK_SCRIPT" "$repo_dir" "$expected_remote" "" "" >/dev/null 2>&1
+    bash "$CHECK_SCRIPT" "$repo_dir" "$expected_remote" "$repo_marker" "" >/dev/null 2>&1
     local got=$?
     set -e
     if [[ "$got" == "$expected_exit" ]]; then
@@ -48,6 +55,7 @@ run_case() {
         echo "  ❌ FAIL: $name (expected exit=$expected_exit, got=$got)"
         echo "      actual_remote=$actual_remote"
         echo "      expected_remote=$expected_remote"
+        echo "      repo_marker=$repo_marker  claude=$claude_content"
         FAIL_COUNT=$((FAIL_COUNT + 1))
     fi
 }
@@ -90,6 +98,37 @@ run_case "不同 repo" 1 \
 run_case "host 子域名也算不同 (gitlab vs github)" 1 \
     "git@gitlab.com:ttssp/ideababy_stroller.git" \
     "git@github.com:ttssp/ideababy_stroller.git"
+
+echo ""
+echo "=== fail-closed 优先级链 (codex round 3 finding #2 攻击场景)==="
+
+# 攻击场景:remote mismatch 但 marker 匹配 → 旧版 PASS,新版必须 FAIL
+run_case "remote mismatch + marker matches (无 fall through)" 1 \
+    "https://evil.example/ttssp/ideababy_stroller.git" \
+    "git@github.com:ttssp/ideababy_stroller.git" \
+    "# Idea Incubator" \
+    "# Idea Incubator — Project C"
+
+# 攻击场景:有 remote + producer 故意把 expected_remote_url 留空 (downgrade)→ 必须 FAIL
+run_case "downgrade attack: actual有remote + expected空 + marker匹配" 1 \
+    "git@github.com:attacker/repo.git" \
+    "" \
+    "# Idea Incubator" \
+    "# Idea Incubator — fake"
+
+# 合法场景:都无 remote + marker 匹配 → PASS
+run_case "都无 remote + marker 匹配 (合法 no-remote 模式)" 0 \
+    "" \
+    "" \
+    "# Idea Incubator" \
+    "# Idea Incubator — Project C"
+
+# 攻击场景:三字段全空 → FAIL(无 ground truth)
+run_case "三字段全空 (无 ground truth)" 1 \
+    "git@github.com:ttssp/ideababy_stroller.git" \
+    "" \
+    "" \
+    ""
 
 # 报告
 echo ""
