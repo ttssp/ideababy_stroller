@@ -1,12 +1,14 @@
 ---
 doc_type: framework-shared-contract
-contract_version: 1.1.0
-status: v1.1
+contract_version: 2.0
+status: v2.0
 generated: 2026-05-08
-upstream: discussion/006/forge/v1/stage-forge-006-v1.md
+last_updated: 2026-05-10
+upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2)
 ssot_owner: ideababy_stroller
-ssot_consumer: autodev_pipe
-purpose: 定义 ideababy_stroller (idea→PRD) 与 autodev_pipe (PRD→code) 跨仓接口
+ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
+purpose: 定义 ideababy_stroller (idea→PRD + 治理) 与 XenoDev (PRD→code build runtime) 跨仓接口
+v2_status_note: ACTIVE-but-not-battle-tested — §6 cutover landed M2 commit (本 commit) 2026-05-10;Status flips to ACTIVE pending B2.2 first hand-back round-trip with operator subjective score ≥ 7/10
 ---
 
 # SHARED-CONTRACT · ideababy_stroller ↔ autodev_pipe
@@ -589,13 +591,18 @@ SHARED-CONTRACT 的 frontmatter 含 `contract_version: <semver>`(本文件 v1):
 
 ---
 
-## §6 · v2.0 草稿(workspace schema + hand-back 通道,待 cutover)
+## §6 · v2.0 ACTIVE(workspace schema + hand-back 通道)
 
-**Status**: DRAFT-pending-cutover
-**Cutover trigger**: M2 plan-start v2 ship 同日(届时 contract_version 1.1.0 → 2.0 同步 bump,Changelog 同步追加 v2.0 entry,本节顶部 Status 改为 ACTIVE 并删除下方 ⚠ warning)
-**依据**: forge 006 v2 verdict — `discussion/006/forge/v2/stage-forge-006-v2.md` §"Evidence map" row 11(hand-back 包结构化)+ row 12(workspace schema 4 字段)+ §"Refactor plan(W3)" 模块 A step 1 + 模块 C 全节
+**Status**: ACTIVE-but-not-battle-tested
+**Cutover landed**: M2 commit (本 commit) · 2026-05-10
+**Promotion to ACTIVE pending**: B2.2 first hand-back round-trip(operator 主观评分 ≥ 7/10 → 单独 1 commit 改 `Status: ACTIVE`;评分 < 7/10 → 起 forge v3 重审 §6 协议)
+**依据**: forge 006 v2 verdict — `discussion/006/forge/v2/stage-forge-006-v2.md` §"Evidence map" row 11(hand-back 包结构化)+ row 12(workspace schema 4 字段)+ §"Refactor plan(W3)" 模块 A step 1 + 模块 C 全节;codex Round 4 (HEAD~6) Finding 2 → §3.1 source_repo_identity 字段 + §6.2.1 约束 3 三模式 normative 比对(M2 Block E)
 
-> ⚠ **本节未生效**;active 仍是 §1-§5 v1.1.0。本节仅作为 M2/M3 cutover 的 spec source 引用(eg M2 改 plan-start v2 时引"按 §6.3 schema 产 hand-off 包")。任何当前 consumer(`/plan-start` 命令 / `specs/007a-pA/HANDOFF.md` / autodev_pipe 仓)继续遵 v1.1.0,**不应**读本节作为协议事实。
+> **v2.0 ACTIVE-but-not-battle-tested 含义**(M2 cutover 决策):
+> - **协议层 ACTIVE**:本节(§6)所有 normative spec 已生效,IDS 工作流(plan-start v3.0 / handback-review)按本节实装
+> - **跨仓闭环未实战**:hand-back 通道在 IDS 端 contract-only(M2),producer 端 validator 待 B2.1(XenoDev bootstrap)实装,首个真 hand-back round-trip 待 B2.2
+> - **跳过 R5 决策**:用 B2.2 实跑代替纸面 review 收敛(per plan-rosy-naur v8/v9);若 B2.2 暴露 §6 结构性问题 → 起 forge v3,Status 不改 ACTIVE
+> - **当前 consumer**:`/plan-start` v3.0 + `/handback-review` v2.0 + `framework/AUTODEV-PIPE-SYNC-PROPOSAL.md`(historical,pre-M2 不动);v1.1.0 历史 hand-off 包(specs/{007a-pA, 001-pA, 003-pA, 004-pB}/HANDOFF.md)是 ADP 范式,M3 已标 DEPRECATED
 
 ### §6.1 · v2.0 motivation
 
@@ -759,18 +766,18 @@ operator 收到本 hand-back 后可选的动作(选 1-N):
 
 cutover 时按此清单逐条勾选,确保所有 v1.1.0 consumer 同步迁移:
 
-- [ ] M2 改 `.claude/commands/plan-start.md` L140 1 处 frontmatter `SHARED-CONTRACT version honored: 1.1.0` → `2.0`(实证后修正:v8 plan 写"L140 / L194 / L225 三处"是错的,L194/L225 是文字引用 + 验证 grep,L127/L333 也是引用,真"version honored"字段只 L140 一处;A2 重写时所有 5 处都需同步改)
-- [ ] M2 改 `.claude/commands/plan-start.md` Step 5.5 HANDOFF.md 模板 frontmatter 增加 `workspace:` 块(§6.2 4 字段)
-- [ ] M2 改 `.claude/commands/plan-start.md` Step 5 不再产 `specs/<prd-fork-id>/` 完整 SDD 包(spec/architecture/tasks/SLA/etc),改为只产 hand-off 包(`discussion/<id>/<prd>/L4/HANDOFF.md` + 引用 §6.3 schema)。**实证修正**:plan-start.md 引 `specs/` 20+ 处(Step 3 mkdir / Step 4 spec-writer / Step 5 task-decomposer / Step 5.5 HANDOFF / Step 6 Codex review 全依赖),Block A 实际是 plan-start.md 几乎重写 ~200 行,非 5 行 fix
-- [ ] M2 改 `CLAUDE.md` L25 `L4 · Plan      — spec, architecture, tasks, parallel build, quality gates` → `L4 · Hand-off    — produce hand-off package; downstream build runtime (XenoDev) does spec/tasks/build/quality`
-- [ ] M2 改 `CLAUDE.md` §"Directory ownership" 移除 `specs/NNN-<fork-id>-<prd>/` 行(IDS 不再产)
-- [ ] M2 改 `AGENTS.md` §4/§5 旧命令(若有引用 plan-start 产 specs/ 的描述)
-- [ ] M2 新建 `.claude/commands/handback-review.md` 命令(§6.4 operator 操作入口)
-- [ ] M3 给 `specs/007a-pA/` 顶部加 `NOTICE.md` 或在 `spec.md` 顶部加段(标 DEPRECATED;保留 spec.md / tasks/ / HANDOFF.md 全部内容作 forge v2 evidence row 13 引用对象;新 PRD 不再走 IDS specs/)
-- [ ] M3 给同级 `specs/{001-pA, 003-pA, 004-pB}/` 同样加 NOTICE(已 ship 的历史 fork,不再维护新 task)
-- [ ] M2 cutover commit 同步 bump frontmatter `contract_version: 1.1.0` → `2.0`
-- [ ] M2 cutover commit 同步追加 §"Changelog" v2.0 entry(列本节所有 breaking change)
-- [ ] M2 cutover commit 同步在本节(§6)顶部把 `Status: DRAFT-pending-cutover` 改为 `Status: ACTIVE`,删除 `⚠ 本节未生效` warning 段
+- [x] M2 改 `.claude/commands/plan-start.md` L140 1 处 frontmatter `SHARED-CONTRACT version honored: 1.1.0` → `2.0`(实证后修正:v8 plan 写"L140 / L194 / L225 三处"是错的,L194/L225 是文字引用 + 验证 grep,L127/L333 也是引用,真"version honored"字段只 L140 一处;A2 重写时所有 5 处都需同步改)— **M2 Block A2 落地**(commit bb188d9):plan-start 重写 v2.2 → v3.0,frontmatter `shared_contract_version_honored: 2.0`
+- [x] M2 改 `.claude/commands/plan-start.md` Step 5.5 HANDOFF.md 模板 frontmatter 增加 `workspace:` 块(§6.2 4 字段)— **M2 Block A2 落地**(commit bb188d9):新 Step 3 frontmatter 含 `workspace:` 4 字段 + `source_repo_identity:` 3 字段
+- [x] M2 改 `.claude/commands/plan-start.md` Step 5 不再产 `specs/<prd-fork-id>/` 完整 SDD 包(spec/architecture/tasks/SLA/etc),改为只产 hand-off 包(`discussion/<id>/<prd>/L4/HANDOFF.md` + 引用 §6.3 schema)。**实证修正**:plan-start.md 引 `specs/` 20+ 处(Step 3 mkdir / Step 4 spec-writer / Step 5 task-decomposer / Step 5.5 HANDOFF / Step 6 Codex review 全依赖),Block A 实际是 plan-start.md 几乎重写 ~200 行,非 5 行 fix — **M2 Block A2 落地**(commit bb188d9):plan-start 391 行 → 238 行(净 -153),specs/<prd-fork-id> 引用 0,只产 discussion/<id>/<prd>/L4/HANDOFF.md
+- [x] M2 改 `CLAUDE.md` L25 `L4 · Plan      — spec, architecture, tasks, parallel build, quality gates` → `L4 · Hand-off    — produce hand-off package; downstream build runtime (XenoDev) does spec/tasks/build/quality` — **M2 Block B 落地**(commit 2744354)
+- [x] M2 改 `CLAUDE.md` §"Directory ownership" 移除 `specs/NNN-<fork-id>-<prd>/` 行(IDS 不再产)— **M2 Block B 落地**(commit 2744354):微调 vs plan v9 — 保留 specs/NNN- 行但加 DEPRECATED 标注指向 commit d3194a0,audit trail 更完整
+- [x] M2 改 `AGENTS.md` §4/§5 旧命令(若有引用 plan-start 产 specs/ 的描述)— **M2 Block C 落地**(commit 6722c8f):autodev_pipe 字串 8 处 → 0 处;XenoDev 出现 13 处;§4 Hand-off 段加 hand-back 行;§5 流图加 hand-back 行;`No code without a spec` → `No code without a hand-off package`;Specs immutable 段加 M3 archived 注
+- [x] M2 新建 `.claude/commands/handback-review.md` 命令(§6.4 operator 操作入口)— **M2 Block D 落地**(commit b78ea5e):201 行命令骨架,6 个 Step,frontmatter argument-hint <discussion-id>,§6.2.1 6 约束全引为 normative source(M2 contract-only;B2.1 实装 validator 代码),Step 5 HANDBACK-LOG.md append-only 决议日志
+- [x] M3 给 `specs/007a-pA/` 顶部加 `NOTICE.md` 或在 `spec.md` 顶部加段(标 DEPRECATED;保留 spec.md / tasks/ / HANDOFF.md 全部内容作 forge v2 evidence row 13 引用对象;新 PRD 不再走 IDS specs/)— **M3 已落地**(commit d3194a0,2026-05-10):spec.md 顶部加段(non-NOTICE.md 路线,1 处而非 2 处)
+- [x] M3 给同级 `specs/{001-pA, 003-pA, 004-pB}/` 同样加 NOTICE(已 ship 的历史 fork,不再维护新 task)— **M3 已落地**(同 commit d3194a0):4 个 fork(007a-pA / 001-pA / 003-pA / 004-pB)spec.md 顶部各 +8 行 DEPRECATED 段
+- [x] M2 cutover commit 同步 bump frontmatter `contract_version: 1.1.0` → `2.0` — **M2 Block F+G 落地**(本 commit):cutover sealing
+- [x] M2 cutover commit 同步追加 §"Changelog" v2.0 entry(列本节所有 breaking change)— **M2 Block F+G 落地**(本 commit):cutover sealing
+- [x] M2 cutover commit 同步在本节(§6)顶部把 `Status: DRAFT-pending-cutover` 改为 `Status: ACTIVE`,删除 v1.1 inactive warning 段 — **M2 Block F+G 落地**(本 commit):**改为中间态 `ACTIVE-but-not-battle-tested`** 而非直接 ACTIVE,留 B2.2 实跑 hand-back 闭环成功 + operator 主观评分 ≥ 7/10 后单独 1 commit 改 ACTIVE。理由:跳过 R5 = 用 B2.2 实跑代替纸面审查(per plan-rosy-naur v8/v9 决策),中间态防 Status = ACTIVE 后 B2.2 暴露 §6 结构性问题需改 ACTIVE 字段才能 fix 的心理摩擦
 - [x] M2 改 §3 forward hand-off schema 加 `source_repo_identity` 字段(`expected_remote_url` + `repo_marker` + 可选 `git_common_dir_hash`),由 IDS forward 产源时填入;§6.2.1 约束 3 同步改为用该字段做 normative 比对(替代当前依赖 producer 自查 `remote.origin.url` 但无 expected 值的弱实装);定义 remote / no-remote / hash-only 三种比对规则。**第一性原因**:回应 codex Round 4 (HEAD~6) Finding 2 — 当前 `to_source_repo: <absolute path>` 不构成可校验的仓 identity,producer 实装无 ground truth → 退化成 `.git` 存在 = PASS 的弱 check,IDS 副本 / test clone 全通过 — **M2 Block E 落地**(commit pending),§3.1 新增,§6.2.1 约束 3 改 normative
 
 ### §6.6 · 与 §3 现有 hand-off 协议的关系
@@ -809,6 +816,20 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-10 v2.0 (BREAKING · M2 cutover)**:contract_version 1.1.0 → 2.0,§6 cutover from DRAFT-pending-cutover → ACTIVE-but-not-battle-tested。
+  Breaking changes(7 个 commit:850dd8f / bb188d9 / 2744354 / 6722c8f / b78ea5e / c73febb / 本 commit):
+  - **plan-start v2.2 → v3.0**(commit bb188d9):IDS 不再产 specs/(spec-writer / task-decomposer / Codex review 全删除);只产 `discussion/<id>/<prd>/L4/HANDOFF.md`;frontmatter 加 `workspace:` 块(§6.2 4 字段)+ `source_repo_identity:` 块(§3.1 3 字段);391 行 → 238 行(净 -153)
+  - **CLAUDE.md L4 重定义**(commit 2744354):L4 · Plan → L4 · Hand-off(spec/tasks/build/quality 移交 XenoDev);Directory ownership 加 HANDOFF.md entry;specs/NNN- 标 DEPRECATED 指向 commit d3194a0
+  - **AGENTS.md autodev_pipe → XenoDev**(commit 6722c8f):8 处替换 + §4 加 hand-back 行 + §5 流图加 hand-back 行;`No code without a spec` → `No code without a hand-off package`;Specs immutable 加 M3 archived 注;字串 8 处 → 0 处,XenoDev 出现 13 处
+  - **新建 .claude/commands/handback-review.md**(commit b78ea5e):201 行命令骨架,6 个 Step,§6.2.1 6 约束全引为 normative source(M2 contract-only;B2.1 实装 validator);Step 5 HANDBACK-LOG.md append-only 决议日志
+  - **§3 加 §3.1 source_repo_identity 字段**(commit c73febb):replaces v1.1 weak `.git`-存在 = PASS check(响应 codex Round 4 Finding 2);3 字段 + 三模式比对规则(remote / no-remote / hash-only);§6.2.1 约束 3 改 normative 比对
+  - **§6.5 13 项 cutover 清单全勾**(本 commit):M3 commit d3194a0 / M2 6 commit 全 attestation
+  - **§6 Status 中间态**(本 commit):用 `ACTIVE-but-not-battle-tested` 而非直接 ACTIVE;留 B2.2 first hand-back round-trip 实跑评分 ≥ 7/10 后单独 1 commit 改 ACTIVE(替代纸面 R5 review,见 plan-rosy-naur v8/v9 决策)
+  - **frontmatter bump**(本 commit):contract_version 1.1.0 → 2.0;status v1.1 → v2.0;ssot_consumer autodev_pipe → XenoDev;upstream 加 forge v2;加 last_updated / v2_status_note
+  Migration impact:
+  - **不影响 v1.1.0 active 段 §1-§5**:v1.1.0 段保留作 historical reference / audit trail evidence;autodev_pipe 字串 ~30 处不批量替换(破坏审计 evidence);新工作流走 §6 v2.0 + §3.1
+  - **specs/ 4 个 fork**(M3 commit d3194a0 已 archived):spec.md 顶部 DEPRECATED 段;不再加 task / review;保留作 forge v2 evidence row 13
+  - **未 push 任何 commit**:per ~/.claude/CLAUDE.md "push 前需我确认";operator 决定何时 push
 - 2026-05-08 v1: 初稿,5 节(PRD schema / Safety Floor / Hand-off / 版本演化 / 五元组)
 - 2026-05-08 v2 sanity check: 修订 §1/§2/§3(删除 `autodev_pipe-cli build` 假设 / SSOT 归属修正 / SYNC-PROPOSAL 整体方向逆转)
 - 2026-05-08 v1.1: contract_version 1.0.0 → 1.1.0(minor,向后兼容)。基于 `framework/ADP-AUDIT-2026-05-08.md` 跨仓 grep 实证,进一步修正:
