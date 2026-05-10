@@ -87,13 +87,38 @@ DANGEROUS_PATTERNS=(
 # === 字面 / 语义复合匹配:force-push 受保护分支(参数顺序无关)===
 # 受保护分支:main / master / production / release-*
 # bash regex 不支持 \b 词边界,用 [^a-z0-9_-] 或字符串首尾代替
+#
+# B2.2 Block A.7 codex round 4 finding #2 fix:
+# Round 3 fix 只覆盖 --force / -f,漏 --force-with-lease / --force-if-includes / +ref:ref refspec。
+# attack model(系统化列举 git "覆盖远程" 全部语法,不只 codex 给的 specific case):
+#   1. --force (+ -f 短形)
+#   2. --force-with-lease[=...] / --force-if-includes
+#   3. +<branch>:<branch> refspec(简写 +<branch> 也算)
+# 任一形式 + 受保护分支 → DENY。
+has_force_indicator() {
+    local cmd="$1"
+    # 1. --force / -f 独立 token
+    [[ "$cmd" =~ (^|[[:space:]])(--force|-f)([[:space:]]|=|$) ]] && return 0
+    # 2. --force-with-lease / --force-if-includes(可带 = 后缀)
+    [[ "$cmd" =~ (^|[[:space:]])--force-with-lease([[:space:]]|=|$) ]] && return 0
+    [[ "$cmd" =~ (^|[[:space:]])--force-if-includes([[:space:]]|=|$) ]] && return 0
+    # 3. +<branch>:<branch> 或 +<branch> refspec(覆盖远程)
+    if printf '%s' "$cmd" | grep -qE '(^|[[:space:]])\+(main|master|production|release-[a-z0-9._-]+)(:|[[:space:]]|$)'; then
+        return 0
+    fi
+    return 1
+}
+
 is_force_push_protected() {
     local cmd="$1"
     # 必须是 git push
     [[ "$cmd" =~ git[[:space:]]+push ]] || return 1
-    # 必须含 --force 或 -f(独立 token,不在 --foo 里)
-    [[ "$cmd" =~ (^|[[:space:]])(--force|-f)([[:space:]]|$) ]] || return 1
-    # 必须含受保护分支名(用 grep -E + 词边界 [^a-z0-9_-])
+    # 必须含某种 force 指示符
+    has_force_indicator "$cmd" || return 1
+    # 必须含受保护分支名(若 force 走 +refspec 路径,refspec 已含分支,直接 DENY)
+    if printf '%s' "$cmd" | grep -qE '(^|[[:space:]])\+(main|master|production|release-[a-z0-9._-]+)(:|[[:space:]]|$)'; then
+        return 0
+    fi
     if printf '%s' "$cmd" | grep -qE '(^|[^a-z0-9_-])(main|master|production)([^a-z0-9_-]|$)'; then
         return 0
     fi
