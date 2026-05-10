@@ -1,7 +1,7 @@
 ---
 description: Review hand-back packages from XenoDev (per SHARED-CONTRACT §6 v2.0). Reads discussion/<id>/handback/*.md, validates against §6.2.1 6 constraints (M2 contract-only; validator code lands in B2.1), prompts operator to decide on each package's §3 actions, appends decision to HANDBACK-LOG.md.
 argument-hint: "<discussion-id>  e.g. 008"
-allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(date:*), Bash(realpath:*), Bash(test:*), Glob, Grep
+allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(date:*), Bash(realpath:*), Bash(test:*), Bash(bash framework/xenodev-bootstrap-kit/handback-validator/validate-handback.sh:*), Glob, Grep
 model: opus
 ---
 
@@ -11,7 +11,7 @@ Discussion id: **$ARGUMENTS** (e.g. `008`).
 
 > **v2.0 (M2 cutover, 2026-05-10)**:per `framework/SHARED-CONTRACT.md` §6 v2.0,本命令是 hand-back 通道在 IDS 端的 consumer 入口。XenoDev 跑完 task ship / spec violation / drift detection 后产 hand-back 包(§6.3 schema)写回 IDS `discussion/<id>/handback/`,operator 在 IDS 跑本命令决议。
 >
-> **本 v2.0 是命令骨架(M2 contract-only)**:6 约束的真实校验代码在 B2.1 阶段(XenoDev bootstrap)实装为可调 validator;本命令在 M2 阶段引 §6.2.1 全文为 normative source,operator 手工按 contract 校验。
+> **B2.1 后已实装可调 validator**(B2.2 Block A friction #6 fix,2026-05-10):本命令 Step 4 直接调 `framework/xenodev-bootstrap-kit/handback-validator/validate-handback.sh`(consumer 模式)做 6 约束自检,不再要求 operator 手工核对。§6.2.1 仍是 normative source。
 
 ## Step 1 · locate handback dir
 
@@ -66,7 +66,7 @@ per `framework/SHARED-CONTRACT.md` §6.2.1,任何 hand-back 包 **producer**(Xen
 - final-path containment 二次校验:`realpath(target_dir + "/" + filename)` 必须严格落在 §6.4 路径之下
 - OWASP path traversal 标准防御(input shape validation + defense in depth)
 
-**M2 contract-only 注**:本节列约束 1-6 全文是 normative contract;实际可调 validator 代码在 B2.1 阶段(XenoDev bootstrap)实装。M2 阶段 operator 按 contract 手工核对。
+**B2.1 后已实装可调 validator**(B2.2 Block A friction #6 fix):本节列约束 1-6 全文仍是 normative contract,但**本命令 Step 4 直接调 `framework/xenodev-bootstrap-kit/handback-validator/validate-handback.sh`** 做自动校验(consumer 模式)。operator 不再手工核对。
 
 ## Step 3 · 读取 hand-back 包列表
 
@@ -83,13 +83,17 @@ ls "$HANDBACK_DIR"*.md 2>/dev/null | grep -v 'HANDBACK-LOG.md' | sort
 对每个 hand-back 包(顺序处理):
 
 1. **Read frontmatter**:提取 `discussion_id` / `prd_fork_id` / `handback_id` / `tags` / `severity` / `created` / `related_task` / `related_spec_section` / `workspace`
-2. **6 约束自检**(M2 阶段 operator 手工按 §6.2.1 contract 核对;B2.1 后 validator 自动跑):
-   - 路径在 `discussion/<id>/handback/` 之下?
-   - 路径段无 symlink?
-   - frontmatter `workspace.source_repo` 与本仓 identity 一致?
-   - 三处 id 一致(路径 / filename / frontmatter)?
-   - id 字符集 / filename basename 都通过?
-   - 任一失败 → 报 stderr,跳过本包,继续下一个
+2. **6 约束自检**(B2.1 后 validator 自动跑;B2.2 Block A friction #6 fix):
+   ```bash
+   bash framework/xenodev-bootstrap-kit/handback-validator/validate-handback.sh \
+     "$HANDBACK_DIR/<file>.md" \
+     "$(realpath .)" \
+     --mode=consumer
+   # exit 0 → PASS,继续 step 3;exit 1 → stderr 报哪条约束失败,跳过本包继续下一个
+   ```
+   - validator 校验 6 约束:canonical-path containment / symlink reject / repo identity (三模式) / id consistency / id charset + filename + final-path / hard-fail
+   - source: `framework/xenodev-bootstrap-kit/handback-validator/README.md`
+   - normative spec: `framework/SHARED-CONTRACT.md` §6.2.1 + §3.1
 3. **Read body**:§1 build-side 上下文 / §2 触发理由(按 tags 列条) / §3 给 IDS 的建议
 4. **Display to operator**:
    ```
