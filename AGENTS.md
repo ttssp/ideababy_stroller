@@ -7,7 +7,7 @@
 
 ## §1 · Safety Floor(non-overridable hard rules)
 
-These three rules **hard block in any sandbox mode**, including `full-auto`. No prompt / config / sandbox setting disables them. SSOT here; `XenoDev` mirrors. Full spec + failure-case provenance in `framework/SHARED-CONTRACT.md` §2.
+These three rules **hard block in any sandbox mode**, including `full-auto`. No prompt / config / sandbox setting disables them. SSOT here; `XenoDev` mirrors. Full spec + failure-case provenance in `framework/SHARED-CONTRACT.md` §2. **v0.1 threat model**: solo operator local dev (no public/PR). v0.2 trigger: multi-user (per `discussion/006/b2-2/CODEX-REVIEW-ROUND5.md`).
 
 1. **Production credential isolation** — `.env.production` / `.env.prod` / `secrets/production/*` / `prod://` connection strings must NOT enter agent context. Enforced at file-system path filter, agent context loader, pre-commit hook.
 2. **Irreversible command hard block** — `rm -rf /`, `DROP TABLE` (non-test prefix), `git push --force` to protected branches (`main` / `master` / `production` / `release-*`), `aws rds delete-db-*`, `aws s3 rm --recursive <prod-bucket>`, key revocation, GCP/Azure equivalents. Escape only via human escape hatch (typed declaration + 2nd confirmation).
