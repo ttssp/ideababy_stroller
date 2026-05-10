@@ -708,6 +708,10 @@ workspace:                               # §6.2 4 字段嵌入
   build_repo: ...
   working_repo: ...
   handback_target: ...
+source_repo_identity:                    # §3.1 三字段嵌入(producer 必填,validator 按 §6.2.1 约束 3 三模式比对)
+  expected_remote_url: <forward HANDOFF.md 透传>      # eg "git@github.com:ttssp/ideababy_stroller.git";remote 模式
+  repo_marker: <forward HANDOFF.md 透传>              # eg "# Idea Incubator";no-remote 模式
+  git_common_dir_hash: <forward HANDOFF.md 透传>      # eg "647b0db7b4d47318";hash-only 模式(可选)
 tags:                                    # 三标签 enum,至少 1
   - drift                                # build 时发现 spec/PRD 与实际不符
   - prd-revision-trigger                 # PRD 某条约束需 IDS 修订才能继续
@@ -720,6 +724,8 @@ related_spec_section: <spec section anchor, optional>
 ```
 
 > **producer 写入 frontmatter 前**,必须按 §6.2.1 六条约束(canonical-path containment / symlink reject / repo identity check / id consistency / id 字符集 + final-path containment / hard-fail)校验路径与 id;校验失败 hard-fail,不产 hand-back 包。
+>
+> **`source_repo_identity` 来源**:由 forward HANDOFF.md(IDS `/plan-start` v3.0 产)透传 — XenoDev producer 不自行计算,直接 cp HANDOFF.md frontmatter 同名块写入。这样 reverse trip 自带身份证明,与 forward 包解耦(forward 包写后可被改),同时与 §6.2 workspace 块"每个跨仓包自带"原则对齐。
 
 **body 章节**(Markdown,3 节固定结构):
 
@@ -816,6 +822,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-10 v2.0 patch (B2.2 Block A.5 codex finding #4)**:§6.3 hand-back schema 加 `source_repo_identity:` 块(三字段),与 §6.2 workspace 块对齐;增加 producer 来源说明(forward HANDOFF.md 透传)。修复 contract 与 validator + valid fixture 的隐式漂移 — 之前 producer 按 §6.3 schema 写漏 identity 块 → check-3 必拒;按 fixture 写则成"undocumented schema drift"。本 patch 不改 §6.2.1 约束 3 行为,只把已发生的实装写进 schema。非 BREAKING(producer 实装本就携带,fixture 已含)。
 - **2026-05-10 v2.0 (BREAKING · M2 cutover)**:contract_version 1.1.0 → 2.0,§6 cutover from DRAFT-pending-cutover → ACTIVE-but-not-battle-tested。
   Breaking changes(7 个 commit:850dd8f / bb188d9 / 2744354 / 6722c8f / b78ea5e / c73febb / 本 commit):
   - **plan-start v2.2 → v3.0**(commit bb188d9):IDS 不再产 specs/(spec-writer / task-decomposer / Codex review 全删除);只产 `discussion/<id>/<prd>/L4/HANDOFF.md`;frontmatter 加 `workspace:` 块(§6.2 4 字段)+ `source_repo_identity:` 块(§3.1 3 字段);391 行 → 238 行(净 -153)
