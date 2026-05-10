@@ -95,6 +95,7 @@ fi
 # === 模式 2: no-remote 模式(EXPECTED_REMOTE 空 + REPO_MARKER 非空)===
 # 要求:source_repo 也真无 origin remote,防 "有 remote 但 producer 故意填空 expected" 的 downgrade
 if [[ -n "$REPO_MARKER" ]]; then
+    # B2.2 Block A.6 fix:downgrade defense
     if [[ -d "$SOURCE_REPO/.git" ]]; then
         ACTUAL_REMOTE="$(cd "$SOURCE_REPO" && git config remote.origin.url 2>/dev/null || echo "")"
         if [[ -n "$ACTUAL_REMOTE" ]]; then
@@ -103,6 +104,21 @@ if [[ -n "$REPO_MARKER" ]]; then
             echo "  hint:producer 应填 expected_remote_url 并走 remote 模式" >&2
             exit 1
         fi
+    fi
+    # B2.2 Block A.7 codex round 4 finding #4 fix:marker 强度校验
+    # §3.1 normative 写 "marker 必含 'Idea Incubator'" — 之前实装漏强制
+    # 攻击场景:repo_marker = "I"(1 字符),CLAUDE.md 含字母 I → PASS,绕过身份校验
+    if [[ ${#REPO_MARKER} -lt 10 ]]; then
+        echo "FAIL · §6.2.1 约束 3 (no-remote 模式 · marker 太短 < 10 字符,可能被简单字符冒充)" >&2
+        echo "  repo_marker: '$REPO_MARKER' (长度 ${#REPO_MARKER})" >&2
+        echo "  hint:per §3.1,marker 必含 'Idea Incubator' 完整字串(本仓固定 prefix)" >&2
+        exit 1
+    fi
+    if [[ "$REPO_MARKER" != *"Idea Incubator"* ]]; then
+        echo "FAIL · §6.2.1 约束 3 (no-remote 模式 · marker 不含必需 'Idea Incubator' 字串)" >&2
+        echo "  repo_marker: '$REPO_MARKER'" >&2
+        echo "  hint:per §3.1 normative,marker 必含 'Idea Incubator'(IDS CLAUDE.md L1 永久标识)" >&2
+        exit 1
     fi
     CLAUDE_FILE="$SOURCE_REPO/CLAUDE.md"
     if [[ ! -f "$CLAUDE_FILE" ]]; then

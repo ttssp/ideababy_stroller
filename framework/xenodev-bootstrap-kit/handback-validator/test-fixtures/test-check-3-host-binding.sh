@@ -130,6 +130,44 @@ run_case "三字段全空 (无 ground truth)" 1 \
     "" \
     ""
 
+echo ""
+echo "=== marker 强度 (codex round 4 finding #4 攻击场景)==="
+
+# round 4 finding #4 攻击 1:1 字符 marker
+run_case "marker 1 字符 'I' (攻击)" 1 \
+    "" \
+    "" \
+    "I" \
+    "# Idea Incubator — Project C"
+
+# round 4 finding #4 攻击 2:常见字符 '#'
+run_case "marker '#' (攻击)" 1 \
+    "" \
+    "" \
+    "#" \
+    "# Idea Incubator — Project C"
+
+# round 4 finding #4 攻击 3:不含 Idea Incubator 但够长
+run_case "marker 不含 Idea Incubator (攻击)" 1 \
+    "" \
+    "" \
+    "# Some Other Repo Marker" \
+    "# Idea Incubator — Project C"
+
+# 合法:含 Idea Incubator + 够长
+run_case "marker '# Idea Incubator' (合法)" 0 \
+    "" \
+    "" \
+    "# Idea Incubator" \
+    "# Idea Incubator — Project C"
+
+# 合法:含完整 prefix
+run_case "marker '# Idea Incubator — Project C' (合法)" 0 \
+    "" \
+    "" \
+    "# Idea Incubator — Project C" \
+    "# Idea Incubator — Project C"
+
 # 报告
 echo ""
 echo "================================="
