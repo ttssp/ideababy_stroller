@@ -99,13 +99,50 @@ mkdir -p .eval
 touch .eval/.keep   # 让 git 看见空目录(.eval/events.jsonl 在 .gitignore 中)
 echo "✓ Step 8: .eval/ directory ready"
 
-# === Step 9: 初始 commit ===
+# === Step 8.5: 装 pre-commit credential hook(初始 commit 前必装,防 prod:// 进首 commit)===
+# B2.2 Block A.6 codex round 3 finding #3 fix:
+# 旧版本先 git commit,再让 operator 手装 hook → 首 commit 不受 Safety Floor 件 1 保护。
+# 新版本:bootstrap.sh 自己装 hook(symlink 到 .git/hooks/pre-commit)+ 跑一次 scan-credentials.sh,
+#       任一失败 → 整个 bootstrap exit 1,不创建首 commit。
+HOOK_TARGET=".git/hooks/pre-commit"
+HOOK_SOURCE=".claude/safety-floor/credential-isolation/pre-commit-credential.sh"
+if [[ -f "$HOOK_TARGET" || -L "$HOOK_TARGET" ]]; then
+    echo "  ⚠ $HOOK_TARGET already exists (overwriting; 旧 hook 备份到 ${HOOK_TARGET}.bak)"
+    mv "$HOOK_TARGET" "${HOOK_TARGET}.bak"
+fi
+# 用相对路径 symlink(可移植性优于绝对路径)
+ln -s "../../$HOOK_SOURCE" "$HOOK_TARGET"
+chmod +x "$HOOK_SOURCE"  # 确保 hook 可执行
+if [[ ! -x "$HOOK_TARGET" ]]; then
+    echo "ERROR: Step 8.5 装 pre-commit hook 失败: $HOOK_TARGET 不可执行"
+    exit 1
+fi
+echo "✓ Step 8.5: pre-commit credential hook installed (symlink → $HOOK_SOURCE)"
+
+# 立即跑一次 full scan-credentials.sh 在所有待 commit 文件上(不只 staged):
+# 这是 first-commit 保护(此时 staged 为空,也无 working tree 改动 — 跑全仓 scan)
+SCAN_SCRIPT=".claude/safety-floor/credential-isolation/scan-credentials.sh"
+if [[ -x "$SCAN_SCRIPT" ]]; then
+    if ! bash "$SCAN_SCRIPT" . >/dev/null 2>&1; then
+        echo "ERROR: Step 8.5 scan-credentials.sh 在 bootstrap 工作区发现凭据,bootstrap 中止"
+        echo "       检查 stderr 输出:"
+        bash "$SCAN_SCRIPT" . >&2 || true
+        exit 1
+    fi
+    echo "✓ Step 8.5: scan-credentials.sh PASS (无 prod credential)"
+else
+    echo "ERROR: Step 8.5 scan-credentials.sh not found / not executable: $SCAN_SCRIPT"
+    exit 1
+fi
+
+# === Step 9: 初始 commit(此时 hook 已装且 PASS,commit 受 Safety Floor 保护)===
 git add .
 git commit -m "chore: XenoDev bootstrap from ideababy_stroller framework/xenodev-bootstrap-kit/
 
 per discussion/006/forge/v2/stage-forge-006-v2.md verdict
 contract_version (mirror): SHARED-CONTRACT v2.0 ACTIVE-but-not-battle-tested
 provenance: bootstrap.sh from \$IDS_KIT
+pre-commit hook (credential): installed (Step 8.5)
 
 Status: ready for B2.2 (first PRD ship + hand-back round-trip)"
 

@@ -58,19 +58,33 @@ fi
 
 # === 检测 3:文件内含 prod:// 连接字串 ===
 # (只扫文本文件,跳过二进制 / 大文件 / .git / node_modules)
+# B2.2 Block A.6 fix:扩 skip 列表,涵盖 SSOT 文档 + Safety Floor 件 1 自身组件
+# (这些文件含 prod:// 字面串作模式定义 / 规则说明,非真凭据)
+declare -a SKIP_BASENAMES=(
+    "scan-credentials.sh"               # 件 1 主扫描脚本
+    "pre-commit-credential.sh"          # 件 1 pre-commit hook(含模式)
+    "context-loader-filter.md"          # 件 1 装机文档
+    "README.md"                          # 任意 README
+    "README.md.template"                 # bootstrap kit 模板
+    "AGENTS.md"                          # SSOT 文档
+    "CLAUDE.md"                          # SSOT 文档
+    "SHARED-CONTRACT.md"                 # SSOT 协议
+)
 while IFS= read -r file; do
     # skip .fake / 测试 fixtures 中预期含 prod:// 的位置
     if [[ "$file" == *.fake ]] || [[ "$file" == *test-fixtures* ]]; then
         continue
     fi
-    # skip 自己(本 script 中含字串 'prod://')
-    if [[ "$(basename "$file")" == "scan-credentials.sh" ]]; then
-        continue
-    fi
-    # skip README.md(documentation 中可能解释字串)
-    if [[ "$(basename "$file")" == "README.md" ]]; then
-        continue
-    fi
+    # skip basename 在白名单中的(SSOT 文档 + 件 1 自身组件)
+    base="$(basename "$file")"
+    skip=0
+    for sk in "${SKIP_BASENAMES[@]}"; do
+        if [[ "$base" == "$sk" ]]; then
+            skip=1
+            break
+        fi
+    done
+    [[ $skip -eq 1 ]] && continue
     FOUND=1
     MATCHED_FILES+=("$file (file content: prod:// connection string)")
 done < <(grep -rIl 'prod://' "$SCAN_DIR" \

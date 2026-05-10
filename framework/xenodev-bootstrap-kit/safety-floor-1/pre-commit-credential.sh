@@ -12,13 +12,10 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SCAN_SCRIPT="$SCRIPT_DIR/scan-credentials.sh"
-
-if [[ ! -x "$SCAN_SCRIPT" ]]; then
-    echo "ERROR: scan-credentials.sh not found or not executable: $SCAN_SCRIPT" >&2
-    exit 2
-fi
+# 注:本 hook 内嵌 staged-blob 扫描逻辑,不依赖 sibling scan-credentials.sh
+# (旧版本有 SCAN_SCRIPT path resolution,但通过 git symlink 调起时 BASH_SOURCE
+#  指向 .git/hooks/pre-commit → 找不到 sibling scan-credentials.sh。
+#  既然 hook 自身已含完整扫描逻辑,删 SCAN_SCRIPT 死引用。)
 
 # 取 staged files(每 commit 跑)— NUL-delimited 防文件名含空格 / 换行
 # codex review (B2.2 Block A.5 finding #2 fix):
@@ -29,12 +26,26 @@ fi
 FOUND=0
 MATCHED=()
 
+# B2.2 Block A.6 fix(与 scan-credentials.sh 同步):
+# SSOT 文档 + Safety Floor 件 1 自身组件含 prod:// 字面串作模式定义,非真凭据
+declare -a SKIP_BASENAMES=(
+    "scan-credentials.sh"
+    "pre-commit-credential.sh"
+    "context-loader-filter.md"
+    "README.md"
+    "README.md.template"
+    "AGENTS.md"
+    "CLAUDE.md"
+    "SHARED-CONTRACT.md"
+)
+
 # 用 process substitution + git -z 的 NUL-delimited 流;read -d '' 期望每条以 NUL 终止
 # git diff --cached -z 用 NUL 分隔(每条后跟 NUL),read -d '' 正确
 while IFS= read -r -d '' file; do
     [[ -z "$file" ]] && continue
+    base="$(basename "$file")"
     # filename pattern(纯文件名判定 — 用 staged path,不读 working tree)
-    case "$(basename "$file")" in
+    case "$base" in
         .env.production|.env.production.*|.env.prod|.env.prod.*|.env.local)
             FOUND=1
             MATCHED+=("$file (staged: production env file)")
@@ -47,6 +58,19 @@ while IFS= read -r -d '' file; do
             MATCHED+=("$file (staged: secrets/production/ path)")
             ;;
     esac
+    # skip SSOT 文档 + 件 1 自身的 prod:// 内容检查(只跳第 3 项,前两项 filename / path 仍生效)
+    skip_content=0
+    for sk in "${SKIP_BASENAMES[@]}"; do
+        if [[ "$base" == "$sk" ]]; then
+            skip_content=1
+            break
+        fi
+    done
+    # test-fixtures/ 下的 .fake 也跳
+    if [[ "$file" == *.fake ]] || [[ "$file" == *test-fixtures* ]]; then
+        skip_content=1
+    fi
+    [[ $skip_content -eq 1 ]] && continue
     # 文件内含 prod://(读 staged blob;不读 working tree — 防 add 后 clean 绕过)
     # git show ":$file" 输出 staged blob 内容;grep -I 跳过 binary;|| true 防 grep 不匹配 + set -e 杀
     if { git show ":$file" 2>/dev/null | grep -I -q 'prod://'; } 2>/dev/null; then
