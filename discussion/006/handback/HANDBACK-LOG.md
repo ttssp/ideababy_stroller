@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-11T14:30:00Z
-last_updated: 2026-05-11T14:30:00Z
-total_decisions: 5
+last_updated: 2026-05-11T15:00:00Z
+total_decisions: 6
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -99,6 +99,29 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - pending FU-003(5h opus risk_level high)+ FU-producer-1
 
 ---
+
+## 2026-05-11T15:00:00Z · 006a-pM-20260511T111609Z
+
+**Reviewed at**: 2026-05-11T15:00:00Z
+**Tags**: spec-gap-fix
+**Severity**: medium
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — **producer drift 真修复**:`expected_remote_url` 填 `git@github.com:ttssp/ideababy_stroller.git` + repo_marker `# Idea Incubator — Project C` + hash `647b0db7b4d47318` 三字段全实
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 XenoDev spec(本仓内,信息式)— FU-producer-2(SKILL §6.3 cross-device fallback)跟进 XenoDev 内 spec'd 待决
+- [x] 无操作(收悉)— FU-producer-1 ship 闭环本 batch hand-back producer drift
+
+**Operator note**: per plan v0.2-global v1.2 T1 件 1.1 闭环。FU-producer-1 ship 实证(XenoDev commit `59143df`):
+- gen-handback.sh + _yaml-helpers.sh 抽离(producer 多入口 codepath 合一)
+- 37/37 test PASS · 4 轮 codex D-4 accept-followup
+- 新包 6 约束 validator consumer mode 全 PASS(check-5 regex fix 经 a57972a 修后真数据再验)
+
+producer drift 闭环;后续 XenoDev session 跑任何新 idea 的 hand-back producer 都不会再撞此 friction。
+
+**Follow-up commits**:
+- XenoDev main `59143df` feat(handback): FU-producer-1 实装(已 ship)
+- pending FU-producer-2 (XenoDev 内 spec'd):SKILL §6.3 cross-device fallback — 等 operator 决是否优先 T3 件 3.1 (004-pB) 之前 ship,本 IDS RETRO 不预决
 
 ## 汇总 IDS-side 行动(post-review)
 
