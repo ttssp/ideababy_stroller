@@ -3,12 +3,11 @@ doc_type: framework-shared-contract
 contract_version: 2.0
 status: v2.0
 generated: 2026-05-08
-last_updated: 2026-05-10
+last_updated: 2026-05-11
 upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2)
 ssot_owner: ideababy_stroller
 ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
 purpose: 定义 ideababy_stroller (idea→PRD + 治理) 与 XenoDev (PRD→code build runtime) 跨仓接口
-v2_status_note: ACTIVE-but-not-battle-tested — §6 cutover landed M2 commit (本 commit) 2026-05-10;Status flips to ACTIVE pending B2.2 first hand-back round-trip with operator subjective score ≥ 7/10
 ---
 
 # SHARED-CONTRACT · ideababy_stroller ↔ autodev_pipe
@@ -610,9 +609,12 @@ SHARED-CONTRACT 的 frontmatter 含 `contract_version: <semver>`(本文件 v1):
 
 ## §6 · v2.0 ACTIVE(workspace schema + hand-back 通道)
 
-**Status**: ACTIVE-but-not-battle-tested
-**Cutover landed**: M2 commit (本 commit) · 2026-05-10
-**Promotion to ACTIVE pending**: B2.2 first hand-back round-trip(operator 主观评分 ≥ 7/10 → 单独 1 commit 改 `Status: ACTIVE`;评分 < 7/10 → 起 forge v3 重审 §6 协议)
+**Status**: ACTIVE
+**Cutover landed**: M2 commit · 2026-05-10
+**Promoted to ACTIVE**: B2.2 commit(本 commit)· 2026-05-11 · operator subjective score 7.6/10 (38/50)
+  - per `discussion/006/b2-2/B2-2-RETROSPECTIVE.md` · plan rosy-naur v11 Block G
+  - hand-back round-trip 实证:1 real PRD ship (006a-pM) · 3 task ship (FU-001 + T001 + FU-002) · 5 hand-back packs · 4 codex round adversarial 加固(round 2-5)+ 1 IDS validator real-data fix(check-5 regex commit a57972a)
+  - 5 维度评分:可读 8 / 错误信息 8 / 跨仓 friction 7 / false positive 7 / 闭环 8
 **依据**: forge 006 v2 verdict — `discussion/006/forge/v2/stage-forge-006-v2.md` §"Evidence map" row 11(hand-back 包结构化)+ row 12(workspace schema 4 字段)+ §"Refactor plan(W3)" 模块 A step 1 + 模块 C 全节;codex Round 4 (HEAD~6) Finding 2 → §3.1 source_repo_identity 字段 + §6.2.1 约束 3 三模式 normative 比对(M2 Block E)
 
 > **v2.0 ACTIVE-but-not-battle-tested 含义**(M2 cutover 决策):
@@ -843,6 +845,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-11 v2.0 ACTIVE (B2.2 Block G cutover sealing)**:§6 Status `ACTIVE-but-not-battle-tested` → `ACTIVE`;frontmatter `v2_status_note` 删除。依据:B2.2 hand-back round-trip 实跑评分 7.6/10(≥ 7/10 阈值,plan rosy-naur v11 决策门槛)— 1 real PRD (006a-pM) · 3 task ship · 5 hand-back packs round-trip · 1 IDS validator fix(check-5 regex 接受相对路径 commit a57972a)· 0 false negative · 1 false positive(已 fix)。详见 `discussion/006/b2-2/B2-2-RETROSPECTIVE.md`(38/50 评分 + 7 项 deviation + F1-F5 v0.2 trigger 入队)。非 BREAKING(纯 status 升级,协议层 0 字节修改)。
 - **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #3)**:§2 件 3 备份破坏检测加 v0.1/v0.2 状态标注 — declared 协议(IAM lint + runtime API interceptor)与 v0.1 实装(本地 snapshot+diff)不一致;本 patch 不删 normative 目标,加显式 v0.1 子集说明 + v0.2 trigger 说明。AGENTS.md §1 第 3 条 + xenodev-bootstrap-kit/CLAUDE.md 同步降级语言。非 BREAKING(v0.1 范围内无变化,只把已发生的实装状态写入文档)。
 - **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #4)**:check-3-repo-identity.sh no-remote 模式加 marker 强度校验 — 长度 ≥ 10 + 必含 "Idea Incubator"。修复 §3.1 normative ("marker 必含 Idea Incubator")与实装的不一致 — 旧版 `repo_marker: "I"`(1 字符)+ CLAUDE.md 含 I 即 PASS。新加 5 测试 case(3 攻击 + 2 合法),test 总数 13 → 18。
 - **2026-05-10 v2.0 patch (B2.2 Block A.6 codex round 3 finding #2)**:§3.1 + §6.2.1 约束 3 由 "任一模式 PASS" 改 fail-closed 优先级链 — `expected_remote_url` 非空 → 锁定 remote 模式;空 + marker 非空 → 要求 source_repo 也无 origin remote(防 downgrade);防同 marker 冒充攻击。check-3-repo-identity.sh 同步重写 + 加 4 攻击场景测试(remote-mismatch+marker-match / downgrade / 都无 remote 合法 / 三字段全空)。**语义 BREAKING**:之前合法的"remote 不匹配但 marker 匹配 → PASS"现在 FAIL;但 plan-start v3.0 producer 一直 fill 三字段 + valid fixture 走 marker 模式(remote 留空)→ 实战 producer 实装无 break。
