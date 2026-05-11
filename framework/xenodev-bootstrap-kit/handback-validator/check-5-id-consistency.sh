@@ -28,9 +28,12 @@ ERRORS=()
 
 # === 检查 1: 物理路径中 discussion/<X>/handback/ 的 <X> ===
 # 路径形如 .../discussion/008/handback/<ts>-<handback_id>.md
-PATH_DISCUSSION_ID="$(echo "$FILE_PATH" | sed -nE 's|.*/discussion/([^/]+)/handback/.*|\1|p')"
+# 同时接受绝对路径(/...) 与相对路径(discussion/...) — regex 允许 ^ 或 / 前缀
+# B2.2 Block F fix(2026-05-11):/handback-review consumer 模式可能传相对路径,
+# 原 regex 要求 `/discussion/` 前必有 `/` 会 false-positive。
+PATH_DISCUSSION_ID="$(echo "$FILE_PATH" | sed -nE 's|^(.*/)?discussion/([^/]+)/handback/.*|\2|p')"
 if [[ -z "$PATH_DISCUSSION_ID" ]]; then
-    ERRORS+=("path discussion_id: cannot extract from path $FILE_PATH (path must contain /discussion/<X>/handback/)")
+    ERRORS+=("path discussion_id: cannot extract from path $FILE_PATH (path must contain discussion/<X>/handback/, with optional path prefix)")
 elif [[ "$PATH_DISCUSSION_ID" != "$FM_DISCUSSION_ID" ]]; then
     ERRORS+=("path discussion_id ($PATH_DISCUSSION_ID) != frontmatter discussion_id ($FM_DISCUSSION_ID)")
 fi
