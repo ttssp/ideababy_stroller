@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-12T11:25:30Z
-total_decisions: 6
+last_updated: 2026-05-12T12:35:00Z
+total_decisions: 7
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -139,5 +139,29 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - Jinja2 fix path 探索真做法:operator 初选 `{% include "x" with context maintenance=... %}` → TemplateSyntaxError(Jinja2 不接受 keyword args)→ 改 `{% with %}{% include %}{% endwith %}` 桥接 · 这是 producer 真 evidence 链 · 包 §2 决议链段记录(spec doc 不需 amendment 但实战 evidence 锚)
 - KNOWN_500_PATHS 类型 append-only 设计:`frozenset[str] = frozenset()` 全空 · 留类型方便未来追 bug · 这是 production smoke test infrastructure 的真做法 · spec 不预决 · operator 实战决定
 - v0.1 partial 命名风格 v0.3+ refactor 候选(A2 backlog):`_weekly_maintenance_partial.html` 用 `review.maintenance.*` 显式嵌套 + 删 `{% with %}` 桥接 · 性质同 v0.2 件 4.0c production app factory · v0.2-v0.3 follow-up 集合可加 4.0e
+
+**Follow-up commits**: pending(本 IDS commit 后填)
+
+## 2026-05-12T12:35:00Z · 004-pB-20260512T121248Z
+
+**Reviewed at**: 2026-05-12T12:35:00Z
+**Tags**: feature
+**Severity**: low
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — FU-producer-1 ship 后第七次跨非 006 idea 真验
+**Related task**: T011 Concept self_check + explain_audit + 0009 migration (XenoDev squash commit `e0c2c48`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉,作为 practice-stats 入库)
+
+**Operator note**: T011 ship 接受 · v0.2 Phase 2a feature 实装 spec §1.1 O1/O2/O3 ship gate 基础设施(SelfCheckService + ExplainAuditService + MockLLMClient + run-concept-self-check.sh wrapper) · TDD red→green 11/11 PASS + full suite 185/185 PASS(W2 174 + T011 11 = 185)· codex round 1 verdict=approve 0 high/medium ship-blocking · §4 自检不触 PRD-revision-trigger(完全 in v0.2 spec scope · 0 外部依赖 · 不动 v0.1 already shipped code) · A1 spec doc sync(architecture.md §2.1 加 path B' 决议)是跨仓 XenoDev spec 改 · 同 T010 A2 spec-gap-fix 模式 · IDS 端不预决 · 延 XenoDev session 自决 · A2-A3-A5 backlog 入 FU-T011-followup polish queue · A4 T015 scheduler activate tracking。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 2 闭环**:T010(d4d04e7)+ 波 1(7eb8626 + 09f6cc1)+ 波 2 T011(e0c2c48)= v0.2 Phase 2a feature + v0.1 bug 修 + spec amendment 全 ship · T012 入度变 0 · 波 3 可起(T012 / T013 / T020 / T024 自选 · operator 自决)。
+
+**framework 维度观察**:
+- **A2 spec-gap-fix 模式真触发 第二次**(T010 第一次 · T011 第二次):0009 migration 加 `concept_explain_log` audit 表 = path B' 修正 spec L70 "expand_count > 1" 真意(spec 字面 vs producer 实装合理化)· 这是 v2.2 schema RECOMMENDED §3 表格 A1 actionable + §4 自检自我承认 spec-gap-fix 的连续 evidence · v0.2-retro §3.3 "A2 spec-gap-fix 模式真触发" 在 T011 ship 后第二次实证 · framework 维度稳定
+- **plan-v0.3-global G1 仍 pending**:T011 是 sonnet 6-8h feature · 不算 G1 真触发(G1 = T020 / T024 opus 10-16h 重件 · ship + RETRO ≥7.0)· 本包入 LOG 后 plan v0.3-global 不动 · 等下一 ship
+- **包 §3 表格 schema v2.2 RECOMMENDED 字段稳定**:T011 §3 5 行 A1-A5 + §4 自检 + §7 7 条 known gotchas · 跟 W1/W2 同样高度严格遵循 v2.2 schema · v2.2 落地后 producer 端 5 包(F1a/F1b/T010/W1/W2/T011)全 conformant · schema 演化已稳态
+- **TDD + cross-model 模式持续**:11 test 先 fail (ModuleNotFoundError + AttributeError) → 7 file 实装 → 11/11 PASS · codex round 1 approve 0 ship-blocking · 与 T010 (5+1 round 12 finding) / F1b (3 round 3 finding) / W1+W2 (1 round 0 finding) 形成 review 深度按 task 复杂度匹配的真稳态(简单 feature 1 round / 复杂 schema 5+1 round)
+- **dormant scheduler 设计**:`register_scheduler_job` import 副作用 + main.py 不 import = dormant 状态 · 跟 v0.1 monthly_scheduler 同 pattern · T015 显式 import 触 register · 这是 v0.1 既定的"模块化 lazy activate"设计 · 真有效
 
 **Follow-up commits**: pending(本 IDS commit 后填)
