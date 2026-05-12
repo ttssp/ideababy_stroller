@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-12T12:35:00Z
-total_decisions: 7
+last_updated: 2026-05-12T13:15:00Z
+total_decisions: 8
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -163,5 +163,34 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - **包 §3 表格 schema v2.2 RECOMMENDED 字段稳定**:T011 §3 5 行 A1-A5 + §4 自检 + §7 7 条 known gotchas · 跟 W1/W2 同样高度严格遵循 v2.2 schema · v2.2 落地后 producer 端 5 包(F1a/F1b/T010/W1/W2/T011)全 conformant · schema 演化已稳态
 - **TDD + cross-model 模式持续**:11 test 先 fail (ModuleNotFoundError + AttributeError) → 7 file 实装 → 11/11 PASS · codex round 1 approve 0 ship-blocking · 与 T010 (5+1 round 12 finding) / F1b (3 round 3 finding) / W1+W2 (1 round 0 finding) 形成 review 深度按 task 复杂度匹配的真稳态(简单 feature 1 round / 复杂 schema 5+1 round)
 - **dormant scheduler 设计**:`register_scheduler_job` import 副作用 + main.py 不 import = dormant 状态 · 跟 v0.1 monthly_scheduler 同 pattern · T015 显式 import 触 register · 这是 v0.1 既定的"模块化 lazy activate"设计 · 真有效
+
+**Follow-up commits**: pending(本 IDS commit 后填)
+
+## 2026-05-12T13:15:00Z · 004-pB-20260512T130000Z
+
+**Reviewed at**: 2026-05-12T13:15:00Z
+**Tags**: feature
+**Severity**: low
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — FU-producer-1 ship 后第八次跨非 006 idea 真验
+**Related task**: T012 prompt lookup short-circuit + 30 天 audit caller (XenoDev squash commit `36eb012`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉,作为 practice-stats 入库)
+
+**Operator note**: T012 ship 接受 · v0.2 Phase 2a O3 ship gate 真闭环(spec L243 wiki short-circuit 双路径 Web+Telegram) · 12 test PASS + full suite 197/197 PASS + routes 47→48 · codex **2 round adversarial-review**(round 1 verdict=block 2 finding [race condition + slash term] · round 2 fix `5cfc32a` verdict=approve 0 ship-blocking) · §4 自检不触 PRD-revision-trigger(完全 in v0.2 spec scope) · A1 spec doc sync(T012.md 4 处 file path/signature + architecture.md §2.1)是跨仓 XenoDev spec 改 · **同 T010/T011 A2 spec-gap-fix 模式 · 第三次连发触发** · IDS 端不预决 · 延 XenoDev session 自决 · A2-A4 backlog 入 FU-T012-followup polish queue · A5 T040 + opus 重件 tracking。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 3 闭环**:T010(d4d04e7)+ 波 1 W1/W2(7eb8626/09f6cc1)+ 波 2 T011(e0c2c48)+ 波 3 T012(36eb012)= v0.2 Phase 2a (O1/O2/O3 ship gate) 全 ship · T040 入度全就绪 · 波 4 可起(T040 integration test 聚合 / T013/T020/T024 opus G1 重件 · operator 自决)。
+
+**framework 维度观察**:
+- **A2 spec-gap-fix 模式真触发 第三次连发**(T010 第一次 · T011 第二次 · T012 第三次):
+  - T010:0042→0008 migration 编号 + SQLAlchemy→Pydantic + int→TEXT
+  - T011:0009 migration concept_explain_log 表 path B'(修正 spec L70 真意)
+  - T012:T012.md L9-12 web/handlers/concept_handler.py→ui/router_concept.py + L11 tg/→telegram/ + L37 signature + L52 mock LLM 说明
+  - **连发 3 次**:不再是"年时 corner" · 已是真稳态模式 · v0.3 framework v0.3 升 candidate · 考虑加 SHARED-CONTRACT §6.3 §3 表格新类型字段 "spec-gap-fix" (RECOMMENDED 而非新 normative) · 让 producer 端 spec amendment 提案有 schema 位置(plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级"真有 evidence 触发了)
+- **codex adversarial-review 2 round 真触发深度**:T012 round 1 verdict=block 2 high/medium finding(race + slash)→ round 2 真 fix → approve。这跟 v0.2-retro §4 评分维度 1 "adversarial-review 深度按 task 复杂度自适应" 一致 · T012 跟 F1b (3 round) 是同等级中等复杂 · 跟 T010 (5+1 round 12 finding) 是低 · 跟 T011 (1 round 0 finding) 是高(因 T011 audit infra 简单设计 · T012 short-circuit + race 复杂设计) · review 深度自适应有效
+- **race condition fix 真发现 · framework v2.2 SKILL §9 GATE/AUDIT 真生效**:codex round 1 真挑战 "writer_lock 是否真原子" · 真发现 race condition F1 high · round 2 fix `try_claim_expand` 单 connection 序列化 · 这是 v12 件 2.4 (parallel-builder guide §3 events.jsonl GATE) 实战 evidence · GATE/AUDIT 区分让 agent 不漏 audit 但 review 深度催生真 bug 发现 · 不只是 schema doc
+- **包 §3 表格 schema v2.2 RECOMMENDED 字段稳态扩** :T012 §3 5 行 A1-A5 + §4 自检 + §7 7 条 known gotchas · 跟 T011 同 conformance · v2.2 落地后 producer 端 7 包(F1a/F1b/T010/W1/W2/T011/T012)全 conformant · schema 演化 7 包真稳态
+- **plan-v0.3-global G1 仍 pending**:T012 是 sonnet 4-6h feature · 不算 G1 真触发(G1 = T020/T024 opus 10-16h 重件) · 本包入 LOG 后 plan v0.3-global 不动 · v0.2 Phase 2a 全闭环但等 opus 重件 ship 才正式启动 v0.3 · operator 自决何时跑 T020/T024
+- **race condition 测试 真做法**:codex round 1 真挑战 "Web+Telegram 双路径并发" · round 2 加 test 11 (并发 race N=2) · test 真模拟 race 是 reduction-step pattern · 比单元测试更 strict · 这种"并发 race test"模式可作 v0.3 framework 升 candidate(在 parallel-builder derivation guide §2 audit checklist 加 "并发 race test for stateful operations")
 
 **Follow-up commits**: pending(本 IDS commit 后填)
