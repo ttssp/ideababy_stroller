@@ -1,9 +1,9 @@
 ---
 doc_type: framework-shared-contract
-contract_version: 2.0
-status: v2.0
+contract_version: 2.2
+status: v2.2
 generated: 2026-05-08
-last_updated: 2026-05-11
+last_updated: 2026-05-12
 upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2)
 ssot_owner: ideababy_stroller
 ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
@@ -750,29 +750,77 @@ related_spec_section: <spec section anchor, optional>
 >
 > **`source_repo_identity` 来源**:由 forward HANDOFF.md(IDS `/plan-start` v3.0 产)透传 — XenoDev producer 不自行计算,直接 cp HANDOFF.md frontmatter 同名块写入。这样 reverse trip 自带身份证明,与 forward 包解耦(forward 包写后可被改),同时与 §6.2 workspace 块"每个跨仓包自带"原则对齐。
 
-**body 章节**(Markdown,3 节固定结构):
+**body 章节**(Markdown,**3 节 normative + 4 节 RECOMMENDED** · 共 ≤ 7 节):
 
 ```markdown
-## §1 · Build-side 上下文(发生了什么)
+## §1 · Build-side 上下文(发生了什么)   [normative]
 
 哪个 task / 哪个文件 / 哪段 spec / 哪条 PRD outcome 触发了本 hand-back。
 最少 50 字,最多 500 字。引具体 file:line 或 task ID。
 
-## §2 · 触发理由(三标签对应描述)
+## §2 · 触发理由(三标签对应描述)        [normative]
 
 按 frontmatter `tags` 列出的标签逐条说明:
 - 若有 `drift`:具体 drift 描述(预期 vs 实际)+ 证据(测试输出 / log)
 - 若有 `prd-revision-trigger`:PRD 哪条 outcome / scope / constraint 不可达 + 建议修订方向
 - 若有 `practice-stats`:统计区间 + 数字(eg "T001-T013 共 13 task,intervention 5 次,平均 22min/task,2 task hit Safety Floor")
 
-## §3 · 给 IDS 的建议
+## §3 · 给 IDS 的建议                    [normative + RECOMMENDED 扩展]
 
-operator 收到本 hand-back 后可选的动作(选 1-N):
+[normative · operator 决议输入] operator 收到本 hand-back 后可选的动作(选 1-N):
 - [ ] 修 PRD §"<section>"(具体改动建议)
 - [ ] 修 SHARED-CONTRACT §"<section>"(若是协议级 drift)
 - [ ] 修 XenoDev spec(本仓内,不需 IDS 介入,本 hand-back 仅信息式)
 - [ ] 无操作(收悉,作为 practice-stats 入库)
+
+[RECOMMENDED · v2.2 加 · producer-side Suggested actions]
+producer 可在 normative checkbox **之前** / **之上**额外列 markdown 表格(5 列),
+给 operator 决议提供 actionable list 与 rationale:
+
+| # | Action | 类型 | 优先级 | 备注 |
+|---|---|---|---|---|
+| A1 | <具体 action 描述> | review / doc / hotfix-task / skill-patch / arch / doc-cleanup / no-op | high / medium / low | <evidence + 估时 + commit hash> |
+
+reference 实例:F1a / F1b / T010 三包(IDS commit `8d24851` / `162bcf6` / `d4d04e7`)
+皆 producer 自发出 5 列表格 · 与 normative checkbox 并存不冲突。
+
+## §4 · PRD-revision-trigger 检查         [RECOMMENDED · v2.2 加]
+
+producer 主动逐项 check 本次 ship 是否触发 PRD revision · 列出结论 + 理由:
+- O1-O9 outcomes 改动?(是 / 否)
+- phase target 改动?(是 / 否)
+- D-spec-1..D-spec-N 改动?(是 / 否)
+- 红线 §R-1..R-N 触动?(是 / 否)
+
+reference 实例:F1a / F1b / T010 三包 §4 段实证。producer 主动自检可减
+轻 IDS operator 决议负担(v0.2-retro.md §3.4 producer 主动自检模式)。
+
+## §5 · 后续 task 建议                    [RECOMMENDED · v2.2 加]
+
+若本 task ship 后 unblock 其他 task / 触发新 task / 标 hotfix:
+列举 task id + 估时 + recommended_model + 入度变化(DAG 影响)。
+
+reference 实例:F1b 包 §5 列出 T010/T020/T024 三 lane unblock + T013 推荐 + v0.1 product bug 2 个 hotfix。
+
+## §6 · File changes(本 task)            [RECOMMENDED · v2.2 加]
+
+列 squash commit hash + 新增 / 修改文件清单(行数 stats)+ verification
+PASS 项目数。
+
+reference 实例:F1a / F1b / T010 三包 §6 段(squash commit `e555241` /
+`1055aae` / `db09f00`)。
+
+## §7 · 已知风险 / known gotchas         [RECOMMENDED · v2.2 加]
+
+ship 后已知但本 scope 不修的风险(下次 ship 或 follow-up task 时重看):
+- 风险描述 + 显形条件 + 建议修复路径 + scope 范围(本 task / 下 task / v0.2 / v0.3)
+
+reference 实例:F1a 3 条 / F1b 5 条 / T010 7 条 · 累积演化 evidence。
 ```
+
+**版本与回溯**:
+- v2.0:body 章节 normative 3 节(§1 / §2 / §3)· 见 v2.0 ACTIVE entry(2026-05-11)
+- v2.2(2026-05-12):§3 加 producer-side 表格 RECOMMENDED 扩展 · 新增 §4 / §5 / §6 / §7 四节 RECOMMENDED 占位 · 老 3 节 normative 不变 · v2.0 producer 0 backfill 要求(只 forward apply)。Evidence:F1a / F1b / T010 三包 producer 自发实践。
 
 ### §6.4 · hand-back 接收路径约定
 
@@ -785,6 +833,19 @@ operator 收到本 hand-back 后可选的动作(选 1-N):
 **字符集与 final-path**:`discussion_id` / `prd_fork_id` / `<ISO ts>` / `handback_id` 必须匹配 §6.2.1 约束 6 定义的安全 regex(reject `/` `\` `..` 控制字符 绝对路径);拼出的 `<filename>` 必须自身不含 separator;`realpath(目录 + "/" + 文件)` 写入前必须再做一次 prefix 校验(防 `prd_fork_id` 含 `/..` 时 filename 把目录 prefix 拆破而逃逸 source_repo)。
 
 **operator 操作**:在 IDS 仓运行 `/handback-review <id>`(M2 同期产命令)读 `discussion/<id>/handback/` 目录,逐条决议 §3 建议清单,写入 `discussion/<id>/handback/HANDBACK-LOG.md`(append-only 决议日志)。
+
+#### §6.4.1 · Step 5 闭环责任分担(v2.2 加 · 防 XenoDev session 误判)
+
+hand-back round-trip 是**异步两段闭环**,两段责任主体不同:
+
+| 阶段 | 责任主体 | 完成判据 | 不闭环影响 |
+|---|---|---|---|
+| **同步段:producer 写回** | XenoDev session | producer validator(`--mode=producer`)PASS + 文件落到 `<source_repo>/discussion/<id>/handback/<file>.md` | XenoDev session 不能关 |
+| **异步段:consumer 决议** | IDS session(operator 任意时机) | `/handback-review <id>` 跑完 + HANDBACK-LOG.md append entry + IDS commit | 决议延后不阻 XenoDev session 关闭 |
+
+**关键**:XenoDev session 闭环责任**仅到文件写回** · 不等 IDS 决议。IDS `/handback-review` 是 operator 异步责任 · 可分钟级、天级、甚至跨 session(B + A 真并行模式下常见)。
+
+**Evidence**:B2.2 RETRO §4.2 deviation — XenoDev session 误以为"等 IDS /handback-review 才算 Step 5 完成",实际同步段 ≠ 异步段。v2.2 codify 此分担,producer / consumer 各按自己段判定闭环。
 
 **与 forge / L1-L4 关系**:
 - hand-back **不**触发新 forge run(不是重大架构转向);
@@ -845,6 +906,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-12 v2.2 (件 2.5 + 件 2.2 合 · F6 + F2)**:§6.3 hand-back schema 加 §3 producer-side Suggested actions 表格 RECOMMENDED + §4-§7 四节 RECOMMENDED 占位(PRD-revision-trigger 检查 / 后续 task 建议 / File changes / 已知风险);§6.4.1 加 Step 5 闭环责任分担段(XenoDev 同步段 + IDS 异步段)。**非 BREAKING**(老 3 节 normative 不变;v2.0 producer 0 backfill 要求 · 只 forward apply)。Evidence:F1a / F1b / T010 三包(IDS commit `8d24851` / `162bcf6` / `d4d04e7`)producer 自发实践 + B2.2 RETRO §4.2 闭环责任 deviation。上游:plan-rosy-naur v12 B 件 2 / plan v0.2-global 件 2.5 + 件 2.2 / v0.2-retro.md §3.4。
 - **2026-05-11 v2.0 ACTIVE (B2.2 Block G cutover sealing)**:§6 Status `ACTIVE-but-not-battle-tested` → `ACTIVE`;frontmatter `v2_status_note` 删除。依据:B2.2 hand-back round-trip 实跑评分 7.6/10(≥ 7/10 阈值,plan rosy-naur v11 决策门槛)— 1 real PRD (006a-pM) · 3 task ship · 5 hand-back packs round-trip · 1 IDS validator fix(check-5 regex 接受相对路径 commit a57972a)· 0 false negative · 1 false positive(已 fix)。详见 `discussion/006/b2-2/B2-2-RETROSPECTIVE.md`(38/50 评分 + 7 项 deviation + F1-F5 v0.2 trigger 入队)。非 BREAKING(纯 status 升级,协议层 0 字节修改)。
 - **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #3)**:§2 件 3 备份破坏检测加 v0.1/v0.2 状态标注 — declared 协议(IAM lint + runtime API interceptor)与 v0.1 实装(本地 snapshot+diff)不一致;本 patch 不删 normative 目标,加显式 v0.1 子集说明 + v0.2 trigger 说明。AGENTS.md §1 第 3 条 + xenodev-bootstrap-kit/CLAUDE.md 同步降级语言。非 BREAKING(v0.1 范围内无变化,只把已发生的实装状态写入文档)。
 - **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #4)**:check-3-repo-identity.sh no-remote 模式加 marker 强度校验 — 长度 ≥ 10 + 必含 "Idea Incubator"。修复 §3.1 normative ("marker 必含 Idea Incubator")与实装的不一致 — 旧版 `repo_marker: "I"`(1 字符)+ CLAUDE.md 含 I 即 PASS。新加 5 测试 case(3 攻击 + 2 合法),test 总数 13 → 18。
