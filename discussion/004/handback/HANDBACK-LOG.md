@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-17T22:05:00Z
-total_decisions: 10
+last_updated: 2026-05-17T23:05:00Z
+total_decisions: 11
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -259,5 +259,54 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - **plan-v0.3-global G1 仍 pending(10 天后再验)**:T040-A 是 medium 复杂 sonnet 任务(8h codex 2 round)· 不算 G1 真触发(G1 = T020/T024 opus 10-16h 重件 + RETRO ≥7.0)。**5 月 12 日 T012 sonnet · 5 月 17 日 14:00 T013 sonnet · 5 月 17 日 22:00 T040-A sonnet · 6 天 3 ship 全 sonnet** · operator 在 small/medium feature 上连续 ship 没碰 opus 重件 · v0.3 真启动等 T020/T024/T030 opus 重件 ship · plan v0.3-global v1.0 draft 10 天后仍 stable · 无需 patch · 真稳态验证通过
 - **件 3.1 阶段 2c 波 5 闭环 + v0.2 Phase 2 + Phase 3 partial ship**:T010+W1+W2+T011+T012+T013+T040-A = 7 ship(IDS 10 个 hand-back 包累计) · v0.2 Phase 2 全 4 task ship + Phase 3 partial(O1/O2/O3 + R-1 + SLA) = v0.2 v0.2 ship gate 基础设施完整 ship · T040-B 等 T020-T030 全 ship 才能完整 O1-O9 · 还差 7 opus 重件(60-80h)
 - **新 tag partial-scope = v0.3 framework v0.3 升真触发 candidate**(plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级" 第二个 evidence · 跟 spec-gap-fix 5 连发并列) · 不立即改 SHARED-CONTRACT(等 G1 触发 + v13 sub-plan 一并落) · 本 LOG 入库即触发
+
+**Follow-up commits**: pending(本 IDS commit 后填)
+
+## 2026-05-17T23:05:00Z · 004-pB-20260517T230000Z
+
+**Reviewed at**: 2026-05-17T23:05:00Z
+**Tags**: feature, spec-gap-fix, spine-task
+**Severity**: low
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — FU-producer-1 ship 后第 11 次跨非 006 idea 真验(v2.2 schema · 新 tag `spine-task` 第一次出现 · tag 演化第二个新 tag)
+**Related task**: T020 Phase 2b parser.py 三层重构(SourceAdapter/FormatHandler/Fetcher + orchestrator · XenoDev squash commit `8cb49e2` + spec amend `a37c388`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉,作为 practice-stats 入库)
+
+**Operator note**: T020 ship 接受 · v0.2 Phase 2b spine task 真上线(parser.py 三层 Protocol 重构 · SourceAdapter / FormatHandler / Fetcher + PipelineOrchestrator) · TDD red→green 16/16 PASS + full suite 232 passed + 7 skipped + 1 xfailed(原 216 + T020 16 · 0 回归) · production_app_smoke 33/33 · routes 48 不变 · alembic 0010 真 upgrade 0007→0008→0009→0010 OK · codex **2 round adversarial-review**(round 1 verdict=needs-attention 2 finding [F1 high orchestrator bytes→tmp 后 cache key 漂移 + audit 指向已删 tmp · 真 R-v022-2 漏洞 / F2 medium file:// URL percent-encoded 不解码] · round 2 fix `230449d` verdict=approve 0 ship-blocking · F1 file source 直 parse(Path(original_path)) 跳 tmp + HTTP source `_derive_stem` 派生 deterministic / F2 urllib.parse + unquote 真解码) · §4 PRD-revision-trigger 自检 10 项全 PASS(新加 R-v022-2 双路径等价行 + SLA §1.1 30s 行 + 凭据隔离硬约束 #1 行)· A1 tracking T020 spine ship 闭环 · A2 spec amend already applied(migration 0043→0010 + table 名 advisor_parser_output→advisor_reports + R-v022-2 regression test)· A3 spec doc-lag advisor_parser_output→advisor_reports 留 tracking · A4 FU-T020-followup parse_bytes API medium · A5/A6 polish backlog(中文 URI + _derive_stem sanitize) · A7 alembic 0010 downgrade spec compliance · A8 入度释放 T021/T022/T023/T030 ready · A9 inherit FU-T013-followup · 全延 XenoDev session / operator 自决。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 6 闭环**:T010(d4d04e7)+ 波 1 W1/W2(7eb8626/09f6cc1)+ 波 2 T011(e0c2c48)+ 波 3 T012(36eb012)+ 波 4 T013(064d659 + 098f749)+ 波 5 T040-A(f583654 + 2824d35)+ 波 6 T020(8cb49e2 + a37c388)= v0.2 Phase 2 全 4 task + Phase 2b spine + Phase 3 partial ship gate 全 ship · T021/T022/T023/T030 入度 ready · T040-B 等 T021-T030 · T024 旁路 T020 不阻塞 · 由 operator 决议 next wave。
+
+**framework 维度观察**:
+- **A2 spec-gap-fix 模式真触发 第六次连发**(T010 第一次 · T011 第二次 · T012 第三次 · T013 第四次 · T040 第五次 · T020 第六次):
+  - T010:0042→0008 migration 编号 + SQLAlchemy→Pydantic + int→TEXT
+  - T011:0009 migration concept_explain_log 表 path B'(修正 spec L70 真意)
+  - T012:T012.md L9-12 file path + signature + L52 mock LLM 说明 + architecture.md §2.1
+  - T013:`tasks/T013.md` 新加 + dependency-graph.mmd +3 LOC + spec.md §6 +4 LOC
+  - T040:T040 拆 T040-A partial / T040-B 完整 · spec amend 拆 partial_scope + deferred_to_T040_B
+  - T020:T020.md amend migration_id 0043→0010 + table name advisor_parser_output→advisor_reports + file_domain 加 R-v022-2 regression test · 单独 commit `a37c388`
+  - **连发 6 次**:超 5 连发"强稳态" baseline 进入 **6 连发 = producer 端 default workflow 真事实** · v0.3 framework v0.3 升 candidate **强强触发**(plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级"6 连发 evidence · 已不是 candidate · 是真触发即落)
+- **新 tag `spine-task` 第一次出现**(v2.2 schema 演化第二个新 tag):T020 是 spec L23 `suggested_executor_model=opus` + risk_level=high + D-spec-2 option a 大重构 = spine task · 跟 `feature` + `spec-gap-fix` 并列 3 tag。**v2.2 schema 没显式列 spine-task 但允许 RECOMMENDED tag** · T020 是第一次 producer 端真用 spine-task tag · v0.3 framework v0.3 升 candidate 把 `spine-task` 跟 `partial-scope` 一起入 §3 tags 规范集(v2.2 RECOMMENDED · v0.3 normative)· 让 spine task / partial ship 都有 schema 位置
+- **包 §3 表格 schema v2.2 RECOMMENDED 字段连发 6 包稳态**:T020 §3 9 行 A1-A9(超 T040-A 7 行 · T013 6 行 · T012 5 行 · v2.2 schema RECOMMENDED 字段 9 行真扩) + §4 10 项 PRD-revision-trigger 自检(新加 R-v022-2 双路径等价行 + SLA §1.1 行 + 凭据隔离硬约束 #1 行 · 比 T040-A 8 项 又扩 2) + §5 12 条后续 task(新加 T021/T022/T023/T030 入度 ready · T040-B 等 deps · 5 polish backlog · 1 inherit FU-T013-followup) + §6 file changes(新建 19 文件 3 修改 · 大重构) + §7 9 条 known gotchas · v2.2 schema 全 7 节占满 + RECOMMENDED 字段连 6 包稳态扩(超 9 包 baseline · 10 包真稳态) · producer 端 10 包(F1a/F1b/T010/W1/W2/T011/T012/T013/T040/T020)全 conformant
+- **codex 2 round adversarial-review 真发现 production-quality bug 第四次**:T020 round 1 真发现:
+  - F1 high orchestrator cache key 漂移:bytes→tmp 后 random name → pdf_path.stem 漂移 + audit 指 deleted tmp · **真破 R-v022-2 双路径等价**(spec L51 v0.1 PDF e2e regression 必 PASS) · round 2 fix file source 跳 tmp + HTTP source `_derive_stem(source)` 派生 · cache key deterministic 不漂移
+  - F2 medium file:// URL percent-encoded 不解码:`a b.pdf` → `a%20b.pdf` → FileNotFoundError · round 2 fix urllib.parse + unquote 真解码 · netloc 验空/localhost
+  - **2 finding 全是 production-quality bug**(F1 是真 R-v022-2 漏洞 + F2 是 input shape 真破)· 跟 F1b 同等级 · 跟 T013 F1 prompt fallback 同性质 · adversarial-review 第四次真出 production-quality bug · plan v0.3-global §3 T2 candidate "codex review derivation guide" ROI **连续 4 次实证**(T012 race / T013 prompt fallback / T040-A silent green / T020 R-v022-2 漏洞)
+- **plan-v0.3-global G1 真触发 candidate**(重要):
+  - T020 spec L23 `suggested_executor_model=opus` + risk_level=high + spine-task tag · **plan v0.3-global §1 G1 例子明确列 T020 作 G1 候选**
+  - 但 G1 定义文字 = "**A 通道 ≥1 大 vertical-slice 重件(T020 / T024 任一)ship + RETRO ≥7.0**" · 实际是 spec 估时 10-14h opus 任务 ship · RETRO 评分待 operator 自评(本包 hand-back 不算 RETRO · RETRO 是 idea / sub-plan 级 retrospective 文档)
+  - **G1 触发关键问题**:RETRO ≥7.0 是 plan v0.2-global v12 RETRO 模式(idea sub-plan 全集 RETRO · 不是 single task RETRO)· 单 T020 ship 是否触发 G1 需 operator 决议:
+    - 路径 (a):**T020 ship 单算 G1** · 即 plan v0.3-global v1.1 启动 → plan-rosy-naur v13 起 sub-plan 落地 v0.3 第一波
+    - 路径 (b):**等 T024 也 ship 后 + plan-rosy-naur v13 sub-plan 集合 RETRO ≥7.0** 才算 G1
+    - 路径 (c):**当前 sub-plan vehicle 继续 reset · 等 operator 真启动 plan v0.3 时决议** · 现状不动 plan v0.3-global
+  - 我倾向路径 (c) - 本 hand-back review 不动 plan · LOG 入库即触发 framework 维度观察 · operator 起 plan-rosy-naur v13 时正式决议 G1 状态(v13 sub-plan 启动条件 = G1 触发)
+- **件 3.1 阶段 2c 波 6 闭环 + v0.2 Phase 2/2b/3 partial 全 ship**:T010+W1+W2+T011+T012+T013+T040-A+T020 = 8 ship(IDS 11 个 hand-back 包累计) · v0.2 Phase 2 全 4 task + Phase 2b spine + Phase 3 partial = v0.2 主体 ship gate + 重构基础全 ship · 剩 T021/T022/T023/T030(入度 ready · sonnet 6-12h)+ T024(独立 opus 重件 · 旁路 T020) + T040-B(等 T021-T030) · v0.2 收官只差 5-6 task
+- **新 tag spine-task 第二个 framework v0.3 升 evidence**(跟 partial-scope 一起):plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级" 已 3 个 evidence:
+  - (1) spec-gap-fix 6 连发
+  - (2) partial-scope tag 第一次出现(T040-A)
+  - (3) spine-task tag 第一次出现(T020)
+  - **3 evidence 全到位 · v0.3 framework 升真该启动**(operator 起 plan-rosy-naur v13 时决议)
+- **R-v022-2 双路径等价锁 = framework 维度看不见的 production-quality 真功夫**:T020 F1 不 review 直接 ship · main 留 cache key 不稳定 + audit 错路径 · production 真 hazard。codex round 1 verdict=needs-attention 是 adversarial-review 真 ROI 实证 · 跟 T013 F1 prompt fallback 同等级 · 是 plan v0.3-global §3 T2 candidate "codex review derivation guide" 的连续 4 次硬证据
+- **6 连发 spec-gap-fix + 2 新 tag = v0.3 framework 升真触发**:不立即改 SHARED-CONTRACT(等 G1 触发 + plan-rosy-naur v13 sub-plan 一并落) · 本 LOG 入库即触发 evidence 集合到 plan v0.3-global §3 candidate
 
 **Follow-up commits**: pending(本 IDS commit 后填)
