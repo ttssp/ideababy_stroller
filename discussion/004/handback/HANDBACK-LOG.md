@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-12T13:15:00Z
-total_decisions: 8
+last_updated: 2026-05-17T14:05:00Z
+total_decisions: 9
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -192,5 +192,36 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - **包 §3 表格 schema v2.2 RECOMMENDED 字段稳态扩** :T012 §3 5 行 A1-A5 + §4 自检 + §7 7 条 known gotchas · 跟 T011 同 conformance · v2.2 落地后 producer 端 7 包(F1a/F1b/T010/W1/W2/T011/T012)全 conformant · schema 演化 7 包真稳态
 - **plan-v0.3-global G1 仍 pending**:T012 是 sonnet 4-6h feature · 不算 G1 真触发(G1 = T020/T024 opus 10-16h 重件) · 本包入 LOG 后 plan v0.3-global 不动 · v0.2 Phase 2a 全闭环但等 opus 重件 ship 才正式启动 v0.3 · operator 自决何时跑 T020/T024
 - **race condition 测试 真做法**:codex round 1 真挑战 "Web+Telegram 双路径并发" · round 2 加 test 11 (并发 race N=2) · test 真模拟 race 是 reduction-step pattern · 比单元测试更 strict · 这种"并发 race test"模式可作 v0.3 framework 升 candidate(在 parallel-builder derivation guide §2 audit checklist 加 "并发 race test for stateful operations")
+
+**Follow-up commits**: pending(本 IDS commit 后填)
+
+## 2026-05-17T14:05:00Z · 004-pB-20260517T140000Z
+
+**Reviewed at**: 2026-05-17T14:05:00Z
+**Tags**: feature, spec-gap-fix
+**Severity**: low
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — FU-producer-1 ship 后第九次跨非 006 idea 真验(v2.2 schema · ≤7 节真稳态 · 5 天后 plan v0.3-global G1 仍 pending 验证)
+**Related task**: T013 DevilAdvocateService production wire + prompt md 补全 (XenoDev squash commit `064d659` + spec amend `098f749`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉,作为 practice-stats 入库)
+
+**Operator note**: T013 ship 接受 · v0.2 Phase 2 DevilAdvocate 真上线(替 _StubDevil + prompt md 补全 + MockLLMClient.call 扩 8 templates) · 9 unit/e2e + 1 xfail · full suite 208 passed + 1 xfailed · production_app_smoke 33/33 PASS · codex **2 round adversarial-review**(round 1 verdict=block 2 finding [F1 high decision_recorder.create_draft 不传 DecisionDraft → prompt fallback / F2 medium DevilAdvocateService + DecisionRecorder 双 INSERT rebuttals orphan] · round 2 fix `cf4c346` verdict=approve 0 ship-blocking · F1 真闭环 spy LLM 锁 prompt 内容 · F2 锁 xfail backlog FU-T013-followup) · §4 自检不触 PRD-revision-trigger(完全 in v0.2 spec scope · 凭据隔离 / cost cap 全 PASS · spec frozen 边界引发 retroactive doc-fix 用 spec amendment commit `098f749` audit trail · 跟 T010/T011/T012 同 pattern) · A1 tracking `_StubDevil` 闭环 · A2 spec amend already applied · A3 FU-T013-followup 修 F2 双写(选项 A 或 B)medium · A4 wheel package_data prompt md hardening low · A5 T040 入度全就绪 · A6 wire.py docstring polish low · 全延 XenoDev session 自决。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 4 闭环**:T010(d4d04e7)+ 波 1 W1/W2(7eb8626/09f6cc1)+ 波 2 T011(e0c2c48)+ 波 3 T012(36eb012)+ 波 4 T013(064d659 + 098f749)= v0.2 Phase 2 全 4 task(O1/O2/O3 ship gate + DevilAdvocate 真上线)全 ship · T040 入度 T010 + T011 + T012 + T013 全 ready · 波 5 可起(T040 integration test 聚合 / T020 / T024 opus G1 重件 · operator 自决)。
+
+**framework 维度观察**:
+- **A2 spec-gap-fix 模式真触发 第四次连发**(T010 第一次 · T011 第二次 · T012 第三次 · T013 第四次):
+  - T010:0042→0008 migration 编号 + SQLAlchemy→Pydantic + int→TEXT
+  - T011:0009 migration concept_explain_log 表 path B'(修正 spec L70 真意)
+  - T012:T012.md L9-12 file path + signature + L52 mock LLM 说明 + architecture.md §2.1
+  - T013:`tasks/T013.md` 新加 + dependency-graph.mmd +3 LOC + spec.md §6 +4 LOC (Phase 2-amend 段)· 单独 commit `098f749` 留 audit trail
+  - **连发 4 次**:不是"年时 corner" · 不是"前 3 次 outlier" · 是真稳态 producer 端 default workflow · v0.3 framework v0.3 升 candidate 真有连发 4 次 evidence 触发了 · 考虑加 SHARED-CONTRACT §6.3 §3 表格新类型字段 "spec-gap-fix" (RECOMMENDED) · 或在 §3 表格 type 列新加 "spec-gap-fix · ship 后 amend" 作为公认 producer pattern · plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级" evidence 强化
+- **包 §3 表格 schema v2.2 RECOMMENDED 字段连发 4 包稳态**:T013 §3 6 行 A1-A6 + §4 7 项 PRD-revision-trigger 自检 + §5 6 条后续 task + §6 file changes + §7 7 条 known gotchas · v2.2 schema 全 7 节占满(3 normative §1/§2/§3 + 4 RECOMMENDED §4/§5/§6/§7) · 跟 T011/T012 同 conformance · v2.2 落地后 producer 端 **8 包**(F1a/F1b/T010/W1/W2/T011/T012/T013)全 conformant · schema 演化连发 8 包真稳态(超 v0.2-retro 5 包 baseline · 比 W12-A 多 3 包)
+- **codex 2 round adversarial-review 真发现 production bug 第二次**:T013 round 1 F1 high 真发现 `decision_recorder.py:260` 不传 DecisionDraft → prompt 渲染成 "—" · production 真路径 prompt 失效 · e2e test 漏 spec 真路径(只验"非 stub 文本") · round 2 加 spy LLM 锁 prompt 内容 · 跟 T012 race condition fix 同等级 · 这是 v12 件 2.4 (parallel-builder guide §3 events.jsonl GATE + §2 AUDIT/GATE 区分) 实战 evidence 第二次 · adversarial-review 不只是 schema doc 校验 · 真出 production bug · plan v0.3-global §3 T2 candidate "codex review derivation guide" 真有 ROI 触发
+- **xfail backlog 模式真触发**:T013 round 2 加 test 5 xfail (strict=False · F2 双写) 真锁 backlog · FU-T013-followup 修复后翻 strict=True · 这是 v0.3 framework 升 candidate "production-correct backlog 模式"(stable feature ship + 已知 design bug 用 xfail 真锁 · 不破 ship gate · 修复时 strict=True 真验) · 跟 v0.2-retro §3.4 "polish backlog 真有效" 一致 · 在 T013 第一次正式用 xfail strict=False 锁 design bug · 不是 polish · 是 production-design backlog
+- **plan-v0.3-global G1 仍 pending(5 天后再验)**:T013 是 medium 复杂 sonnet 任务(8h codex 2 round)· 不算 G1 真触发(G1 = T020/T024 opus 10-16h 重件)· v0.2 Phase 2 全 ship 但 v0.3 真启动等 opus 重件 · 本包入 LOG 后 plan v0.3-global 不动 · operator 自决何时跑 T020/T024 真 G1(plan v0.3-global v1.0 draft 5 天后仍 stable · 无需 patch · 5 天后稳态验证通过)
+- **件 3.1 阶段 2c 波 4 闭环 + v0.2 Phase 2 全 ship**:T010+W1+W2+T011+T012+T013 = 6 ship(IDS 9 个 hand-back 包累计)· O1/O2/O3 ship gate + DevilAdvocate 真上线 = v0.2 Phase 2 全闭环 · T040 入度全就绪 = v0.2 Phase 2a→Phase 2b 边界完成 · v0.3 起跑还差 G1 (opus 重件 ship + RETRO ≥7.0)
+- **A2 spec-gap-fix 是否要 escalate 到 framework v0.3 真触发**:连发 4 次后 evidence 已充足 · 应在 plan v0.3-global §3 T2 candidate 1 "SHARED-CONTRACT v2.3+ 升 spec-gap-fix RECOMMENDED 字段" 加触发说明 · 但不立即改 SHARED-CONTRACT(等 G1 触发 + v13 sub-plan 一并落) · 本 LOG 入库即触发
 
 **Follow-up commits**: pending(本 IDS commit 后填)
