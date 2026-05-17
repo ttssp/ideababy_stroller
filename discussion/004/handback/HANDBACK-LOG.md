@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-17T14:05:00Z
-total_decisions: 9
+last_updated: 2026-05-17T22:05:00Z
+total_decisions: 10
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -223,5 +223,41 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - **plan-v0.3-global G1 仍 pending(5 天后再验)**:T013 是 medium 复杂 sonnet 任务(8h codex 2 round)· 不算 G1 真触发(G1 = T020/T024 opus 10-16h 重件)· v0.2 Phase 2 全 ship 但 v0.3 真启动等 opus 重件 · 本包入 LOG 后 plan v0.3-global 不动 · operator 自决何时跑 T020/T024 真 G1(plan v0.3-global v1.0 draft 5 天后仍 stable · 无需 patch · 5 天后稳态验证通过)
 - **件 3.1 阶段 2c 波 4 闭环 + v0.2 Phase 2 全 ship**:T010+W1+W2+T011+T012+T013 = 6 ship(IDS 9 个 hand-back 包累计)· O1/O2/O3 ship gate + DevilAdvocate 真上线 = v0.2 Phase 2 全闭环 · T040 入度全就绪 = v0.2 Phase 2a→Phase 2b 边界完成 · v0.3 起跑还差 G1 (opus 重件 ship + RETRO ≥7.0)
 - **A2 spec-gap-fix 是否要 escalate 到 framework v0.3 真触发**:连发 4 次后 evidence 已充足 · 应在 plan v0.3-global §3 T2 candidate 1 "SHARED-CONTRACT v2.3+ 升 spec-gap-fix RECOMMENDED 字段" 加触发说明 · 但不立即改 SHARED-CONTRACT(等 G1 触发 + v13 sub-plan 一并落) · 本 LOG 入库即触发
+
+**Follow-up commits**: pending(本 IDS commit 后填)
+
+## 2026-05-17T22:05:00Z · 004-pB-20260517T220000Z
+
+**Reviewed at**: 2026-05-17T22:05:00Z
+**Tags**: feature, spec-gap-fix, partial-scope
+**Severity**: low
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — FU-producer-1 ship 后第十次跨非 006 idea 真验(v2.2 schema · ≤7 节 + 新 tag `partial-scope` 第一次出现 · tag 演化)
+**Related task**: T040-A partial Phase 3 ship gate(red-line + 30s SLA + O1/O2/O3 aggregate · XenoDev squash commit `f583654` + spec amend `2824d35`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉,作为 practice-stats 入库)
+
+**Operator note**: T040-A ship 接受 · v0.2 Phase 3 partial ship gate 真上线(O1/O2/O3 aggregate + R-1 红线 enforcement + SLA §1.1 30s wall-clock) · 15 collected: 8 passed + 7 skipped(skipped 是 O4-O9 等 T020-T030 入度未 ship 自动 skipif · 设计如此) · full suite 216 passed + 7 skipped + 1 xfailed(0 回归) · production_app_smoke 33/33 · codex **2 round adversarial-review**(round 1 verdict=needs-attention 3 medium finding [F1 空 DB false-green / F2 SRC_ROOT 窄 / F3 Action enum 不 exact] · round 2 fix `0a1015b` verdict=approve 0 ship-blocking) · §4 自检不触 PRD-revision-trigger(完全 in v0.2 spec scope · 凭据隔离 / cost cap / SLA / smoke baseline 全 PASS · spec frozen 边界引发 retroactive doc-fix 用 spec amend commit `2824d35` audit trail · 跟 T010/T012/T013 同 pattern) · A1 tracking T040-A partial ship 闭环 · A2 spec amend already applied(T040 拆 T040-A/T040-B) · A3-A4 spec doc-lag(`human_action` 字段名口误 + `pre_filled_action_draft` v1.5+ 字段)留 tracking · A5 backlog per-row recall_score assertion polish · A6 T040-B 入度 7 opus 重件 tracking · A7 backlog 手动 5/5 SLA 压测 operator 自跑 · 全延 XenoDev session / operator 自决。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 5 闭环**:T010(d4d04e7)+ 波 1 W1/W2(7eb8626/09f6cc1)+ 波 2 T011(e0c2c48)+ 波 3 T012(36eb012)+ 波 4 T013(064d659 + 098f749)+ 波 5 T040-A(f583654 + 2824d35)= v0.2 Phase 2 全 4 task(O1/O2/O3 ship gate + DevilAdvocate 真上线)+ Phase 3 partial ship gate 全 ship · T040-B + 7 opus 重件(T020/T021/T022/T023/T024/T025/T030 ≈ 60-80h)入度等 next wave · 由 operator 决议。
+
+**framework 维度观察**:
+- **A2 spec-gap-fix 模式真触发 第五次连发**(T010 第一次 · T011 第二次 · T012 第三次 · T013 第四次 · T040 第五次):
+  - T010:0042→0008 migration 编号 + SQLAlchemy→Pydantic + int→TEXT
+  - T011:0009 migration concept_explain_log 表 path B'(修正 spec L70 真意)
+  - T012:T012.md L9-12 file path + signature + L52 mock LLM 说明 + architecture.md §2.1
+  - T013:`tasks/T013.md` 新加 + dependency-graph.mmd +3 LOC + spec.md §6 +4 LOC
+  - T040:T040 拆 T040-A partial / T040-B 完整 · `tasks/T040.md` amend frontmatter (partial_scope + deferred_to_T040_B) + dependency-graph.mmd 重接 edges + spec.md Phase 3-amend 段 · 单独 commit `2824d35`
+  - **连发 5 次**:不是"年时 corner" · 不是"前 4 次 outlier" · 是 producer 端 default workflow 5 次连发 真稳态 · v0.3 framework v0.3 升 candidate **强触发**(plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级"5 连发 evidence 触发了 · 真该启动 v0.3 framework 升 · 把 §3 表格 type 列加 "spec-gap-fix · ship 后 amend" RECOMMENDED 字段) · 5 次连发也是 v0.2-retro §3.3 "A2 spec-gap-fix 模式真触发" 的 conclusive evidence
+- **新 tag `partial-scope` 第一次出现**(v2.2 schema 演化):T040 是 ship gate 聚合 task · spec depends_on 6 个 task · 真 ship 仅 3/6 · 拆 T040-A partial + T040-B 完整 · 新 tag `partial-scope` 跟 `feature` + `spec-gap-fix` 并列。**v2.2 schema 没显式列 partial-scope 但允许 RECOMMENDED tag** · T040 是第一次 producer 端真用 partial-scope tag · v0.3 framework v0.3 升 candidate 把 `partial-scope` 入 §3 tags 规范集(v2.2 RECOMMENDED · v0.3 normative)· 让 partial ship 有 schema 位置
+- **包 §3 表格 schema v2.2 RECOMMENDED 字段连发 5 包稳态**:T040-A §3 7 行 A1-A7(超 T013 6 行 · T012 5 行 · v2.2 schema RECOMMENDED 字段 5+ 行均 conformant) + §4 8 项 PRD-revision-trigger 自检(新加 SLA §1.1 30s 行 · 跟 T040-A 真 scope 紧 couple) + §5 11 条后续 task(新加 T040-B + 7 opus 重件 + 2 polish + 1 inherit FU-T013-followup) + §6 file changes(新建 5 文件 0 修改 · pure additive ship) + §7 9 条 known gotchas · v2.2 schema 全 7 节占满 + RECOMMENDED 字段连 5 包稳态扩(超 8 包 baseline · 9 包真稳态) · producer 端 9 包(F1a/F1b/T010/W1/W2/T011/T012/T013/T040)全 conformant
+- **codex 2 round adversarial-review 真发现 production-quality bug 第三次**:T040-A round 1 真发现:
+  - F1 空 DB false-green:test_all_outcomes_aggregate.py O1/O2 部分不验 spec L66 ≥7 Concept · round 2 fix tmp_path SQLite + alembic upgrade + seed 7 Concept · O1/O2 真路径验
+  - F2 SRC_ROOT 窄:R-1 红线扫 src/decision_ledger 太窄 · 未来 sibling package 绕过 · round 2 fix SRC_ROOT = src/ 全树 · 跟 spec 命令字节级对齐
+  - F3 Action enum 不 exact:assert 1 forbidden substring 漏 rebalance/short/limit_buy 类破不变量 · round 2 fix exact set match
+  - **3 finding 全是 silent green 类**(test 看似 pass 实际 prod 会爆) · 跟 F1b 同等级 · 跟 T013 F1 prompt fallback 同性质 · adversarial-review 第三次真出 production-quality bug · plan v0.3-global §3 T2 candidate "codex review derivation guide" ROI **连续 3 次实证**(T012 race / T013 prompt fallback / T040-A silent green)
+- **plan-v0.3-global G1 仍 pending(10 天后再验)**:T040-A 是 medium 复杂 sonnet 任务(8h codex 2 round)· 不算 G1 真触发(G1 = T020/T024 opus 10-16h 重件 + RETRO ≥7.0)。**5 月 12 日 T012 sonnet · 5 月 17 日 14:00 T013 sonnet · 5 月 17 日 22:00 T040-A sonnet · 6 天 3 ship 全 sonnet** · operator 在 small/medium feature 上连续 ship 没碰 opus 重件 · v0.3 真启动等 T020/T024/T030 opus 重件 ship · plan v0.3-global v1.0 draft 10 天后仍 stable · 无需 patch · 真稳态验证通过
+- **件 3.1 阶段 2c 波 5 闭环 + v0.2 Phase 2 + Phase 3 partial ship**:T010+W1+W2+T011+T012+T013+T040-A = 7 ship(IDS 10 个 hand-back 包累计) · v0.2 Phase 2 全 4 task ship + Phase 3 partial(O1/O2/O3 + R-1 + SLA) = v0.2 v0.2 ship gate 基础设施完整 ship · T040-B 等 T020-T030 全 ship 才能完整 O1-O9 · 还差 7 opus 重件(60-80h)
+- **新 tag partial-scope = v0.3 framework v0.3 升真触发 candidate**(plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级" 第二个 evidence · 跟 spec-gap-fix 5 连发并列) · 不立即改 SHARED-CONTRACT(等 G1 触发 + v13 sub-plan 一并落) · 本 LOG 入库即触发
 
 **Follow-up commits**: pending(本 IDS commit 后填)
