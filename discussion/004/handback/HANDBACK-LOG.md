@@ -1,8 +1,9 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T03:00:00Z
-total_decisions: 12
+last_updated: 2026-05-18T06:30:00Z
+total_decisions: 13
+total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -370,3 +371,38 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - XenoDev commit `0736d4a`(spec maintenance · specs/004-pB/spec.md + risks.md · 3 处 · §6 cross-repo)
 - XenoDev commit `47d6c2a`(skill maintenance · .claude/skills/codex-review/SKILL.md §3.2 path B 修 · §4 FU-T022-followup-3 cross-repo · operator 反对 adv 替代 review 路径)
 - 跟 prior 11 包 pending 状态质变:T022 是第一个真出 2 个 cross-repo follow-up commit 的 hand-back · audit trail 模型双场景实证
+
+## 2026-05-18T06:30:00Z · 004-pB-20260518T060000Z · DROP (validator hard-fail)
+
+**Reviewed at**: 2026-05-18T06:30:00Z
+**Status**: **DROP · 6 约束 hard-fail · 不入库 · 不读取内容**
+**Validator (consumer-mode)**: ✗ FAIL · §6.2.1 约束 5 (id consistency check)
+  - 真因:filename `004-pB-20260518T060000Z.md` 缺 ISO ts prefix · 期望 `<ISO ts>-<handback_id>.md` = `20260518T060000Z-004-pB-20260518T060000Z.md`
+  - validator stderr: "cannot extract handback_id from 004-pB-20260518T060000Z.md (expected format: <ISO ts>-<handback_id>.md)"
+  - 问题:hand-back 包 id 不一致 → corruption-of-corpus 失效模式
+
+**Operator decision**: A 路径 · producer-fix · 通知 XenoDev re-emit handback(同 handback_id · 正确 filename · producer mv / rm 旧 malformed 文件 · IDS 不动)
+
+**Why hard-fail 不绕过**:
+- per SHARED-CONTRACT §6.2.1 约束 4 hard-fail 行为:consumer 不读取内容 · 不入库决议 · 只 stderr 报哪条约束失败 + handback_id · exit 非 0
+- per CLAUDE.md "Iron rules" + memory feedback_push_confirmation 同性质 ground rule:silent fix(IDS mv 修 filename)= 偷改 audit trail = 跟 unauthorized push 同等级违 protocol
+- 第一性原因:hand-back 通道跨仓写入 · filename 是 producer 写的物理证据 · IDS 改 = 破坏 audit 证据链 · 未来 dispute 无法追溯
+- 真路径:producer 重写 handback(producer-fix loop)· 跟 prior 12 包 pattern 一致(producer 始终负责 filename + frontmatter id 一致)
+
+**framework 维度观察(第一次 hard-fail 真触发)**:
+- **6 约束 hard-fail 第一次真触发**(prior 12 包全 PASS):本 Drop 是 SHARED-CONTRACT §6.2.1 实战第一次真出 hard-fail · framework v2.2 hard-fail 设计**真有效** · 不是纸面规则 · 真阻断 corruption-of-corpus
+- **producer 端 filename 生成 bug 真信号**:prior 12 包 filename 全 conformant · 第 13 包真出 bug · 可能 producer 端 gen-handback.sh / SKILL §6.4 路径有 regression(T010 hand-back §7 #7 早提过 gen-handback.sh grep brackets 类 bug · 跟 FU-producer-3 队列同集合 · 真 evidence)
+- **plan v0.3-global §3 T2 candidate 真新加 evidence**:hand-back §4 backlog 应有 "producer-fix" type(跟 spec-maintenance / skill-maintenance / arch-decision / polish 并列)· 让未来 producer-fix loop 工作类型可统计
+- **LOG schema 演化触发**:本 entry 是第一次 Drop entry · 跟 ship entry 结构不同:
+  - 无 Operator decisions checkbox(包内容未读 · 不能做产品/spec 决议)
+  - 无 framework 维度观察对包内容的解读(filename / frontmatter 已读 · 但 §2-§7 body 没读)
+  - 只记 hard-fail 事实 + producer-fix 路径决议 + 反向引 producer re-emit commit(pending)
+  - frontmatter 加 total_drops 字段(0→1)· 跟 total_decisions 并列统计
+  - plan v0.3-global §3 T2 candidate "v2.3+ Drop entry schema" 新加 evidence
+- **跟 T022 cap-escalation 重叠信号**:T022 已 6 round 超 SKILL §4.2 cap 4 · 本包 frontmatter 含 tag `cap-escalation` + severity high + codex 14 round(超 T022 又一倍)· 可能 codex review 长尾 pattern 在 T021 又一次显形 + 升级到 14 round 真深 · 真包内容入库后(producer-fix 后)再做 framework 维度评估
+- **不算 ship 不算 task · 是 audit-trail event**:本 Drop 不影响 plan v0.2-global 件 3.1 阶段 2c 波数(T021 未真入库 · 波 8 候选 · 等 producer-fix 后真入)· 不进 ship gate · 不算 task · 是 audit-trail 事件
+
+**Follow-up commits**:
+- pending(待 XenoDev producer re-emit + IDS 重跑 /handback-review 004 真入库)
+- 期望路径:XenoDev producer 端 mv 旧 malformed 文件 → 写正确 filename(20260518T060000Z-004-pB-20260518T060000Z.md · 同 handback_id · frontmatter 不动)→ commit `docs(handback): 004-pB T021 re-emit handback · filename 修正 ISO ts prefix(IDS validator hard-fail §6.2.1 约束 5 修响应)`→ IDS pull 后重跑 /handback-review 004 走 entry 14 真入库
+
