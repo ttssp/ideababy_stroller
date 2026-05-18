@@ -1,7 +1,7 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T07:00:00Z
+last_updated: 2026-05-18T07:30:00Z
 total_decisions: 14
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
@@ -458,9 +458,12 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 **Follow-up commits**:
 - IDS DROP entry 13 precursor: commit `44d0d5a`(本 entry 14 反引 · 三步 audit trail 第一步)
 - XenoDev producer-fix commit `8eceddc`(filename mv · 第二步 · 真在 IDS main · operator XenoDev session cd 进 IDS 改的特殊 case · pattern 跟 cross-repo 略不同)
-- XenoDev pending cross-repo maintenance 2 commit(operator 决议立即起):
-  - spec maintenance: specs/004-pB/spec.md §6.1.1 O4 真意义补(跟 0736d4a precedent)
-  - framework maintenance: gen-handback.sh + SKILL §6.4 cp 路径模板 fix(跟 47d6c2a precedent · 但是 root cause 性质 · 防再发 hard-fail)
-- IDS 本 maintenance commit(entry 14 入库 · audit trail 第三步 · 真闭环)
-- 待 XenoDev re-emit 2 cross-repo maintenance commit hash 后 · IDS 再 cross-ref(跟 T022 cross-ref 模式)
+- IDS 本 maintenance commit `318f200`(entry 14 入库 · audit trail 第三步 · 真闭环)
+- XenoDev cross-repo maintenance commit `473dd6d`(docs(spec) · 004-pB T021 hand-back §7 #1 spec §6.1.1 O4 真意义补 · per-source 唯一 week 覆盖 ≥ weeks · 跟 0736d4a precedent 同 pattern · IDS spec maintenance 跨仓闭环第 2 次)
+- XenoDev cross-repo maintenance commit `374f02b`(docs(skill) · parallel-builder SKILL §6.3 + §7 #10 加 anti-pattern · 防 hand-back §7 字面 cp 命令漏 ISO ts prefix · 真路径比 47d6c2a 更 generic 防御 · 跟 47d6c2a precedent 同性质但真路径 plan mode 决议加 anti-pattern 教 agent 不踩坑 · 不是模板替换 · IDS framework maintenance 跨仓闭环第 2 次)
+- **三步 audit trail + 双 cross-repo maintenance 真完整闭环**:本 entry 14 累共 5 commit + 2 类 maintenance · 跟 T022 entry 12 (1 ship + 1 IDS + 2 cross-repo = 4 commit) 同 pattern 但本 entry 14 多 1 DROP precursor + 1 producer-fix · 是 hand-back §6.2.1 hard-fail loop 第一次完整 evidence
+- **framework 维度真信号(本次 cross-ref 后强化)**:
+  - XenoDev 端 framework maintenance 真路径 verify + plan mode 决议**改 anti-pattern 教 agent 不踩坑**(374f02b)· 不是粗暴改 cp 模板 · 是 parallel-builder SKILL §6.3 + §7 #10 加 anti-pattern 段 · 真路径思考深度 · 跟 operator 反对 "adv 替代 review" 同 framework 真路径 deepening(47d6c2a 同性质)
+  - cross-repo maintenance 第 4 commit 累计(0736d4a + 47d6c2a + 473dd6d + 374f02b)· 累 2 类型 · 2 跨仓 task evidence(T022 + T021)· hand-back cross-repo maintenance 真稳态模型 · SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真稳态实证
+  - plan v0.3-global §3 T2 candidate "v2.3+ FU 类型分类规范" + "cross-repo maintenance pattern" 双 evidence 强化 · plan v0.3 framework 升真该启动 evidence 完整集
 
