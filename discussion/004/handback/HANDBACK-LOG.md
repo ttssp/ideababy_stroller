@@ -1,7 +1,7 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T01:35:00Z
+last_updated: 2026-05-18T02:15:00Z
 total_decisions: 12
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -352,5 +352,10 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - 现 加 T022 hand-back **第一次真有 IDS actionable** + **4 新 tag 累积** + **codex adversarial-review 5 次 + 长尾 pattern** = v0.3 framework 升真该启动 evidence 已重(超 v0.2 启动门槛)
   - 但仍按 plan v0.3 path (c) 路径:operator 起 plan-rosy-naur v13 时正式决议(本 hand-back review 不动 plan)· evidence 集合到 plan v0.3-global §3 candidate 强化
 - **件 3.1 阶段 2c 波 7 闭环 + v0.2 主体 ship 接近收官**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022 = 9 ship(IDS 12 个 hand-back 包累计) · v0.2 Phase 2 全 4 + Phase 2b spine T020 + Phase 2b transcription T022 + Phase 3 partial T040-A = v0.2 主体重件全 ship · 剩 T021(scheduled fetcher · sonnet 8-12h)+ T023(Telegram alert · sonnet 6-8h)+ T030(PPV + 多模态 e2e · sonnet 8-12h)+ T024(XGBoost · opus 12-16h G1 候选) + T025(冲突报告 UI · sonnet 6-8h)+ T040-B(等 deps · sonnet 5-8h) · v0.2 完整收官 ≈ 4-6 task + ≈ 40-50h(T024 算 opus G1)
+- **第一次 hand-back §6 真触发 cross-repo spec maintenance follow-up commit · XenoDev 端 commit `0736d4a`**:
+  - prior 11 包 Follow-up commits 全 pending(操作上只 LOG entry + 不动 spec/risks)
+  - T022 是第一次 hand-back §6 触发跨仓真改 spec/risks + 真出 XenoDev commit 反向引用 IDS entry
+  - audit trail 真闭环 path:IDS handback-id 004-pB-20260518T013000Z → IDS commit 651a25c LOG entry 12 → XenoDev commit 0736d4a(specs/004-pB/spec.md §IN-v022-4 verification 加实际值 + risks.md §R-v022-1 mitigation + §R-v022-3 新加)→ IDS 本 maintenance commit append Follow-up reference
+  - **跨仓 audit 闭环模型实证**:SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真符合 · "producer 写 → consumer 决议 → consumer 异步 follow-up 反引 producer commit" 三步完整跑通
 
-**Follow-up commits**: pending(本 IDS commit 后填)
+**Follow-up commits**: XenoDev commit `0736d4a`(specs/004-pB/spec.md + risks.md · 3 处 spec maintenance · R-v022-1 mitigation + R-v022-3 新加 + IN-v022-4 verification 实际值 · IDS hand-back §6 cross-repo 决议真闭环 · 跟 prior 11 包 pending 状态质变)
