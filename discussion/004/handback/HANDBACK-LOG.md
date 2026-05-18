@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T06:30:00Z
-total_decisions: 13
+last_updated: 2026-05-18T07:00:00Z
+total_decisions: 14
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -405,4 +405,62 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 **Follow-up commits**:
 - pending(待 XenoDev producer re-emit + IDS 重跑 /handback-review 004 真入库)
 - 期望路径:XenoDev producer 端 mv 旧 malformed 文件 → 写正确 filename(20260518T060000Z-004-pB-20260518T060000Z.md · 同 handback_id · frontmatter 不动)→ commit `docs(handback): 004-pB T021 re-emit handback · filename 修正 ISO ts prefix(IDS validator hard-fail §6.2.1 约束 5 修响应)`→ IDS pull 后重跑 /handback-review 004 走 entry 14 真入库
+
+
+## 2026-05-18T07:00:00Z · 004-pB-20260518T060000Z · ENTRY 14(producer-fix 后真入库)
+
+**Reviewed at**: 2026-05-18T07:00:00Z
+**Tags**: feature, codex-multi-round, cap-escalation, backlog-accepted, retroactive-spec-amend, schema-migration
+**Severity**: **high(第一次真 high · 12 prior 中 11 low + 1 medium · T021 严重度真跳)**
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS · producer-fix 后真 PASS(entry 13 DROP precursor → producer-fix commit `8eceddc` mv filename → 本 entry 14 真入库 · audit trail 三步全闭环 第一次完整实证)
+**Related task**: T021 Phase 2b 自动化咨询师监控收尾(ScheduledFetcher 真实装 + FailureLog + OracleAudit + fetcher_audit CLI + alembic 0011 复合 PK + 5 source placeholder · XenoDev squash commit `b17f2fa` + spec amend `6c52bab`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 XenoDev spec(本仓内,信息式)— **§7 #1 立即起** · 跨仓 cd XenoDev 改 specs/004-pB/spec.md §6.1.1 O4 真意义补("per-source 唯一 week 覆盖 ≥ weeks"补字面 + 引 codex round 13/14 真发现)· 跟 T022 0736d4a precedent 同 pattern · 0.3h
+- [x] 修 framework / SKILL — **producer SOP cp 路径错 root cause fix** · 跨仓 cd XenoDev 改 `.work/handback/` gen-handback.sh / SKILL §6.4 cp 命令模板(本 hand-back §194 行 producer 自报 cp 路径 `cp ... 004-pB-20260518T060000Z.md` 漏 ISO ts prefix 正是 hard-fail 真根因 · FU-producer-3 root cause)· 0.5-1h · 防未来再触发 hard-fail
+- [x] 无操作(收悉)— §7 #2 alembic 0001 PK bug 跨 task verify 延 T025/T030 起时顺手 · §7 #4 lifespan wire 延 T030 wire 时同 T022 FU-2 一起处理 · FU-T021-followup-1 R-v022-4 mitigation 延 T040-B P1.B 真生产 soak 前决议 · FU-T021-followup-3 dry-run schema verify 低优先级 backlog
+
+**Operator note**: T021 ship 接受 · v0.2 Phase 2b 自动化咨询师监控真上线(ScheduledFetcher 真实装 APScheduler integration + _fetch_one 真路径调 orchestrator 整链路 + FailureLog 顺序判定 missed_window_24h + OracleAudit 24h grace + late ingestion detect + fetcher_audit CLI 4 exit code + 5 source placeholder + sources_oracle.jsonl 5 expected content + alembic 0011 复合 PK 真生产 schema bug 修)。**TDD red→green 33+ test PASS · full suite 293 passed + 7 skipped + 1 xfailed**(baseline 264 + T021 ~30 - test_pipeline_fetcher.py test 2 替换 = 293 · 0 回归)· production_app_smoke 33/33 · routes 不变 · ruff clean · alembic 0010 + 0011 真路径 init OK · 复合 PK + UNIQUE INDEX 真保留 v0.1 row。**codex 14 round adversarial-review** 超 SKILL §4.2 cap 4 round 共 10 轮(operator decisions A x4 接受 cap escalation):23+ ship-blocking finding 真路径逐轮闭环(每轮真路径修真 P1/P2 bug · 真路径不属打转 · 跟 T022 6 round 长尾 pattern 升级版)· round 6 真发现 v0.1 alembic 0001 advisor_id PK 真生产 bug(INSERT OR REPLACE 覆盖历史周 · O4 4 周 audit 真路径必崩)· alembic 0011 真路径补 · round 7 P1 lifespan wire backlog accepted(同 T022 FU-2)· round 12 https-only 修 + dry-run schema verify 不修(mode 边界保持)· round 14 ship。§7 #1 立即起跨仓 spec maintenance(per-source 唯一 week 覆盖 ≥ weeks 字面补)+ producer SOP cp 路径错 root cause fix(防未来再触发 hard-fail) · §7 #2/#3/#4 延后续 task 顺手 / next wave 决议时处理。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 8 闭环**:T010(d4d04e7) + 波 1 W1/W2(7eb8626/09f6cc1) + 波 2 T011(e0c2c48) + 波 3 T012(36eb012) + 波 4 T013(064d659 + 098f749) + 波 5 T040-A(f583654 + 2824d35) + 波 6 T020(8cb49e2 + a37c388) + 波 7 T022(f5e513e + cross-repo 0736d4a + 47d6c2a) + 波 8 T021(b17f2fa + 6c52bab + 待 cross-repo §7 #1 + producer SOP fix)= v0.2 Phase 2 全 4 + Phase 2b spine T020 + Phase 2b transcription T022 + Phase 2b fetcher T021 + Phase 3 partial T040-A 全 ship · 剩 T023 / T030 / T024 / T025 / T040-B 共 4-5 task ≈ 38-50h · v0.2 收官真近。
+
+**framework 维度观察(本包真信号最重 · 4 个第一次)**:
+- **第一次 severity=high 包**(prior 12 ship 中 11 low + 1 medium T022 · 严重度真跳):T021 升 high 真因 = codex 14 round / 23+ ship-blocking finding 闭环 + alembic 0011 真生产 schema bug 修 + 多处 retroactive amend + 1 backlog accepted ship · 这是 severity 维度第一次跳 high · plan v0.3 framework 升 candidate "severity 维度有效"实证连第 2 次(T022 medium · T021 high · severity 维度真分层)
+- **第一次三步 audit trail 完整实证**(DROP → producer-fix → 真入库):
+  - entry 13 DROP(2026-05-18T06:30:00Z · validator §6.2.1 约束 5 fail · IDS commit 44d0d5a)
+  - producer-fix(XenoDev session 跑 mv + commit `8eceddc` · 同 handback_id · 正确 filename)
+  - entry 14 真入库(本 entry · IDS validator PASS · 反引 entry 13 + producer-fix commit)
+  - **SHARED-CONTRACT §6.2.1 hard-fail 设计真完整闭环**:不只是阻断 corruption · 还提供 producer-fix loop 真路径 · framework v2.2 实战首战 evidence
+- **新 tag 累计 6 个 + 3 新 tag 本包出现**(v2.2 schema 演化 6 evidence):
+  - 累计:partial-scope(T040-A) + spine-task(T020) + codex-multi-round(T022) + backlog-accepted(T022) + **cap-escalation(T021 第一次)** + **retroactive-spec-amend(T021 第一次)** + **schema-migration(T021 第一次)**
+  - cap-escalation:T021 14 round 超 cap 10 轮 · operator decisions A x4 接受 · 真信号 = cap 不是死 limit · 是 operator 决议升级 trigger
+  - retroactive-spec-amend:本包用 tag 显式标 retroactive 模式 · 跟 spec-gap-fix 同性质但更显式 · v0.3 framework normative 候选
+  - schema-migration:alembic 0011 真生产 schema 改 · 是 schema 维度新 tag · 跟 spec-gap-fix 互补(spec gap fix doc · schema migration fix data 层)
+  - **plan v0.3-global §3 T2 candidate "v2.3+ tags 规范集 normative" evidence 全到位**(6 个新 tag · 累 multi-axis schema)
+- **codex adversarial-review ROI 第 6 次实证 + cap escalation pattern 第 1 次实证**:
+  - 累计:T012 race / T013 prompt fallback / T040-A silent green / T020 R-v022-2 漏洞 / T022 6 round 长尾 / **T021 14 round + cap escalation + 23+ finding + schema migration 真生产 bug 发现**(第 6 次 · 第 1 次 cap escalation · 第 1 次真生产 schema bug 发现)
+  - T021 round 6 真发现 v0.1 alembic 0001 advisor_id PK bug 是 codex review **真生产 schema bug 第一次发现**(prior 5 次都是 implementation bug · 这次是 v0.1 baseline 真生产 data 层 bug)· adversarial-review **ROI 已不只是 implementation 防 silent green** · 真扩到 v0.1 baseline schema 层
+  - SKILL §4.2 cap 设计真路径实证:cap 不是死 limit · 是"超 cap 走 operator A/B/C 真有价值"的设计 trigger · T022 6 round + T021 14 round 双实证 · plan v0.3 framework 升 candidate "codex review derivation guide" cap escalation pattern 必入
+- **producer 端 SOP / SKILL 缺陷真根因暴露**(framework 维护真触发):
+  - hand-back §194 行 producer 自报 cp 路径 = `cp ... 004-pB-20260518T060000Z.md`(漏 ISO ts prefix · 跟 hard-fail filename 同一形 · 真根因)
+  - **producer SOP 模板本身写错** · 不是手抖 · 是 SKILL §6.4 / gen-handback.sh 模板 bug · FU-producer-3 root cause 真发现
+  - operator 决议 framework cross-repo fix · 防未来再触发 hard-fail · 跟 47d6c2a SKILL maintenance 同性质 · 第 3 次 framework maintenance commit candidate
+- **跟 prior 12 包对比 evidence 跳级**:
+  - 12 包累 framework 维度 evidence 集合:6 连发 spec-gap-fix · partial-scope · spine-task · codex-multi-round · backlog-accepted · cross-repo spec maintenance · cross-repo SKILL maintenance · adversarial-review ROI 5 次
+  - **T021 一包加** 4 个第一次(severity high · 三步 audit trail · cap escalation · producer SOP 真根因)+ 3 新 tag · evidence 跳级到 plan v0.3 framework 升 candidate 真触发线以上(plan v0.3 candidate evidence 集合从 6 涨到 10+ 条)
+- **G1 真触发 evidence 强化**:
+  - T020 spine task(spec opus + 复杂度匹配)= G1 candidate
+  - T024 XGBoost opus 12-16h = G1 候选 backlog
+  - **T021 sonnet/codex 标准件 14 round 23+ finding alembic schema migration = 真复杂度比 G1 候选还重**(spec L16 suggested_executor_model: codex · 但真执行复杂度匹配 opus 重件)
+  - plan v0.3 framework 升 G1 触发标准 candidate 真该考虑:"spec model 标 sonnet/codex 但 codex 14+ round + 真生产 schema bug 发现 = G1 实际触发"(spec 标 vs 实际复杂度差异)
+  - 仍按 plan v0.3 path (c):operator 起 plan-rosy-naur v13 时正式决议(本 review 不动 plan)· evidence 集合到 plan v0.3-global §3 candidate
+- **件 3.1 阶段 2c 波 8 闭环 + v0.2 收官真近**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022+T021 = 10 ship(IDS 14 个 hand-back 包累计 + 1 Drop) · v0.2 Phase 2 全 4 + Phase 2b 三件(spine T020 + transcription T022 + fetcher T021)+ Phase 3 partial T040-A = v0.2 主体重件 + 自动化基础设施全 ship · 剩 T023 Telegram alert(sonnet 6-8h)+ T030 PPV multimodal e2e(sonnet 8-12h · 兼 T022 FU-2 + T021 FU-2 lifespan wire)+ T024 XGBoost(opus 12-16h · G1 候选)+ T025 冲突报告 UI(sonnet 6-8h)+ T040-B 完整 aggregate(sonnet 5-8h · 等 T030 done)· 共 4-5 task ≈ 38-50h · v0.2 收官真近
+
+**Follow-up commits**:
+- IDS DROP entry 13 precursor: commit `44d0d5a`(本 entry 14 反引 · 三步 audit trail 第一步)
+- XenoDev producer-fix commit `8eceddc`(filename mv · 第二步 · 真在 IDS main · operator XenoDev session cd 进 IDS 改的特殊 case · pattern 跟 cross-repo 略不同)
+- XenoDev pending cross-repo maintenance 2 commit(operator 决议立即起):
+  - spec maintenance: specs/004-pB/spec.md §6.1.1 O4 真意义补(跟 0736d4a precedent)
+  - framework maintenance: gen-handback.sh + SKILL §6.4 cp 路径模板 fix(跟 47d6c2a precedent · 但是 root cause 性质 · 防再发 hard-fail)
+- IDS 本 maintenance commit(entry 14 入库 · audit trail 第三步 · 真闭环)
+- 待 XenoDev re-emit 2 cross-repo maintenance commit hash 后 · IDS 再 cross-ref(跟 T022 cross-ref 模式)
 
