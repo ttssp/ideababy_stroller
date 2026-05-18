@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T07:30:00Z
-total_decisions: 14
+last_updated: 2026-05-18T16:30:00Z
+total_decisions: 15
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -466,4 +466,64 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - XenoDev 端 framework maintenance 真路径 verify + plan mode 决议**改 anti-pattern 教 agent 不踩坑**(374f02b)· 不是粗暴改 cp 模板 · 是 parallel-builder SKILL §6.3 + §7 #10 加 anti-pattern 段 · 真路径思考深度 · 跟 operator 反对 "adv 替代 review" 同 framework 真路径 deepening(47d6c2a 同性质)
   - cross-repo maintenance 第 4 commit 累计(0736d4a + 47d6c2a + 473dd6d + 374f02b)· 累 2 类型 · 2 跨仓 task evidence(T022 + T021)· hand-back cross-repo maintenance 真稳态模型 · SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真稳态实证
   - plan v0.3-global §3 T2 candidate "v2.3+ FU 类型分类规范" + "cross-repo maintenance pattern" 双 evidence 强化 · plan v0.3 framework 升真该启动 evidence 完整集
+
+
+## 2026-05-18T16:30:00Z · 004-pB-20260518T160000Z · ENTRY 15
+
+**Reviewed at**: 2026-05-18T16:30:00Z
+**Tags**: feature, retroactive-spec-amend, schema-migration
+**Severity**: medium(prior 13 真入库 11 low + 2 medium [T022 + T023] + 1 high [T021] · medium 严重度第 2 次)
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS · filename ISO ts prefix 正确(producer SOP 374f02b anti-pattern fix 真生效 evidence 第一次)
+**Related task**: T023 Phase 2b AlertDispatcher polling dispatch(telegram/alert.py + AlertType enum 扩 + alembic 0012 alerts CHECK 扩 6 enum + 2 event source · XenoDev squash commit `1895799` + spec amend `69871cd`)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 XenoDev spec(本仓内,信息式)— §7 #1 立即起 · 跨仓 cd XenoDev 改 specs/004-pB/spec.md §6.1.1 O6 真意义补(blockquote "T023 ship 真路径 mock cover 接口 + alembic schema · 人工 verify 真路径 T040-B Phase 3 真生产 source soak 跑(同 §6.1.1 O4 P1.B pattern)")· 跟 T021 §7 #1 473dd6d + T022 §6 0736d4a precedent 同 pattern · 0.3h · 第 3 次 cross-repo spec maintenance
+- [x] 无操作(收悉)— §7 #2 T030 wire 4 backlog 合并延 T030 起时(同 prior T021 FU-T021-followup-2 + T022 FU-T022-followup-2 一起)· §7 #3 其他 alembic CHECK spec gap audit 延 T025/T030 起时顺手(low ROI)· §7 #4 本包 mitigation 已生效不需决议
+
+**Operator note**: T023 ship 接受 · v0.2 Phase 2b AlertDispatcher 真上线(telegram/alert.py 216 LOC + AlertType enum 扩 FETCHER_FAILURE/COST_CAP + alembic 0012 alerts CHECK 扩 6 enum + 2 event source [FailureLog missed_window_24h + WhisperUsageAudit over_cap] + bot.send_alert + idempotency token 防前缀关系误判)· **TDD red→green 9/9 PASS + full suite 310 collected**(prior 293 + T023 ~17 · 0 回归) · production_app_smoke 33/33 · routes 不变 · ruff clean · **codex 4 round adversarial-review 真 cap compliance + round 4 verdict=APPROVE 0 finding**:
+- round 1(--base main):2 P2 finding · _send_first_then_insert(retry after Telegram fail) + _has_active_alert per-source/month(idempotency)
+- round 2(--base e8b0dc7 · **第一次 ROI 优化用 --base <prior-sha>**):1 P2 · token 终止符防 source_id 前缀关系误判(operator Q4 决议 A 修正 · 真路径 token ROI 优化第一次实证)
+- round 3(--base f00304c):1 P3 · test direction 反转 prove prefix attack 真路径
+- round 4(--base 472a511):0 finding · APPROVE · 真路径 converge
+
+**🎉 plan v0.2-global 件 3.1 阶段 2c 波 9 闭环**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022+T021+T023 = **11 ship**(IDS 15 真入库 entry + 1 Drop entry) · v0.2 Phase 2 全 4 + Phase 2b 三件(spine T020 + transcription T022 + fetcher T021)+ Phase 2c alert T023 + Phase 3 partial T040-A = v0.2 主体重件 + 自动化基础设施 + alert dispatcher 全 ship · 剩 T024(opus 12-16h · G1 候选)+ T025(sonnet 6-8h · 冲突报告 UI · 等 T024)+ T030(sonnet 8-12h · PPV multimodal e2e · 兼 wire 3-4 backlog)+ T040-B(等 T030 done)· 共 4 task ≈ 32-44h · v0.2 收官真近(剩 4 task vs 已 ship 11 ship · 完成度 73%)。
+
+**framework 维度观察(本包真信号 2 个第一次)**:
+- **第一次 codex 真 cap compliance + APPROVE**(prior 13 ship 中 T022 6 round + T021 14 round 全超 cap · T023 真 4 round 内 converge):
+  - 累计 codex review 复杂度:T001 0 / F1a 1 / F1b 3 / T010 5+1 / T011 1 / T012 2 / T013 2 / T040-A 2 / T020 2 / W1 1 / W2 1 / T022 6 / T021 14 / **T023 4**(真路径 cap 边界 + APPROVE)
+  - T023 是**第一次** codex review 真 cap compliance + 真 APPROVE 严格 converge · 不是 sample 1 round / 简单 implementation · 是 4 round (cap edge)真验 ROI 优化 + idempotency token + prefix attack defense · **真严格审 + 真 cap 内闭环 evidence**
+  - plan v0.3-global §3 T2 candidate "codex review derivation guide" + "ROI 优化 pattern" 新 evidence(prior 5 次 ROI 实证全是真发现 production bug · T023 是真路径优化第一次 evidence)
+- **第一次 producer SOP 374f02b anti-pattern fix 真生效 evidence**(prior 12 真入库包 filename 全 conformant · entry 13 DROP fail · entry 14 producer-fix · 本 entry 15 fix 生效后第一包):
+  - §7 #4 + §146-148 真路径走 SKILL §6.3 bash -c pipeline 反推 BASE(L347 字面 `BASE="${TS_FROM_ID}-${HANDBACK_ID}.md"` · 从 frontmatter handback_id 真路径反推)· 不字面写 cp 命令
+  - §6 约束自查 #5/#6 真路径显式 reference SKILL §6.3 + §7 #10 anti-pattern(防 FU-T021-followup-4 再发)
+  - **374f02b anti-pattern fix 真发挥防御作用 第一次实证** · framework cross-repo maintenance ROI 真兑现
+  - cross-repo maintenance 累 5 commit 真稳态(0736d4a + 47d6c2a + 473dd6d + 374f02b + 待 T023 §7 #1 第 5 commit · 2 类型 spec/framework · 3 跨仓 task evidence T022/T021/T023)
+- **ROI 优化第一次实证**(`--base <prior-sha>` 替 `--base main`):
+  - operator Q4 决议 A 修正 · round 2+ 用 prior-sha · round 1 用 main
+  - 真省 token(只 review 新 fix commits · 不重 review 整个 task baseline)
+  - 跟 prior T021 14 round 全 base main 长尾真路径反差对比 · ROI 优化 evidence
+  - plan v0.3 framework 升 candidate "codex review derivation guide" 新加 "ROI 优化 pattern" 维度 evidence
+- **A2 spec-gap-fix + retroactive-spec-amend 模式真稳态扩**(prior 6 连发 T010→T020 + T022 无 spec gap + T021 6 gap + 本 T023 4 gap):
+  - T023 §3 4 gap row(tg/→telegram/ + AlertType enum 扩 + alembic 0001 CHECK 4 enum → 0012 6 enum + spec §6.1.1 O6 字面 ship gate)· retroactive amend 续 pattern
+  - alembic 0012 跟 T021 0011 同 schema migration pattern · 2 task 连发(T021 advisor_reports + T023 alerts)· schema-migration tag 不再 corner · 真稳态
+  - plan v0.3-global §3 T2 candidate "v2.3+ tags 规范集 normative" + schema-migration tag 维度 evidence 强化
+- **新 tag 累计仍 7 个**(T023 全用 prior 已现 tag · 不引新 tag · 真稳态信号):
+  - 累计 7:partial-scope / spine-task / codex-multi-round / backlog-accepted / cap-escalation / retroactive-spec-amend / schema-migration
+  - T023 用其中 2 个(retroactive-spec-amend + schema-migration)· 真稳态 schema 演化 evidence(不再每包都引新 tag · 已固化)
+- **件 3.1 阶段 2c 波 9 闭环 + v0.2 完成度 73%**:
+  - 累 11 ship · 已 ship 集合:T010 (Concept) + W1+W2 (hotfix) + T011 (audit) + T012 (short-circuit) + T013 (DevilAdvocate) + T040-A (Phase 3 partial) + T020 (parser 三层) + T022 (transcription) + T021 (fetcher) + T023 (alert)
+  - 剩 4 task · 总估时 32-44h
+  - **G1 真触发 evidence 跨 11 ship 累完整集**:multi-axis 5+ 维度 evidence(spec-gap-fix 6 连发 + 4 新 tag + cap escalation + ROI 优化 + cross-repo maintenance 5 commit + schema migration 双连发)· plan v0.3-global §3 T2 candidate "v2.3+ FU 类型分类规范" + "tags 规范集 normative" + "cross-repo maintenance pattern" + "ROI 优化 pattern" + "schema-migration tag" 真完整 evidence 集合
+- **cross-repo maintenance 5 commit 真稳态实证**(待 T023 §7 #1 第 5 commit):
+  - 0736d4a (T022 spec) → 47d6c2a (T022 skill) → 473dd6d (T021 spec) → 374f02b (T021 skill anti-pattern) → 待 T023 §7 #1 spec
+  - 5 commit / 2 类型 (spec 3 + framework 2) / 3 跨仓 task evidence (T022 / T021 / T023)
+  - SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真稳态 5 commit 实证
+- **plan v0.3-global G1 真触发 evidence 完整集**(本 entry 后 evidence 已超启动门槛 · 仍 path c 等 operator):
+  - 11 ship 累 multi-axis framework evidence · plan v0.3 真启动条件已满足
+  - 但 G1 形式触发仍等 operator 起 plan-rosy-naur v13(本 review 不动 plan)
+  - 真路径选项:operator 真路径可决议(a) 本 review 后即起 v13(evidence 已重)/(b) 等 T024 opus G1 候选 ship 后 / (c) 等 T030 PPV multimodal e2e converge 后(v0.2 真路径 self-test pass)
+
+**Follow-up commits**:
+- XenoDev pending cross-repo spec maintenance commit(operator 决议立即起 §7 #1 · 跟 0736d4a + 473dd6d precedent · 第 3 次 cross-repo spec maintenance · IDS 待 hash 后再 cross-ref · 跟 T022 entry 12 / T021 entry 14 同 pattern)
 
