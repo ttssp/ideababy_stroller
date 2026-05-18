@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T17:00:00Z
-total_decisions: 15
+last_updated: 2026-05-18T17:30:00Z
+total_decisions: 16
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -539,4 +539,53 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - 跟 473dd6d (T021 O4) + c8491d7 (T023 O6) 形成 "O4/O6 真意义补" pattern · 字面 ship gate vs 真路径 mock cover + T040-B Phase 3 真生产 source soak verify · v0.2 spec §6.1.1 真意义系统化补
   - plan v0.3-global §3 T2 candidate "v2.3+ ship gate 真意义补 pattern" 新 evidence(字面 vs 真路径 + Phase 3 真生产 verify 留 backlog · 真稳态模型)
   - cross-repo maintenance 5 commit 累完整集 · plan v0.3 framework 升真完整 evidence(operator 起 plan-rosy-naur v13 时直接读)
+
+
+## 2026-05-18T17:30:00Z · 004-pB-20260518T102817Z · ENTRY 16
+
+**Reviewed at**: 2026-05-18T17:30:00Z
+**Tags**: feature
+**Severity**: medium(prior 14 真入库 11 low + 3 medium [T022/T023/T002] + 1 high [T021] · medium 严重度第 3 次)
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS · filename + 6 约束自查双 PASS · build_repo 含 worktree-style 子目录(`/Users/admin/codes/XenoDev/projects/004-pB/T002`)第一次 evidence
+**Related task**: T002 Phase 0 multimodal fixture(3 canonical fixture + checksums.txt + PROVENANCE.md · sonnet 重件 · 2 round codex review converge · XenoDev squash commit 待 operator append · 入 LOG 时未告 ship hash)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 framework / SKILL — **FU-codex-review-skill-1 立即起** · 跨仓 cd XenoDev 改 .claude/skills/codex-review/SKILL.md §4.1 + §8.2 加 0.3 升级 entry · `/codex:review` 命令 0 finding case 真路径不输出 Verdict 行 · 加规则 "0 Verdict + 0 P-prefix finding(review only)+ 总结句 = approve 等价" + anti-pattern #9 · 跟 47d6c2a (T022 SKILL §3.2 review 用法) + 374f02b (T021 parallel-builder SKILL §6.3 + §7 #10 anti-pattern) precedent 同 pattern · 0.5-1h · 第 6 commit cross-repo/SKILL maintenance
+- [x] 无操作(收悉)— FU-parallel-builder-skill-1 (low · SKILL §4.4 anti-pattern 加 fixture-only task 例外) 延后 batch 处理 · 现 anti-pattern 不实拦 · 只是文字不准确 · low ROI
+
+**Operator note**: T002 ship 接受 · Phase 0 multimodal fixture 真上线(3 fixture[sample.mp3 122KB / sample.mp4 168KB / sample.m4a 142KB]+ checksums.txt + PROVENANCE.md · 总 ~432KB binary + ~160 行 doc · gTTS option B 合成 + ffmpeg 转码 · TSM Q4 earnings 占位文本 15.24s · 0 src/ 改动 · 0 alembic 改动 · 0 test runner 改动)· **8 项 §Verification PASS**(全 fixture exist · shasum -c · file magic byte · ffprobe duration 10-20s · PROVENANCE license · negative case mv + 复原)· **codex 2 round 真 cap compliance + APPROVE 第 2 次实证**(prior T023 4 round · T002 2 round · 真稳态轻量 ship cap compliance pattern): round 1 (--base main) 1 P2 finding (checksum manifest 项目根校验失败 · 真路径 cd projects/004-pB && shasum -c tests/fixtures/multimodal/checksums.txt fail)· commit 3762895 fix · round 2 (--base main) 0 finding · 但 `/codex:review` 命令 0 finding case 真路径不输 `Verdict:` 行(SKILL §4.1 fail closed 字面 deviation · FU-codex-review-skill-1 真路径实证驱动 SKILL 升级)。**T002 是 prior 11 ship 中 spec 维度第 2 次"无 spec gap"**(跟 T022 同 · 真路径 fixture-only task 不动 spec 字面 · §3 row 0 retroactive amendment · §7 真无 cross-repo spec maintenance · 0 SHARED-CONTRACT touch)。**unblock T030 PPV P1.A 真路径起点 + T040 multimodal e2e test O5 ship gate 入度**(T030/T040-B 真路径前置)。operator [FU-codex-review-skill-1] 立即起跨仓 SKILL maintenance · 跟 47d6c2a precedent 同 pattern(第 6 commit cross-repo/SKILL maintenance · 第 3 个 framework 类型 · 跟 spec 类 3 + framework 类 2 · 本次后 spec 3 + framework 3 真路径 spec/framework 6 commit 平衡)。FU-parallel-builder-skill-1 延后 batch 处理。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 10 闭环**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022+T021+T023+T002 = **12 ship**(IDS 16 真入库 entry + 1 Drop entry) · v0.2 Phase 0 fixture T002 + Phase 2 全 4 + Phase 2b 三件(spine T020 + transcription T022 + fetcher T021)+ Phase 2c alert T023 + Phase 3 partial T040-A = v0.2 主体重件 + 自动化基础设施 + alert dispatcher + multimodal fixture 全 ship · 剩 T024(opus 12-16h · G1 候选)+ T025(sonnet 6-8h · 冲突报告 UI · 等 T024)+ T030(sonnet 8-12h · PPV multimodal e2e · 兼 wire 4 backlog · 入度 T002/T020/T021/T022 全 ready)+ T040-B(等 T030 done)· 共 4 task ≈ 32-44h · v0.2 收官真近(剩 4 task vs 已 ship 12 ship · 完成度 75%)。
+
+**framework 维度观察(本包真信号 3 个新 evidence)**:
+- **第 2 次 codex 真 cap compliance + APPROVE**(prior T023 4 round + T002 2 round · 真稳态 cap compliance pattern · 跟 T022 6 + T021 14 长尾真反差对比加深):
+  - 累计 codex review 复杂度真分层 evidence:simple ship 0-2 round / medium ship 4 round / complex ship 6+ round / 超 cap escalation (T021 14)
+  - T002 是**第二次**真 cap compliance + APPROVE 严格 converge · 跟 T023 4 round + T002 2 round 真稳态 cap 内 review pattern · plan v0.3-global §3 T2 candidate "codex review derivation guide" + "cap compliance pattern" 新 evidence(prior 5+ ROI 实证 + cap escalation pattern + 现 2 次 cap compliance pattern · 完整双面 evidence)
+- **第一次 build_repo 含 worktree-style 子目录**(prior 14 包全 `/Users/admin/codes/XenoDev` 顶层 · T002 是 `projects/004-pB/T002` 子目录):
+  - workspace block: from_build_repo / build_repo / working_repo 全 `/Users/admin/codes/XenoDev/projects/004-pB/T002` 子目录
+  - 真信号 = parallel worktree-style 独立 build(可能 operator T002 fixture 独立 worktree 跑 · 不污染 main XenoDev session)
+  - validator 6 约束 #1 canonical-path containment + #2 symlink reject 真路径 PASS(子目录路径不破约束 · 因为 canonical-path 校验是 source_repo handback_target 不是 build_repo)
+  - plan v0.3-global §3 T2 candidate "v2.3+ workspace block schema 真路径 worktree-style 实证" 新 evidence(SHARED-CONTRACT §6.3 workspace block 设计真路径支持 worktree 子目录 · 实战首战)
+- **第 2 次 "无 spec gap"**(prior T022 第 1 次 · 本 T002 第 2 次):
+  - prior 6 连发 spec-gap-fix(T010-T020)后 T022 第一次 spec 干净 · T002 第二次干净 · 真稳态信号开始 emerge
+  - T002 是 Phase 0 fixture · 不动 src · 不动 alembic · 不动 spec 字面 · 自然 0 gap
+  - 真路径 evidence:fixture-only task / pure additive task 真路径不触 spec-gap-fix 模式 · plan v0.3-global §3 T2 candidate "tags 规范集 normative" 区分 fixture-only / src-modify 类型 evidence
+- **§7 唯一 cross-side action 真 SKILL maintenance**(producer 自报第 6 commit cross-repo/SKILL maintenance pattern):
+  - T002 §7 直接说 "T002 ship 后立即起 docs(skill) commit · 改 codex-review SKILL §4.1 + §8.2 加 0.3 升级 · 跟 47d6c2a precedent 同 pattern · 第 6 commit"
+  - producer 自报已数清 prior 5 cross-repo maintenance(0736d4a / 47d6c2a / 473dd6d / 374f02b / c8491d7) · 本次第 6 · pattern 真稳态自觉
+  - 跟 prior 5 commit 续累 6 commit 真完整稳态:**spec 3 + framework 3 平衡集** · 真稳态完整
+- **多 round codex review 真路径双面完整 evidence**(complexity-adaptive):
+  - cap escalation 端:T021 14 round / T022 6 round(operator A x4 接受 · 真根因 long-tail architecture issue)
+  - cap compliance 端:T023 4 round APPROVE / T002 2 round APPROVE(真路径 ship gate 简单 / mid-complex 严格 cap 内 converge)
+  - 累计 16 包 review round 真分布:0-2 round 真 simple(W1+W2/T011/T012/T013/T040-A/T020/T002) · 3-4 round 真 mid(F1b/T010 fix/T023) · 5-6 round 真 complex(T010/T022) · 10+ round 真 cap escalation(T021)
+  - plan v0.3-global §3 T2 candidate "codex review derivation guide" complexity-adaptive 真路径维度 evidence 完整(simple / mid / complex / escalation 四级 + ROI 优化 + cap compliance + escalation pattern + spec gap 真发现)
+- **producer SOP / SKILL 374f02b anti-pattern fix 真生效第 2 次 evidence**(T023 第 1 次 + T002 第 2 次):
+  - prior entry 13 DROP filename 缺 ISO ts prefix → entry 14 producer-fix → entry 15 T023 不字面 cp + 走 SKILL §6.3 bash -c pipeline → entry 16 T002 filename 真路径 conformant + §6 #5/#6 真路径 reference SKILL §6.3 + §7 #10 anti-pattern(防 FU-T021-followup-4 再发)
+  - 374f02b anti-pattern fix 真路径连发 2 次防御生效(T023 + T002)· framework cross-repo maintenance ROI 真 sustained 兑现
+- **件 3.1 阶段 2c 波 10 闭环 + v0.2 完成度 75%**:
+  - 累 12 ship · v0.2 主体 + Phase 0 fixture 全 ship · 剩 4 task ≈ 32-44h
+  - **G1 真触发 evidence 跨 12 ship 累完整集** · multi-axis 6+ 维度 evidence(spec-gap-fix 6 连发 + 4 新 tag + cap escalation + ROI 优化 + cross-repo 6 commit + schema migration 双连发 + cap compliance 双实证 + worktree-style build_repo)· plan v0.3 framework 升真完整 evidence 集合
+  - 仍按 plan v0.3 path (c):operator 起 plan-rosy-naur v13 时正式决议(本 review 不动 plan)
+
+**Follow-up commits**:
+- XenoDev pending cross-repo SKILL maintenance commit(operator [FU-codex-review-skill-1] 决议立即起 · 跟 47d6c2a precedent 同 pattern · 第 6 commit cross-repo/SKILL maintenance · spec/framework 3+3 平衡集 · IDS 待 hash 后再 cross-ref · 跟 T021/T022/T023 entry cross-ref 同 pattern)
 
