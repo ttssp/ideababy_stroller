@@ -1,7 +1,7 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T17:30:00Z
+last_updated: 2026-05-18T18:00:00Z
 total_decisions: 16
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
@@ -547,7 +547,7 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 **Tags**: feature
 **Severity**: medium(prior 14 真入库 11 low + 3 medium [T022/T023/T002] + 1 high [T021] · medium 严重度第 3 次)
 **Validator (consumer-mode)**: ✓ all 6 constraints PASS · filename + 6 约束自查双 PASS · build_repo 含 worktree-style 子目录(`/Users/admin/codes/XenoDev/projects/004-pB/T002`)第一次 evidence
-**Related task**: T002 Phase 0 multimodal fixture(3 canonical fixture + checksums.txt + PROVENANCE.md · sonnet 重件 · 2 round codex review converge · XenoDev squash commit 待 operator append · 入 LOG 时未告 ship hash)
+**Related task**: T002 Phase 0 multimodal fixture(3 canonical fixture + checksums.txt + PROVENANCE.md · sonnet 重件 · 2 round codex review converge · XenoDev squash commit `f010afc` · 本 cross-ref 时回填 verify XenoDev git log · 入 LOG 时未告 ship hash)
 **Operator decisions**:
 - [ ] 修 PRD §"<section>"
 - [ ] 修 SHARED-CONTRACT §"<section>"
@@ -587,5 +587,25 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - 仍按 plan v0.3 path (c):operator 起 plan-rosy-naur v13 时正式决议(本 review 不动 plan)
 
 **Follow-up commits**:
-- XenoDev pending cross-repo SKILL maintenance commit(operator [FU-codex-review-skill-1] 决议立即起 · 跟 47d6c2a precedent 同 pattern · 第 6 commit cross-repo/SKILL maintenance · spec/framework 3+3 平衡集 · IDS 待 hash 后再 cross-ref · 跟 T021/T022/T023 entry cross-ref 同 pattern)
+- XenoDev T002 ship commit `f010afc`(feat(004-pB) · T002 Phase 0 multimodal fixture 真路径 ship · 入 LOG 时未告 hash · 本 cross-ref 时 verify XenoDev git log 回填)
+- XenoDev cross-repo SKILL maintenance commit `f88d3d6`(docs(skill) · codex-review §4 + §6 + §7 + §8 加 0.3 升级 · review 命令 0 Verdict 行 P-prefix 推断分流 · T002 ship round 2 实证 · FU-codex-review-skill-1 · 跟 47d6c2a precedent 同 pattern · 87 insertions / 7 deletions / 1 文件 · operator XenoDev 端 unpushed 状态)
+- **cross-repo maintenance 6 commit 完整稳态平衡集真兑现**(prior pending 状态真兑现):
+  - 0736d4a (T022 §6 spec · spec/risks/IN-v022-4)
+  - 47d6c2a (T022 §4 FU-3 framework · codex-review SKILL §3.2 path B review 用法)
+  - 473dd6d (T021 §7 #1 spec · §6.1.1 O4 真意义补 unique week)
+  - 374f02b (T021 framework · parallel-builder SKILL §6.3 + §7 #10 anti-pattern · ISO ts prefix)
+  - c8491d7 (T023 §7 #1 spec · §6.1.1 O6 真意义补 mock cover + T040-B verify)
+  - **f88d3d6 (T002 FU-codex-review-skill-1 framework · codex-review SKILL §4+§6+§7+§8 加 0.3 升级 · 0 Verdict 行 + P-prefix 推断分流)**
+  - 6 commit 累 / **spec 3 + framework 3 真平衡集** / 4 跨仓 task evidence (T022 + T021 + T023 + T002)
+  - SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真**6 commit 完整稳态实证 + spec/framework 真平衡集**
+- **framework 维度真信号 f88d3d6 加固**:
+  - codex-review SKILL 0.2(47d6c2a · review 用法 §3.2 path B 纠 adv 替代误)→ 0.3(f88d3d6 · §4+§6+§7+§8 加 0 Verdict 行 + P-prefix 推断分流)· **2 次 SKILL 真路径升级累 evidence**
+  - 跟 T021 374f02b parallel-builder SKILL §6.3 + §7 #10 anti-pattern 形成 "SKILL 真路径 deepening · 不是 hot fix · 是 framework 真路径 sustained evolution" pattern
+  - plan v0.3-global §3 T2 candidate "v2.3+ SKILL 版本化 evolution pattern" + "review-only vs adversarial-review tool 真路径区分 pattern" 新 evidence
+- **关键操作 verify 记录**(防 cross-ref 假数据):
+  - IDS 端 verify `f88d3d6` 在 IDS 仓内 `unknown revision`(预期)
+  - XenoDev 端 verify `f88d3d6` 真存在 + 真路径改 1 文件 87+/7- · 干净 SKILL maintenance commit(预期)
+  - XenoDev 端 verify `f010afc` 真存在 + 真路径 T002 ship commit(verify 回填 entry 16 missing data · prior entry 16 入 LOG 时 operator 未告 hash)
+  - **不轻信 producer 报告 · 本次跨仓 verify 真 evidence 真路径 cross-ref 真路径准确**(plan v0.3-global §3 T2 candidate "consumer cross-ref verify SOP" 新 evidence)
+- XenoDev push 状态:**未 push**(operator per CLAUDE.md push 前需确认 · 跟 IDS 端同步原则 · 跨仓 push 双仓都需 operator 单次明示确认)
 
