@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-17T23:05:00Z
-total_decisions: 11
+last_updated: 2026-05-18T01:35:00Z
+total_decisions: 12
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -308,5 +308,49 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - **3 evidence 全到位 · v0.3 framework 升真该启动**(operator 起 plan-rosy-naur v13 时决议)
 - **R-v022-2 双路径等价锁 = framework 维度看不见的 production-quality 真功夫**:T020 F1 不 review 直接 ship · main 留 cache key 不稳定 + audit 错路径 · production 真 hazard。codex round 1 verdict=needs-attention 是 adversarial-review 真 ROI 实证 · 跟 T013 F1 prompt fallback 同等级 · 是 plan v0.3-global §3 T2 candidate "codex review derivation guide" 的连续 4 次硬证据
 - **6 连发 spec-gap-fix + 2 新 tag = v0.3 framework 升真触发**:不立即改 SHARED-CONTRACT(等 G1 触发 + plan-rosy-naur v13 sub-plan 一并落) · 本 LOG 入库即触发 evidence 集合到 plan v0.3-global §3 candidate
+
+**Follow-up commits**: pending(本 IDS commit 后填)
+
+## 2026-05-18T01:35:00Z · 004-pB-20260518T013000Z
+
+**Reviewed at**: 2026-05-18T01:35:00Z
+**Tags**: feature, codex-multi-round, backlog-accepted
+**Severity**: medium
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS — FU-producer-1 ship 后第 12 次跨非 006 idea 真验(v2.2 schema · 2 新 tag 第一次出现 · codex-multi-round + backlog-accepted · tag 演化第 3+4 个新 tag · severity 第一次升 medium)
+**Related task**: T022 Phase 2b transcription module(Whisper API + KeypointExtractor + WhisperUsageAudit + LocalWhisperTranscriber ABC + AudioFormatHandler 实装 · XenoDev squash commit `f5e513e`)
+**Operator decisions**:
+- [x] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 XenoDev spec(本仓内,信息式)— A1 路径:跨仓 cd XenoDev 改 specs/004-pB/spec.md + risks.md 3 处(R-v022-1 mitigation + R-v022-3 新加 + IN-v022-4 verification)· IDS 端不动 specs/004-pB/(CLAUDE.md Prohibited M3 archive)
+- [x] 无操作(收悉,作为 practice-stats 入库)— FU-T022-followup-1 (high · partial-failure recovery) 留 backlog · FU-T022-followup-3 (medium · codex-review SKILL §3.2 path B 错) 留 framework maintenance backlog · FU-T022-followup-2 + FU-T022-followup-4 是 T030 scope
+
+**Operator note**: T022 ship 接受 · v0.2 Phase 2b transcription module 真上线(WhisperTranscriber + KeypointExtractor + WhisperUsageAudit CLI + LocalWhisperTranscriber ABC · D-spec-5 D-spec-5a 全实装) · TDD red→green 24/24 PASS + full suite 256 passed + 7 skipped + 1 xfailed(baseline 232 + T022 24 · 0 回归) · pipeline/transcription/ TOTAL coverage 85%(spec verification "≥85%" 字面满足) · CLI `python -m decision_ledger.pipeline.transcription.usage_audit --month-to-date --report` 真出 JSON 含 cost_usd · audio_handler magic bytes detect ID3/RIFF/OggS/M4A/raw MP3 sync + parse_async 真接 transcriber+extractor。**codex 6 round adversarial-review** 超 SKILL §4.2 cap 4 round(operator A 决议超 cap 2 轮):Round 1-5 全部闭环(F1 verbose_json+duration / F2 OpenAI SDK 异常 / F3 cache key transcript_sha256_16 / F4 5xx InternalServerError / F5 408/409 + 4xx 永久 / F6 retry 边界 _record_usage / F7 usage 失败不阻 transcript)· **Round 6 高 finding F1 extractor 失败丢 transcript · partial-failure recovery 真架构题** · operator A 决议接受 backlog(FU-T022-followup-1)· 真根因跨 T022/T030 边界需 transcript_cache 模块。**T022 是第一个真要求 IDS 端 spec maintenance 的 hand-back · IDS 决议 A1 路径**:hand-back §6 的 spec.md / risks.md = XenoDev 端 specs/004-pB/(SHARED-CONTRACT §6 v2.0 由 XenoDev 持) · IDS specs/004-pB/ 已 M3 archived(CLAUDE.md Prohibited · commit d3194a0)· 跨仓 spec maintenance 由 operator 切 XenoDev session 做 · 跟 prior 11 ship pattern 一致(T010 A2 / T012 4 处 / T013 / T040-A / T020 全 XenoDev 端单独 commit)· IDS 端只 LOG entry 记决议 + tracking。**FU 队列**:FU-T022-followup-1(high · partial-failure recovery 跨 T022/T030 边界)留 IDS forge 决议 candidate(v0.3 transcript_cache 架构 task);FU-T022-followup-3(medium · codex-review SKILL §3.2 path B `review` 不支持 focus text · 实跑须 `adversarial-review`)留 framework maintenance backlog(IDS 端 .claude/skills/codex/codex-review/SKILL.md 改 · scope 极小 · 跟 T2 件 2.4 SKILL 维护同性质)· operator 决议晚一批一起做。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 7 闭环**:T010(d4d04e7)+ 波 1 W1/W2(7eb8626/09f6cc1)+ 波 2 T011(e0c2c48)+ 波 3 T012(36eb012)+ 波 4 T013(064d659 + 098f749)+ 波 5 T040-A(f583654 + 2824d35)+ 波 6 T020(8cb49e2 + a37c388)+ 波 7 T022(f5e513e)= v0.2 Phase 2 全 4 task + Phase 2b spine T020 + Phase 2b transcription T022 + Phase 3 partial T040-A 全 ship · T030 入度 ready · T021/T023 入度 ready · v0.2 收官还差 3-4 task。
+
+**framework 维度观察(本包真有质的不同 · 信息量重)**:
+- **第一次 severity=medium 包**(前 11 包全 low):T022 升 medium 真因 = 1 high finding(FU-1 partial-failure recovery)operator A 路径接受 backlog · 不是 ship-blocking · 但跨任务边界架构题留 backlog 是 medium-severity 信号 · plan v0.3-global framework 升 candidate 真触发"severity 维度有效"实证
+- **2 个新 tag 第一次出现 · 累计新 tag 4 个**:
+  - 累计:partial-scope(T040-A) + spine-task(T020) + **codex-multi-round(T022 第一次)** + **backlog-accepted(T022 第一次)**
+  - `codex-multi-round`:6 round 超 SKILL §4.2 cap 4 round · operator A 路径超 cap 2 轮接受 · 真信号 = adversarial-review 长尾(round 4-6 同类 partial-failure recovery pattern · 每修一处 codex 找下一处 · 真根因架构题)· cap 设计合理 · 超 cap 走 operator A/B/C 真有价值
+  - `backlog-accepted`:operator A 路径接受 high finding 留 backlog(不阻 ship · 但跨边界架构题)· 跟 spec-gap-fix 类似的 v0.3 framework 升 candidate · §3 tags 规范集真该升 normative
+  - **4 evidence 全到位 · plan v0.3-global §3 T2 candidate "SHARED-CONTRACT v2.3+ 升级" 真该启动**(operator 起 plan-rosy-naur v13 时一并落 normative tags 列:spec-gap-fix + partial-scope + spine-task + codex-multi-round + backlog-accepted)
+- **A2 spec-gap-fix 模式 T022 真"无 spec gap"**(第七次 spec amendment 模式真断 · evidence 限定):
+  - 前 6 task(T010/T011/T012/T013/T040/T020)全 spec-gap-fix · 6 连发 = producer 端 default workflow 真稳态
+  - T022 §3 A-row tracking 真"无 spec gap" · file_domain 字面满足 · 是 producer 端**第一次** spec 跟实装零差 · 这是 v0.2 spec 质量提升信号 · 不是 spec-gap-fix 模式失效 · 而是 v0.2 spec 越走 producer 端越熟(T022 spec 写 v0.5 接口预留 + cost cap 决策 · 实装直对应)
+  - 但仍 medium 严重度 · 因 §4 backlog 真有 high finding · spec 质量好 ≠ implementation 无 hidden bug · adversarial-review 仍真出 production-quality bug · plan v0.3 framework 升 candidate "codex review derivation guide" 第 5 次实证
+- **codex adversarial-review ROI 连续 5 次实证 + 长尾 pattern 第一次显形**:
+  - 累计:T012 race / T013 prompt fallback / T040-A silent green / T020 R-v022-2 漏洞 / **T022 6 round partial-failure recovery 架构题**(第 5 次 · 第 1 次长尾)
+  - T022 是 review 长尾真信号 · round 1-3 单点 implementation bug · round 4-6 同类 pattern 长尾 · 真根因架构题 · cap 设计真合理(简单 ship 1-2 round · 复杂 ship 4-6 round 走 operator A/B/C 决议)
+  - plan v0.3 framework 升 candidate "codex review derivation guide" 5 次连发 evidence + 长尾 pattern 实证 · ROI 已硬触发
+- **第一次 IDS 端真有 actionable spec maintenance**(前 11 包全 IDS 不预决):
+  - 前 11 包 §6 全说"不修 PRD" · operator 都 [4] 收悉
+  - **T022 §6 真要求**改 spec.md / risks.md 3 处(R-v022-1 mitigation + R-v022-3 新加 + IN-v022-4 verification)
+  - operator A1 决议 = 跨仓 cd XenoDev 改 specs/004-pB/(SHARED-CONTRACT §6 v2.0 由 XenoDev 持 · IDS specs/ M3 archived 不动)
+  - 这是**第一次 hand-back §6 真触发跨仓 spec maintenance work** · IDS 端 LOG entry 只 tracking · 实际改在 XenoDev session
+  - **framework 维度 evidence**:hand-back §6 不再是"producer 自我自检"占位 · 真触发 cross-repo 维护 · 跟 SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真符合
+- **plan-rosy-naur v13 sub-plan 启动条件 candidate 累积**:
+  - G1 (T020 spine ship) 已 candidate · plan v0.3 决议 path (c) 暂不动
+  - 现 加 T022 hand-back **第一次真有 IDS actionable** + **4 新 tag 累积** + **codex adversarial-review 5 次 + 长尾 pattern** = v0.3 framework 升真该启动 evidence 已重(超 v0.2 启动门槛)
+  - 但仍按 plan v0.3 path (c) 路径:operator 起 plan-rosy-naur v13 时正式决议(本 hand-back review 不动 plan)· evidence 集合到 plan v0.3-global §3 candidate 强化
+- **件 3.1 阶段 2c 波 7 闭环 + v0.2 主体 ship 接近收官**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022 = 9 ship(IDS 12 个 hand-back 包累计) · v0.2 Phase 2 全 4 + Phase 2b spine T020 + Phase 2b transcription T022 + Phase 3 partial T040-A = v0.2 主体重件全 ship · 剩 T021(scheduled fetcher · sonnet 8-12h)+ T023(Telegram alert · sonnet 6-8h)+ T030(PPV + 多模态 e2e · sonnet 8-12h)+ T024(XGBoost · opus 12-16h G1 候选) + T025(冲突报告 UI · sonnet 6-8h)+ T040-B(等 deps · sonnet 5-8h) · v0.2 完整收官 ≈ 4-6 task + ≈ 40-50h(T024 算 opus G1)
 
 **Follow-up commits**: pending(本 IDS commit 后填)
