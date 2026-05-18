@@ -1,7 +1,7 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T16:30:00Z
+last_updated: 2026-05-18T17:00:00Z
 total_decisions: 15
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
@@ -525,5 +525,18 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - 真路径选项:operator 真路径可决议(a) 本 review 后即起 v13(evidence 已重)/(b) 等 T024 opus G1 候选 ship 后 / (c) 等 T030 PPV multimodal e2e converge 后(v0.2 真路径 self-test pass)
 
 **Follow-up commits**:
-- XenoDev pending cross-repo spec maintenance commit(operator 决议立即起 §7 #1 · 跟 0736d4a + 473dd6d precedent · 第 3 次 cross-repo spec maintenance · IDS 待 hash 后再 cross-ref · 跟 T022 entry 12 / T021 entry 14 同 pattern)
+- IDS 本 maintenance commit `508adb1`(entry 15 真入库 · audit trail 第一步)
+- XenoDev cross-repo spec maintenance commit `c8491d7`(docs(spec) · 004-pB T023 hand-back §7 #1 spec §6.1.1 O6 真意义补 · blockquote mock cover + 人工 verify 留 T040-B Phase 3 真生产 source soak · 跟 0736d4a + 473dd6d precedent 同 pattern · 第 3 次 cross-repo spec maintenance)
+- **cross-repo maintenance 累 5 commit 真稳态实证完整集**(prior pending 状态真兑现):
+  - 0736d4a (T022 §6 spec · spec/risks/IN-v022-4)
+  - 47d6c2a (T022 §4 FU-3 framework · codex-review SKILL §3.2)
+  - 473dd6d (T021 §7 #1 spec · §6.1.1 O4 真意义补)
+  - 374f02b (T021 framework · parallel-builder SKILL §6.3 + §7 #10 anti-pattern)
+  - **c8491d7 (T023 §7 #1 spec · §6.1.1 O6 真意义补)**
+  - 5 commit 累 / 2 类型(spec 3 + framework 2)/ 3 跨仓 task evidence(T022 / T021 / T023)
+  - SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真**5 commit 完整稳态实证**
+- **framework 维度真信号 c8491d7 加固**:
+  - 跟 473dd6d (T021 O4) + c8491d7 (T023 O6) 形成 "O4/O6 真意义补" pattern · 字面 ship gate vs 真路径 mock cover + T040-B Phase 3 真生产 source soak verify · v0.2 spec §6.1.1 真意义系统化补
+  - plan v0.3-global §3 T2 candidate "v2.3+ ship gate 真意义补 pattern" 新 evidence(字面 vs 真路径 + Phase 3 真生产 verify 留 backlog · 真稳态模型)
+  - cross-repo maintenance 5 commit 累完整集 · plan v0.3 framework 升真完整 evidence(operator 起 plan-rosy-naur v13 时直接读)
 
