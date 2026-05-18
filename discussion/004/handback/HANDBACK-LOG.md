@@ -1,7 +1,7 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T02:15:00Z
+last_updated: 2026-05-18T03:00:00Z
 total_decisions: 12
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -357,5 +357,16 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - T022 是第一次 hand-back §6 触发跨仓真改 spec/risks + 真出 XenoDev commit 反向引用 IDS entry
   - audit trail 真闭环 path:IDS handback-id 004-pB-20260518T013000Z → IDS commit 651a25c LOG entry 12 → XenoDev commit 0736d4a(specs/004-pB/spec.md §IN-v022-4 verification 加实际值 + risks.md §R-v022-1 mitigation + §R-v022-3 新加)→ IDS 本 maintenance commit append Follow-up reference
   - **跨仓 audit 闭环模型实证**:SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真符合 · "producer 写 → consumer 决议 → consumer 异步 follow-up 反引 producer commit" 三步完整跑通
+- **FU-T022-followup-3 status: applied · XenoDev 端 commit `47d6c2a`(framework maintenance · codex-review SKILL §3.2 path B 修)**:
+  - 触发:T022 §4 backlog · FU-T022-followup-3(medium · codex-review SKILL path B 真路径错)operator 决议起 framework maintenance(不算 task / 不算 ship)
+  - **operator 关键反对意见纠偏**:不接受"用 adversarial-review 替代 review + focus text"(两工具目标本质不同:review = 平衡评估 + 协作型 senior · adversarial-review = 对抗找 bug + 怀疑型攻击者)· 用 adv 替 review = 拿榔头干起子 · 杀伤过大 + 浪费 round + 走偏目标 · T022 6 round 部分根因就是误升级触发的滚雪球
+  - **真路径(由 XenoDev 端 verify + plan mode 出方案 operator 批准)**:具体改法见 XenoDev commit 47d6c2a · 优化 review 用法本身(verify 真支持的参数 / prompt 引导 / decision tree 选工具)· 不是粗暴 fallback adv
+  - **位置 verify 纠错**:本 maintenance 第一次发现 codex-review SKILL 在 XenoDev 仓内 `.claude/skills/codex-review/SKILL.md`(IDS 仓无)· 之前 IDS session 误判为 user 全局 `~/.claude/` · 真路径 verify 后由 XenoDev 端做(项目级 SKILL · 跟 spec/risks 同性质 · 跨仓 by ownership)
+  - audit trail 真闭环 path:IDS handback-id 004-pB-20260518T013000Z §4 FU-T022-followup-3 → IDS commit 651a25c LOG entry 12 → XenoDev commit 47d6c2a(.claude/skills/codex-review/SKILL.md §3.2 path B 改)→ IDS 本 maintenance commit append FU-3 status applied + cross-ref
+  - **跟 0736d4a spec maintenance 同 audit pattern · 但性质不同**:0736d4a = hand-back §6 触发 cross-repo spec doc maintenance(产品维度);47d6c2a = hand-back §4 触发 cross-repo SKILL framework maintenance(framework 维度)· **两类 cross-repo follow-up 模式同 audit pattern 真稳态**
+  - **plan v0.3-global §3 T2 candidate "v2.3+ FU 类型分类规范"evidence**:hand-back §4 backlog ID 应有 type 字段(spec-maintenance / skill-maintenance / arch-decision / polish)· 让未来 cross-repo follow-up 工作类型可统计
 
-**Follow-up commits**: XenoDev commit `0736d4a`(specs/004-pB/spec.md + risks.md · 3 处 spec maintenance · R-v022-1 mitigation + R-v022-3 新加 + IN-v022-4 verification 实际值 · IDS hand-back §6 cross-repo 决议真闭环 · 跟 prior 11 包 pending 状态质变)
+**Follow-up commits**:
+- XenoDev commit `0736d4a`(spec maintenance · specs/004-pB/spec.md + risks.md · 3 处 · §6 cross-repo)
+- XenoDev commit `47d6c2a`(skill maintenance · .claude/skills/codex-review/SKILL.md §3.2 path B 修 · §4 FU-T022-followup-3 cross-repo · operator 反对 adv 替代 review 路径)
+- 跟 prior 11 包 pending 状态质变:T022 是第一个真出 2 个 cross-repo follow-up commit 的 hand-back · audit trail 模型双场景实证
