@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-19T09:00:00Z
-total_decisions: 20
+last_updated: 2026-05-19T12:30:00Z
+total_decisions: 21
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -839,4 +839,82 @@ SHARED-CONTRACT §6.4.1 Step 5 闭环责任真完整稳态
 - **FU-task-T025-frontmatter-amend** (low · ~0.2h · T025.md frontmatter L9-10 字面 `web/templates/conflicts.html` + `web/handlers/conflict_handler.py` retroactive 真路径修 → `ui/templates/conflicts/*` + `ui/router_conflicts.py` · 跟 T024 L14 alembic path bug retroactive 同 pattern)
 - **FU-spec-§6.1.1-O8-amend** (low · 已 ship f800d56 · 不需新 commit · cross-ref 入本 entry)
 - **FU-producer-§8-evidence-schema** (low-medium · framework SHARED-CONTRACT §6.3 §8 evidence schema MUST list impl/ship + retroactive amendment hash · 5 次实证 真稳态 · 升级 priority low→low-medium · 等下次 SHARED-CONTRACT bump 时 implement)
+
+
+## 2026-05-19T12:30:00Z · 004-pB-20260519T114950Z
+
+**Reviewed at**: 2026-05-19T12:30:00Z
+**Tags**: spec-gap-fix
+**Severity**: high
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS
+**Related task**: T040-B-cover (Phase 3 aggregate test unskip + 6 outcome mock cover · plan-v0.2-global 件 3.1 阶段 2c 波 15 闭环 · per operator Q1=C 拆 T040-B → T040-B-cover (本 ship) + T040-B-real (defer v0.2.1/v0.5+))
+**Related XenoDev commits**: `c947c7f` (T040-B-cover impl/ship · producer §8 evidence 漏列 · 真稳态 6 次实证) · `cbc205d` (T040-B-cover retroactive amendment · 已 ship · 第 11 cross-repo maintenance commit · spec 8 + skill 3 真稳态)
+**Related fix commits**: `be6465a` (test red→green) · `b7d4934` (r1 fix) · `81f23dc` (r2 fix) · `5a19971` (r3 fix) · `d4b809a` (r4 fix) · `9391dde` (r5 fix · ping-pong start) · `ed04ca2` (r6 fix · ping-pong reverse · operator A) · (r7 cap break · operator B)
+
+**Operator decisions**:
+- [ ] 修 PRD §"..." (无 PRD 改 · T040-B-real 真路径 defer v0.2.1/v0.5+)
+- [ ] 修 SHARED-CONTRACT (无)
+- [x] 修 XenoDev spec(本仓内 · 信息式)— 已 ship `cbc205d` retroactive amendment · spec.md §6.1.1 O4/O5/O6/O7/O8/O9 + tasks/T040.md 真路径补(ship 后 retroactive · 跟 T025 f800d56 + T024 376e620 + T003 bb61187 + T030 ed9ffbc + T023 69871cd same pattern · 第 6 次 ship-后 retroactive amendment 真稳态)
+- [x] 无操作(收悉 · 8 个 FU 延 T040-B-real backlog · operator 真路径 v0.2.1/v0.5+ release 时 manual 决议)
+
+**Operator note**:
+T040-B-cover 真 ship · plan-v0.2-global 件 3.1 阶段 2c 波 15 闭环 · **v0.2 (cover gate) 完成度 100%(17/17 task ship · T025 + T040-A partial + T040-B-cover · prior LOG entry 20 误算 16/16 已自纠正)**。
+
+**🎉 plan-v0.2-global 件 3.1 阶段 2c 15 波 ship 全闭环 + T040-B-cover ship 是 v0.2 cover gate 最终一个 spec-gap-fix · v0.2 (cover) 真路径 收官**
+
+**真路径 T040-B-real 真 production ship gate enforce 真路径 defer v0.2.1/v0.5+**(operator 真路径 manual 跑 6 FU 真路径 verify release ready):
+- 真路径 cumulative cost ≈ 40-60h + 4 周 wall-clock + $50-100 OpenAI · ROI severe misalign · 真路径 Q1=C 决议合理
+- 真路径 `pytest -m real_gate` release-time gate command 真路径**真**真路径 visibility(当前 rc=1 · 真实装 真路径 rc=0)
+- operator release manual decision 真路径 v0.2.1/v0.5+ release 真路径 ready
+
+**🚨 plan v0.3 G1 真触发实证 新维度 12-15(本 entry 21 codify · 跟 entry 19+20 11 维度 stack)**:
+
+1. **Cap escalation 第 7 次连发**(T021 14r → T022 6r → T030 4r → T003 3r → T024 4r → T025 3r → **T040-B-cover 7r**)· SKILL §4.2 4-round cap 反复 break · 真稳态 7 次实证(7 task)· plan v0.3 §1 G1 真触发条件 1 强化
+
+2. **Ship-后 retroactive amendment 第 7 次连发**(T021 6c52bab → T023 69871cd → T030 ed9ffbc → T003 bb61187 → T024 376e620 → T025 f800d56 → **T040-B-cover cbc205d**)· spec §6.1.1 O4-O9 retroactive · 真稳态 · plan v0.3 §1 G1 真触发条件 2 强化
+
+3. **Cross-repo maintenance commit 真完整集 13 commit**(prior 12 + 本次 +1 = 13 commit · spec 8 + skill 3 真稳态)
+
+4. **Scope dispute operator 决议接受 第 2-3 次连发实证**(T025 round 3 F1 reiteration · T040-B-cover round 7 F1 ping-pong)· 跟 entry 20 维度 4 同 pattern · 真稳态从单实证 → 2 次连发 · plan v0.3 §1 G1 真触发条件 4(维度 4)强化
+
+5. **★ 维度 12(新)· Codex round 4-7 真路径 ping-pong default green vs default expose 第一次实证**(round 4+6 want default green / round 5+7 want default expose)· 真路径**inherent tradeoff** · codex 真路径**无法**真路径 resolve · operator A 决议 default green + 显式 release-time(per round 6 fix · round 7 cap break 接受 F2 medium)· 真稳态新 pattern · plan v0.3 §1 G1 真触发条件 12 新维度
+
+6. **★ 维度 13(新)· Operator B 决议 cap break 第一次实证**(prior 6 task cap break 真路径**全 operator A** · 本 T040-B-cover round 7 operator B 决议接受 F2 medium · 第一次 operator B 实证)· 真稳态新 pattern · plan v0.3 §1 G1 真触发条件 13 新维度
+
+7. **★ 维度 14(新)· 显式 task 拆分 vs 隐式 double-deferral 第一次实证**(operator Q1=C 决议拆 T040-B → T040-B-cover (本 ship) + T040-B-real (defer))· 真路径**显式承认** double-deferral risk · 真路径 IDS framework expectation explicit · 真稳态新 pattern · plan v0.3 §1 G1 真触发条件 14 新维度
+
+8. **★ 维度 15(新)· Pytest marker 物理分离 cover vs real_gate 第一次实证**(round 3 fix · pyproject.toml markers `real_gate` + `cover` · addopts default 排除 real_gate · 真路径 3 mode raw exit code verify · default rc=0 + cover rc=0 + real_gate rc=1)· 真稳态新 pattern · 跟 spec §6.1.1 O4-O9 cover 真路径 + T040-B-real 真路径 defer 同 pattern · plan v0.3 §1 G1 真触发条件 15 新维度
+
+**真 cross-repo maintenance 完整集 13 commit(本 entry 21 codify)**:
+```
+prior 12(0736d4a + 47d6c2a + 6c52bab + 473dd6d + 374f02b + 69871cd
+        + c8491d7 + f88d3d6 + ed9ffbc + bb61187 + 376e620 + f800d56)
+本次 +1: cbc205d(T040-B-cover spec §6.1.1 O4-O9 + tasks/T040.md retroactive)
+→ spec 8 + skill 3 真稳态完整集
+→ 8 跨仓 task evidence(T022+T021+T023+T002+T030+T003+T024+T025+T040-B-cover)
+SHARED-CONTRACT §6.4.1 Step 5 闭环责任真完整稳态
+```
+
+**🚨 第 6 次 verify SOP 真稳态 catch PRODUCER §8 evidence 漏列 ship hash**(6 task 连续实证 · entry 16 T002 + entry 17 T030 + entry 18 T003 + entry 19 T024 + entry 20 T025 + 本 entry 21 T040-B-cover · 6 次稳态)· FU-producer-§8-evidence-schema 真稳态升级:
+- producer §8 evidence 漏列 T040-B-cover impl/ship hash `c947c7f`
+- producer §8 evidence 漏列 T040-B-cover retroactive amendment hash `cbc205d`
+- verify XenoDev git log grep "T040" 真路径正解
+- 真稳态 6 次实证 · 跟 prior entry 16/17/18/19/20 同 pattern · 真路径**真强证据**framework SHARED-CONTRACT §6.3 §8 evidence schema MUST list impl/ship + retroactive amendment hash · plan v0.3 §1 G1 真触发条件 9 强化(从单实证→真稳态 6 次)
+
+**Follow-up commits**:
+- 本 entry 21 入库 IDS commit(本 commit)+ T040-B-cover hand-back 包入库
+- 跨仓 XenoDev `cbc205d` 已 ship 不需新 commit(retroactive amendment ship 后)
+- 跨仓 XenoDev `c947c7f` 已 ship 不需新 commit(impl/ship)
+
+**Follow-up backlog**(全延 T040-B-real · v0.2.1/v0.5+ · operator manual decision):
+- **FU-T040-B-real-o4-fetcher-soak** (high · ~4 周 wall-clock · 真 4 周 fetcher soak)
+- **FU-T040-B-real-o5-openai-multimodal** (high · cost $50-100 · 真 OPENAI_API_KEY multimodal e2e)
+- **FU-T040-B-real-o6-telegram-alert** (medium · ~2-3h · 真 Telegram bot 真人工触发 + 真收 alert)
+- **FU-T040-B-real-o7-yfinance-xgboost** (high · ~5-8h · 真 yfinance/akshare + 真 XGBoost 训练 + 真 batch predict)
+- **FU-T040-B-real-o8-production-wire** (high · ~3-5h · 真 wire.py production + 真 conflict UI render 30/30)
+- **FU-T040-B-real-o9-60d-backfill** (high · ~3h+ · 真 60 天 advisor backfill + `--enforce-threshold 0.5`)
+- **FU-T040-B-cover-codex-r7-f2-nodeid-binding** (medium · ~1h · aggregate cover gate 真路径 nodeid 绑 binding · 防 key cover test rename/delete silent green)
+- **FU-spec-§6.1.1-T040-B-real-amend** (low · 已 ship cbc205d · 不需新 commit · cross-ref 入本 entry)
+- **FU-task-T040-frontmatter-amend** (low · 已 ship cbc205d · 包含 tasks/T040.md retroactive)
+- **FU-producer-§8-evidence-schema** (low-medium · 真稳态 6 次 · 等下次 SHARED-CONTRACT bump 时 implement)
 
