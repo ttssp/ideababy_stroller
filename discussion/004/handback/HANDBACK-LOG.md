@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-19T01:45:00Z
-total_decisions: 17
+last_updated: 2026-05-19T06:15:00Z
+total_decisions: 18
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -668,4 +668,72 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 - XenoDev T030 ship 前 retroactive amendment commit `<待 operator append + IDS verify XenoDev git log>`(plan-mode a 新 precedent · ship 前先做 · 走 main 上独立 docs(spec) commit 不进 squash)
 - XenoDev pending cross-repo spec maintenance commit(operator §7 决议立即起 · spec.md §6.1.1 O5 + §7.2 + tasks/T030.md retroactive amendment · patch 已存 /tmp/T030-retroactive-amendment.patch · 跟 c8491d7 / 473dd6d precedent 同 pattern · **第 7 commit cross-repo maintenance · spec 4 + framework 3 真稳态完整集 + 跨仓 task 5 个 evidence T022+T021+T023+T002+T030**)
 - IDS 待 hash 后再 cross-ref(跟 T021/T022/T023/T002 entry cross-ref 同 pattern · verify-before-cross-ref SOP 真路径 mandatory)
+
+
+## 2026-05-19T06:15:00Z · 004-pB-20260519T055705Z · ENTRY 18
+
+**Reviewed at**: 2026-05-19T06:15:00Z
+**Tags**: feature
+**Severity**: medium(prior 16 真入库 11 low + 4 medium [T022/T023/T002/T030] + 1 high [T021] · 本 T003 medium · medium 严重度第 5 次 · 累 medium 5/18 · high 1/18)
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS · build_repo 含 worktree-style 子目录 `/Users/admin/codes/XenoDev/projects/004-pB/T003`(第 3 次 evidence · prior T002 + T030 · 真稳态)
+**Related task**: T003 Phase 0 v0.1 advisor archive backfill prep(stub placeholder + executable schema strict marker · risk_level=medium · 3 round codex review · operator A 决议突破 cap 第 4 次实证 · XenoDev squash ship commit `9b54155` + spec amend `bb61187` · 本 cross-ref 时 verify XenoDev git log 回填)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 XenoDev spec(本仓内,信息式)— **FU-spec-§6.1.1-O9-retroactive-amend** cross-ref 入 LOG · XenoDev 端已 ship `bb61187`(spec.md §6.1.1 O9 + tasks/T003.md retroactive amendment)· 不需新 commit · 仅 LOG cross-ref(prior verify SOP 真路径捕 producer 已自跑)
+- [x] 无操作(收悉)— FU-archive-export-script (medium · T040-B scope · ~3-4h 实装 export script)+ FU-v0.1-archive-source-locate (high · T040-B scope · operator 真路径 manual ~3h+ locate v0.1 真历史 advisor data)+ FU-T024-stub-source-reject (high · T024 scope · ~0.5h source filter + assert)+ FU-T024-stub-reject-test (high · T024 scope · ~0.5h schema strict 60/60 reject unit test)· 全 backlog 延 T040-B / T024 起时 implement
+
+**Operator note**: T003 ship 接受 · Phase 0 v0.1 advisor archive backfill prep 真上线(stub placeholder 60 行 + executable schema strict marker `_stub_block: "REJECT_T024_CORR_AUDIT"` + `_stub_reason` + pydantic strict mode `extra="forbid"` 100% reject 60/60 行 + coverage md 真路径 9 段含 §9 downstream gate contract executable protection)· **真 60 天 backfill 真路径全留 T040-B Phase 3 真生产**(跟 T030 真 P1.B + audio/video orchestrator + pipeline/fetch CLI 同 T040-B scope · v0.1 真历史 advisor data manual locate 跟 PDF/Telegram/email source 同 high priority backlog)· 0 src/ 改动 · 0 alembic 改动 · 0 test 改动 · 0 dep 改动 · file_domain 严守 task L9-10 (2 文件) ∪ tests/red-green-log/。**codex 3 round adversarial-review · operator A 决议突破 cap 第 4 次实证(SKILL §4.2 cap 内 · 当前 round 3)**:round 1 (--base main) 1 P1 (stub unblock T024 form gate)· fix 34cb083 coverage md §6+§9 downstream gate · round 2 1 P1 (doc 约定非 executable)· fix 132c2b9 jsonl 每行加 schema marker + pydantic strict 60/60 enforce · round 3 1 P1 (要求真 loader/test in commit)· **operator A 决议突破 cap**(真 scope 分歧 file_domain 严限 vs ship-内真 loader/test 强求 · 跟 T030 round 4 + T021 14 round + T022 6 round precedent 同 · 真合规条件:round 1-2 全闭环 + round 3 真 scope 分歧不是 quality 问题 · backlog FU-T024-stub-source-reject + FU-T024-stub-reject-test 留 T024 真实装时)。**🎉 plan v0.2-global 件 3.1 阶段 2c 波 12 闭环**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022+T021+T023+T002+T030+T003 = **14 ship**(IDS 18 真入库 entry + 1 Drop entry) · v0.2 Phase 0 fixture T002 + Phase 0 v0.1 archive prep T003 + Phase 2 全 4 + Phase 2b 三件 + Phase 2c alert T023 + Phase 3 partial T040-A + Phase 3 PPV P1.A T030 = v0.2 主体 + 自动化 + alert + fixture + PPV P1.A + v0.1 archive backfill prep 全 ship · 剩 T024(opus 12-16h · G1 候选 · T003 提供 stub jsonl · T024 真实装 reject)+ T025(sonnet 6-8h · 冲突报告 UI · 等 T024)+ T040-B(等 T030 4 FU + T003 2 FU + T024 真实装 · 5-8h 原估 · T030 entry 17 真发现实际 10-14h · 加 T003 manual locate 真路径需 operator 3h+ · **真实际 ≈ 13-17h**)· 共 **3 task ≈ 31-43h** · v0.2 收官 87.5%(14/16 ship)。
+
+**framework 维度观察(本包真信号 3 个新 evidence + verify SOP 真路径捕第 3 次纠错)**:
+
+- **第 4 次 cap escalation 真稳态 pattern**(prior T021 14 round + T022 6 round + T030 4 round + 本 T003 3 round · 真 cap escalation precedent 4 次连发):
+  - 累计 codex review round 真分布:0-2 round simple ship(W1+W2/T011/T012/T013/T040-A/T020/T002) · 3-4 round mid-complex cap escalation(T023/T030/**T003**)· 5-6 round complex(T010/T022)· 10+ round escalation(T021)
+  - cap escalation 真合规条件 4 次 evidence 稳态:**round 1-N 全闭环 + 最后 round 是 scope 分歧不是 quality 问题**(codex push 更深 scope · operator A 决议 file_domain 严守 vs ship-内 implement 强求 · backlog 留 future task)
+  - plan v0.3-global §3 T2 candidate "codex review derivation guide · cap escalation 真合规条件 pattern" 4 次实证 · **FU-codex-skill-§4.2-cap-precedent backlog 真路径 ROI 强化**(已记 entry 17 · backlog)
+- **第一次 executable schema-layer protection precedent**(prior 14 ship 全靠 doc agreement · 本 T003 第一次 executable enforce):
+  - T003 真路径:每行加 schema marker `_stub_block: "REJECT_T024_CORR_AUDIT"` + pydantic strict mode `extra="forbid"` 100% reject 60/60 行(本 commit 内 verify 不靠未来约定)
+  - 真路径区别于 prior pattern:T021 spec O4 真意义补(doc)/ T023 spec O6 真意义补(doc)/ T030 ship-gate scope marker(doc + shell wrapper warn)/ **T003 executable schema marker + 60/60 enforce proof**
+  - 跟 prior `FU-T022-followup-1 partial-failure recovery` 同性质(执行层保护 vs doc 约定)· 真路径 plan v0.3-global §3 T2 candidate "executable protection 真路径 pattern" 新 evidence(doc 约定 → schema-layer enforce → unit test enforce 三阶 sustained pattern)
+- **第 3 次 build_repo worktree-style 子目录**(prior T002 + T030 + 本 T003 · 累 3 实证):
+  - T003 workspace block: from_build_repo / build_repo / working_repo 全 `/Users/admin/codes/XenoDev/projects/004-pB/T003`
+  - 真信号 = parallel worktree-style 独立 build 真稳态(operator T002/T030/T003 都用 worktree 独立跑 · 不污染 main XenoDev session)
+  - SHARED-CONTRACT §6.3 workspace block 设计真路径支持 worktree 子目录 · 3 实证真稳态完整
+
+- **🚨 PRODUCER ERROR 纠错第 3 次 + prior IDS LOG 漏算 codify**(verify-before-cross-ref SOP 真路径捕第 3 次 · 但本次发现是 IDS 自己 prior LOG 漏算):
+  - producer §7 字面列 prior "7 commit" 加 `11ff1a2` 错列(跟 T030 同 producer self-count error · 已捕 prior entry 17)
+  - **真问题 + 新发现**:**IDS prior LOG entry 12/14/15/16/17 全漏算 `69871cd` + `6c52bab` 2 commit**(T021 + T023 ship 后 retroactive amendment commit · 跟 ed9ffbc/bb61187 同 ship-后-amendment pattern · prior 我以为是 "ship 内含" 实际是独立 cross-repo commit)
+  - **真 cross-repo maintenance 完整集 8 commit verify XenoDev git log 真路径正解**(grep "docs(spec): 004-pB|docs(skill):" 真路径):
+    1. `0736d4a` (T022 § spec · spec/risks/IN-v022-4)
+    2. `47d6c2a` (T022 framework · codex-review SKILL §3.2 path B review 用法)
+    3. `6c52bab` (T021 spec · ship 后 retroactive amendment · **prior 漏**)
+    4. `473dd6d` (T021 spec · §6.1.1 O4 unique week 真意义补)
+    5. `374f02b` (T021 framework · parallel-builder SKILL §6.3+§7 #10 anti-pattern)
+    6. `69871cd` (T023 spec · ship 后 retroactive amendment · file_domain telegram/ + alembic 0012 · **prior 漏**)
+    7. `c8491d7` (T023 spec · §6.1.1 O6 mock cover 真意义补)
+    8. `f88d3d6` (T002 framework · codex-review §4+§6+§7+§8 0.3 升级 · 0 Verdict 行 P-prefix 推断分流)
+    9. `ed9ffbc` (T030 spec · §6.1.1 O5 + §7.2 + tasks/T030.md retroactive amendment · prior entry 17 待 operator append · 已 ship 未告)
+    10. `bb61187` (T003 spec · §6.1.1 O9 + tasks/T003.md retroactive amendment · 本 entry 18 cross-ref · 已 ship 未告)
+  - **真完整集 10 commit** · spec 7 + framework 3 真稳态完整集 · 5 跨仓 task evidence (T022 + T021 + T023 + T002 + T030 + T003)· prior 我 LOG 记 "spec 4 + framework 3" 真数错 · 真集 "spec 7 + framework 3" 真稳态
+  - **prior LOG entry 12/14/15/16/17 漏算的真因**:
+    - 我之前 prior pattern (T010/T020/T012/T013/T040-A) ship 内 squash retroactive amendment commit 真路径包含在 ship squash 内
+    - T021/T023 后 producer pattern 演化 = ship squash + 紧跟独立 retroactive amendment commit(commit `6c52bab` 在 T021 8eceddc 之后 · commit `69871cd` 在 T023 1895799 之后)· 我 prior LOG 没 verify XenoDev git log 真路径 · 直接信 producer 报告 + 自己看 IDS 端没看 XenoDev 端 · 漏算
+    - 真路径教训:**cross-ref 不能只信 producer 报告 · 必 verify XenoDev git log 真路径 grep "docs(spec): 004-pB|docs(skill):" 真完整集**(append-only LOG 不改 prior entries · 本 entry 18 codify 真完整集 + 修正历史)
+- **件 3.1 阶段 2c 波 12 闭环 + v0.2 完成度 87.5%**(14/16 ship · 剩 3 task · T040-B 真实际比原估 +5-9h):
+  - 累 14 ship · v0.2 主体 + Phase 0 fixture/archive prep + PPV P1.A mock + 自动化 + alert + transcription 全 ship · 剩 T024 / T025 / T040-B 3 task ≈ 31-43h(T040-B 实际 13-17h)
+  - **G1 真触发 evidence 跨 14 ship 累完整集** · multi-axis 8+ 维度 evidence(spec-gap-fix 6 连发 + 4 新 tag + cap escalation 4 实证 + ROI 优化 + cross-repo 10 commit + schema migration 双连发 + cap compliance 双实证 + worktree-style build_repo 3 实证 + ship 前 retroactive amend 新 precedent + producer/IDS LOG count error verify SOP 3 实证 + executable protection 新 precedent)· plan v0.3 framework 升真完整 evidence 集合
+  - 仍按 plan v0.3 path (c):operator 起 plan-rosy-naur v13 时正式决议(本 review 不动 plan · 但 entry 18 真路径 codify 真完整集 evidence)
+
+**Follow-up commits**:
+- XenoDev T003 ship squash commit `9b54155`(feat(004-pB) · T003 Phase 0 v0.1 advisor archive backfill prep ship · 3-round codex review · operator A 决议突破 cap · stub placeholder schema strict 60/60 enforce · 真 60 天 backfill 留 T040-B · verify XenoDev git log 回填 prior 未告)
+- XenoDev T003 ship 后 retroactive amendment commit `bb61187`(docs(spec) · spec §6.1.1 O9 + tasks/T003.md retroactive amendment · ship 后做 · 跟 T030 ed9ffbc + T023 69871cd pattern 同 · IDS handback-id 004-pB-20260519T055705Z entry 18 · verify XenoDev git log 真路径捕 producer 已自跑 · 不需新 commit · 仅 LOG cross-ref)
+- **真 cross-repo maintenance 完整集 10 commit cross-ref 完整集**(本 entry 18 codify · append-only LOG 不改 prior entries · 历史漏算修正):
+  - 0736d4a / 47d6c2a / 6c52bab / 473dd6d / 374f02b / 69871cd / c8491d7 / f88d3d6 / ed9ffbc / bb61187 = 10 commit
+  - spec 7 + framework 3 真稳态完整集 / 5 跨仓 task evidence (T022 + T021 + T023 + T002 + T030 + T003)
+  - SHARED-CONTRACT §6.4.1 Step 5 闭环责任(IDS 异步段)真 10 commit 完整稳态实证 + spec/framework 真稳态完整集
+- T040-B / T024 scope FU backlog cross-ref:
+  - FU-archive-export-script (medium · T040-B scope · ~3-4h export script implement)
+  - FU-v0.1-archive-source-locate (high · T040-B scope · operator manual ~3h+ locate v0.1 真历史 advisor data)
+  - FU-T024-stub-source-reject (high · T024 scope · ~0.5h source filter + assert)
+  - FU-T024-stub-reject-test (high · T024 scope · ~0.5h schema strict 60/60 reject unit test)
 
