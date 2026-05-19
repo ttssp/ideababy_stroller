@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-18T18:00:00Z
-total_decisions: 16
+last_updated: 2026-05-19T01:45:00Z
+total_decisions: 17
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -608,4 +608,64 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - XenoDev 端 verify `f010afc` 真存在 + 真路径 T002 ship commit(verify 回填 entry 16 missing data · prior entry 16 入 LOG 时 operator 未告 hash)
   - **不轻信 producer 报告 · 本次跨仓 verify 真 evidence 真路径 cross-ref 真路径准确**(plan v0.3-global §3 T2 candidate "consumer cross-ref verify SOP" 新 evidence)
 - XenoDev push 状态:**未 push**(operator per CLAUDE.md push 前需确认 · 跟 IDS 端同步原则 · 跨仓 push 双仓都需 operator 单次明示确认)
+
+
+## 2026-05-19T01:45:00Z · 004-pB-20260519T012659Z · ENTRY 17
+
+**Reviewed at**: 2026-05-19T01:45:00Z
+**Tags**: feature
+**Severity**: medium(prior 15 真入库 11 low + 3 medium [T022/T023/T002] + 1 high [T021] · 本 T030 medium · medium 严重度第 4 次 · 累 medium 4/17 · high 1/17)
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS · filename + 6 约束自查双 PASS · build_repo 含 worktree-style 子目录 `/Users/admin/codes/XenoDev/projects/004-pB/T030`(第 2 次 evidence · prior T002 第 1 次)
+**Related task**: T030 Phase 3 PPV P1.A multimodal e2e mock cover + ppv-p1.sh shell wrapper(risk_level=high task · mock cover scope · 4 round codex adversarial cap touched · operator A 决议突破 cap · XenoDev squash commit `<待 operator append>` · 入 LOG 时未告 ship hash · 待 cross-ref 时 verify 回填)
+**Operator decisions**:
+- [ ] 修 PRD §"<section>"
+- [ ] 修 SHARED-CONTRACT §"<section>"
+- [x] 修 XenoDev spec(本仓内,信息式)— **§7 spec maintenance 立即起** · 跨仓 cd XenoDev 起独立 docs(spec) commit · 改 specs/004-pB/spec.md §6.1.1 O5 + §7.2 + tasks/T030.md retroactive amendment 3 处 · 跟 prior c8491d7 (T023 O6) + 473dd6d (T021 O4) precedent 同 pattern · 第 7 个 cross-repo maintenance commit · spec 4 + framework 3 真稳态完整集 · 0.3h · patch 已存 /tmp/T030-retroactive-amendment.patch
+- [x] 无操作(收悉)— 4 个 T040-B scope FU 延 T040-B(FU-orchestrator-audio-video-impl high · FU-pipeline-fetch-cli high · FU-video-handler-impl medium · FU-spec-§6.1.1-O5-retroactive-amend low-medium) · FU-codex-skill-§4.2-cap-precedent (low parallel-builder SKILL §4.2 加 0.2 升级 operator A 决议突破 cap 合规条件) 延后 batch 处理
+
+**Operator note**: T030 ship 接受 · v0.2 Phase 3 PPV P1.A regression 真上线(mock cover · multimodal e2e 6 test 真路径 [3 fixture 参数化 + canonical verify + audio_handler detect 覆盖 + video_handler stub negative] + ppv-p1.sh shell wrapper · CRITICAL ship-gate scope header + 3 行 [warn] echo disclaim "NOT the ship gate · ship gate (P1.B) 留 T040-B")· 6 test PASS · 真路径 ship gate scope 缩到 P1.A regression(plan-mode 6 处决议 Q1-Q6 全 A 路径 + Q2=B 修订 mock LLM/Whisper 不接真 OPENAI · cost ≈ $0)· 0 src/ 改动 · 0 alembic 改动 · 0 dep 改动。**codex 4 round adversarial-review · cap touched · operator A 决议突破 cap(第 3 次 cap escalation · 跟 T021 14 round + T022 6 round precedent 同)**:
+- round 1 (--base main): 2 high (F1 P1.A 绕生产 pipeline · F2 ppv-p1.sh 省略 spec §7.2 字面 P1.B ship gate) · fix marker comment commit 2a29248
+- round 2: 1 high (F2 false green ship gate) · fix strip "ship gate" label + 3 行 [warn] echo commit 0bad8a9
+- round 3: 1 high + 1 medium (F-high require retroactive amendment ship 前先做 · F-medium video coverage) · fix 分两 commit: worktree 内 video_handler stub negative commit 97e9299 + main 上独立 spec/task retroactive amendment commit `<待 ship 后填入>`
+- round 4: 1 high + 1 medium · 几乎同 round 3 finding · codex 真路径仍要求 implement production path 或拆 task · **cap touched** · operator A 决议突破 cap · 真合规条件:round 1-3 全闭环 + round 4 仍 needs-attention 是真 scope 分歧(spec frozen 字面 vs operator Q1-Q6 决议 retroactive amendment · 不是真 quality 问题)
+
+**🎉 plan v0.2-global 件 3.1 阶段 2c 波 11 闭环**:T010+W1+W2+T011+T012+T013+T040-A+T020+T022+T021+T023+T002+T030 = **13 ship**(IDS 17 真入库 entry + 1 Drop entry) · v0.2 Phase 0 fixture T002 + Phase 2 全 4 + Phase 2b 三件 + Phase 2c alert T023 + Phase 3 partial T040-A + **Phase 3 PPV P1.A T030** = v0.2 主体 ship gate 基础 + 自动化基础设施 + alert dispatcher + multimodal fixture + PPV P1.A regression 全 ship · 剩 T024(opus 12-16h · G1 候选)+ T025(sonnet 6-8h · 冲突报告 UI · 等 T024)+ T040-B(等 T040-B FU 4 项完整真生产 implement · 5-8h)· 共 **3 task ≈ 23-30h** · v0.2 收官真近(剩 3 task vs 已 ship 13 ship · 完成度 81%)。
+
+**framework 维度观察(本包真信号 3 个新 evidence + 1 producer 错列纠错)**:
+
+- **第一次 "ship 前先做 retroactive amendment"**(prior 14 包真路径 retroactive amend 全 ship 后做 · T030 是新 precedent):
+  - prior pattern:T013 / T020 / T021 / T022 / T023 / T040-A retroactive amendment 全 ship 后 separate docs(spec) commit
+  - T030 新 precedent:plan-mode a 决议 "retroactive amendment ship 前先做" · 但 commit 真路径仍走 main 上独立 docs(spec) commit · 不进 T030 squash · 严守 §4.4 diff 边界
+  - 真因:codex round 3 F-high 真要求 "若 scope 确实只剩 P1.A 回归 · 先修改 T030 task/spec/依赖关系" · ship 前先做 → 让 ship 时已 spec compliance
+  - plan v0.3-global §3 T2 candidate "v2.3+ retroactive amendment 真路径时序选择 pattern" 新 evidence(ship 前 vs ship 后 · 当 codex 真要求 scope 调整时 ship 前做)
+- **第 3 次 cap escalation 真稳态 pattern**(prior T021 14 / T022 6 / 本 T030 4 round · cap touched 真根因都是 scope 分歧):
+  - 累计 codex review round 真分布:0-2 round simple ship(W1+W2/T011/T012/T013/T040-A/T020/T002/T030 round 1 闭环前) · 4 round mid-complex(T023/T030 cap touched) · 5-6 round complex(T010/T022) · 10+ round escalation(T021)
+  - **cap escalation 真合规条件 emerge**:round 1-N 全闭环 + 最后 round 是 scope 分歧不是 quality 问题(codex 继续 push 更深 architecture / scope 真路径 · operator A 决议 cap 守 vs ship)
+  - plan v0.3-global §3 T2 candidate "codex review derivation guide · cap escalation 真合规条件 pattern" 新 evidence(prior 3 实证)· **跟 FU-codex-skill-§4.2-cap-precedent backlog 真路径对应**
+- **第 2 次 build_repo 含 worktree-style 子目录**(prior T002 第 1 次 · 本 T030 第 2 次):
+  - T030 workspace block: from_build_repo / build_repo / working_repo 全 `/Users/admin/codes/XenoDev/projects/004-pB/T030`
+  - 真信号 = parallel worktree-style 独立 build 真稳态(operator T002 + T030 都用 worktree 独立跑 · 不污染 main XenoDev session)
+  - SHARED-CONTRACT §6.3 workspace block 设计真路径支持 worktree 子目录 · 2 实证 evidence 真稳态
+- **PRODUCER ERROR 纠错**(verify-before-cross-ref SOP 真路径捕):
+  - producer §7 字面列 "7 commit prior 6 次 cross-repo/SKILL maintenance commit:0736d4a + 47d6c2a + 473dd6d + 374f02b + c8491d7 + **`11ff1a2`** + f88d3d6"
+  - **真问题**:`11ff1a2` 真路径 = "docs(retro): 006a-pM B2-2 §1.8 加 known-limit"(006 retro doc · 跟 004-pB hand-back 完全无关 · 不是 cross-repo maintenance)
+  - **verify 路径**:IDS 端 cross-ref 时 verify XenoDev git log · 真路径捕 producer 错列
+  - **真路径正解**:prior cross-repo maintenance 真集合 = 0736d4a + 47d6c2a + 473dd6d + 374f02b + c8491d7 + f88d3d6 = **6 commit**(spec 3 + framework 3)· T030 §7 spec maintenance commit 是**第 7 个** · spec 4 + framework 3 真稳态
+  - plan v0.3-global §3 T2 candidate "consumer cross-ref verify SOP" + "producer self-count 真路径错风险" 双 evidence(prior T002 entry 16 时第 1 次 verify SOP 真路径捕 missing ship hash · 本 T030 第 2 次 verify SOP 真路径捕 producer 错列 cross-repo commit · SOP 真路径 ROI sustained)
+- **4 个 T040-B scope FU 真集合(T040-B 启动条件 trigger)**:
+  - FU-orchestrator-audio-video-impl (high · ~4-6h · orchestrator.py L113-117 audio/video 真路径 implement)
+  - FU-pipeline-fetch-cli (high · ~2-3h · decision_ledger.pipeline.fetch CLI 真实装)
+  - FU-video-handler-impl (medium · ~3-4h · ffmpeg 抽 audio → audio_handler)
+  - FU-spec-§6.1.1-O5-retroactive-amend (low-medium · ~0.5h · T040-B ship 时回填 evidence)
+  - **真信号**:T040-B 真路径 scope 已**完整定义 4 个 FU** · 总估时 ~9.5-13.5h · 比 prior plan v0.2 "T040-B 等 deps · 5-8h" 真路径预估**多 ~5h**(因 T030 真发现 audio/video 真生产 implement 比预想复杂)· plan v0.2-global 真路径需 patch T040-B 估时 5-8h → 10-14h
+- **件 3.1 阶段 2c 波 11 闭环 + v0.2 完成度 81%**(13/16 ship · 剩 3 task):
+  - 累 13 ship · v0.2 主体 + Phase 0 fixture + PPV P1.A mock cover 全 ship · 剩 T024 / T025 / T040-B 3 task ≈ 23-30h(T040-B 实际 10-14h · 比原预估 +5h)
+  - **G1 真触发 evidence 跨 13 ship 累完整集** · multi-axis 7+ 维度 evidence(spec-gap-fix 6 连发 + 4 新 tag + cap escalation 3 实证 + ROI 优化 + cross-repo 7 commit + schema migration 双连发 + cap compliance 双实证 + worktree-style build_repo 双实证 + ship 前 retroactive amend 新 precedent + producer error 纠错 SOP 实证)· plan v0.3 framework 升真完整 evidence 集合
+  - 仍按 plan v0.3 path (c):operator 起 plan-rosy-naur v13 时正式决议(本 review 不动 plan)
+
+**Follow-up commits**:
+- XenoDev T030 ship commit `<待 operator append + IDS verify XenoDev git log>`(squash · 入 LOG 时未告 hash · 跟 T002 entry 16 同 pattern · cross-ref 时回填 verify)
+- XenoDev T030 ship 前 retroactive amendment commit `<待 operator append + IDS verify XenoDev git log>`(plan-mode a 新 precedent · ship 前先做 · 走 main 上独立 docs(spec) commit 不进 squash)
+- XenoDev pending cross-repo spec maintenance commit(operator §7 决议立即起 · spec.md §6.1.1 O5 + §7.2 + tasks/T030.md retroactive amendment · patch 已存 /tmp/T030-retroactive-amendment.patch · 跟 c8491d7 / 473dd6d precedent 同 pattern · **第 7 commit cross-repo maintenance · spec 4 + framework 3 真稳态完整集 + 跨仓 task 5 个 evidence T022+T021+T023+T002+T030**)
+- IDS 待 hash 后再 cross-ref(跟 T021/T022/T023/T002 entry cross-ref 同 pattern · verify-before-cross-ref SOP 真路径 mandatory)
 
