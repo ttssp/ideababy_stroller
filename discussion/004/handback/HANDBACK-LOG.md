@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-19T08:30:00Z
-total_decisions: 19
+last_updated: 2026-05-19T09:00:00Z
+total_decisions: 20
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -781,4 +781,62 @@ T024 真 ship · plan-v0.2-global 件 3.1 阶段 2c 波 13 闭环 · v0.2 完成
 - **FU-task-T024-frontmatter-amend** (low · ~0.2h · T024.md L14 字面 `migrations/versions/0044_*` → `alembic/versions/0013_*` retroactive 修)
 - **FU-spec-§6.1.1-O7-O9-amend** (low · 已 ship 376e620 · 不需新 commit · cross-ref 入本 entry)
 - **FU-producer-§8-evidence-schema** (low · framework SHARED-CONTRACT §6.3 §8 evidence schema MUST list impl/ship + retroactive amendment hash · 跟 prior entry 16 T002 + 17 T030 + 18 T003 同 pattern 第 4 次实证 · 等下次 SHARED-CONTRACT bump 时 implement)
+
+
+## 2026-05-19T09:00:00Z · 004-pB-20260519T081745Z
+
+**Reviewed at**: 2026-05-19T09:00:00Z
+**Tags**: spec-gap-fix
+**Severity**: high
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS
+**Related task**: T025 (Phase 2c · plan-v0.2-global 件 3.1 阶段 2c 波 14 闭环 · v0.2 完成度 15→16 task ship · 剩 T040-B 收官 1 task)
+**Related XenoDev commits**: `3555206` (T025 impl/ship · producer §8 evidence 漏列) · `f800d56` (T025 retroactive amendment · 已 ship · 第 10 cross-repo maintenance commit · spec 7 + skill 3 真稳态)
+**Related fix commits**: `2e7b9e4` (test red→green) · `3df6c53` (r1 fix) · `ba69418` (r2 fix · cap reached)
+
+**Operator decisions**:
+- [ ] 修 PRD §"..." (无 PRD 改 · T040-B 真路径)
+- [ ] 修 SHARED-CONTRACT (无)
+- [x] 修 XenoDev spec(本仓内 · 信息式)— 已 ship `f800d56` retroactive amendment · spec.md §6.1.1 O8 + tasks/T025.md 真路径补(ship 后 retroactive · 跟 T024 376e620 + T003 bb61187 + T030 ed9ffbc + T023 69871cd same pattern · 第 5 次 ship-后 retroactive amendment 真稳态)
+- [x] 无操作(收悉 · 4 个 FU 延 T040-B backlog · 不需现在 implement)
+
+**Operator note**:
+T025 真 ship · plan-v0.2-global 件 3.1 阶段 2c 波 14 闭环 · v0.2 完成度 **100% (16/16 task ship · T025 + T040-A partial)** 真路径**接收** · 剩 **T040-B 1 task 收官**(实际 13-17h · 真生产 enforce 真路径含 T024/T030/T003/T025 全 FU 真路径)。
+
+**🎉 plan-v0.2-global 件 3.1 阶段 2c 14 波 ship 全闭环 · T025 真 ship 是 v0.2 16 task 最后一个 spec-gap-fix 真路径**(T040-B 真路径 v0.2 Phase 3 收官 实际生产实装)。
+
+**🚨 plan v0.3 G1 真触发实证 第 5 维度新 evidence(本 entry 20 codify · 跟 entry 19 9 维度同 stack)**:
+1. **Cap escalation 第 6 次连发**(T021 14r → T022 6r → T030 4r → T003 3r → T024 4r → **T025 3r**)· SKILL §4.2 4-round cap 真路径反复 break · 真稳态 · plan v0.3 §1 G1 真触发条件 1 · 6 task 真路径 6 次实证
+2. **Ship-后 retroactive amendment 第 6 次连发**(T021 6c52bab → T023 69871cd → T030 ed9ffbc → T003 bb61187 → T024 376e620 → **T025 f800d56**)· spec §6.1.1 O4/O5/O6/O9/O7+O8+O9/O8 retroactive 同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 2
+3. **Cross-repo maintenance commit 真完整集 12 commit**(prior 11 + 本次 +1 = 12 commit · spec 7 + skill 3 真稳态)
+4. **Scope dispute 真路径 operator A 决议接受 第一次实证**(T025 round 3 codex F1 reiteration 真路径 production wire 4-lane scope dispute · codex 真路径**不接受** scope disclaim · block merge until production wire 真路径**4-lane**)· operator A 决议接受 scope dispute 真路径**新 pattern**(prior 5 task 真路径 cap break 真路径 finding 真路径已 fix · T025 真路径 finding 真路径 ship gate scope dispute 真路径**fully understood + operator A 决议留 T040-B**)· 跟 spec §6.1.1 O8 真路径 retroactive 同 pattern · 真稳态 第一次实证 · plan v0.3 §1 G1 真触发条件 10 新维度
+5. **Task path bug 第 2 次连发**(T024 L14 alembic path bug + **T025 L9-10 ui/ vs web/ path bug**)· retroactive amendment 真路径 frontmatter 真路径修 · 真稳态 第 2 次 · plan v0.3 §1 G1 真触发条件 11 新维度
+
+**真 cross-repo maintenance 完整集 12 commit(本 entry 20 codify)**:
+```
+prior 11(0736d4a + 47d6c2a + 6c52bab + 473dd6d + 374f02b + 69871cd
+        + c8491d7 + f88d3d6 + ed9ffbc + bb61187 + 376e620)
+本次 +1: f800d56(T025 spec §6.1.1 O8 + tasks/T025.md retroactive)
+→ spec 7 + skill 3 真稳态完整集
+→ 7 跨仓 task evidence(T022+T021+T023+T002+T030+T003+T024+T025)
+SHARED-CONTRACT §6.4.1 Step 5 闭环责任真完整稳态
+```
+
+**🚨 第 5 次 verify SOP 真路径 catch PRODUCER §8 evidence 漏列 ship hash**(连续 5 task 实证 · entry 16 T002 + entry 17 T030 + entry 18 T003 + entry 19 T024 + 本 entry 20 T025 · 5 次稳态)· FU-producer-§8-evidence-schema 真稳态:
+- producer §8 evidence 漏列 T025 impl/ship hash `3555206`
+- producer §8 evidence 漏列 T025 retroactive amendment hash `f800d56`
+- verify XenoDev git log grep "T025" 真路径正解
+- 真稳态 5 次实证 · 跟 prior entry 16/17/18/19 同 pattern · 真路径**强证据**framework SHARED-CONTRACT §6.3 §8 evidence schema MUST list impl/ship + retroactive amendment hash · plan v0.3 §1 G1 真触发条件 9 强化(从单实证→真稳态 5 次)
+
+**Follow-up commits**:
+- 本 entry 20 入库 IDS commit(本 commit)+ T025 hand-back 包入库
+- 跨仓 XenoDev `f800d56` 已 ship 不需新 commit(retroactive amendment ship 后)
+- 跨仓 XenoDev `3555206` 已 ship 不需新 commit(impl/ship)
+
+**Follow-up backlog**(全延 T040-B):
+- **FU-T025-real-wire-4-lane** (high · ~3-5h · T040-B scope · wire.py 真路径**真**接 ConflictReportAssemblerService + StrategyRegistry.build_default(xgboost_price_provider=...) 真路径 4-lane registry · DI inject)
+- **FU-T040-B-real-conflict-ui-render** (high · ~3-5h · T040-B scope · 真 30 ticker × 4 lane conflict UI render · 真 30/30 真值 per O8 量化 ship 真生产)
+- **FU-T040-B-real-yfinance-akshare** (high · ~5-8h · T040-B scope · 真 yfinance/akshare 价格 provider 实装 · 真训练 · 真 batch predict 真路径 30 ticker daily)
+- **FU-task-T025-frontmatter-amend** (low · ~0.2h · T025.md frontmatter L9-10 字面 `web/templates/conflicts.html` + `web/handlers/conflict_handler.py` retroactive 真路径修 → `ui/templates/conflicts/*` + `ui/router_conflicts.py` · 跟 T024 L14 alembic path bug retroactive 同 pattern)
+- **FU-spec-§6.1.1-O8-amend** (low · 已 ship f800d56 · 不需新 commit · cross-ref 入本 entry)
+- **FU-producer-§8-evidence-schema** (low-medium · framework SHARED-CONTRACT §6.3 §8 evidence schema MUST list impl/ship + retroactive amendment hash · 5 次实证 真稳态 · 升级 priority low→low-medium · 等下次 SHARED-CONTRACT bump 时 implement)
 
