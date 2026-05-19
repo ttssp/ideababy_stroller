@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-19T06:15:00Z
-total_decisions: 18
+last_updated: 2026-05-19T08:30:00Z
+total_decisions: 19
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -736,4 +736,49 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
   - FU-v0.1-archive-source-locate (high · T040-B scope · operator manual ~3h+ locate v0.1 真历史 advisor data)
   - FU-T024-stub-source-reject (high · T024 scope · ~0.5h source filter + assert)
   - FU-T024-stub-reject-test (high · T024 scope · ~0.5h schema strict 60/60 reject unit test)
+
+
+## 2026-05-19T08:30:00Z · 004-pB-20260519T074834Z
+
+**Reviewed at**: 2026-05-19T08:30:00Z
+**Tags**: spec-gap-fix
+**Severity**: high
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS
+**Related task**: T024 (Phase 2c · plan-v0.2-global 件 3.1 阶段 2c 波 13 闭环 · plan-v0.3-global G1 真触发候选)
+**Related XenoDev commits**: `4e03476` (T024 impl/ship · producer §8 evidence 漏列) · `376e620` (T024 retroactive amendment · 已 ship · 第 9 cross-repo maintenance commit · spec 6 + skill 3 真稳态)
+**Related fix commits**: `870602a` (test red) · `3df0bab` (test red) · `ffbeaa9` (test extend) · `44542be` (r1 fix) · `2910ac9` (r2 fix) · `cfb4f37` (r3 fix) · `90ab66c` (r4 fix · cap break)
+
+**Operator decisions**:
+- [ ] 修 PRD §"..." (无 PRD 改 · T040-B 真路径)
+- [ ] 修 SHARED-CONTRACT (无)
+- [x] 修 XenoDev spec(本仓内 · 信息式)— 已 ship `376e620` retroactive amendment · spec.md §6.1.1 O7/O8/O9 + tasks/T024.md 真路径补(ship 后 retroactive · 跟 T030 ed9ffbc + T023 69871cd + T003 bb61187 same pattern · 第 4 次 ship-后 retroactive amendment 真稳态)
+- [x] 无操作(收悉 · 5 个 FU 延 T040-B/T025 backlog · 不需现在 implement)
+
+**Operator note**:
+T024 真 ship · plan-v0.2-global 件 3.1 阶段 2c 波 13 闭环 · v0.2 完成度 93.75%(15/16 ship)· 剩 T025 + T040-B 2 task ≈ 19-31h(T040-B 实际 13-17h · 含 T024/T030/T003 各 FU 真 60-day backfill + 真 yfinance/akshare provider + 真 XGBoost 真训练)。
+
+**🚨 plan v0.3 G1 真触发实证(本 entry 19 codify 真完整集 9 维度多轴 evidence)**:
+1. **Cap escalation 第 5 次连发**(T021 14r → T022 6r → T030 4r → T003 3r → **T024 4r**)· 跟 SKILL §4.2 4-round cap 真路径反复 break · 真稳态 pattern · operator A 决议成熟稳定 · plan v0.3 §1 G1 真触发条件 1
+2. **Retroactive amendment ship 后 pattern 第 5 次连发**(T021 6c52bab → T023 69871cd → T030 ed9ffbc → T003 bb61187 → **T024 376e620**)· 跟 spec §6.1.1 O4/O5/O6/O9/O7+O8+O9 retroactive 同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 2
+3. **Cross-repo maintenance commit 真完整集 11 commit**(prior LOG entry 18 codify 10 commit + 本 entry 19 加 376e620 = 11 commit · spec 6 + skill 3 + (374f02b/47d6c2a + 0736d4a 真路径) 真稳态 · 跟 SHARED-CONTRACT §6.4.1 Step 5 闭环责任 同 pattern · plan v0.3 §1 G1 真触发条件 3
+4. **T003 stub data + T024 stub-reject loader 真路径 contract 闭环**(per FU-T024-stub-source-reject + FU-T024-stub-reject-test 真闭环 · pydantic extra="forbid" reject 60/60 schema marker · 跟 entry 18 T003 第一次 executable schema-layer protection precedent 同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 4
+5. **stub jsonl + reject contract 真路径承接 T040-B 真生产**(per §6 FU-T024-real-correlation-enforce · 真 60-day backfill 真路径前置依赖 FU-archive-export-script + FU-v0.1-archive-source-locate · 跟 v0.5+ replace 同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 5
+6. **V3 + V4 真路径 CLI verify 闭环**(O7 V3 mock provider 30 ticker JSON array · O9 V3 stub reject 60/60 · D-spec-10 V4 物理隔离 0 match grep · 跟 T021 O4 unique week + T023 O6 mock cover + T030 P1.A paste-runnable 真路径同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 6
+7. **TDD red-green log 真路径 6-stage(red [negative] + red [positive] + green + green-r1 + green-r2 + green-r3 + green-r4-fix-final)** · 跟 prior TDD red-green log 真路径同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 7
+8. **DI-only registry 真路径 build_default 真路径**(round 3 F1 fix · build_default(xgboost_price_provider) 真路径 reject 默 register NO_VIEW lane 真路径 fake signal)· 真路径 fail-closed 真路径 · 跟 spec §7.2 NO_VIEW 真路径同 pattern · 真稳态 · plan v0.3 §1 G1 真触发条件 8
+9. **PRODUCER §8 evidence schema 漏列 ship hash 真路径**(impl/ship hash `4e03476` + retroactive amendment hash `376e620` 全漏列 · 跟 entry 16 T002 producer 漏列 ship hash 真路径同 pattern · IDS verify XenoDev git log SOP 第 4 次真路径 catch · 真稳态 · 跟 entry 17/18 verify SOP 真路径同 pattern · 真路径 codify SHARED-CONTRACT §6.3 §8 evidence MUST list impl/ship + retroactive amendment hash · plan v0.3 §1 G1 真触发条件 9
+
+**Follow-up commits**:
+- 本 entry 19 入库 IDS commit(本 commit)+ T024 hand-back 包入库
+- 跨仓 XenoDev `376e620` 已 ship 不需新 commit(retroactive amendment ship 后)
+- 跨仓 XenoDev `4e03476` 已 ship 不需新 commit(impl/ship)
+
+**Follow-up backlog**(延 T040-B / T025):
+- **FU-T024-real-price-provider** (high · ~3-5h · T040-B scope · yfinance/akshare 真 provider 真路径)
+- **FU-T024-real-xgboost-train** (high · ~5-8h · T040-B scope · 真训练 pipeline + model artifact 持久化 strategy_xgboost_metadata)
+- **FU-T024-real-correlation-enforce** (high · ~2-3h · T040-B scope · `--enforce-threshold 0.5` enable + 真 60-day backfill 真路径前置 FU-archive-export-script + FU-v0.1-archive-source-locate)
+- **FU-T025-xgboost-ui-integration** (medium · T025 scope · per O8 量化)
+- **FU-task-T024-frontmatter-amend** (low · ~0.2h · T024.md L14 字面 `migrations/versions/0044_*` → `alembic/versions/0013_*` retroactive 修)
+- **FU-spec-§6.1.1-O7-O9-amend** (low · 已 ship 376e620 · 不需新 commit · cross-ref 入本 entry)
+- **FU-producer-§8-evidence-schema** (low · framework SHARED-CONTRACT §6.3 §8 evidence schema MUST list impl/ship + retroactive amendment hash · 跟 prior entry 16 T002 + 17 T030 + 18 T003 同 pattern 第 4 次实证 · 等下次 SHARED-CONTRACT bump 时 implement)
 
