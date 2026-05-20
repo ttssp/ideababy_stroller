@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-12T03:31:30Z
-last_updated: 2026-05-19T12:30:00Z
-total_decisions: 21
+last_updated: 2026-05-20T14:03:25Z
+total_decisions: 22
 total_drops: 1
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
@@ -917,4 +917,38 @@ SHARED-CONTRACT §6.4.1 Step 5 闭环责任真完整稳态
 - **FU-spec-§6.1.1-T040-B-real-amend** (low · 已 ship cbc205d · 不需新 commit · cross-ref 入本 entry)
 - **FU-task-T040-frontmatter-amend** (low · 已 ship cbc205d · 包含 tasks/T040.md retroactive)
 - **FU-producer-§8-evidence-schema** (low-medium · 真稳态 6 次 · 等下次 SHARED-CONTRACT bump 时 implement)
+
+## 2026-05-20T14:03:25Z · 004-pB-20260520T134936Z · ENTRY 22
+
+**Reviewed at**: 2026-05-20T14:03:25Z
+**Tags**: spec-gap-fix
+**Severity**: high
+**Validator (consumer-mode)**: ✓ all 6 constraints PASS(`validate-handback.sh --mode=consumer` · handback_id `004-pB-20260520T134936Z`)
+**Related task**: T050(Phase 4 hand-back pipeline codify · T040 ship gate 聚合后收官 task · T040 blocks=[T050])
+**Related XenoDev commits**: producer §8 evidence 未列(本包 Rationale-only 极简结构 · 1KB vs prior ~14KB)· dogfood r0-r4 全 rc=0 · round 5 hotfix(details 截断 + event log 降级 WARN)
+
+**Operator decisions**:
+- [ ] 修 PRD §"..."(无 · pipeline codify 不涉产品级 PRD)
+- [ ] 修 SHARED-CONTRACT(无 · 见下方 producer 行为变化备注)
+- [ ] 修 XenoDev spec(本仓内 · 信息式)(无)
+- [x] 无操作(收悉 · 纯 build-side 里程碑 · 入 practice-stats)
+
+**Operator note**:
+T050 hand-back pipeline producer codify ship · self-host 自举产本包 · 纯 build-side 里程碑 · IDS 侧无需改动 · 收悉入 practice-stats。
+
+**真意义**:本包是 hand-back 通道 **producer 侧从 contract-only 走向可执行单脚本**的里程碑 —— XenoDev 把 §6.3 producer 行为做成 8-step 单脚本,并 **self-host 自举产出本包本身**(脚本可用的最强证明)。codex 4-round 6 finding 闭环 + 1 medium 接受(R4 F3 HANDOFF mutex · operator D cap break)。consumer 侧(本命令 `/handback-review`)早已实装 validator,至此 producer/consumer 两端均可执行,§6 hand-back 通道闭环。
+
+**Producer 行为变化备注(暂不写回 §6.3 · 待累积)**:本次 round-5 hotfix 引入两条 producer 行为 ——(1) §details 字段超长截断;(2) event log 写入失败降级 WARN(不 hard-fail)。当前判断为脚本实现细节(XenoDev 仓内),非协议级契约变化,故不 bump SHARED-CONTRACT。若后续 hand-back 包 details 截断行为影响 consumer 解析,再起协议修订。
+
+**Cap break 真稳态新增 1 例(operator D)**:prior 实证 operator A(6 task)+ operator B(T040-B-cover round 7)· 本 T050 R4 F3 medium 接受 = **operator D 第一次实证**(SKILL §4.2 4-round cap 反复 break · 第 8 task 连续 cap break 实证)· plan v0.3 §1 G1 真触发条件 1 + 13 持续 stack。
+
+**Self-host / dogfood 真稳态新维度**:T050 是首个 **producer 脚本自举产出 hand-back 包**的实证(dogfood r0-r4 全 rc=0 · self-host 产本包)· 真路径"工具用自己测自己"最强证明 · plan v0.3 候选新维度(self-host verification 作为 ship gate evidence)。
+
+**Follow-up commits**:
+- 本 entry 22 入库 IDS commit + T050 hand-back 包入库(待 operator 确认 commit)
+- 跨仓 XenoDev T050 codify commit 已 ship(producer §8 evidence 未列具体 hash · 本包极简结构 · 若需追溯 cd XenoDev git log grep "T050")
+
+**Follow-up backlog**:
+- **FU-producer-§8-evidence-schema**(low-medium · 本 T050 包 Rationale-only 极简结构再次印证 producer §8 evidence schema 应 MUST list impl/ship hash · 真稳态延续 prior entry 16-21 · 等下次 SHARED-CONTRACT bump 时 implement)
+- **FU-producer-details-truncation-contract**(low · round-5 hotfix 引入 details 截断 + event log WARN 降级 · 若影响 consumer 解析再起 §6.3 协议修订 · 暂记 backlog)
 
