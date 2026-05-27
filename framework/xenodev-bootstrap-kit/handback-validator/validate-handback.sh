@@ -65,31 +65,19 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# === 提取 frontmatter 字段(用 sed + grep 替代 gawk-only match)===
-# B2.2 Block A friction #1 fix:加 { grep || true; } 子 shell 包,
-# grep 不匹配时不杀脚本(set -e + pipefail 否则会让函数静默 exit,导致
-# 下方 MISSING 检查段被跳过,validator 静默 exit 1 无 stderr)
-extract_yaml_field() {
-    local field="$1"
-    local indent="$2"  # 顶级 = "", workspace 子段 = "  "
-    # 取 frontmatter(第一个 ---)到第二个 --- 之间)
-    # 然后 grep 出 "^<indent><field>:" 那行,提 value,strip quotes
-    awk '/^---$/{if(++c==1) next; if(c==2) exit} c==1' "$HANDBACK_FILE" \
-        | { grep -E "^${indent}${field}:[[:space:]]" || true; } \
-        | head -1 \
-        | sed -E "s/^${indent}${field}:[[:space:]]*//" \
-        | sed 's/^"\(.*\)"$/\1/' \
-        | sed "s/^'\(.*\)'$/\1/"
-}
+# === 共享 YAML 解析 helpers(per FU-producer-1 抽离;0 新依赖)===
+# 原 inline extract_yaml_field 迁到 _yaml-helpers.sh,signature 从 (field, indent)
+# 升 (file, field, indent) — 解耦 $HANDBACK_FILE 隐式依赖,允许 gen-handback.sh 共用。
+source "$SCRIPT_DIR/_yaml-helpers.sh"
 
-DISCUSSION_ID="$(extract_yaml_field discussion_id '')"
-PRD_FORK_ID="$(extract_yaml_field prd_fork_id '')"
-HANDBACK_ID="$(extract_yaml_field handback_id '')"
-SOURCE_REPO_FM="$(extract_yaml_field source_repo '  ')"
-HANDBACK_TARGET="$(extract_yaml_field handback_target '  ')"
-EXPECTED_REMOTE="$(extract_yaml_field expected_remote_url '  ')"
-REPO_MARKER="$(extract_yaml_field repo_marker '  ')"
-GIT_HASH="$(extract_yaml_field git_common_dir_hash '  ')"
+DISCUSSION_ID="$(extract_yaml_field "$HANDBACK_FILE" discussion_id '')"
+PRD_FORK_ID="$(extract_yaml_field "$HANDBACK_FILE" prd_fork_id '')"
+HANDBACK_ID="$(extract_yaml_field "$HANDBACK_FILE" handback_id '')"
+SOURCE_REPO_FM="$(extract_yaml_field "$HANDBACK_FILE" source_repo '  ')"
+HANDBACK_TARGET="$(extract_yaml_field "$HANDBACK_FILE" handback_target '  ')"
+EXPECTED_REMOTE="$(extract_yaml_field "$HANDBACK_FILE" expected_remote_url '  ')"
+REPO_MARKER="$(extract_yaml_field "$HANDBACK_FILE" repo_marker '  ')"
+GIT_HASH="$(extract_yaml_field "$HANDBACK_FILE" git_common_dir_hash '  ')"
 
 # 提 ts(从 handback_id 末尾)
 ISO_TS=""

@@ -43,6 +43,12 @@ fi
 
 # === 校验 schema(必需字段 + event_type enum + ts pattern)===
 # 用 python3 -c 一行;EVENT_JSON 通过 stdin 传(防 shell quote 复杂度)
+#
+# FU-T003-stderr-fix(2026-05-24):capture 区临时关 set -e,
+# 防 $(...) 替换 + python3 sys.exit(1) + set -e 时序 bug 让
+# VALIDATE_RC 永远捕到 0(详见 specs/006a-pM/tasks/FU-T003-stderr-fix.md
+# §"修法 A")。原 bug 实证:7/7 negative test 中 3 项 stderr silent。
+set +e
 VALIDATE_RESULT="$(printf '%s' "$EVENT_JSON" | python3 -c '
 import json, sys, re
 
@@ -80,6 +86,7 @@ if errors:
 print("OK")
 ' 2>&1)"
 VALIDATE_RC=$?
+set -e
 
 if [[ "$VALIDATE_RC" != "0" ]]; then
     echo "ERROR: event schema validation failed:" >&2
