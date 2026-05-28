@@ -25,6 +25,11 @@ skip_rationale: null
 handed_off_at: 2026-05-28T03:13:19Z
 prd_source: /Users/admin/codes/ideababy_stroller/discussion/006a-pM-v0.2/PRD.md
 shared_contract_version_honored: 2.0
+
+# Cross-repo split 扩展字段(IDS forward 端 v0.2 加 · SHARED-CONTRACT §6 隐含模式显式化)
+cross_repo_split: true
+target_repo_enum: [IDS, XenoDev]
+default_target_repo: IDS
 ---
 
 # Hand-off · 006a-pM-v0.2 → XenoDev (per SHARED-CONTRACT §6 v2.0)
@@ -103,3 +108,57 @@ per v3 forge stage doc 已就绪可消费:
 - B-4 协议改入 IDS v3 commit / B-4-XenoDev runtime 实装是 XenoDev 单独 task · 不越界
 - B-3 IDS dir flock 不入 v0.2 主线(仅 SHARED-CONTRACT changelog 记 v0.2-note · 触发条件已列)
 - bootstrap.sh 升级归 IDS bootstrap-kit(IDS=SSOT owner · XenoDev 只消费 bootstrap 结果)
+
+## §7 · Cross-repo split 协议(v0.2 扩展 · SHARED-CONTRACT §6 隐含模式显式化)
+
+### §7.1 · 为什么 v0.2 是跨仓 batch ship
+
+v0.2 的 11 项 backlog 三类(mirror rebuild × 4 + protocol revision × 4 + lib bug × 3)按物理改动归属拆开,**至少 50% 的 task 改 IDS 仓而非 XenoDev 仓**:
+
+- **IDS-only 改动**:protocol amendments(`framework/SHARED-CONTRACT.md` § 6 加 B-1 EXDEV + B-4-IDS verdict-evidence 协议语义)+ SSOT mirror(`framework/xenodev-bootstrap-kit/` 4 子树 + handback-validator/{templates,gen,score})+ `bootstrap.sh` 升级 + `MANIFEST-v0.2.md` append
+- **XenoDev-only 改动**:lib bug 真路径修(`lib/handback-validator/scan-credentials.sh` C-1 / `gen-handback.sh` C-2 / `score-handback.sh` C-3 case F)+ B-4-XenoDev runtime 实装(`--ids-verdict-evidence` flag + REVIEW-LOG.md schema + verify-all consumption)
+- **两仓都改**:B-2 event-schema enum 全复数(`event-schema.json` 在 XenoDev SSOT,IDS mirror 跟进 cp)
+
+`workspace.working_repo` = IDS 仅描述 plan-start cwd · 不暗示所有 task 改 IDS。本扩展协议是 v0.2 forward HANDOFF 端显式化这个事实。
+
+### §7.2 · target_repo 字段 enum
+
+每条 spec task 在 frontmatter 必含 `target_repo: IDS | XenoDev`(枚举 2 值):
+
+- `target_repo: IDS` — task 工作树在 IDS 仓 · 改动在 `/Users/admin/codes/ideababy_stroller/`
+- `target_repo: XenoDev` — task 工作树在 XenoDev 仓 · 改动在 `/Users/admin/codes/XenoDev/`
+
+跨仓 task(eg B-2 enum 5 文件 grep 一致)拆成 2 条 task,每条 `target_repo` 单值,不允许 hybrid。
+
+### §7.3 · spec-writer 分派规则
+
+spec-writer 拿到本 HANDOFF.md(`cross_repo_split: true`)后:
+
+1. 按 v3 stage doc §W3 refactor-plan + §W5 dev plan 拆 wave 1/2/3 + phase X
+2. 每条 task 显式标 `target_repo`(参见 §7.2 enum)
+3. **default_target_repo: IDS** — 如某 task 归属歧义,默认 IDS;XenoDev-only 改动必须 spec 显式标
+4. cross-repo task(eg mirror cp 涉及 source=XenoDev path / target=IDS path)的工作树在 IDS 仓(IDS=SSOT owner of mirror)· source path 是只读消费 · 不在 XenoDev 仓改
+
+### §7.4 · task-decomposer 分派规则
+
+task-decomposer 产 tasks/T*.md 时:
+
+1. 每个 T*.md frontmatter 透传 `target_repo`(从 spec.md 该 task 段读)
+2. 跨 wave 依赖关系按 §W5 dev plan(wave 1 → wave 2 → wave 3 顺序硬依赖)
+3. phase X(XenoDev B-4-XenoDev runtime)可与 wave 2 并行(SHARED-CONTRACT §6 协议先 ship,实装后 hand-back 验证)
+
+### §7.5 · parallel-builder worktree 路由
+
+parallel-builder 读 task `target_repo`:
+
+- `target_repo: IDS` → 在 IDS 仓 `projects/006-006a-pM-v0.2/<task-id>/` 起 worktree
+- `target_repo: XenoDev` → 在 XenoDev 仓自己的 worktree dir 起 worktree
+
+ship 后 hand-back 包统一写回 IDS `handback_target`(frontmatter `workspace.handback_target` · 双向 hand-off 通道不变)。
+
+### §7.6 · Fallback(若 XenoDev spec-writer 不认得本扩展)
+
+若 XenoDev spec-writer 解析 `cross_repo_split` 失败,fallback 行为:
+- 退化为 `default_target_repo: IDS`(所有 task 默认 IDS · 不丢任务)
+- spec.md 中 XenoDev-only 改动应该被 surface 为"⚠ 需 operator 决定 target_repo"标签 · 让 operator 临门拍板
+- 不阻塞 spec 产出 · 但需在 spec §"Assumptions" 显式记录"fallback 触发原因"
