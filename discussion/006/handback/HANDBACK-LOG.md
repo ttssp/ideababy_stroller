@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-05-11T14:30:00Z
-last_updated: 2026-05-27T09:08:34Z
-total_decisions: 17
+last_updated: 2026-05-29T10:04:24Z
+total_decisions: 29
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -376,3 +376,282 @@ producer drift 闭环;后续 XenoDev session 跑任何新 idea 的 hand-back pro
 - **决议**:approve · D6 precedent 接受 ship + R-Q6/R-Q7 followup
 - **O6 round-trip 真路径**:✅ 透传链 REVIEW-LOG → hand-back.ids_verdict_evidence 真路径 7 字段 inject → IDS dir 真路径 publish → HANDBACK-LOG ENTRY 真路径
 - **v0.2-shipped**:O1+O2+O3+O4+O5+O6 全 PASS · SLA.md §1.3 状态 2 真路径达成 · v0.2-shipped reached
+
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T110023Z · ENTRY 18
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: spec-gap-fix, feature
+**Severity**: medium
+**Related task**: T100(OQ-4 解法 A · 扩 check-6 regex)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: OQ-4 解法 A 落地 · check-6-id-charset-and-final-path.sh regex 扩 `(-v[0-9]+\.[0-9]+)?` · 7 fixture PASS · 解锁 wave 1 所有 P0 task。本 hand-back §2/§3 占位"待补"(gen-handback 漏传 --section2/--section3)· 不阻 batch ship · audit retroactive。
+
+**Follow-up commits**: 8b41410(wave 1 IDS commit 1)
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T120540Z · ENTRY 19
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: spec-gap-fix, feature
+**Severity**: low
+**Related task**: T100b(IDS mirror cp check-6 + manifest helper)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: IDS mirror cp · SHA dual-verify 833c4ca · 新增 scripts/T100b-cp-manifest.sh helper(idempotent + --dry-run + 严格 arg 校验)· codex review 3 round approve。§2/§3 占位 同 ENTRY 18。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T124606Z · ENTRY 20
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature
+**Severity**: low
+**Related task**: T101(cp 3 producer files → IDS bootstrap-kit)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: cp handback.template.md + gen-handback.sh + score-handback.sh → IDS bootstrap-kit mirror · SHA dual-verify · 7 字段 MANIFEST row 就绪 · symlink 三层 pre-check + IDS_ROOT hard check 防写树外。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T145935Z · ENTRY 21
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: spec-gap-fix
+**Severity**: medium
+**Related task**: T103(OQ-1 解法 A · score-handback escape 修)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: OQ-1 解法 a 落地(operator 拍板选 a)· gen-handback dquote check 移到 SECTION1 兜底前 · 修 FU-producer-1 Case F regression · 保留 case F 测试覆盖。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T151641Z · ENTRY 22
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature
+**Severity**: medium
+**Related task**: T104(B-2 enum 全复数)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: event_type=handback_drifts(复数)· 单数 + OLD type 字段双层 backward-compat 兼容 4 行 OLD events.jsonl · 5 文件 grep 一致。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T152637Z · ENTRY 23
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature
+**Severity**: low
+**Related task**: T105(B-2 IDS mirror cp event-schema.json)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: T104 真路径迁移完整 · handback_drifts 复数 + 单数 0 命中 · SHA dual-verify。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260528T162029Z · ENTRY 24
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature, spec-gap-fix
+**Severity**: medium
+**Related task**: T102(C-1 scan-credentials --exclude-paths + .ignore)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: scan-credentials.sh exit code 修 + --exclude-paths flag + .scan-credentials-ignore 白名单 + lib shim + file-arg single-file mode · 14 false positive 治理。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260529T001943Z · ENTRY 25
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature
+**Severity**: low
+**Related task**: T106(wave 1 IDS commit gate)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: wave 1 commit gate · MANIFEST §wave-1 + 5 文件 mirror + 7 hand-back 全 ship。
+
+**Follow-up commits**: 8b41410
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260529T033502Z · ENTRY 26
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature, spec-gap
+**Severity**: low
+**Related task**: T207(C-2 gen-handback --out 默认前缀)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] 无操作(收悉)
+
+**Operator note**: T207 ship 在 XenoDev L4 worktree · file_domain: lib/handback-validator/gen-handback.sh + tests/integration/test-gen-handback-out-prefix.sh · squash merge XenoDev commit f02cf05。
+
+**Follow-up commits**: 6ea00e4(wave 2 IDS commit 2)+ 225167d(FU-T207-1 IDS mirror hotfix · grep brackets)
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260529T040239Z · ENTRY 27
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature, drift, spec-gap
+**Severity**: medium
+**Related task**: wave2-IDS-bundle(8 task 汇总:T201/T202/T203/T204/T205/T206/T208/T209)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [x] 修 SHARED-CONTRACT(已合 B-1 / B-4-IDS / B-3 v0.2-note 三段 + changelog · per T204/T205/T206 真路径)
+- [ ] 修 PRD
+- [ ] 修 XenoDev spec
+- [x] retroactive approve D3/D4 precedent
+- [x] 无操作 其余(收悉)
+
+**Operator note**: wave 2 IDS-side 8 task 汇总 ship · 三个真路径 drift retroactive approve:
+- **D3-T203**:spec 写 8 文件 vs 真路径实测 13 文件 · 真路径 ls 决定 cp 清单 · 不动 frozen spec · approve(symptom = spec 表与 SSOT 实际数同步漂移 · 不是 bug)
+- **D3-T208**:wave-1 T101 cp 旧 SHA(24947d0b)vs T207 后 SHA(ea5ae582)· T209 MANIFEST §wave-2 加 update row 标 audit trail · approve(symptom = mirror drift · 已捕获)
+- **D4-T205**:adversarial-review 4 round captured 4 finding 全部不在 T205 file_domain 内(超出 SHARED-CONTRACT.md 边界 · 涉 XenoDev SKILL TX01/TX02 + IDS T301 wave 3 + IDS T303-T304 wave 3 · per spec.md §C09 + §D07 + §OUT-2)· transitional scoping 4 项已在 B-4-IDS 段 normative 明列 + bind wave 3/X 责任 · approve
+
+retroactive approve 理由:XenoDev session 现场判断符合 spec.md §C09/§D07/§OUT-2 by-design · finding 已 transitional bind 不会长期化 · 实际由 wave 3+phase X 验证全部闭环(ENTRY 28/29 PASS)。
+
+**Follow-up commits**: 6ea00e4(wave 2 IDS commit 2)+ 225167d(FU-T207-1 hotfix)
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260529T070729Z · ENTRY 28
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature, drift, spec-gap
+**Severity**: medium
+**Related task**: wave3-IDS-bundle(7 task 汇总:T301/T302/T303/T304/T305/T306/T307)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] retroactive approve D6 precedent
+- [x] 无操作 其余(收悉)
+
+**Operator note**: wave 3 IDS-side 7 task ship · IDS-wave-3-checkpoint reached(O1+O2+O3+O4+O5 PASS · O6 留 phase X)· 三个 D6 retroactive approve:
+- **D6-T301**:bootstrap.sh adversarial-review 6 round · R1-R6 全闭环 · R7 needs-attention(marker ownership 真路径深 attack surface)接受 ship · follow-up wave 3.5 / v0.3 加固 manifest-based cleanup
+- **D6-T304**:越界 fix 4 项(test-fixtures cp + HANDOFF/PRD/.eval seed + block-dangerous sync + verify-ppv-p1 flag)· 真路径 fixture 自包含达 SHIP-READY · approve
+- **D6-T306**:wave-1 T101 row + wave-2 T208 row 同步 FU-T207-1 hotfix(24947d0b → 7983cb13)· audit trail 保留在 commit msg
+
+PPV-P1 PASS 真路径实证(/tmp/verify-all.log + stdout 'SHIP-READY')· O5 关闭判据达成。
+
+**Follow-up commits**: 588b1e2(wave 3 IDS commit 3)+ 15bf752(T307 fixture cleanup)
+
+---
+
+## 2026-05-29T10:04:24Z · 006a-pM-v0.2-20260529T095412Z · ENTRY 29
+
+**Reviewed at**: 2026-05-29T10:04:24Z
+**Tags**: feature, drift, spec-gap
+**Severity**: medium
+**Related task**: TX04(phase X 4 task 汇总 · B-4-XenoDev runtime ship · O6 关闭)
+**6 约束 validator**: PASS(consumer mode)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec
+- [x] retroactive approve D6 phase X precedent
+- [x] R-Q6 + R-Q7 留 v0.2-note · 累积起 forge v4
+- [x] 无操作 其余(收悉)
+
+**Operator note**: phase X 4 task 真路径 ship · B-4-XenoDev runtime 实装 · SHARED-CONTRACT §6 B-4-IDS 7 字段 immutable evidence binding 协议消费实装 · **O6 round-trip 真路径达成**(REVIEW-LOG → ids_verdict_evidence 7 字段 inject → IDS dir publish → HANDBACK-LOG ENTRY)· verify-ppv-p2 R-Q5 freshness 已加固(ts + diff < 10 min)。
+
+**v0.2-shipped 关闭判据**(SLA.md §1.3 状态 2):O1+O2+O3+O4+O5(wave 3)+ O6(phase X)全 PASS · **v0.2 真路径 ship 完成**。
+
+ids_verdict_evidence binding(本包 B-4-XenoDev 真路径首次消费):
+- verdict: needs-attention(D6 acceptance)
+- findings_count: 8 transitional scoping(已在 spec.md operator_decision_log 记)
+- review_log_path: .claude/skills/codex-review/REVIEW-LOG.md
+- review_log_sha256: a324dec49291febae7b4a226f793420f71df78ef8e5b93c6a55d56d90fad6f61
+- target_file: working-tree
+- ts: 2026-05-29T09:00:00Z
+- codex_model: gpt-5-4
+
+post-v0.2 followup 留 backlog(operator 决议 [a] 累积起 forge v4):
+- **R-Q6**:validate-handback.sh + IDS handback-review.md consumer-side 升级 7 字段 verify(本 TX04 已升 verify-ppv-p2.sh · 剩 2 consumer 留 post-v0.2)
+- **R-Q7**:REVIEW-LOG immutable per-review path(real-review/<task>-round<N>-REVIEW-LOG.md)· 防 singleton cat > 覆盖 async hand-back invalidate 老 SHA
+
+**Follow-up commits**: 41ae9a7(phase X sync TX03)+ 6ae1420(v0.2-shipped TX04)
+
+---
+
+## 汇总 IDS-side 行动 batch 3(post-review · 2026-05-29 · v0.2-shipped)
+
+1. **12 包全 approve**(ENTRY 18-29 · 9 单 task feature ship + 3 bundle ship · 6 约束 validator 12/12 PASS · 0 hard-fail)
+2. **SHARED-CONTRACT 修订已 ship**(T204 B-1 EXDEV + T205 B-4-IDS verdict-evidence + T206 B-3 v0.2-note · per ENTRY 27 retroactive approve)
+3. **PRD 未触发修订**(全 12 包 §4 PRD-revision-trigger 自检 NO)
+4. **D-precedent retroactive approve 3 处**(per ENTRY 27/28/29):
+   - **D3**(spec 写 N vs 真路径实测 M):T203 + T208 · spec/SSOT 表数 drift 接受 · 由 MANIFEST audit trail 兜底
+   - **D4**(adversarial finding 不在 file_domain 内):T205 4 finding transitional bind wave 3/X · 验证由 ENTRY 28/29 闭环
+   - **D6**(needs-attention 接受 ship + follow-up 留):T301/T304/T306(wave 3)+ phase X 4 task · finding 全 transitional + 真路径实证
+5. **post-v0.2 backlog**(per operator [a] 决议 · 累积起 forge v4):
+   - R-Q5(PPV-P2 freshness)— TX04 已 ship 加固 · 不留 backlog
+   - **R-Q6** validate-handback.sh + handback-review.md 升级 7 字段 verify(consumer-side)
+   - **R-Q7** REVIEW-LOG immutable per-review path(防 singleton 覆盖)
+6. **跨仓 git push 状态**:IDS 9 commits unpushed(8f4bf92 → 6ae1420)+ XenoDev 13 commits unpushed(per XenoDev report)· operator 单独确认 push
+7. **practice-stats**(B-4-XenoDev 7 字段 immutable evidence binding 首次实证):
+   - hand-back 7 字段 frontmatter 全填(verdict / findings_count / review_log_path / review_log_sha256 / target_file / ts / codex_model)· 跨仓 publish PASS
+   - 6 约束 validator 全 PASS · OQ-4 解法 A 真路径成立(check-6 regex 扩 + IDS mirror sync)
+   - O6 round-trip 真路径首次跑通(REVIEW-LOG → hand-back → IDS dir → HANDBACK-LOG)
