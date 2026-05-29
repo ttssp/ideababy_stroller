@@ -245,6 +245,144 @@ else
 fi
 echo ""
 
+# === O6:ids-verdict-evidence round-trip(TX03 phase X 加 · per B-4-IDS 协议消费)===
+# 真路径目的:验 parallel-builder --ids-verdict-evidence flag 真路径消费 REVIEW-LOG +
+# 真路径 hand-back frontmatter 真路径 inject ids_verdict_evidence 父键(7 字段 immutable binding)
+echo "----- O6: ids-verdict-evidence round-trip (TX03 phase X) -----"
+O6_STATUS="?"
+O6_DETAIL=""
+O6_TMP=$(mktemp -d "/tmp/o6-ids-verdict-evidence.XXXXXX")
+trap 'rm -rf "$O6_TMP" 2>/dev/null' EXIT INT TERM
+
+# 真路径 fixture REVIEW-LOG.md(verdict: approve · 7 字段齐)
+O6_REVIEW_LOG="$O6_TMP/REVIEW-LOG.md"
+O6_TS=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+cat > "$O6_REVIEW_LOG" <<O6EOF
+---
+schema_version: 0.1
+review_type: adversarial-review
+target_file: working-tree
+verdict: approve
+findings_count: 0
+codex_model: gpt-5-4
+duration_seconds: 12.3
+ts: ${O6_TS}
+---
+
+# Review · working-tree · ${O6_TS}
+O6 fixture for ids-verdict-evidence round-trip
+O6EOF
+
+# R1 P1 真路径修(per codex)· 真路径 O6 真路径不只验 fixture 真路径 schema · 真路径必须真路径模拟
+# hand-back inject + frontmatter ids_verdict_evidence 父键真路径 + 7 字段 immutable binding 真路径
+# 真路径 step 1:校 fixture REVIEW-LOG schema(per codex-review SKILL §3.6.3 真路径)
+O6_RL_VERDICT=$(awk '/^---$/{n++;next} n==1 && /^verdict:/{print $2;exit}' "$O6_REVIEW_LOG")
+O6_RL_FINDINGS=$(awk '/^---$/{n++;next} n==1 && /^findings_count:/{print $2;exit}' "$O6_REVIEW_LOG")
+O6_RL_REVIEW_TYPE=$(awk '/^---$/{n++;next} n==1 && /^review_type:/{print $2;exit}' "$O6_REVIEW_LOG")
+O6_RL_TARGET_FILE=$(awk '/^---$/{n++;next} n==1 && /^target_file:/{print $2;exit}' "$O6_REVIEW_LOG")
+O6_RL_TS=$(awk '/^---$/{n++;next} n==1 && /^ts:/{print $2;exit}' "$O6_REVIEW_LOG")
+O6_RL_CODEX_MODEL=$(awk '/^---$/{n++;next} n==1 && /^codex_model:/{print $2;exit}' "$O6_REVIEW_LOG")
+O6_RL_SHA=$(shasum -a 256 "$O6_REVIEW_LOG" | awk '{print $1}')
+
+# step 1 真路径 fail-closed check(7 字段齐 + enum + non-neg int)
+O6_SCHEMA_OK=0
+if [[ "$O6_RL_VERDICT" == "approve" ]] \
+    && echo "$O6_RL_FINDINGS" | grep -qE '^[0-9]+$' \
+    && [[ -n "$O6_RL_REVIEW_TYPE" && -n "$O6_RL_TARGET_FILE" && -n "$O6_RL_TS" && -n "$O6_RL_CODEX_MODEL" && -n "$O6_RL_SHA" ]]; then
+    O6_SCHEMA_OK=1
+fi
+
+# step 2 真路径调 real producer 真路径 gen-handback.sh + 真路径 inject ids_verdict_evidence(per codex R2 P2 真路径修)
+# 真路径模拟 parallel-builder SKILL §3.1.1 真路径 export 真路径 IDS_VERDICT_EVIDENCE_* 真路径 + §6.1 真路径 python inject 真路径
+O6_FAKE_HB="$O6_TMP/o6-real-handback.md"
+O6_GEN="$REPO_ROOT/lib/handback-validator/gen-handback.sh"
+if [[ ! -x "$O6_GEN" ]]; then
+    O6_STATUS="FAIL"
+    O6_DETAIL="gen-handback.sh 真路径不可执行: $O6_GEN"
+    echo "[O6] FAIL · $O6_DETAIL" >&2
+    O6_SCHEMA_OK=0
+fi
+
+# 真路径调 real gen-handback.sh 真路径产 draft
+if bash "$O6_GEN" \
+    --feature "006a-pM-v0.2" \
+    --task-id "O6-evidence-test" \
+    --tag "self-test" \
+    --severity "low" \
+    --rationale "O6 ids-verdict-evidence round-trip self-test" \
+    --section1 "## §1 O6 真路径 self-test · evidence inject" \
+    --section2 "## §2 fake review_type · O6 fixture" \
+    --section3 "## §3 no action · self-test" \
+    --out "$O6_FAKE_HB" \
+    --repo-root "$REPO_ROOT" 2>/dev/null; then
+    # 真路径调 parallel-builder SKILL §6.1 真路径 python inject 真路径(per SHARED-CONTRACT §6 B-4-IDS 真路径)
+    IDS_VERDICT_EVIDENCE_VERDICT="$O6_RL_VERDICT" \
+    IDS_VERDICT_EVIDENCE_FINDINGS="$O6_RL_FINDINGS" \
+    IDS_VERDICT_EVIDENCE_LOG_PATH="$O6_REVIEW_LOG" \
+    IDS_VERDICT_EVIDENCE_LOG_SHA256="$O6_RL_SHA" \
+    IDS_VERDICT_EVIDENCE_TARGET_FILE="$O6_RL_TARGET_FILE" \
+    IDS_VERDICT_EVIDENCE_TS="$O6_RL_TS" \
+    IDS_VERDICT_EVIDENCE_CODEX_MODEL="$O6_RL_CODEX_MODEL" \
+    python3 - <<O6PYEOF
+import os
+draft = "$O6_FAKE_HB"
+with open(draft, "r") as f:
+    content = f.read()
+block = """ids_verdict_evidence:
+  verdict: {v}
+  findings_count: {f}
+  review_log_path: {p}
+  review_log_sha256: {s}
+  target_file: {t}
+  ts: {ts}
+  codex_model: {m}
+""".format(
+    v=os.environ["IDS_VERDICT_EVIDENCE_VERDICT"],
+    f=os.environ["IDS_VERDICT_EVIDENCE_FINDINGS"],
+    p=os.environ["IDS_VERDICT_EVIDENCE_LOG_PATH"],
+    s=os.environ["IDS_VERDICT_EVIDENCE_LOG_SHA256"],
+    t=os.environ["IDS_VERDICT_EVIDENCE_TARGET_FILE"],
+    ts=os.environ["IDS_VERDICT_EVIDENCE_TS"],
+    m=os.environ["IDS_VERDICT_EVIDENCE_CODEX_MODEL"],
+)
+new_content = content.replace("related_task:", block + "related_task:", 1)
+with open(draft, "w") as f:
+    f.write(new_content)
+O6PYEOF
+else
+    O6_STATUS="FAIL"
+    O6_DETAIL="real gen-handback.sh 真路径 producer 失败"
+    echo "[O6] FAIL · $O6_DETAIL" >&2
+fi
+
+# step 3 真路径 parse hand-back ids_verdict_evidence 真路径 + 真路径 SHA rehash check
+O6_HB_VERDICT=$(awk '/^---$/{n++;next} n==1 && /^[[:space:]]+verdict:/{print $2;exit}' "$O6_FAKE_HB")
+O6_HB_FINDINGS=$(awk '/^---$/{n++;next} n==1 && /^[[:space:]]+findings_count:/{print $2;exit}' "$O6_FAKE_HB")
+O6_HB_RL_SHA=$(awk '/^---$/{n++;next} n==1 && /^[[:space:]]+review_log_sha256:/{print $2;exit}' "$O6_FAKE_HB")
+
+# step 4 真路径 fail-closed:hand-back 字段必须 = REVIEW-LOG 字段 + 真路径 rehash 真路径 = 写时 SHA
+O6_INJECT_OK=0
+if [[ "$O6_HB_VERDICT" == "$O6_RL_VERDICT" \
+    && "$O6_HB_FINDINGS" == "$O6_RL_FINDINGS" \
+    && "$O6_HB_RL_SHA" == "$O6_RL_SHA" ]]; then
+    # rehash 真路径校验(防 stale REVIEW-LOG 真路径)
+    O6_REHASH=$(shasum -a 256 "$O6_REVIEW_LOG" | awk '{print $1}')
+    if [[ "$O6_REHASH" == "$O6_HB_RL_SHA" ]]; then
+        O6_INJECT_OK=1
+    fi
+fi
+
+if [[ "$O6_SCHEMA_OK" == "1" && "$O6_INJECT_OK" == "1" ]]; then
+    O6_STATUS="PASS"
+    O6_DETAIL="REVIEW-LOG schema OK + hand-back inject OK + SHA rehash 一致 · sha=${O6_RL_SHA:0:16}..."
+    echo "[O6] PASS · ids-verdict-evidence round-trip · $O6_DETAIL"
+else
+    O6_STATUS="FAIL"
+    O6_DETAIL="schema_ok=$O6_SCHEMA_OK inject_ok=$O6_INJECT_OK · verdict=$O6_RL_VERDICT findings=$O6_RL_FINDINGS"
+    echo "[O6] FAIL · $O6_DETAIL" >&2
+fi
+echo ""
+
 # === (f) 表格汇总 ===
 echo "================================================================="
 echo "SHIP GATE 结果汇总"
@@ -255,6 +393,7 @@ printf '%-6s %-10s %s\n' "O1" "$O1_STATUS" "$O1_DETAIL"
 printf '%-6s %-10s %s\n' "O2" "$O2_STATUS" "$O2_DETAIL"
 printf '%-6s %-10s %s\n' "O3" "$O3_STATUS" "$O3_DETAIL"
 printf '%-6s %-10s %s\n' "O4" "$O4_STATUS" "$O4_DETAIL"
+printf '%-6s %-10s %s\n' "O6" "$O6_STATUS" "$O6_DETAIL"
 echo ""
 
 # === (g) 末尾自动 cleanup ===
@@ -309,7 +448,7 @@ echo ""
 # F2 修:CLEANUP_STATUS + PROD_STATUS 真路径也 block
 HAS_FAIL=0
 HAS_PARTIAL=0
-for s in "$O1_STATUS" "$O2_STATUS" "$O3_STATUS" "$O4_STATUS" "$CLEANUP_STATUS" "$PROD_STATUS"; do
+for s in "$O1_STATUS" "$O2_STATUS" "$O3_STATUS" "$O4_STATUS" "$O6_STATUS" "$CLEANUP_STATUS" "$PROD_STATUS"; do
     [[ "$s" == "FAIL" ]] && HAS_FAIL=1
     [[ "$s" == "PARTIAL" ]] && HAS_PARTIAL=1
 done
