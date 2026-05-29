@@ -357,3 +357,22 @@ producer drift 闭环;后续 XenoDev session 跑任何新 idea 的 hand-back pro
    - 评分 #4 加分:11/11 包 validator PASS · 0 false positive · 0 false negative(check-5 regex bug batch 1 后 producer + IDS mirror 真闭)
    - 评分 #5 加分:**T012 ship gate 真路径 ship 4 步**第一次跨仓真路径执行(步骤 1+2 ✓)· hand-back 通道 v2.0 ship gate 真路径设计实证
    - 评分 #2 加分:Cluster A 选项 1(锁定 mirror 现有子树范围)= producer 真路径累积 6 个 drift hand-back 一次性 SSOT 闭(单 ENTRY 7/9/13 三连 cp · 不越 mirror 边界)— Cluster A 决议成熟度真路径成立
+
+
+## 2026-05-29 · TX04 PPV-P2 round-trip · O6 关闭 · v0.2-shipped 候选
+
+- **hand-back**: `20260529T095412Z-006a-pM-v0.2-20260529T095412Z.md`
+- **从**: `/Users/admin/codes/XenoDev` · phase X TX04 PPV-P2 owning
+- **tags**: feature, drift, spec-gap
+- **severity**: medium
+- **ids_verdict_evidence**(7 字段 immutable binding · per SHARED-CONTRACT §6 B-4-IDS):
+  - verdict: needs-attention
+  - findings_count: 8
+  - review_log_path: `.claude/skills/codex-review/REVIEW-LOG.md`
+  - review_log_sha256: `a324dec49291febae7b4a226f793420f71df78ef8e5b93c6a55d56d90fad6f61`
+  - target_file: working-tree
+  - ts: 2026-05-29T09:00:00Z
+  - codex_model: gpt-5-4
+- **决议**:approve · D6 precedent 接受 ship + R-Q6/R-Q7 followup
+- **O6 round-trip 真路径**:✅ 透传链 REVIEW-LOG → hand-back.ids_verdict_evidence 真路径 7 字段 inject → IDS dir 真路径 publish → HANDBACK-LOG ENTRY 真路径
+- **v0.2-shipped**:O1+O2+O3+O4+O5+O6 全 PASS · SLA.md §1.3 状态 2 真路径达成 · v0.2-shipped reached
