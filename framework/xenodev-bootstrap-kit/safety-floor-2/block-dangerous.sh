@@ -13,22 +13,31 @@
 # 这是**最后一道防线**, 不是唯一防线. 通过的命令仍按 .claude/settings.json
 # 的 permissions.allow / permissions.deny 走正常审批流程.
 #
-# Mirror provenance:
-# Source: /Users/admin/codes/autodev_pipe/.claude/hooks/block-dangerous.sh
+# Provenance(已分叉,不再字节级 mirror autodev_pipe):
+# Original source: /Users/admin/codes/autodev_pipe/.claude/hooks/block-dangerous.sh
 # Mirrored: 2026-05-10 (B2.1 Block A) per ideababy_stroller framework/xenodev-bootstrap-kit/
-# Reason: per stage-forge-006-v2.md M5 step 2 "cp block-dangerous.sh from V4 (纯工业共识,无定制)"
-#
-# B2.2 Block A.6 codex round 3 finding #1 fix(2026-05-10):
-# 反向 fork — autodev_pipe 上游 patterns 自身存在 bypass(参数顺序 + 大小写),
-# 不是定制需求,而是 mirror 源对 declared Safety Floor 的实现 bug。修在 IDS
-# 这一份 mirror,operator 后续可决定是否同步回 autodev_pipe 上游(详见
-# discussion/006/b2-2/CODEX-REVIEW-ROUND3.md Park 决策重论证)。
-# 修改点:
-#   1. force-push 改 case-insensitive + 接受任意参数顺序(--force 在 main 前后都拦)
-#   2. force-push 加 release-* / production 受保护分支
-#   3. SQL DROP/TRUNCATE 改 case-insensitive
-#   4. aws rds delete-db-* / GCP-Azure 删除 资源 等价命令(仅加最小必要,非完备)
-#   5. 加 normalize 步骤:case-fold + 折叠多空格,匹配前统一
+# **Forked: 2026-05-10 (FU-001)** — line 75 周边改用 python3 json.dumps escape pattern,
+#   修原 mirror 输出无效 JSON 当 pattern 含 backslash / quote 的 bug
+#   (round-1 实测 7/24 patterns 输出 invalid JSON → Claude consumer json.loads 抛
+#   `Invalid \escape` → 实际未拦截 → "Safety Floor 0 漏" 量化承诺被击穿)。
+#   24 patterns 不变,仅修输出层。
+# **Re-fork: 2026-05-11 (FU-002)** — DANGEROUS_PATTERNS 加固:
+#   原 24 字面 regex 不覆盖 dash-dash / option 顺序 / 空白变体(T001 round-5 codex F1
+#   实证 `rm -rf -- /` 等 bypass)。改用通用形态 `rm[[:space:]]+-[a-zA-Z]*[rRfF]...`
+#   合并 rm 类 5→1、git push 类 4→1,数量 24→17。
+# **Re-fork: 2026-05-11 (FU-002 round-1)** — 进一步加固:
+#   round-1 codex F1/F2 实证仍 bypass(`rm -r -f /` 多 token、
+#   `rm --recursive --force /` long option、`git push --force-with-lease origin main`、
+#   `git push origin +main` refspec)。改用 token-agnostic 形态:
+#   - rm 类:rm + 任意中间 + 高 risk target(不依赖 option 解析)
+#   - git push 类:加 --force-with-lease + refspec (HEAD:main / +main / refs/heads/main)
+# **Known limit (FU-002 round-2 codex 实证)**:
+#   regex 字符串匹配是 best-effort,不能完全推 shell 语义。已知未拦的 bypass 类:
+#   - rm 的 quote/expand 形式:rm -rf "$HOME" / rm -rf ${HOME} / rm -rf ~/ / rm -rf ~/*
+#   - git push --force-with-lease=<ref> origin main(force option 带 ref,等号形式)
+#   - git push origin +HEAD:main / +refs/heads/main(refspec 复合 + 前缀)
+#   FU-003 跟进:hook 重设计为 shlex token-based detection(spec FU-003)。
+# 后续政策:本 hook 是 XenoDev fork;upstream 升级 patterns 时 operator 手动 merge 进 fork。
 
 set -euo pipefail
 
@@ -45,119 +54,56 @@ except Exception:
     print("")
 ')"
 
-# Normalize:case-fold + 折叠空白,统一匹配输入(防大小写 / 多空格 bypass)
-NORMALIZED="$(printf '%s' "$COMMAND" | tr '[:upper:]' '[:lower:]' | tr -s '[:space:]' ' ')"
-
-# === 危险模式 ===
-# 注:
-# - 模式按 NORMALIZED(小写 + 折叠空白)匹配;字面匹配处保留 -E 用 ERE
-# - force-push 用语义匹配(出现 git push + --force/-f + 受保护分支),不依赖参数顺序
-# - SQL 用 -i 等效(已对 NORMALIZED 跑,DROP TABLE → drop table 仍 hit)
-
+# 危险模式正则 (grep -E 语法)
+# 增减规则时请保留注释, 说明该规则的现实威胁场景.
 DANGEROUS_PATTERNS=(
-    'rm -rf /( |$)'                     # 删根($ 或空格;不含 /tmp/...)
-    'rm -rf \*'                         # 删当前目录所有内容
-    'rm -rf ~( |$)'                     # 删 home
-    'rm -rf \.\.( |$)'                  # 跳出删父目录
-    'rm -rf \$home'                     # 删 home 变量形式(NORMALIZED 已小写)
-    'git reset --hard.*origin'          # 丢弃本地未推送的提交
-    'git clean -[a-z]*f[a-z]*d'         # 强制清理含未追踪
-    'drop database( |;|$)'              # SQL 删库(词边界,防 mydatabase)
-    'drop table( |;|$)'                 # SQL 删表(词边界,防 tableware)
-    'truncate table( |;|$)'             # SQL 清表
-    'aws s3 rm.*--recursive.*production' # 删 S3 production 桶
-    'aws s3 rb.*--force'                 # 删整个桶
-    'aws rds delete-db-instance'         # AWS RDS 删 DB 实例
-    'aws rds delete-db-cluster'          # AWS RDS 删 DB 集群
-    'aws rds delete-db-snapshot'         # AWS RDS 删 snapshot
-    'gcloud sql instances delete'        # GCP Cloud SQL 删实例
-    'gcloud compute disks delete'        # GCP 删盘
-    'az sql db delete'                   # Azure SQL 删 DB
-    'az storage account delete'          # Azure 删 storage 账号
-    'kubectl delete namespace'           # 删 K8s 命名空间
-    'terraform destroy'                  # IaC 删基础设施
-    ':\(\)\{ :\|:& \};:'                # fork bomb
-    'dd if=.*of=/dev/'                   # 写裸设备
-    'mkfs\.'                             # 格式化
-    'curl.*\| *bash'                     # 远程脚本直接执行
-    'wget.*\| *sh'
-    'chmod -r 777 /( |$)'               # 把根目录权限放开(词边界)
+    # rm 类删除高 risk targets(FU-002 round-1 加固:token-agnostic,不解析 option)
+    # 形态:rm + (任意中间 token + 空白) + (可选 --) + (空白) + (高 risk target) + word boundary
+    # target 集:/ ~ .. $HOME *
+    # 关键:用 .* 允许多 short token / long option / dash-dash;末尾 word boundary 防 ./build 误伤
+    'rm[[:space:]]+(.*[[:space:]])?(--[[:space:]]+)?(/|~|\.\.|\$HOME|\*)([[:space:]]|$)'
+    # git push --force/-f/--force-with-lease 主分支(FU-002 round-1:加 refspec + --force-with-lease)
+    # 形态:git push + (任意中间) + force 标志 + (任意中间) + (main|master + 各种 ref 形式)
+    'git[[:space:]]+push[[:space:]]+([^|;]*[[:space:]])?(--force(-with-lease)?|-[a-zA-Z]*f[a-zA-Z]*)([[:space:]]+[^|;]*)?[[:space:]]+(origin[[:space:]]+)?(\+?main|\+?master|HEAD:main|HEAD:master|refs/heads/main|refs/heads/master|[^[:space:]]+:main|[^[:space:]]+:master)([[:space:]]|$)'
+    # git push +main / +master refspec(无 --force 但用 + 前缀也是 force)
+    'git[[:space:]]+push[[:space:]]+([^|;]*[[:space:]])?(origin[[:space:]]+)?\+(main|master)([[:space:]]|$)'
+    'git[[:space:]]+reset[[:space:]]+--hard[[:space:]]+.*origin'  # 丢弃本地未推送提交
+    'git[[:space:]]+clean[[:space:]]+-[a-zA-Z]*f[a-zA-Z]*d'        # 强制清理含未追踪
+    'DROP[[:space:]]+DATABASE'                                      # SQL 删库
+    'DROP[[:space:]]+TABLE'
+    'TRUNCATE[[:space:]]+TABLE'
+    'aws[[:space:]]+s3[[:space:]]+rm.*--recursive.*production'      # 删 S3 production 桶
+    'aws[[:space:]]+s3[[:space:]]+rb.*--force'                      # 删整个桶
+    'kubectl[[:space:]]+delete[[:space:]]+namespace'                # 删 K8s 命名空间
+    'terraform[[:space:]]+destroy'                                  # IaC 删基础设施
+    ':\(\)\{[[:space:]]*:\|:&[[:space:]]*\};:'                     # fork bomb
+    'dd[[:space:]]+if=.*of=/dev/'                                   # 写裸设备
+    'mkfs\.'                                                        # 格式化
+    'curl.*\|[[:space:]]*bash'                                      # 远程脚本直接执行
+    'wget.*\|[[:space:]]*sh'
+    'chmod[[:space:]]+-[a-zA-Z]*R[a-zA-Z]*[[:space:]]+777[[:space:]]+/'  # 把根目录权限放开(支持 -Rf 等组合)
 )
 
-# === 字面 / 语义复合匹配:force-push 受保护分支(参数顺序无关)===
-# 受保护分支:main / master / production / release-*
-# bash regex 不支持 \b 词边界,用 [^a-z0-9_-] 或字符串首尾代替
-#
-# B2.2 Block A.7 codex round 4 finding #2 fix:
-# Round 3 fix 只覆盖 --force / -f,漏 --force-with-lease / --force-if-includes / +ref:ref refspec。
-# attack model(系统化列举 git "覆盖远程" 全部语法,不只 codex 给的 specific case):
-#   1. --force (+ -f 短形)
-#   2. --force-with-lease[=...] / --force-if-includes
-#   3. +<branch>:<branch> refspec(简写 +<branch> 也算)
-# 任一形式 + 受保护分支 → DENY。
-has_force_indicator() {
-    local cmd="$1"
-    # 1. --force / -f 独立 token
-    [[ "$cmd" =~ (^|[[:space:]])(--force|-f)([[:space:]]|=|$) ]] && return 0
-    # 2. --force-with-lease / --force-if-includes(可带 = 后缀)
-    [[ "$cmd" =~ (^|[[:space:]])--force-with-lease([[:space:]]|=|$) ]] && return 0
-    [[ "$cmd" =~ (^|[[:space:]])--force-if-includes([[:space:]]|=|$) ]] && return 0
-    # 3. +<branch>:<branch> 或 +<branch> refspec(覆盖远程)
-    if printf '%s' "$cmd" | grep -qE '(^|[[:space:]])\+(main|master|production|release-[a-z0-9._-]+)(:|[[:space:]]|$)'; then
-        return 0
-    fi
-    return 1
-}
-
-is_force_push_protected() {
-    local cmd="$1"
-    # 必须是 git push
-    [[ "$cmd" =~ git[[:space:]]+push ]] || return 1
-    # 必须含某种 force 指示符
-    has_force_indicator "$cmd" || return 1
-    # 必须含受保护分支名(若 force 走 +refspec 路径,refspec 已含分支,直接 DENY)
-    if printf '%s' "$cmd" | grep -qE '(^|[[:space:]])\+(main|master|production|release-[a-z0-9._-]+)(:|[[:space:]]|$)'; then
-        return 0
-    fi
-    if printf '%s' "$cmd" | grep -qE '(^|[^a-z0-9_-])(main|master|production)([^a-z0-9_-]|$)'; then
-        return 0
-    fi
-    if printf '%s' "$cmd" | grep -qE '(^|[^a-z0-9_-])release-[a-z0-9._-]+'; then
-        return 0
-    fi
-    return 1
-}
-
-if is_force_push_protected "$NORMALIZED"; then
-    cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "Blocked by safety hook: force-push to protected branch (main/master/production/release-*). If this is intentional, run manually outside Claude Code."
-  }
-}
-EOF
-    exit 0
-fi
-
 for pattern in "${DANGEROUS_PATTERNS[@]}"; do
-    if printf '%s' "$NORMALIZED" | grep -qE "$pattern"; then
+    if printf '%s' "$COMMAND" | grep -qE "$pattern"; then
         # 输出 deny JSON (Claude Code Hooks API)
-        cat <<EOF
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "Blocked by safety hook: matched pattern '$pattern'. If this is intentional, run manually outside Claude Code."
-  }
-}
-EOF
+        # 关键:整个 JSON 用 python3 json.dumps 一次性生成,
+        #   - escape pattern(防 backslash/quote 破 JSON;原 line 75 bug,FU-001 fix)
+        #   - 不依赖 here-doc(防 read-only TMPDIR 环境挂在 temp file 创建,FU-001 round-2 fix)
+        python3 -c '
+import json, sys
+p = sys.argv[1]
+print(json.dumps({
+    "hookSpecificOutput": {
+        "hookEventName": "PreToolUse",
+        "permissionDecision": "deny",
+        "permissionDecisionReason": f"Blocked by safety hook: matched pattern '"'"'{p}'"'"'. If this is intentional, run manually outside Claude Code."
+    }
+}))
+' "$pattern"
         exit 0
     fi
 done
 
-# 通过 - 让正常 permission 流程接管
-cat <<'EOF'
-{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}
-EOF
+# 通过 - 让正常 permission 流程接管(不用 here-doc,见上注)
+printf '{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow"}}\n'

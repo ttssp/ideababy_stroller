@@ -1,8 +1,8 @@
 # XenoDev Bootstrap Kit
 
 > **operator 操作指南** — 如何 bootstrap `/Users/admin/codes/XenoDev` 仓
-> **版本**:v0.1(B2.1 落地)
-> **依据**:`discussion/006/forge/v2/stage-forge-006-v2.md` §"模块 B" + §"B2 流" M5-M8
+> **版本**:v0.2(006a-pM-v0.2 wave 1-3 ship)
+> **依据**:`discussion/006/forge/v2/stage-forge-006-v2.md` §"模块 B" + §"B2 流" M5-M8 + v0.2 反向同步 + 协议修订
 
 ## 这是什么
 
@@ -23,23 +23,44 @@ framework/xenodev-bootstrap-kit/
 ├── README.md.template           # XenoDev 仓 README
 ├── LICENSE.template             # MIT
 ├── .gitignore.template          # 通用 + Python + macOS
-├── bootstrap.sh                 # operator 跑的 init script
+├── bootstrap.sh                 # operator 跑的 init script(v0.2 加 fixture mode)
+├── verify-bootstrap.sh          # [v0.2 新] bootstrap 后 smoke test · 真路径 SHA dual-verify
+├── MANIFEST-v0.2.md             # [v0.2 新] 真路径 v0.2 mirror provenance(7 字段 × wave-1/2/3)
 ├── safety-floor-1/              # 件 1 凭据隔离(B2.1 Block B 落)
 ├── safety-floor-2/              # 件 2 不可逆命令 hard block(本 Block A 落,mirror autodev_pipe)
 ├── safety-floor-3/              # 件 3 备份破坏检测(B2.1 Block C 落)
 ├── workspace-schema/            # workspace 4 字段 validator(B2.1 Block C 落)
-├── eval-event-log/              # Eval 3 类 event 接口(B2.1 Block E 落)
-└── handback-validator/          # §6.2.1 6 约束 validator(B2.1 Block F 落)
+├── eval-event-log/              # Eval 3 类 event 接口(B2.1 Block E 落)+ event-schema.json
+├── handback-validator/          # §6.2.1 6 约束 validator(B2.1 Block F 落)+ templates/ + gen-handback.sh + score-handback.sh + check-6-id-charset-and-final-path.sh
+├── skills/                      # [v0.2 新] 4 SKILL(parallel-builder / spec-writer / codex-review / task-decomposer)· XenoDev L4 派生
+├── hooks/wrappers/              # [v0.2 新] dangerous-event-emit.sh wrapper(Safety Floor 件 2 + eval-event wire)
+├── hooks/test-fixtures/         # [v0.2 新] dangerous-24.txt + run-dangerous-24.sh(T001 Safety Floor 件 2 测试)
+└── tests/integration/           # [v0.2 新] 13 sh(T012 SHIP GATE 主体 + bootstrap-verify + eval-events-count + round-trip + scan-credentials 等)
 ```
 
-## operator 操作步骤(B2.2 起跑时跑;B2.1 阶段不跑)
+## v0.2 新增子树(per MANIFEST-v0.2.md)
+
+真路径 wave 1-3 增量 mirror 真路径子树:
+
+| 子树 | 用途 | 真路径 source(XenoDev SSOT) |
+|---|---|---|
+| `skills/` | parallel-builder / spec-writer / codex-review / task-decomposer SKILL | `XenoDev/.claude/skills/<name>/SKILL.md` |
+| `hooks/wrappers/` | dangerous-event-emit.sh(Safety Floor 件 2 + eval-event wire) | `XenoDev/.claude/hooks/wrappers/` |
+| `hooks/test-fixtures/` | dangerous-24.txt + run-dangerous-24.sh(O2 Safety Floor 件 2 测试 fixture) | `XenoDev/.claude/hooks/test-fixtures/` |
+| `tests/integration/` | 13 个 integration test(T012 SHIP GATE 主体 + bootstrap-verify + eval-events-count + round-trip + T100b/T101/T104/T105 mirror SHA test + scan-credentials test) | `XenoDev/tests/integration/*.sh` |
+
+字节级 provenance 真路径见 [`MANIFEST-v0.2.md`](MANIFEST-v0.2.md)(7 字段 × wave-1/2/3 真路径节)。
+
+## operator 操作步骤(两种模式)
+
+### 模式 1 · legacy XenoDev bootstrap(无参数 · 原行为不变 · 新 XenoDev 仓 init)
 
 ```bash
 # 1. mkdir XenoDev 仓
 mkdir -p /Users/admin/codes/XenoDev
 cd /Users/admin/codes/XenoDev
 
-# 2. 跑 bootstrap.sh(自动 git init + cp 全套 + 初始 commit)
+# 2. 跑 bootstrap.sh(自动 git init + cp 全套 + 初始 commit · v0.2 包含 skills/ + hooks/wrappers/ + tests/integration/)
 bash /Users/admin/codes/ideababy_stroller/framework/xenodev-bootstrap-kit/bootstrap.sh
 
 # 3. 验证(应输出 5 PASS)
@@ -48,8 +69,18 @@ test -f CLAUDE.md && echo "PASS · CLAUDE.md"
 test -x .claude/hooks/block-dangerous.sh && echo "PASS · block-dangerous.sh"
 test -d lib/handback-validator && echo "PASS · handback-validator"
 git log --oneline | head -1 | grep -q 'XenoDev bootstrap' && echo "PASS · initial commit"
+```
 
-# 4. 下一步:起 B2.2 sub-plan(operator 手补 PRD + 跑首个真 PRD ship)
+### 模式 2 · fixture mode(v0.2 新 · T303/T304 真路径联调用)
+
+```bash
+# 真路径 wave 3 真路径出生临时 fixture(SHA dual-verify 真路径 fail-closed)
+# fixture path 真路径必须含 'bootstrap-test-fixture'(防 typo 真路径误删)
+bash framework/xenodev-bootstrap-kit/bootstrap.sh discussion/006-bootstrap-test-fixture
+
+# smoke test(T302 verify-bootstrap.sh · 逐文件 SHA dual-verify)
+bash framework/xenodev-bootstrap-kit/verify-bootstrap.sh discussion/006-bootstrap-test-fixture
+# 期望:[verify-bootstrap] N files OK · SHA dual-verify PASS
 ```
 
 ## 不在本 kit 范围(per stage doc + B2.1 plan v10 scope OUT)
