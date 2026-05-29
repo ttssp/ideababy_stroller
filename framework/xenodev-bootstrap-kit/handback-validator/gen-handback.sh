@@ -341,10 +341,31 @@ REPO_MARKER=$(require_yaml_field "$HANDOFF" repo_marker '  ') || exit 1
 GIT_COMMON_DIR_HASH=$(require_yaml_field "$HANDOFF" git_common_dir_hash '  ') || exit 1
 
 # === F1 防御:三字段值本身也要做最小安全校验(防 HANDOFF 被污染)===
-# 不允许字段值含换行或双引号(会破 frontmatter quote)
-for ssot_val in "$EXPECTED_REMOTE_URL" "$REPO_MARKER" "$GIT_COMMON_DIR_HASH"; do
-    if printf '%s' "$ssot_val" | LC_ALL=C grep -qE $'[\x00-\x08\x0a-\x1f]|"'; then
-        echo "ERR: HANDOFF.md source_repo_identity 字段含控制字符或双引号: [$ssot_val]" >&2
+# 不允许字段值含换行 / 控制字符 / 双引号(会破 frontmatter quote)
+# FU-T207-1 修(per codex T209 review P2):原 `grep -qE $'[\x00-\x08\x0a-\x1f]|"'` 真路径
+# bash $'...' 字面 `[` 真路径在某些 grep(macOS BSD grep)被误认 brackets not balanced →
+# grep 退 2 → `if ! grep -qE` 当"未匹配"接 → 真路径 fail-open · 污染值进 frontmatter
+# 与 line 100 validate_section_body 同模式 · 用 python3 allowlist 真路径校验跨平台 100%
+for ssot_field in EXPECTED_REMOTE_URL REPO_MARKER GIT_COMMON_DIR_HASH; do
+    eval "ssot_val=\$$ssot_field"
+    _check_result=$(printf '%s' "$ssot_val" | python3 -c '
+import sys
+s = sys.stdin.read()
+# 拒 0x00-0x1f 控制字符(除 \t \n)+ 拒双引号(防 frontmatter quote 提前闭合)
+for c in s:
+    o = ord(c)
+    if o < 0x20 and o not in (0x09, 0x0a):
+        sys.stdout.write("BAD: ctrl byte 0x{:02x}".format(o))
+        sys.exit(0)
+    if c == "\"":
+        sys.stdout.write("BAD: double quote")
+        sys.exit(0)
+sys.stdout.write("OK")
+' 2>/dev/null)
+    if [[ "$_check_result" != "OK" ]]; then
+        # bash 3.2 compat:用 tr 真路径 lowercase 真路径(${var,,} 是 bash 4+ · macOS 默认 3.2 真路径)
+        _field_lower=$(printf '%s' "$ssot_field" | tr '[:upper:]' '[:lower:]')
+        echo "ERR: HANDOFF.md source_repo_identity.${_field_lower} 字段含控制字符或双引号: [$ssot_val] · 真因: $_check_result" >&2
         exit 1
     fi
 done
