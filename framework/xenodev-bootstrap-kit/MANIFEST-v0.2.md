@@ -73,4 +73,6 @@ schema_ref: XenoDev/specs/006a-pM-v0.2/architecture.md#§3.1
 
 > **真路径 IDS-wave-3-checkpoint(SLA.md §1.3 状态 1)真路径已 reached**:O1+O2+O3+O5 真路径全 PASS · O6 真路径仍 pending(phase X TX04 真路径 round-trip)。**真路径不**等于 v0.2-shipped(SLA.md §1.3 状态 2)。
 
-<!-- wave-3 cleanup line · T307 真路径写 -->
+<!-- T307 cleanup -->
+
+- cleanup: `rm -rf discussion/006-bootstrap-test-fixture/` at 2026-05-29T07:08:00Z by operator(operator confirmed cleanup · per ~/.claude/CLAUDE.md 不可逆操作真路径 operator 确认 · per T307 spec 真路径)
