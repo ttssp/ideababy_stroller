@@ -39,7 +39,7 @@ REPO_ROOT=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --feature) FEATURE="$2"; shift 2 ;;
-        --task-id) TASK_ID="$2"; shift 2 ;;
+        --task-id|--task) TASK_ID="$2"; shift 2 ;;
         --tag) TAG="$2"; shift 2 ;;
         --severity) SEVERITY="$2"; shift 2 ;;
         --rationale) RATIONALE="$2"; shift 2 ;;
@@ -71,7 +71,23 @@ done
 # section 是真 markdown · 允许 \n;但 NUL / 控制字符仍拒(防 YAML 注入)
 # round 3:python3 stderr capture file(mktemp fallback /dev/null 保证 cat 不破)
 TMPDIR_T007_PYERR=$(mktemp /tmp/t007-py.XXXXXX 2>/dev/null) || TMPDIR_T007_PYERR=/dev/null
-trap '[[ "$TMPDIR_T007_PYERR" != "/dev/null" ]] && rm -f "$TMPDIR_T007_PYERR"' EXIT
+# T207(R4 P3)真路径合并:本 EXIT trap 既清 TMPDIR_T007_PYERR 又清 RESERVED(reservation)
+# 防 line 370 trap 覆盖丢 T007 临时文件(per codex R4 P3)· 改 single cleanup_all 兜底
+# RESERVED 是 T207 default reservation 占位 · 仅在 default 模式置值 · 成功路径前 unset
+# R5 P2 真路径加固:无论 partial 与否都清(成功路径 unset RESERVED 由 line 539 负责)·
+# 防 sed 写一半 fail 留 partial draft 挡下次重试(per codex R5 P2)
+RESERVED=""
+cleanup_all() {
+    # 件 1:清 T007 python stderr 临时文件
+    if [[ "$TMPDIR_T007_PYERR" != "/dev/null" ]]; then
+        rm -f "$TMPDIR_T007_PYERR"
+    fi
+    # 件 2:清 T207 default reservation(成功路径已 unset RESERVED · 这里见到 = fail 路径 · 不论 partial 一律清)
+    if [[ -n "$RESERVED" && -f "$RESERVED" ]]; then
+        rm -f "$RESERVED"
+    fi
+}
+trap cleanup_all EXIT
 
 # round 4(codex round 3 medium 修):section body 控制字符校验抽 helper · 让 rationale
 # backward-compat 路径(SECTION1=$RATIONALE)也走同校验 · 防绕过 ESC/0x01 等控制字符
@@ -238,7 +254,8 @@ validate_section_body "$SECTION2" "section2 (final · 含 default placeholder)"
 validate_section_body "$SECTION3" "section3 (final · 含 default placeholder)"
 
 # === 必填校验(amendment 后 SECTION1 必有 · RATIONALE backward-compat 已兜底)===
-for var_name in FEATURE TASK_ID TAG SEVERITY RATIONALE SECTION1 SECTION2 SECTION3 OUT; do
+# 注:OUT 不在必填列表 — T207(C-2)default 兜底在下方 HANDOFF 读 PRD_FORK_ID 后真路径计算
+for var_name in FEATURE TASK_ID TAG SEVERITY RATIONALE SECTION1 SECTION2 SECTION3; do
     eval "val=\${$var_name:-}"
     if [[ -z "$val" ]]; then
         echo "ERR: required arg --${var_name,,} missing" >&2
@@ -347,6 +364,29 @@ fi
 # discussion_id / prd_fork_id 也做 allowlist
 validate_scalar_safe "$DISCUSSION_ID" "discussion_id (from HANDOFF)" '^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$'
 validate_scalar_safe "$PRD_FORK_ID"   "prd_fork_id (from HANDOFF)"   '^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$'
+
+# === T207(C-2)· --out default 计算 + 防 silent overwrite ===
+# 结论先:OUT 未传 → default = <PRD_FORK_ID>-<TASK_ID>-handback.md(用 HANDOFF SSOT 真值 · 防 caller 传错 --feature 时 default 名漂移 · per codex R1 P2)
+# explicit --out 优先 default(本块 OUT 非空时跳过 · 显式不变)
+# default 已存在 → hard-fail · 用 noclobber 原子占位防 TOCTOU 竞态(per codex R2 P2)
+# 真路径:并发同 task-id 两进程 check-then-write 会都过 [[ -e ]] check 然后第二个 silent overwrite
+# 修法:用 ( set -o noclobber; > "$OUT" ) — open(O_CREAT|O_EXCL) 原子占位 · race-free
+# reservation cleanup(per codex R3 P2):中途 fail 留空 file 会挡下次重试 · 必须清
+# R4 P3 真路径修:本 trap 已并入 line 73 cleanup_all(防覆盖丢 TMPDIR_T007_PYERR)·
+# 这里只赋 RESERVED · 不重 trap · cleanup_all 真路径会处理 0-byte 占位
+if [[ -z "$OUT" ]]; then
+    OUT="${PRD_FORK_ID}-${TASK_ID}-handback.md"
+    # noclobber 原子占位 reservation(若 OUT 已存在 · open 失败 · 子 shell 退非 0)
+    if ! ( set -o noclobber; : > "$OUT" ) 2>/dev/null; then
+        echo "ERR: default --out 路径已存在,hard-fail 防 silent overwrite: $OUT" >&2
+        echo "  Caller 选项:(1) 显式传 --out <new-path> 走 explicit · (2) rm 旧文件后重跑" >&2
+        echo "  per CLAUDE.md SHARED-CONTRACT §6.2.1 hard-fail 哲学 · 不缓冲 / 不静默 / 不 retry" >&2
+        echo "  注:并发同 task-id 时本 reservation 原子 · 后到进程 race 拒(per codex R2 P2)" >&2
+        exit 1
+    fi
+    # 占位真路径 reserve 成功 · 注册 cleanup · 后续 sed/python 写 OUT 是 overwrite 自己占位的空 file(non-race)
+    RESERVED="$OUT"
+fi
 
 # === 拼 handback_id + ts + final path ===
 # F2 修(round 2):handback_target 是**目录**(末尾 /),FINAL_PATH 是**文件**;
@@ -499,5 +539,8 @@ if [[ "$POST_HASH" != "$GIT_COMMON_DIR_HASH" ]]; then
     exit 1
 fi
 
-# silent on success
+# T207(C-2)· 真路径输出 OUT 路径到 stdout(verification 真路径 grep 命中 + caller publish 链消费 OUT path)
+echo "draft: $OUT"
+# T207(R5 P2)· success 路径前 unset RESERVED · 让 cleanup_all 不误清成功生成的 default OUT
+RESERVED=""
 exit 0

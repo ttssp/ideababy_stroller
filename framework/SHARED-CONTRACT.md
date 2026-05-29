@@ -822,6 +822,172 @@ reference 实例:F1a 3 条 / F1b 5 条 / T010 7 条 · 累积演化 evidence。
 - v2.0:body 章节 normative 3 节(§1 / §2 / §3)· 见 v2.0 ACTIVE entry(2026-05-11)
 - v2.2(2026-05-12):§3 加 producer-side 表格 RECOMMENDED 扩展 · 新增 §4 / §5 / §6 / §7 四节 RECOMMENDED 占位 · 老 3 节 normative 不变 · v2.0 producer 0 backfill 要求(只 forward apply)。Evidence:F1a / F1b / T010 三包 producer 自发实践。
 
+### B-1 Cross-device publish(v0.2 协议补段 · 2026-05-29)
+
+> **结论先**:hand-back 包从 build runtime(XenoDev)写回 source repo(IDS)的 `<source_repo>/discussion/<id>/handback/` 时,producer **必须**用"排他 hardlink → EXDEV fallback(cp + sha 复验 + 同目录 ln)"两路径 publish · 任一 SHA mismatch / 任一 ln 失败 → hard-fail · 不静默 / 不重试 / 不缓冲。本段把 XenoDev `parallel-builder` SKILL §6.3 已实装(FU-producer-2 · 2026-05-24)的 publish 机制升为 IDS 协议层 normative 条目 · 防"代码已做但契约没说"drift。
+
+**触发场景**:
+- producer(`parallel-builder` SKILL §6.3)在 worktree 内 `gen-handback.sh` 产 draft + 6 约束自检 PASS 后 · `ln $DRAFT $TGT` 把 draft 排他发布到 `<source_repo>/discussion/<id>/handback/<filename>`
+- 当 producer 写区(typically XenoDev tmp dir / worktree)与 IDS `discussion/.../handback/` 在不同 device(磁盘卷)时 · `ln` syscall 返 `EXDEV`(errno 18 · cross-device link)
+- 典型 case:macOS RAM disk / NFS mount / Docker volume bind mount / tmpfs / 多盘 dev env
+
+**Fallback 步骤(必走顺序 · 任一段 fail = hard-fail)**:
+
+1. **路径 1 · 同卷 ln(原子 · 首选)**:`ln $DRAFT $TGT` 成功 → `PUBLISH_MODE="ln"` · 结束
+2. **EEXIST 判定**:`ln` fail 后 producer 必须先判 `[ -e "$TGT" ]` · 若 target 已存在 → **撞库 hard-fail**(不进 EXDEV fallback · 不重试 · 让 caller 重 gen TS · per FU-producer-1 round 2 F3 决议)
+3. **路径 2 · EXDEV fallback(cp + sha + 同目录 ln)**:
+   - 在 `$TGT` 同目录建 tmp 名 `${TGT}.tmp.$$.$(date +%s)$RANDOM`(防 `$$` collision)
+   - `cp $DRAFT $TGT_TMP` · 任一失败 hard-fail
+   - `shasum -a 256 $TGT_TMP` 与 producer-locked `$DRAFT_SHA` 对比 · mismatch 视为 disk corruption · hard-fail
+   - `ln $TGT_TMP $TGT`(同目录 ln 不会 EXDEV · 失败说明撞库或 perm 异常)· hard-fail 或 set `PUBLISH_MODE="cp+ln"`
+   - `rm -f $TGT_TMP`(清 tmp · 主目标已 ln 完)
+4. **发布后 SHA 复验(必跑 · per round-3 F5)**:`shasum -a 256 $TGT` 与 `$DRAFT_SHA` 必须严格相等 · 任一漂移 → 视为 disk corruption · `rm -f $TGT` + hard-fail
+5. **`PUBLISH_MODE` 字段**:producer 在 stdout 真打印 `Publish mode: ln` 或 `Publish mode: cp+ln`(SLA / 调试 / audit trail)
+
+**失败行为**:
+- 任一 SHA mismatch · 任一 ln 失败(非 EEXIST) · 任一 cp 失败 → producer hard-fail · 不写任何主目标 · 不留 stale tmp · 不缓冲 · 不静默
+- EEXIST(撞库)不进 EXDEV fallback · 直接 hard-fail · caller 重 gen TS 路径(per FU-producer-1 round 2 F3 决议)
+
+**Atomic 语义说明**:
+- 路径 1(同卷 ln):POSIX `link(2)` 原子(filesystem-level)
+- 路径 2(cp + sha + 同目录 ln):**同目录 ln 也是原子**(rename-like 语义 · 不跨 device)· cp 不原子但 sha 复验兜底 disk corruption · 整段语义等效"两阶段提交"(tmp 写完 + sha 验过 → ln 原子上架)
+
+**与 §6.2.1 6 约束的关系**:
+- B-1 是 publish 机制 · §6.2.1 是路径与 id 校验(canonical-path / symlink / repo identity / id consistency / 字符集 / hard-fail)
+- 顺序:producer 先按 §6.2.1 校验 path + id(在 §6.1 draft 阶段) → 再按本 B-1 段做 publish(同卷 ln 或 EXDEV fallback)
+- 两段语义正交 · 不重叠;§6.2.1 hard-fail 在 publish 前,B-1 hard-fail 在 publish 中。
+
+**实装位置**:
+- **producer 端**:XenoDev `.claude/skills/parallel-builder/SKILL.md` §6.3(real code · FU-producer-2 2026-05-24 实装 · IDS commit 同步)
+- **consumer 端**:`/handback-review` 命令读 `<source_repo>/discussion/<id>/handback/<file>.md` 时不区分 publish mode · 由 producer 端保证 SHA 与 atomic;consumer 只按 §6.2.1 6 约束 + 本节"target 文件存在 + SHA 一致"约束验文件完好性
+- **协议层**:本段(SHARED-CONTRACT §6 B-1)即 normative 条目 · 任何 future producer 实装跨仓 publish 必读
+
+**Reference 实装**:`XenoDev/.claude/skills/parallel-builder/SKILL.md` §6.3 line 363-451(bash -c pipeline · 含 EXDEV fallback + sha 复验 + tmp 清理)
+
+### B-4-IDS Verdict evidence consumer contract(v0.2 协议补段 · 2026-05-29)
+
+> **结论先**:本段定义 IDS ↔ XenoDev 跨仓 verdict 透传契约 · 让 IDS 协议层声明 XenoDev `parallel-builder` SKILL 的 `--ids-verdict-evidence <path>` flag consumer 语义 + `REVIEW-LOG.md` machine-readable schema + hand-back frontmatter `ids_verdict_evidence:` 父键透传规则。XenoDev runtime(phase X)按本段实装 · `verify-ppv-p2.sh` awk 状态机按本段断言。Spine 协议条目 · 协议改错 phase X 4 task 全 rework · risk=high。
+
+**触发场景**:
+- XenoDev `parallel-builder` SKILL ship 完一 task 后 · codex review/adversarial-review 真路径产 `REVIEW-LOG.md` machine-readable header
+- 下一 task 起跑 · operator 触发 `parallel-builder` 真路径加 `--ids-verdict-evidence <path>` flag · 真路径透传上一 task 的 verdict 证据进新 task hand-back frontmatter
+- IDS consumer 端(`/handback-review` skill)读 hand-back · 核对 frontmatter `ids_verdict_evidence` 与本地 REVIEW-LOG 一致 → ACCEPT;否则 REJECT(防伪造 verdict)
+
+**REVIEW-LOG.md schema(normative · 8 字段)**:
+
+```yaml
+# .claude/skills/codex-review/REVIEW-LOG.md(canonical path · per XenoDev codex-review SKILL §3.3)
+# yaml frontmatter 头(machine-readable)+ free-form body(operator 可读 findings 详情)
+---
+schema_version: 0.1                        # 必填 · 协议演化用 · 当前 0.1
+review_type: adversarial-review            # 必填 · enum {adversarial-review, review} · per parallel-builder SKILL §3.0 决策表
+target_file: <被 review 的路径>            # 必填 · string · 真路径 OR 'working-tree' 等 scope 标识
+verdict: approve                           # 必填 · enum {approve, needs-attention} · 严格 2 值 · 其它值 fail closed(per parallel-builder SKILL 强约束)
+findings_count: 0                          # 必填 · non-negative int · regex ^[0-9]+$ · 非整数 / 字符串(unknown/many)拒
+P1_findings: []                            # 可选 · list of finding ids · P1 严重度
+P2_findings: []                            # 可选 · list of finding ids · P2 中等严重度
+codex_model: gpt-5-4                       # 必填 · string · codex CLI model 标识(eg gpt-5-4, gpt-5-3)
+duration_seconds: 12.3                     # 必填 · float · review 真耗时
+ts: 2026-05-29T03:30:00Z                   # 必填 · ISO8601 UTC · review 完成时刻
+---
+
+# Free-form body:findings 详情 / 决策记录(operator 可读)· 不是 protocol schema 一部分
+```
+
+**字段 normative 规则**:
+- `schema_version` · `review_type` · `target_file` · `verdict` · `findings_count` · `codex_model` · `duration_seconds` · `ts` — **8 字段全必填**(producer = XenoDev codex-review SKILL 写时 · 任一缺 = REVIEW-LOG fail closed)
+- `verdict` enum 严格 `{approve, needs-attention}` · 拒历史用语(`block` / `follow-up` / `pass` / 大小写变体)— 与 XenoDev `codex-review` SKILL §3.2 anchored grep 一致
+- `findings_count` 非负整数 regex `^[0-9]+$` — 不允许 `unknown` / `many` / 浮点 / 负数
+- `P1_findings` / `P2_findings` 可选 · 默认空列表 `[]` · 若 `findings_count > 0` 推荐至少一项填 P1 或 P2
+
+**hand-back frontmatter `ids_verdict_evidence:` 父键(透传契约 · immutable evidence binding)**:
+
+producer(XenoDev `parallel-builder` 接 `--ids-verdict-evidence` flag)从 REVIEW-LOG 读 7 字段 · 透传到下一 task hand-back frontmatter `ids_verdict_evidence:` 父键。**任一字段缺 = consumer REJECT**(防伪造 verdict / stale verdict 流入下一 task · per adversarial-review R1 F1)。
+
+**7 字段全必填**(immutable evidence binding):
+- `verdict` — 透传自 REVIEW-LOG · 严格 enum
+- `findings_count` — 透传自 REVIEW-LOG · 非负整数
+- `review_log_path` — REVIEW-LOG 真路径(相对 XenoDev repo root · eg `.claude/skills/codex-review/REVIEW-LOG.md`)· consumer 真路径找文件
+- `review_log_sha256` — REVIEW-LOG 文件 SHA256 摘要 · consumer 真路径重算 + 对比(防 stale REVIEW-LOG 已被改 / 伪造)
+- `target_file` — 透传自 REVIEW-LOG.target_file(被 review 的真路径)· consumer 端审计 review 真路径
+- `ts` — 透传自 REVIEW-LOG.ts(ISO8601 UTC · review 完成时刻)· 防 stale 复用旧 REVIEW-LOG
+- `codex_model` — 透传自 REVIEW-LOG.codex_model · 防 reviewer model 不匹配 silent fall back
+
+**支持两种 yaml 写法(语义等价 · consumer awk 必接两种)**:
+
+写法 1 · yaml 块形式(父键 + 缩进子键):
+
+```yaml
+ids_verdict_evidence:
+  verdict: approve
+  findings_count: 0
+  review_log_path: .claude/skills/codex-review/REVIEW-LOG.md
+  review_log_sha256: 7412cb31d90852267623bf40f633163bc99db02eac0fb6aa714df7d56ca230eb
+  target_file: working-tree
+  ts: 2026-05-29T03:30:00Z
+  codex_model: gpt-5-4
+```
+
+写法 2 · inline map(单行 · 仍 7 字段全列):
+
+```yaml
+ids_verdict_evidence: {verdict: approve, findings_count: 0, review_log_path: ..., review_log_sha256: ..., target_file: ..., ts: ..., codex_model: ...}
+```
+
+两种写法在 schema 层等价 · consumer awk 状态机(per `verify-ppv-p2.sh`)同时接 · 任一形式 consumer 端必须能解析 7 子键 · 校验:
+- `hand-back.ids_verdict_evidence.verdict` 严格等于 REVIEW-LOG.verdict
+- `hand-back.ids_verdict_evidence.findings_count` 严格等于 REVIEW-LOG.findings_count
+- `hand-back.ids_verdict_evidence.review_log_path` 真路径文件可达 · 不可达 = REJECT
+- `hand-back.ids_verdict_evidence.review_log_sha256` 等于 `shasum -a 256 <review_log_path>` 真路径重算值 · mismatch = REJECT(防 REVIEW-LOG 被改 / 伪造)
+- `hand-back.ids_verdict_evidence.target_file` 严格等于 REVIEW-LOG.target_file
+- `hand-back.ids_verdict_evidence.ts` 严格等于 REVIEW-LOG.ts
+- `hand-back.ids_verdict_evidence.codex_model` 严格等于 REVIEW-LOG.codex_model
+- 任一不一致 / 任一字段缺 / SHA mismatch → consumer REJECT · hard-fail(防伪造 verdict 或 stale 流入下一 task)
+
+**Backward-compatibility(v0.2 transitional · TX01 实装前 producer 暂用 2 字段)**:
+- TX01 实装前 · producer 可能仅透传 `verdict` + `findings_count` 2 字段(无 immutable binding · 该 transitional 状态 known-gap · 防伪造能力降级)
+- consumer 端 v0.2 transitional 期可降级接受 2 字段(产生 stderr WARN)· 但 v0.2 ship 后(TX04 完成)2 字段降级路径必删 · 7 字段全填强制
+- TX01-TX04 实施者 ship 前 · 必须在 SHARED-CONTRACT changelog 加 v0.2-shipped 时同步 "removed 2-field transitional fallback" 一行(per K11 旁注收尾)
+
+**Transitional ship-gate scoping(v0.2 wave 2 transitional · per adversarial-review R2/R3 findings)**:
+
+> **重要 · 协议先 ship + runtime 后实装(per spec.md §D07 prior decision · B-4 拆 IDS+XenoDev)**:本段是 IDS 协议 SSOT · v0.2 wave 2 ship 时 producer 端(XenoDev `parallel-builder` / `codex-review` SKILL 真路径)尚未实装 `--ids-verdict-evidence` flag + REVIEW-LOG 8 字段 yaml frontmatter · 是 deliberate 设计(协议先 ship · XenoDev runtime phase X 后实装 + hand-back 验证 round-trip)· 不是 contract drift。consumer 端在 v0.2 wave 2 ship 后 + phase X TX01-TX04 ship 前期间 · 按 transitional 路径接受降级 2-field hand-back(per 上 Backward-compatibility 段)· 不按本节 normative 7-field 校验拒绝真 hand-back。**phase X TX04 ship 后 + v0.2-shipped 前 · transitional 期闭环 · 7-field 严格强制**。
+
+本段定义 B-4-IDS verdict-evidence consumer contract · 但 v0.2 wave 2 期间多处既有真路径未完全切到本协议 · 显式 transitional 期 scoping 防误读 ship-ready:
+
+1. **`--ids-verdict-confirmed` bare flag 真路径**(XenoDev `tests/integration/verify-all-outcomes.sh` round 4 实装)— transitional / by-design ·真路径未升 7 字段 immutable binding · 视为 v0.2 transitional · **wave 3 T303-T304 实施者必须切换 verify-all-outcomes.sh 真路径读 `ids_verdict_evidence` frontmatter(本段定义)· 不再接受 bare boolean flag**;不切完不允许 v0.2-shipped。
+
+2. **`parallel-builder` SKILL §6.3 published cleanup `rm -f $TGT` 真路径**(line 428-440)— **fail-closed by-design**(发布失败时清自己刚 publish 的目标 · 防 partial draft 留 IDS dir);该路径与 IDS dir 内 operator/其他 runner 真持有的 hand-back **无 race**(因 `ln $DRAFT $TGT` 是 atomic + sha 复验 · 且 cleanup 真路径只在 publish 同进程内 immediately fail 后跑)· cleanup 真路径不跨进程;adversarial-review 真路径 R2 F2 关于 "concurrent replacement" 是 hypothetical 跨进程场景 · 不在本 contract scope · 实装位置见 SKILL §6.3。
+
+3. **`eval-event-log/writer.sh` + `reader.sh` 真路径**(尚未 mirror 进 wave 2 cp · 仅 `event-schema.json` 已 cp 进 wave 1 T105)— XenoDev SSOT 真路径已实装 plural enum(per T104 ship · commit `0e97cee`)· wave 2 mirror cp file_domain 只含 SKILL + wrapper + tests + handback-validator;**wave 3 T301 实施者(bootstrap.sh 升级)必须把 `lib/eval-event-log/` 真路径整子树纳入 cp 清单**(per wave 3 §模块 A R-D2 mitigation)· 不纳完不允许 v0.2-shipped。
+
+4. **`bootstrap.sh` 真路径未 install 新子树 skills/hooks/wrappers/tests**(line 52-70)— **wave 3 T301 真路径** · 当前 wave 2 ship 后 IDS mirror 真路径子树齐 + MANIFEST §wave-2 真路径记录 · 但 `bootstrap.sh` 真路径未升级 read 这些子树 · wave 3 T301 必修;**fresh idea bootstrap 真路径 N+1 文件齐**是 wave 3 ship gate (per spec §O5 + T304 PPV-P1)。
+
+上 4 项是 wave 2 ship 不阻断的 known-gap · 每项均 hard 绑 wave 3/X task 真路径修复 · 在 v0.2-shipped 前必齐 · 不允许"先发布说 B-4-IDS 协议生效 · 真路径 transitional 长期留"。
+
+**`--ids-verdict-evidence <path>` flag 语义(consumer 期望 · parallel-builder SKILL 必实装)**:
+
+XenoDev `parallel-builder` SKILL 接 `--ids-verdict-evidence <path>` flag 时:
+- 真路径读 `<path>` 指向的 REVIEW-LOG.md frontmatter
+- 按本段 schema 校验 8 字段齐 + enum 合法 + findings_count 整数(任一拒 = fail closed · 不进 ship)
+- 产 hand-back 时 · 把 `verdict` + `findings_count` 透传到 `ids_verdict_evidence:` 父键(写法 1 或 2)
+- IDS consumer 端 `/handback-review` 读 hand-back · 核对 frontmatter `ids_verdict_evidence` 与本地 `<path>` REVIEW-LOG 严格一致 → ACCEPT;否则 REJECT
+
+**反 anti-pattern(本段拒)**:
+- ❌ REVIEW-LOG 用 markdown free-form 不带 yaml schema(consumer 无法解析 · 协议失约)
+- ❌ verdict 字段值非 enum 2 值(producer 写 `pass` / `block` · consumer fail closed)
+- ❌ `findings_count` 用字符串(`unknown` / `many` · consumer 整数校验拒)
+- ❌ hand-back 含 nested verdict 子键但缺 `ids_verdict_evidence:` 父键(consumer 不抓 nested verdict 误匹配 · 必须父键绑定 · per `verify-ppv-p2.sh` awk 状态机)
+- ❌ 透传时 producer 改 verdict 或 findings_count(consumer 比对 REVIEW-LOG 必拒)
+
+**实装位置**:
+- **producer 端 SKILL**:XenoDev `.claude/skills/parallel-builder/SKILL.md`(TX01 ship 后实装 `--ids-verdict-evidence` flag · 透传 hand-back)+ `.claude/skills/codex-review/SKILL.md`(TX02 ship 后实装 REVIEW-LOG 8 字段 yaml frontmatter 写)+ `.claude/skills/spec-writer/SKILL.md`(TX02 同步 REVIEW-LOG schema 写)
+- **consumer 端 SKILL**:IDS `/handback-review` 命令(M2 已实装 · 加 `ids_verdict_evidence` 一致性校验)
+- **断言脚本**:XenoDev `scripts/verify-ppv-p2.sh`(已实装 awk 状态机绑定 `ids_verdict_evidence:` 父键 · 接两种 yaml 写法 · 拒 root-level verdict 误匹配)
+- **协议层(本段)**:SHARED-CONTRACT §6 B-4-IDS 即 normative 条目 · 任何 future XenoDev runtime 实装 cross-repo verdict 透传必读
+
+**Reference**:`XenoDev/specs/006a-pM-v0.2/architecture.md` §3.4(本段是其字面升级版 · architecture.md 为 spec 草案 · 本段为 IDS SSOT)+ `XenoDev/scripts/verify-ppv-p2.sh`(awk 状态机真路径实装 · 与本段 schema 严格对齐)
+
 ### §6.4 · hand-back 接收路径约定
 
 **IDS 端目录**:`<source_repo>/discussion/<id>/handback/`
@@ -906,6 +1072,9 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-29 v0.2-note · B-3 IDS dir flock/fcntl 不入 v0.2 主线**:per `discussion/006/forge/v3/stage-forge-006-v3.md` §W3 模块 B "B-3 v0.2-note(NOT 入主线)" + spec.md §C09 + non-goals.md OUT-2。**触发条件**:出现真实多 producer 并发同时写 IDS `discussion/<id>/handback/` dir 的真路径 case(eg XenoDev 多 worktree 同 ts ship + 同 PRD fork)· 当前 `ln $DRAFT $TGT` atomic + sha 复验 fail-closed cleanup 真路径在单 producer 顺序 ship 假设下足够(EXDEV fallback 已 per §6 B-1 段实装)。**升级路径**:升 P1 单独 plan-start 真路径(forge 一道 dir-level flock/fcntl 协议)· 进 v0.3+ 入 SHARED-CONTRACT §6 normative · 不在 v0.2 范围。**为何不实装**:并发未实证(11 hand-back round-trip 真路径 0 撞库)· 实装 dir-lock 增加 cross-platform 复杂(BSD/Linux fcntl 真路径不一致)· per v3 stage doc K11 "残余分歧 v0.2-note 旁注"。
+- **2026-05-29 v0.2 wave 2 B-1 Cross-device publish**:§6 加 `### B-1 Cross-device publish` 段(EXDEV fallback · hardlink → cp + sha + ln 真路径) · 把 XenoDev `parallel-builder` SKILL §6.3 已实装真路径升为 IDS SSOT normative 条目 · 防"代码已做但契约没说"drift。
+- **2026-05-29 v0.2 wave 2 B-4-IDS Verdict evidence consumer contract**:§6 加 `### B-4-IDS Verdict evidence consumer contract` 段(REVIEW-LOG 8 字段 yaml frontmatter + hand-back `ids_verdict_evidence` 7 字段 immutable evidence binding · 防伪造 verdict / stale)· transitional scoping 4 项绑 wave 3/X 真路径修复(`--ids-verdict-confirmed` flag · publish cleanup · writer/reader plural · bootstrap.sh install)· phase X TX01-TX04 实装真路径 producer 端。
 - **2026-05-12 v2.2 (件 2.5 + 件 2.2 合 · F6 + F2)**:§6.3 hand-back schema 加 §3 producer-side Suggested actions 表格 RECOMMENDED + §4-§7 四节 RECOMMENDED 占位(PRD-revision-trigger 检查 / 后续 task 建议 / File changes / 已知风险);§6.4.1 加 Step 5 闭环责任分担段(XenoDev 同步段 + IDS 异步段)。**非 BREAKING**(老 3 节 normative 不变;v2.0 producer 0 backfill 要求 · 只 forward apply)。Evidence:F1a / F1b / T010 三包(IDS commit `8d24851` / `162bcf6` / `d4d04e7`)producer 自发实践 + B2.2 RETRO §4.2 闭环责任 deviation。上游:plan-rosy-naur v12 B 件 2 / plan v0.2-global 件 2.5 + 件 2.2 / v0.2-retro.md §3.4。
 - **2026-05-11 v2.0 ACTIVE (B2.2 Block G cutover sealing)**:§6 Status `ACTIVE-but-not-battle-tested` → `ACTIVE`;frontmatter `v2_status_note` 删除。依据:B2.2 hand-back round-trip 实跑评分 7.6/10(≥ 7/10 阈值,plan rosy-naur v11 决策门槛)— 1 real PRD (006a-pM) · 3 task ship · 5 hand-back packs round-trip · 1 IDS validator fix(check-5 regex 接受相对路径 commit a57972a)· 0 false negative · 1 false positive(已 fix)。详见 `discussion/006/b2-2/B2-2-RETROSPECTIVE.md`(38/50 评分 + 7 项 deviation + F1-F5 v0.2 trigger 入队)。非 BREAKING(纯 status 升级,协议层 0 字节修改)。
 - **2026-05-10 v2.0 patch (B2.2 Block A.7 codex round 4 finding #3)**:§2 件 3 备份破坏检测加 v0.1/v0.2 状态标注 — declared 协议(IAM lint + runtime API interceptor)与 v0.1 实装(本地 snapshot+diff)不一致;本 patch 不删 normative 目标,加显式 v0.1 子集说明 + v0.2 trigger 说明。AGENTS.md §1 第 3 条 + xenodev-bootstrap-kit/CLAUDE.md 同步降级语言。非 BREAKING(v0.1 范围内无变化,只把已发生的实装状态写入文档)。
