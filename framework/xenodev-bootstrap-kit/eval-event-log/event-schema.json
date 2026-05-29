@@ -13,8 +13,8 @@
     },
     "event_type": {
       "type": "string",
-      "enum": ["review_failures", "operator_interventions", "handback_drift"],
-      "description": "3 类 event(stage doc IN-5):review_failures / operator_interventions / handback_drift"
+      "enum": ["review_failures", "operator_interventions", "handback_drifts"],
+      "description": "3 类 event(stage doc IN-5 + T104 B-2 enum 全复数统一):review_failures / operator_interventions / handback_drifts。v0.1 OLD events.jsonl 单数 alias 由 reader.sh 真路径兼容(不在 schema enum · 防新 caller 写 OLD)"
     },
     "task_id": {
       "type": "string",

@@ -34,8 +34,12 @@ if ! [[ "$DISCUSSION_ID" =~ ^[0-9]{3}$ ]]; then
 fi
 
 # === 1.2 · prd_fork_id 字符集 ===
-if ! [[ "$PRD_FORK_ID" =~ ^[0-9]{3}[a-z]?(-p[A-Z])?$ ]]; then
-    ERRORS+=("prd_fork_id ($PRD_FORK_ID) not matching ^[0-9]{3}[a-z]?(-p[A-Z])?\$")
+# v0.2 扩(OQ-4 解法 A · operator decision D2 · 2026-05-28):接受可选的 -v<major>.<minor> 后缀
+# 旧:^[0-9]{3}[a-z]?(-p[A-Z])?$         接 006a-pM
+# 新:^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$    接 006a-pM / 006a-pM-v0.2 / 007 / 007-v1.5
+# 拒:006a-pM-v0(缺 minor) / 006a-pM-v0.2.3(三段) / 006a-pM-V0.2(大写)
+if ! [[ "$PRD_FORK_ID" =~ ^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$ ]]; then
+    ERRORS+=("prd_fork_id ($PRD_FORK_ID) not matching ^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?\$")
 fi
 
 # === 1.3 · iso_ts 字符集 ===
