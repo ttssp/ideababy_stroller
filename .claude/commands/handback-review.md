@@ -1,7 +1,7 @@
 ---
 description: Review hand-back packages from XenoDev (per SHARED-CONTRACT §6 v2.0). Reads discussion/<id>/handback/*.md, validates against §6.2.1 6 constraints (M2 contract-only; validator code lands in B2.1), prompts operator to decide on each package's §3 actions, appends decision to HANDBACK-LOG.md.
 argument-hint: "<discussion-id>  e.g. 008"
-allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(date:*), Bash(realpath:*), Bash(test:*), Bash(bash framework/xenodev-bootstrap-kit/handback-validator/validate-handback.sh:*), Glob, Grep
+allowed-tools: Read, Write, Edit, Bash(ls:*), Bash(date:*), Bash(realpath:*), Bash(test:*), Bash(bash framework/xenodev-bootstrap-kit/handback-validator/validate-handback.sh:*), Bash(bash framework/xenodev-bootstrap-kit/handback-validator/validate-verdict-evidence.sh:*), Glob, Grep
 model: opus
 ---
 
@@ -94,8 +94,21 @@ ls "$HANDBACK_DIR"*.md 2>/dev/null | grep -v 'HANDBACK-LOG.md' | sort
    - validator 校验 6 约束:canonical-path containment / symlink reject / repo identity (三模式) / id consistency / id charset + filename + final-path / hard-fail
    - source: `framework/xenodev-bootstrap-kit/handback-validator/README.md`
    - normative spec: `framework/SHARED-CONTRACT.md` §6.2.1 + §3.1
-3. **Read body**:§1 build-side 上下文 / §2 触发理由(按 tags 列条) / §3 给 IDS 的建议
-4. **Display to operator**:
+3. **verdict-evidence syntax-precheck**(forge v4 · R-Q6 · **仅当 hand-back 含 `ids_verdict_evidence:` 父键时跑**):
+   ```bash
+   # 先探父键(无则跳过本步 · 老 hand-back / 非 build-ship 包无此块属正常)
+   if grep -q '^ids_verdict_evidence:' "$HANDBACK_DIR/<file>.md"; then
+     bash framework/xenodev-bootstrap-kit/handback-validator/validate-verdict-evidence.sh \
+       "$HANDBACK_DIR/<file>.md" \
+       --mode=consumer
+     # exit 0 → 7 字段语法 PASS;exit 1 → stderr 报因(字段缺/enum 错/findings 非整数),跳过本包;exit 2 → usage/文件不存在
+   fi
+   ```
+   - ⚠️ **这是 shallow syntax-only precheck · 非 full binding 验证**:只校验 `ids_verdict_evidence` 7 字段齐全 + verdict enum + findings_count 整数。**不**验 `review_log_path` 可达 / `review_log_sha256` rehash binding / target_file·ts·codex_model 与 REVIEW-LOG 一致 —— 那些是 **producer-side** 校验(XenoDev `verify-ppv-p2.sh`),因 `review_log_path` 是 XenoDev repo-relative · IDS 本地不可达 · 字面实装会 100% 误拒合法包(见 §6 B-4-IDS known-gap 注记)。
+   - 即 **consumer 校验深度 < producer**:consumer 只挡"字段缺/enum 错/findings 非整数"这类语法错;伪造/stale 的 path/sha 也会过本预检。完整 consumer-side binding 验证是 **post-P0 backlog**(forge v5 决议)。
+   - normative spec: `framework/SHARED-CONTRACT.md` §6 B-4-IDS + known-gap 注记
+4. **Read body**:§1 build-side 上下文 / §2 触发理由(按 tags 列条) / §3 给 IDS 的建议
+5. **Display to operator**:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    📦 Handback: <handback_id>
@@ -119,7 +132,7 @@ ls "$HANDBACK_DIR"*.md 2>/dev/null | grep -v 'HANDBACK-LOG.md' | sort
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Operator decides which to apply (multiSelect possible) + free-text comment
    ```
-5. **operator 决议**:用 AskUserQuestion 收集勾选 + 自由备注
+6. **operator 决议**:用 AskUserQuestion 收集勾选 + 自由备注
 
 ## Step 5 · 写入 HANDBACK-LOG.md(append-only 决议日志)
 

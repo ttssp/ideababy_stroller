@@ -1,10 +1,10 @@
 ---
 doc_type: framework-shared-contract
-contract_version: 2.2
-status: v2.2
+contract_version: 2.3
+status: v2.3
 generated: 2026-05-08
-last_updated: 2026-05-12
-upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2)
+last_updated: 2026-05-31
+upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2) + discussion/006/forge/v3/stage-forge-006-v3.md (v3 · v0.2 11 项 backlog) + discussion/006/forge/v4/stage-forge-006-v4.md (v4 · post-v0.2 协议稳态化 → v2.3)
 ssot_owner: ideababy_stroller
 ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
 purpose: 定义 ideababy_stroller (idea→PRD + 治理) 与 XenoDev (PRD→code build runtime) 跨仓接口
@@ -907,7 +907,7 @@ producer(XenoDev `parallel-builder` 接 `--ids-verdict-evidence` flag)从 REVIEW
 **7 字段全必填**(immutable evidence binding):
 - `verdict` — 透传自 REVIEW-LOG · 严格 enum
 - `findings_count` — 透传自 REVIEW-LOG · 非负整数
-- `review_log_path` — REVIEW-LOG 真路径(相对 XenoDev repo root · eg `.claude/skills/codex-review/REVIEW-LOG.md`)· consumer 真路径找文件
+- `review_log_path` — REVIEW-LOG 真路径(相对 XenoDev repo root)· **推荐绑 immutable 记录** `.claude/skills/codex-review/real-review/<scope-slug>-<ts-slug>.md`(R-Q7 · forge v4 · sha256 binding 永久稳定 · 不被下次 review 覆盖);绑 singleton `.claude/skills/codex-review/REVIEW-LOG.md`(latest-pointer)亦合法但下次 review 覆盖后 sha256 漂移 → 不推荐 ship 流程用 · per producer verify-ppv-p2.sh Step 0 rebind
 - `review_log_sha256` — REVIEW-LOG 文件 SHA256 摘要 · consumer 真路径重算 + 对比(防 stale REVIEW-LOG 已被改 / 伪造)
 - `target_file` — 透传自 REVIEW-LOG.target_file(被 review 的真路径)· consumer 端审计 review 真路径
 - `ts` — 透传自 REVIEW-LOG.ts(ISO8601 UTC · review 完成时刻)· 防 stale 复用旧 REVIEW-LOG
@@ -921,12 +921,14 @@ producer(XenoDev `parallel-builder` 接 `--ids-verdict-evidence` flag)从 REVIEW
 ids_verdict_evidence:
   verdict: approve
   findings_count: 0
-  review_log_path: .claude/skills/codex-review/REVIEW-LOG.md
+  review_log_path: .claude/skills/codex-review/real-review/working-tree-2026-05-29T033000Z.md
   review_log_sha256: 7412cb31d90852267623bf40f633163bc99db02eac0fb6aa714df7d56ca230eb
   target_file: working-tree
   ts: 2026-05-29T03:30:00Z
   codex_model: gpt-5-4
 ```
+
+> **R-Q7 immutable 范式注(forge v4)**:上例 `review_log_path` 绑 immutable 记录(`real-review/<scope-slug>-<ts-slug>.md` · scope-slug=target_file 经 `tr -c 'A-Za-z0-9._-' '-'` · ts-slug=ts 去冒号)而非 singleton `REVIEW-LOG.md`。singleton 仍作 latest-pointer 合法存在(consumer 默认读最新 · path 永不移动)· 但 ship 流程绑 immutable 记录方使 sha256 binding 永久稳定(解决 R-Q7:老 hand-back binding 被下次 review 覆盖 invalidate 的协议债)。producer `verify-ppv-p2.sh` Step 0 解 hand-back 绑定的 review_log_path 并重绑该精确文件(锚同一 log)。
 
 写法 2 · inline map(单行 · 仍 7 字段全列):
 
@@ -943,6 +945,10 @@ ids_verdict_evidence: {verdict: approve, findings_count: 0, review_log_path: ...
 - `hand-back.ids_verdict_evidence.ts` 严格等于 REVIEW-LOG.ts
 - `hand-back.ids_verdict_evidence.codex_model` 严格等于 REVIEW-LOG.codex_model
 - 任一不一致 / 任一字段缺 / SHA mismatch → consumer REJECT · hard-fail(防伪造 verdict 或 stale 流入下一 task)
+
+> **⚠️ [known-gap · P0 forge v4 · 2026-05-31]** 上列校验中 `review_log_path` 文件可达 + `review_log_sha256` rehash mismatch=REJECT 两条是 **producer-side** 校验(在 XenoDev `scripts/verify-ppv-p2.sh` 实装 · producer cwd 在 XenoDev · REVIEW-LOG 本地可达)。**IDS consumer-side(`/handback-review`)不实装这两条** —— `review_log_path` 是 XenoDev repo-relative · IDS 仓本地不存在该文件 · 字面实装会对**每个合法 hand-back** REJECT(已一手验证)。故 consumer 走 **shallow**:只校验 7 字段齐全 + verdict enum + findings_count 整数(`validate-verdict-evidence.sh --mode=consumer`)· **不**跑可达/rehash。即 **consumer 校验深度 < producer 校验深度**。
+>
+> **post-P0 backlog(给 forge · 三处同根缺口 · XenoDev 4 轮 codex adversarial-review F1/F2/G2/H1/H2 提出)**:(1) consumer shallow 只验语法 · 但本段 normative 仍说要验可达+rehash → contract 内部矛盾;(2) 绑 singleton 的 hand-back 下次 review 覆盖后无法复证(G1 修复后仅限刻意绑 singleton 的包);(3) replay 窗口 —— R-Q7「策略 A 两者并存」允许绑任意 allowlist 内 immutable 记录 · 后续出阻断 review 后旧 approve 仍能在 600s freshness 窗内被绑过 gate。**post-P0 方向**:(a) contract 显式建模 producer-full vs consumer-shallow 语义;(b) shipped hand-back 强制 immutable review_log_path + 拒 singleton;(c) 校验 bound log == 当前 latest 堵 replay;(d) 或 hand-back 携带 IDS 可独立验证的 review artifact。需 forge 决议是否升级 + 是否改 R-Q7「策略 A」为「只绑 latest」。详见 XenoDev `.work/IDS-handoff-006-forge-v4-P0.md` §4.5。
 
 **Backward-compatibility(v0.2 transitional · TX01 实装前 producer 暂用 2 字段)**:
 - TX01 实装前 · producer 可能仅透传 `verdict` + `findings_count` 2 字段(无 immutable binding · 该 transitional 状态 known-gap · 防伪造能力降级)
@@ -1072,6 +1078,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-05-31 v2.3 (forge v4 · P0 原子波 · post-v0.2-shipped 协议稳态化)**:§6 B-4-IDS 段三处更新 —— (1) `review_log_path` 字段说明 + 写法1示例改指 **immutable 记录** `real-review/<scope-slug>-<ts-slug>.md`(R-Q7 · sha256 binding 永久稳定 · singleton 仍作 latest-pointer 合法);(2) line 940-941 producer-side 可达+rehash 校验加 **[known-gap]** 注记 —— consumer-side(IDS handback-review)不实装(review_log_path 是 XenoDev repo-relative · IDS 本地不可达 · 字面实装 100% 误拒)· consumer 走 shallow(7 字段齐+enum+int);(3) consumer 实装件 mirror 进 bootstrap-kit(MANIFEST §wave-4)。XenoDev 半边(commit `223ff46`):抽 verdict-evidence 共享 lib(producer/consumer 双 source · 4 轮 codex adversarial-review 加固 · 含 F2 allowlist trust-boundary)+ R-Q7 immutable REVIEW-LOG。**非 BREAKING**:旧 hand-back 绑 singleton 仍合法读 · 新 immutable 范式只 forward 推荐 · consumer shallow 不拒旧包 · producer 0 backfill。**known-gap → forge backlog**:consumer shallow vs normative 矛盾 / singleton audit hazard / replay 600s 窗口(三处同根 · 见 §6 B-4-IDS known-gap 注记 + XenoDev `.work/IDS-handoff-006-forge-v4-P0.md` §4.5)· 需 forge v5 决议是否升级。Evidence:`discussion/006/forge/v4/stage-forge-006-v4.md`(operator C 全收)+ IDS commit(本波)+ XenoDev commit `223ff46`。
 - **2026-05-29 v0.2 IDS-wave-3-checkpoint(汇总 entry)**:wave 1-3 IDS-side ship 完整闭环 · 关联 prd_fork_id `006a-pM-v0.2` · 真路径 4 项协议补段全部 normative:**B-1 Cross-device publish**(§6 加段 · EXDEV fallback hardlink → cp + sha + ln · 真路径 wave 2 T204 ship)+ **B-2 enum 全复数统一**(`event-schema.json` enum 改 `handback_drifts` · reader OLD type 兼容 · 真路径 wave 1 T104 ship)+ **B-4-IDS Verdict evidence consumer contract**(§6 加段 · REVIEW-LOG 8 字段 yaml frontmatter schema + hand-back `ids_verdict_evidence` 7 字段 immutable evidence binding + transitional scoping 4 项 bind wave 3/X · 真路径 wave 2 T205 4 round adversarial-review ship)+ **B-3 v0.2-note**(本 changelog 上方一条 · IDS dir flock 不入主线 · 触发条件 + 升 P1 路径)。**真路径 wave 3 ship**:bootstrap.sh fixture mode 升级(6 round adv-review)+ verify-bootstrap.sh smoke test + verify-all-outcomes.sh SHIP-READY · IDS-wave-3-checkpoint(SLA.md §1.3 状态 1)reached。**真路径不**等于 v0.2-shipped(状态 2 必须 phase X TX01-TX04 ship + O6 round-trip)。MANIFEST 见 `framework/xenodev-bootstrap-kit/MANIFEST-v0.2.md` §wave-1/2/3 真路径(7 字段 × 19+19+7 数据行)。
 
 - **2026-05-29 v0.2-note · B-3 IDS dir flock/fcntl 不入 v0.2 主线**:per `discussion/006/forge/v3/stage-forge-006-v3.md` §W3 模块 B "B-3 v0.2-note(NOT 入主线)" + spec.md §C09 + non-goals.md OUT-2。**触发条件**:出现真实多 producer 并发同时写 IDS `discussion/<id>/handback/` dir 的真路径 case(eg XenoDev 多 worktree 同 ts ship + 同 PRD fork)· 当前 `ln $DRAFT $TGT` atomic + sha 复验 fail-closed cleanup 真路径在单 producer 顺序 ship 假设下足够(EXDEV fallback 已 per §6 B-1 段实装)。**升级路径**:升 P1 单独 plan-start 真路径(forge 一道 dir-level flock/fcntl 协议)· 进 v0.3+ 入 SHARED-CONTRACT §6 normative · 不在 v0.2 范围。**为何不实装**:并发未实证(11 hand-back round-trip 真路径 0 撞库)· 实装 dir-lock 增加 cross-platform 复杂(BSD/Linux fcntl 真路径不一致)· per v3 stage doc K11 "残余分歧 v0.2-note 旁注"。

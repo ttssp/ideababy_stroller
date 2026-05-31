@@ -76,3 +76,16 @@ schema_ref: XenoDev/specs/006a-pM-v0.2/architecture.md#§3.1
 <!-- T307 cleanup -->
 
 - cleanup: `rm -rf discussion/006-bootstrap-test-fixture/` at 2026-05-29T07:08:00Z by operator(operator confirmed cleanup · per ~/.claude/CLAUDE.md 不可逆操作真路径 operator 确认 · per T307 spec 真路径)
+
+## §wave-4
+
+> **来源**:idea 006 **forge v4 · P0 原子波**(非 v0.2 wave 1-3 · post-v0.2-shipped 协议层清理)。XenoDev 半边 commit `223ff46` 抽 verdict-evidence 共享 lib + consumer wrapper(4 轮 codex adversarial-review 加固 · 含 codex F2 allowlist/canonicalize trust-boundary)· IDS 半边 mirror 进 bootstrap-kit。mirror-sha 守护:`tests/integration/test-verdict-evidence-mirror-sha.sh`。
+
+| source_path | target_path | source_sha256 | target_sha256 | copy_method | verification_command | operator_decision_source |
+|---|---|---|---|---|---|---|
+| /Users/admin/codes/XenoDev/lib/handback-validator/verdict-evidence-lib.sh | framework/xenodev-bootstrap-kit/handback-validator/verdict-evidence-lib.sh | e4ec373aa9406ead9d01433318ee51a52f9119b7f9e6e57f14b546359b56e1ea | e4ec373aa9406ead9d01433318ee51a52f9119b7f9e6e57f14b546359b56e1ea | cp -p | shasum -a 256 /Users/admin/codes/XenoDev/lib/handback-validator/verdict-evidence-lib.sh framework/xenodev-bootstrap-kit/handback-validator/verdict-evidence-lib.sh | forge v4 P0 · R-Q6 共享 lib(producer/consumer 双 source)· XenoDev commit 223ff46 |
+| /Users/admin/codes/XenoDev/lib/handback-validator/validate-verdict-evidence.sh | framework/xenodev-bootstrap-kit/handback-validator/validate-verdict-evidence.sh | 126a576bc3870483a043931677b22c5ff59a283a606016c142a934a92cb7c6ce | 126a576bc3870483a043931677b22c5ff59a283a606016c142a934a92cb7c6ce | cp -p | shasum -a 256 /Users/admin/codes/XenoDev/lib/handback-validator/validate-verdict-evidence.sh framework/xenodev-bootstrap-kit/handback-validator/validate-verdict-evidence.sh | forge v4 P0 · R-Q6 consumer shallow wrapper(syntax-only precheck)· XenoDev commit 223ff46 |
+
+> **wave-4 文件总数**:2 真路径行(共享 lib + consumer wrapper)。mirror-sha 守护 `test-verdict-evidence-mirror-sha.sh` 验两行 SHA 字节一致 + allowlist 安全 helper 在位。
+> **scope 注**:本 wave 不扩 `verify-ppv-p1.sh` 的 `v02_scope_path`(那是 XenoDev producer 脚本 · 属 XenoDev 半边 · 且现 scope 不覆盖 handback-validator/*.sh · 通配会误报既有未声明 check-*.sh)· mirror drift 守护改由专用 `test-verdict-evidence-mirror-sha.sh` 承担。
+> **known-gap**:consumer wrapper 是 syntax-only precheck(只验 7 字段齐+enum+int · 不验 review_log_path 可达/sha binding)· 完整 consumer-side binding 验证是 post-P0 backlog(见 SHARED-CONTRACT §6 B-4-IDS known-gap 注记 + XenoDev handoff §4.5)。
