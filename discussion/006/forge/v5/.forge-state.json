@@ -1,0 +1,20 @@
+{
+  "version": "v5",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "convergence_outcome": "converged",
+  "verdict": "CONCERNS",
+  "x_hash": "9c5e79e910cd4fd80633c6ca739d552e",
+  "prefill_used": false,
+  "p1_opus_done": true,
+  "p1_codex_done": true,
+  "p2_opus_done": true,
+  "p2_codex_done": true,
+  "p3r1_opus_done": true,
+  "p3r1_codex_done": true,
+  "p3r2_opus_done": true,
+  "p3r2_codex_done": true,
+  "stage_doc": "stage-forge-006-v5.md",
+  "created": "2026-05-31T23:04:00Z",
+  "last_updated": "2026-06-01T00:30:00Z"
+}
