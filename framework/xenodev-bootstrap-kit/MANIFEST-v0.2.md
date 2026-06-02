@@ -89,3 +89,23 @@ schema_ref: XenoDev/specs/006a-pM-v0.2/architecture.md#§3.1
 > **wave-4 文件总数**:2 真路径行(共享 lib + consumer wrapper)。mirror-sha 守护 `test-verdict-evidence-mirror-sha.sh` 验两行 SHA 字节一致 + allowlist 安全 helper 在位。
 > **scope 注**:本 wave 不扩 `verify-ppv-p1.sh` 的 `v02_scope_path`(那是 XenoDev producer 脚本 · 属 XenoDev 半边 · 且现 scope 不覆盖 handback-validator/*.sh · 通配会误报既有未声明 check-*.sh)· mirror drift 守护改由专用 `test-verdict-evidence-mirror-sha.sh` 承担。
 > **known-gap**:consumer wrapper 是 syntax-only precheck(只验 7 字段齐+enum+int · 不验 review_log_path 可达/sha binding)· 完整 consumer-side binding 验证是 post-P0 backlog(见 SHARED-CONTRACT §6 B-4-IDS known-gap 注记 + XenoDev handoff §4.5)。
+
+## §wave-5
+
+> **来源**:idea 006 **forge v5 · P0 三门**(并发安全)。forge v5 verdict(`discussion/006/forge/v5/stage-forge-006-v5.md` · IDS commit `e64dc44`)。本 wave 含两类:
+> - **M0-1**(IDS 本地新建 · 非 mirror · source=target · copy_method=new file):并发前 preflight gate 脚本 + 其自测。把 mirror-sha 守护从"手动可跑"升为"并发前强制 gate"。
+> - **M0-2/M0-3**(XenoDev SSOT → IDS mirror · cp -p):新抽 R-Q7 writer lib + verdict-evidence-lib update(+G3 `verify_evidence_latest`)。XenoDev 半边分支 `feat/006-forge-v5-P0`(commit `025f624`)· 交接 `XenoDev/.work/IDS-handoff-006-forge-v5-P0.md`。
+
+| source_path | target_path | source_sha256 | target_sha256 | copy_method | verification_command | operator_decision_source |
+|---|---|---|---|---|---|---|
+| framework/xenodev-bootstrap-kit/concurrency-preflight.sh | framework/xenodev-bootstrap-kit/concurrency-preflight.sh | dea3c3eb7de68191841684eaeee5705876be04ae2d7c34ebf29ca24e4ab78cab | dea3c3eb7de68191841684eaeee5705876be04ae2d7c34ebf29ca24e4ab78cab | new file | shasum -a 256 framework/xenodev-bootstrap-kit/concurrency-preflight.sh | forge v5 M0-1 · 并发前 preflight gate · shared-lib-drift IDS 半边 |
+| framework/xenodev-bootstrap-kit/tests/integration/test-concurrency-preflight.sh | framework/xenodev-bootstrap-kit/tests/integration/test-concurrency-preflight.sh | d3459645a619a274d6a152d68bb5470e85770f4685f81b36a7a7b7bd8b089e83 | d3459645a619a274d6a152d68bb5470e85770f4685f81b36a7a7b7bd8b089e83 | new file | shasum -a 256 framework/xenodev-bootstrap-kit/tests/integration/test-concurrency-preflight.sh | forge v5 M0-1 · preflight 自测(4 用例:正路径+FAIL 聚合+可扩展自检+不污染 SSOT)|
+| /Users/admin/codes/XenoDev/lib/handback-validator/review-log-writer-lib.sh | framework/xenodev-bootstrap-kit/handback-validator/review-log-writer-lib.sh | 43f13a608116b9f2e3aeb606a24c00db8098c6a33774c045b9939ee77038c17c | 43f13a608116b9f2e3aeb606a24c00db8098c6a33774c045b9939ee77038c17c | cp -p | shasum -a 256 /Users/admin/codes/XenoDev/lib/handback-validator/review-log-writer-lib.sh framework/xenodev-bootstrap-kit/handback-validator/review-log-writer-lib.sh | forge v5 M0-2 · 新抽 R-Q7 immutable writer lib(SKILL source 它)· XenoDev feat/006-forge-v5-P0 |
+| /Users/admin/codes/XenoDev/lib/handback-validator/verdict-evidence-lib.sh | framework/xenodev-bootstrap-kit/handback-validator/verdict-evidence-lib.sh | b31ea43d1d207ff7fb73944da7c087dfaf8bbb5cc397bdd4e0173f8cb734ff14 | b31ea43d1d207ff7fb73944da7c087dfaf8bbb5cc397bdd4e0173f8cb734ff14 | cp -p | shasum -a 256 /Users/admin/codes/XenoDev/lib/handback-validator/verdict-evidence-lib.sh framework/xenodev-bootstrap-kit/handback-validator/verdict-evidence-lib.sh | forge v5 M0-3 · update +verify_evidence_latest(G3 verdict-direction 堵重放)· 替 wave-4 行 e4ec373a |
+
+> **wave-5 文件总数**:4 真路径行 = 2 IDS 本地新建(M0-1 preflight gate + 自测 · new file)+ 2 XenoDev→IDS mirror(M0-2 新 writer-lib + M0-3 verdict-evidence-lib update · cp -p)。
+> **mirror-sha 守护**:`test-verdict-evidence-mirror-sha.sh` 现守 **3 件**(verdict-evidence-lib + wrapper + 新 writer-lib · 本波从 2 件扩到 3 件)· preflight gate 调它 · 守护对象自动跟随。
+> **update 注 · verdict-evidence-lib.sh**:本波 SHA `b31ea43d` 替 §wave-4 的 `e4ec373a`(加了 G3 `verify_evidence_latest` · verdict-direction guard)· wave-4 行保留 audit trail。
+> **scope 注**:M0-1 preflight 仍**不**纳入 v4 其它 mirror-sha 测试(T100b/T101/T105 · 超 v5 scope · K10)· 只守 verdict-evidence 系 3 件。
+> **SHA 时序注(已收敛)**:M0-2/M0-3 两件 mirror 最初以 XenoDev `feat/006-forge-v5-P0` 分支 SHA mirror;**2026-06-02 XenoDev 已 merge 该分支到 main(commit `025f624` · 非 squash · SHA 未变)** → mirror SHA `43f13a60`/`b31ea43d` 与 XenoDev main 字节一致 · 二次 drift 风险**未发生 · 已消除**。三方 SHA(XenoDev main == IDS mirror == 本表)实测一致。
+> **架构 known-gap**(随 M0-3 ship · 记项目记忆 · 不入本 MANIFEST normative):KG-1 G3 单全局 latest 指针无 task identity(approve-over-approve 残留重放面 · Milestone 1/forge 闭合)· KG-2 B-3 秒级命名同秒碰撞(noclobber 干净兜 · 留 P1 · stress 实测 v0.4-note 1 不触发)。

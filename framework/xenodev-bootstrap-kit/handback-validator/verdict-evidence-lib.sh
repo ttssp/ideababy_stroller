@@ -350,3 +350,118 @@ verify_evidence_freshness() {
   fi
   return 0
 }
+
+# ──────────────────────────────────────────────────────────────
+# verify_evidence_latest — [producer only] G3 堵重放窗 · verdict-direction latest 校验
+#
+# 结论先:freshness(600s 窗)只证"不太旧",**不**证"绑的是当前最新那份"。本函数加一道
+# latest 校验堵重放场景:10:00 approve → 10:05 needs-attention → 10:06 绑旧 approve 仍在
+# 600s 窗内过 gate。Provenance:idea 006 forge v5 · P0 原子波(M0-3 · brief §4)。
+# SOTA 借鉴:TUF rollback/freeze(版本单调 · 旧 metadata 不能覆盖新状态)· 滤掉 threshold signing。
+#
+# 真相源(约束 B · 不新加字段):singleton REVIEW-LOG 的 latest_review_log 字段
+#   (由 write_review_log_immutable 每次 review 写 · 指向当次 immutable 记录)就是
+#   "当前最新那份是谁"。本函数读它与 hand-back 绑的 bound log 比对。
+#
+# ⚠️ 边界 = verdict-direction guard(operator 决议 · per codex adversarial-review F1 加固):
+#   初版"硬 latest equality"会**误杀合法的较早 task** —— 同 target_file=working-tree 下,
+#   review task A → review task B 后 singleton.latest 翻到 B,ship A 的合法 hand-back(绑 A
+#   自己真做过的 immutable log)被硬 equality 当 replay 拒。多 worktree 并发跑起来后这是常态。
+#   codex F1[high] 已复现。改为 **target_file scoping + verdict-direction 耦合**:
+#     - bound == latest         → 过(当前最新 · 恒安全)
+#     - bound == singleton 本身 → 过(live pointer · 不可能 replay · 见下)
+#     - bound.target_file != latest.target_file → 过(跨 scope · latest 是别的 target 的 review ·
+#       不构成本 scope replay 真相源 · per codex F1 二轮:单 global singleton 不分 scope overwrite)
+#     - 同 scope 非-latest 具体 immutable 记录:
+#         · bound.verdict 比 latest.verdict **更乐观**(bound=approve 而 latest=needs-attention)
+#           → **拒**(这正是 replay 签名:绑旧 approve 偷过同 scope 的新 needs-attention)
+#         · 否则(verdict 不矛盾 / bound 同等或更保守)→ **过**(合法的较早 task · A 自己的 log)
+#   原理:replay 之所以危险,是用旧 approve 覆盖当前已知的 needs-attention 坏态。只有这一方向
+#   危险。bound 同 verdict 或 bound=needs-attention 不构成"偷乐观",放行不误杀合法异步 ship。
+#   freshness(Step 5 的 600s 窗)独立兜"绝对太旧",两道叠加。
+#
+# 边界其余(operator plan 期决议 · brief §4 步骤 1):
+#   - **缺 latest_review_log 字段 / singleton 不存在 → skip 放行(return 0)**:transitional
+#     /legacy workspace(writer 首跑前)· 硬拒会误杀合法 legacy 包(违反不变量「不误杀合法包」)。
+#     已知 gap(per codex F2[medium]):此 skip 在最易出 stale 元数据的 transitional 态重开重放窗;
+#     operator 决议维持 skip-open(writer 首跑后字段就有 · 全新无 review workspace 本就无包可 ship)·
+#     记 IDS handoff known-gap。
+#
+# K9 依赖:拒旧乐观 log 的底气来自 operator 批准的 K9 收紧(ship 强制绑 immutable + latest)。
+#
+# Args:
+#   $1 = bound_review_log  hand-back 绑的 effective REVIEW_LOG(已经 Step 0 canonicalize)
+#   $2 = singleton_path    singleton REVIEW-LOG 路径(.claude/skills/codex-review/REVIEW-LOG.md)
+#   $3 = xenodev_root      用于 canonicalize latest_review_log(经 resolve_review_log_path allowlist)
+# Returns:
+#   bound==latest / bound==singleton / verdict 不矛盾 / 缺字段 skip → 0;
+#   bound 偷乐观(approve vs latest needs-attention)/ latest 不可达 → stderr 报因 + 1
+# ⚠️ consumer 绝不调本函数(同 rehash/consistency · review_log_path 是 XenoDev repo-relative)。
+# ──────────────────────────────────────────────────────────────
+verify_evidence_latest() {
+  local bound_review_log="$1" singleton_path="$2" xenodev="$3"
+  local LATEST_RAW BOUND_CANON LATEST_CANON SINGLETON_CANON BOUND_VERDICT LATEST_VERDICT
+
+  # singleton 不存在 → 无真相源可比 · skip(transitional · 与 Step 0 未绑分支一致 · 不在此 fail)
+  [ -f "$singleton_path" ] || return 0
+
+  # bound_review_log 已是 Step 0 canonicalize 后的物理真路径 · 再 canonicalize 一次保险(幂等)
+  BOUND_CANON=$(realpath "$bound_review_log" 2>/dev/null || printf '%s' "$bound_review_log")
+  SINGLETON_CANON=$(realpath "$singleton_path" 2>/dev/null || printf '%s' "$singleton_path")
+
+  # ⚠️ 绑 singleton 本身 → 恒过(不可能是 replay)。
+  #   singleton(REVIEW-LOG.md)是 live latest-pointer:每次 review 被 overwrite 成当前最新。
+  #   绑它 == 隐式绑"whatever latest is" · 永远反映当前 verdict · 不存在绑旧的可能。
+  #   replay 威胁模型只针对绑**具体 immutable 记录**(10:00 approve 这种定格快照)。
+  #   注:绑 singleton 是 verify-ppv-p2.sh:43 的 default · test-ids-verdict-evidence case A/B
+  #   的 canonical 合法形态;硬拒它会误杀绝大多数合法包(本验证步实测暴露)。
+  if [ "$BOUND_CANON" = "$SINGLETON_CANON" ]; then
+      return 0
+  fi
+
+  # 绑的是具体 immutable 记录 → 读 singleton 当前指向的 latest_review_log。
+  # 读 singleton 的 latest_review_log 字段(awk frontmatter · 同 lib 既有范式)
+  LATEST_RAW=$(awk '/^---$/{n++; if(n==2) exit; next} n==1 && /^latest_review_log:/{sub(/^latest_review_log:[[:space:]]*/, "", $0); print $0; exit}' "$singleton_path")
+
+  # 缺字段 → skip 放行(operator 决议 · 防误杀 legacy · writer 首跑后字段就有 · per codex F2 known-gap)
+  if [ -z "$LATEST_RAW" ]; then
+      return 0
+  fi
+
+  # latest_review_log canonicalize + allowlist(复用单一 chokepoint · 不可达/出区 fail-closed)
+  LATEST_CANON=$(resolve_review_log_path "$LATEST_RAW" "$xenodev") || {
+      echo "PPV-P2 FAIL: singleton latest_review_log=$LATEST_RAW 不可 canonicalize / 出 allowlist · per G3 fail-closed" >&2
+      return 1
+  }
+
+  # bound == latest → 过(当前最新 · 恒安全)
+  if [ "$BOUND_CANON" = "$LATEST_CANON" ]; then
+      return 0
+  fi
+
+  # ── target_file scoping(per codex F1 二轮加固)──
+  # 单 global singleton 对**每个** review 都 overwrite(不分 scope)· latest 可能是**无关 scope**
+  # 的 review。replay 威胁只在**同一 review scope 内**成立(绑旧 approve 偷过同 scope 的新 needs-attention);
+  # 跨 scope 的 needs-attention(review 了别的 target)不该 invalidate 本 scope 的旧 approve。
+  # 故:先比 bound 与 latest 的 target_file —— 不同 scope → latest 非本 scope 真相源 → 放行(不误杀)。
+  # 同 scope 才走 verdict-direction guard。
+  BOUND_TARGET=$(awk '/^---$/{n++; if(n==2) exit; next} n==1 && /^target_file:/{print $2; exit}' "$BOUND_CANON")
+  LATEST_TARGET=$(awk '/^---$/{n++; if(n==2) exit; next} n==1 && /^target_file:/{print $2; exit}' "$LATEST_CANON")
+  if [ -n "$BOUND_TARGET" ] && [ -n "$LATEST_TARGET" ] && [ "$BOUND_TARGET" != "$LATEST_TARGET" ]; then
+      # 跨 scope · latest 是别的 target 的 review · 不构成本 scope 的 replay 真相源 → 放行
+      return 0
+  fi
+
+  # bound 是非-latest 的**同 scope** 具体 immutable 记录 → verdict-direction guard(per codex F1 加固):
+  #   只拒"偷乐观"(bound=approve 而 latest=needs-attention · replay 签名)· 其余放行不误杀合法较早 task。
+  BOUND_VERDICT=$(awk '/^---$/{n++; if(n==2) exit; next} n==1 && /^verdict:/{print $2; exit}' "$BOUND_CANON")
+  LATEST_VERDICT=$(awk '/^---$/{n++; if(n==2) exit; next} n==1 && /^verdict:/{print $2; exit}' "$LATEST_CANON")
+
+  if [ "$BOUND_VERDICT" = "approve" ] && [ "$LATEST_VERDICT" = "needs-attention" ]; then
+      echo "PPV-P2 FAIL: hand-back 绑的旧 review log(同 scope target_file=$BOUND_TARGET · verdict=approve)比当前 latest(verdict=needs-attention)更乐观 · 疑似 replay 偷过新的 needs-attention · per G3" >&2
+      echo "  bound=$BOUND_CANON (approve)" >&2
+      echo "  latest(singleton.latest_review_log)=$LATEST_CANON (needs-attention)" >&2
+      return 1
+  fi
+  return 0
+}

@@ -11,10 +11,12 @@ set -uo pipefail
 XENODEV_ROOT="/Users/admin/codes/XenoDev"
 IDS_ROOT="/Users/admin/codes/ideababy_stroller"
 
-# 两件 mirror · source(XenoDev SSOT)→ target(IDS bootstrap-kit)
+# 三件 mirror · source(XenoDev SSOT)→ target(IDS bootstrap-kit)
+# wave-4(v4 P0):verdict-evidence-lib + wrapper · wave-5(v5 M0-2):review-log-writer-lib(新抽 R-Q7 writer)
 declare -a FILES=(
   "lib/handback-validator/verdict-evidence-lib.sh|framework/xenodev-bootstrap-kit/handback-validator/verdict-evidence-lib.sh"
   "lib/handback-validator/validate-verdict-evidence.sh|framework/xenodev-bootstrap-kit/handback-validator/validate-verdict-evidence.sh"
+  "lib/handback-validator/review-log-writer-lib.sh|framework/xenodev-bootstrap-kit/handback-validator/review-log-writer-lib.sh"
 )
 
 FAIL=0
@@ -59,7 +61,7 @@ if [ -f "$LIB_TGT" ]; then
 fi
 
 if [ "$FAIL" -eq 0 ]; then
-  echo "ALL PASS · verdict-evidence 两件 mirror SHA 字节一致 + allowlist 安全 helper 完整"
+  echo "ALL PASS · verdict-evidence 三件 mirror SHA 字节一致(lib+wrapper+writer-lib)+ allowlist 安全 helper 完整"
   exit 0
 else
   echo "FAILED"
