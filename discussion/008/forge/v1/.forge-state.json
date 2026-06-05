@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "convergence_outcome": "converged",
+  "x_hash": "544bd175721e166e0caec2e75a4a325f",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "stage_doc": "stage-forge-008-v1.md",
+  "verdict": "refactor-and-reset:修 C5 措辞、复位回放至 v0.1、token 失效介入成本升为显式 outcome、Phase-0 gate 改判自动化稳定性。合规由 operator 负责。",
+  "head": "20260604T125510-008-forge-v1-p3r2.md",
+  "created": "2026-06-04T12:09:28Z",
+  "last_updated": "2026-06-04T13:05:00Z"
+}
