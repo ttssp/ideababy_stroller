@@ -276,3 +276,4 @@ forge verdict 并**不**指向 abandon —— 方向站得住,只需 refactor。
 (由 /expert-forge 命令更新;记录每次 forge run 的 v 序列 + 关键 verdict 一句话)
 
 - v1: 2026-06-04 — verdict: "refactor-and-reset:修 C5 措辞(『有权访问』非『视觉可见』)、复位回放至 v0.1、token 失效介入成本升为显式 outcome、Phase-0 gate 改判『自动化稳定性』。合规由 operator 负责。"
+- v2: 2026-06-16 — verdict: "GO:Obsidian 作 US8 人读前端入 v0.2 + 库→vault 单向 exporter;SQLite 唯一 SSOT 不漂(v0.1 三护栏保留);①替换/③双向永久出局;C5 增补渠道中性原则(自用不传播,不溯及 v0.1 已 ship 落点);vault 只放指针+摘要,原文永久 OUT;验收只读 frontmatter 不依赖可写脚本。" (converged · strong-converge · stage: forge/v2/stage-forge-008-v2.md)
