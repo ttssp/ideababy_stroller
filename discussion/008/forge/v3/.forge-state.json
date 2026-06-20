@@ -1,0 +1,15 @@
+{
+  "version": "v3",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "convergence_outcome": "converged",
+  "x_hash": "ec36f97e8ff858302f86e581d7112535",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "stage_doc": "stage-forge-008-v3.md",
+  "verdict": "GO(分层架构):agent 出可审计 declarative plan → operator bounded-batch 授权(六要素)→ 隔离 capability-scoped credential broker/runner 独占登录态、按端点白名单抓取并 checkpoint 落盘 → agent 只读结果;§2 新增「采集会话凭据隔离」子条款(协议级),§1 不动,C5 OUT 侧 keep + 补 IN/OUT 边界句。",
+  "head": "20260620T021157-008-forge-v3-p3r2.md",
+  "created": "2026-06-19T23:42:37Z",
+  "last_updated": "2026-06-20T03:10:00Z"
+}
