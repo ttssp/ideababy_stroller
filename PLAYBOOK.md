@@ -514,6 +514,12 @@ scope-synthesizer → stage-L3-scope-001a.md
 
 ## 6. 阶段 E：L4 Plan（工程层）
 
+> ⚠️ **已变更（M2 切换 · per SHARED-CONTRACT §6 v2.0）**：本节及 §7 描述的"L4 在 IDS 内
+> 产 `specs/` + 并行开发"是**旧世界观，已过时**。现在 IDS 的 L4 **只产 `HANDOFF.md` 就到此为止**，
+> spec / tasks / build / quality **全部搬去 XenoDev 仓**。本节 §6.1 `/plan-start` 仍准确（它现在
+> 产 HANDOFF，不再产 specs/），但 §6.2-§6.3 和整个 §7 的 IDS-内建流程**请改以 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md) 为准**。
+> 下文保留作历史参考。
+
 L3 fork 出 PRD 后，L4 开始。L4 **不再讨论产品**（PRD 是真相源），**开始讨论工程**。
 
 ### 6.1 L4 启动
@@ -565,6 +571,11 @@ Codex GPT-5.4 xhigh 审查 9 个维度：并发安全 / 数据一致性 / 故障
 ---
 ## 7. 阶段 F：并行开发与对抗审（L4 延续）
 
+> ⚠️ **已搬仓（M2 · per SHARED-CONTRACT §6 v2.0）**：本节描述的"在 IDS `projects/` 内开
+> worktree 并行开发"**不再在 IDS 进行** —— 真开发全部在 **XenoDev 仓**。并行 build / task-review /
+> quality-gate 请以 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md) 为准（含并发前必跑的
+> `concurrency-preflight.sh` 门）。下文保留作历史参考，模型分工表（§6.1）仍有参考价值。
+>
 > 本节流程是 v2.1 时代已经验证的,v3.0 保持不变。L4 `/plan-start` 产出 spec 和 tasks 后,从这里继续。
 
 ### 6.1 模型分工（经过实测验证的分层）

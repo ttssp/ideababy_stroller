@@ -385,6 +385,11 @@ claude
 
 ### 3.2 走完一个 idea 的标准路径
 
+> ⚠️ **L4 段已变更（M2 · per SHARED-CONTRACT §6 v2.0）**：下面示例里 `/plan-start` **之后**的
+> `/parallel-kickoff`、`/task-review`、`/quality-gate` 现在**都在 XenoDev 仓跑，不在 IDS**。IDS 的 L4
+> 只到 `/plan-start` 产 `HANDOFF.md` 为止，然后 `cd /Users/admin/codes/XenoDev && claude` 真开发。
+> 两仓怎么转见 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md)。下面 L1-L3 部分仍准确。
+
 下面用 `001` 这个虚构 idea 演示。Claude Code 终端 **A** + Codex 终端 **B** 各开一个，全程不需要复制粘贴长 prompt。
 
 ```bash
