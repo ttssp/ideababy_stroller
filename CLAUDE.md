@@ -64,7 +64,7 @@ of thinking that's worth keeping. Park is normal; Abandon comes with a lesson do
 - **Every command outputs a next-step menu** — human never has to guess what's next.
 - **"Not sure" is a first-class answer in L3R0 intake** — models must offer
   options for ❓ items, not pressure human to decide.
-- output in Chinese
+- **Think in English, reply in Chinese** — reason internally in English, output in Chinese
 
 ## Codex inbox/outbox bus (v2 · 多队列)
 

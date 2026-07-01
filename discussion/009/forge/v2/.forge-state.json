@@ -1,0 +1,14 @@
+{
+  "version": "v2",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "x_hash": "e6abd867709d5d945e3a10b51aa52d4e",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "stage_doc": "stage-forge-009-v2.md",
+  "convergence_outcome": "converged",
+  "head": "20260701T070014-009-forge-v2-p3r2.md",
+  "created": "2026-07-01T03:10:04Z",
+  "last_updated": "2026-07-01T07:00:14Z"
+}
