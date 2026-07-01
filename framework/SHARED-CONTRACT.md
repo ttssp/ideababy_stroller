@@ -688,7 +688,11 @@ workspace:
 **约束 6 · id 字符集 + final-path containment**:
 - **id 字符集 regex**(producer 写入前 + consumer 读取前都必须校验):
   - `discussion_id` 必须匹配 `^[0-9]{3}$`(eg `008`)
-  - `prd_fork_id` 必须匹配 `^[0-9]{3}[a-z]?(-p[A-Z])?$`(eg `008` / `008a` / `008a-pA`)
+  - `prd_fork_id` 必须匹配 `^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$`(eg `008` / `008a` / `008a-pA` / `009-pForge` / `006a-pM-v0.2`)
+    - **`-p` 段**:`-p` + 首字符大写 + 可选后续字母(接单字符 `-pB` 与多字符 `-pForge`;KG-29 · 2026-07-01 放宽,原为 `-p[A-Z]` 仅单字符)
+    - **`-v` 段**:可选 `-v<major>.<minor>`(接 fork 的 PRD 版本变体 `-v0.2`;OQ-4 解法 A · 2026-05-28 加入)
+    - **拒**:`009-pforge`(-p 后首字符小写)/ `006a-pM-v0`(缺 minor)/ `006a-pM-v0.2.3`(三段)/ `006a-pM-V0.2`(大写 v)
+    - 仅字母/数字扩展,不引入 `/` `\` `.`(除 `-v` 段的单个小数点)`..` 控制字符 → path-traversal 防线(下方 filename basename + realpath containment)不受影响
   - `<ISO ts>` 必须匹配 `^[0-9]{8}T[0-9]{6}Z$`(eg `20260520T103015Z`,UTC,无毫秒)
   - `handback_id` 必须严格等于 `<prd_fork_id> + "-" + <ISO ts>` 的拼接结果
   - 三个 id token 任意一处含 `/` `\` `..` 控制字符 (`\x00-\x1f\x7f`) 或绝对路径前缀 = `Drop`

@@ -32,8 +32,8 @@
     },
     "prd_fork_id": {
       "type": "string",
-      "pattern": "^[0-9]{3}[a-z]?(-p[A-Z])?$",
-      "description": "可选;若 event 关联具体 PRD fork,记 fork id (eg 008a-pA)"
+      "pattern": "^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\\.[0-9]+)?$",
+      "description": "可选;若 event 关联具体 PRD fork,记 fork id (eg 008a-pA / 009-pForge / 006a-pM-v0.2)。regex 与 SHARED-CONTRACT §6.2.1 约束6 对齐(KG-29 · -p 多字符 + -v 段)"
     }
   },
   "required": ["ts", "event_type", "details"]
