@@ -1,0 +1,15 @@
+{
+  "version": "v4",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "convergence_outcome": "converged",
+  "x_hash": "b5c8cfe432db47fb3f4e48e4d1bbcecd",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "stage_doc": "stage-forge-008-v4.md",
+  "verdict": "GO · 用途锚定 + 可靠性前置的 gated refactor:① 现在把 008↔004 消费契约写进 PRD(无悔下游=回看检索+给004可溯源证据+置信度 now;机器可信跟单=候选目标 gated 在 spike 门后,PRD 显式标 build-runtime 不得自行实现信号产品防 V4);② 信号可靠性 spike 列 PRD 工作项+跟单硬前置,分层报、pass=产 decision-grade 证据、数值留 operator;③ 字典第1层无悔立即落、第2/3层 gated。边界:008 只产可溯源结构化+置信度(C5/C9 内),信号决策归 004。KG-24/25 框架修留 XenoDev。",
+  "head": "20260630T102952-008-forge-v4-p3r2.md",
+  "created": "2026-06-30T09:03:24Z",
+  "last_updated": "2026-06-30T11:00:00Z"
+}
