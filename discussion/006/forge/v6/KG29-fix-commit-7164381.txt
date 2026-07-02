@@ -1,0 +1,90 @@
+commit 71643818795d7a328f19f33a79ae01bf343671b1
+Author: Yashu Liu <sundevil0405@gmail.com>
+Date:   Wed Jul 1 23:51:06 2026 +0800
+
+    fix(handback-validator): 放宽 prd_fork_id 正则接多字符 -p 后缀(KG-29)+ 对齐 -v 段漂移
+    
+    KG-29(P0 · operator decision 2026-07-01):IDS /plan-start 铸的 fork id `009-pForge`
+    (-p + 多字符后缀)过不了 hand-back validator 约束6 旧正则 `-p[A-Z]`(仅单字符),
+    阻断 009 T001 hand-back(代码已 codex approve + 18 测绿 + 真 DB 验证,只差写回)。
+    
+    统一 5 处正则为 `^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$`:
+    - SHARED-CONTRACT.md §6.2.1 L691(条款 SSOT):补 -p 多字符 + 补 -v 段
+      (原条款漏了 -v,与 impl 已漂移;本次一并对齐)
+    - bootstrap-kit/.../check-6-id-charset-and-final-path.sh(impl SSOT):放宽 + v0.3 注释块
+    - bootstrap-kit/.../event-schema.json:从最旧正则(无 -v)直接对齐(顺带修 KG-11)
+    - b2.1-dry-run-validation.md L126+L193:两处文档引用对齐
+    - test-fixtures/valid-pforge-multichar/:新增 009-pForge 正例
+    - test-fixtures/invalid-6-id-charset/:描述更新 + 注明"放宽后仍拒"
+    
+    安全:仅在 -p 段追加 [a-zA-Z]*,不引入 / \ . .. 控制字符。实跑 check-6.sh 验收:
+    - 009-pForge / 008-pB / 006a-pM-v0.2 → PASS(无回归)
+    - path-traversal `008/../../etc` → 仍 FAIL,4 道防线全触发(OWASP 防线未破)
+    
+    ⚠ 仅 IDS 侧落地。XenoDev mirror(lib/handback-validator/check-6 + lib/eval-event-log/
+    event-schema.json)待同步。本变更为 operator 直接决策(KG-29 预批选项①),
+    将由后续 /expert-forge 006 连同 KG-26/27/28 追认+审议。
+    
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+ framework/SHARED-CONTRACT.md                       |  6 +++-
+ framework/b2.1-dry-run-validation.md               |  4 +--
+ .../eval-event-log/event-schema.json               |  4 +--
+ .../check-6-id-charset-and-final-path.sh           | 14 +++++----
+ .../20260520T103015Z-008-20260520T103015Z.md       |  2 +-
+ ...20260701T151408Z-009-pForge-20260701T151408Z.md | 35 ++++++++++++++++++++++
+ 6 files changed, 54 insertions(+), 11 deletions(-)
+commit 71643818795d7a328f19f33a79ae01bf343671b1
+Author: Yashu Liu <sundevil0405@gmail.com>
+Date:   Wed Jul 1 23:51:06 2026 +0800
+
+    fix(handback-validator): 放宽 prd_fork_id 正则接多字符 -p 后缀(KG-29)+ 对齐 -v 段漂移
+    
+    KG-29(P0 · operator decision 2026-07-01):IDS /plan-start 铸的 fork id `009-pForge`
+    (-p + 多字符后缀)过不了 hand-back validator 约束6 旧正则 `-p[A-Z]`(仅单字符),
+    阻断 009 T001 hand-back(代码已 codex approve + 18 测绿 + 真 DB 验证,只差写回)。
+    
+    统一 5 处正则为 `^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$`:
+    - SHARED-CONTRACT.md §6.2.1 L691(条款 SSOT):补 -p 多字符 + 补 -v 段
+      (原条款漏了 -v,与 impl 已漂移;本次一并对齐)
+    - bootstrap-kit/.../check-6-id-charset-and-final-path.sh(impl SSOT):放宽 + v0.3 注释块
+    - bootstrap-kit/.../event-schema.json:从最旧正则(无 -v)直接对齐(顺带修 KG-11)
+    - b2.1-dry-run-validation.md L126+L193:两处文档引用对齐
+    - test-fixtures/valid-pforge-multichar/:新增 009-pForge 正例
+    - test-fixtures/invalid-6-id-charset/:描述更新 + 注明"放宽后仍拒"
+    
+    安全:仅在 -p 段追加 [a-zA-Z]*,不引入 / \ . .. 控制字符。实跑 check-6.sh 验收:
+    - 009-pForge / 008-pB / 006a-pM-v0.2 → PASS(无回归)
+    - path-traversal `008/../../etc` → 仍 FAIL,4 道防线全触发(OWASP 防线未破)
+    
+    ⚠ 仅 IDS 侧落地。XenoDev mirror(lib/handback-validator/check-6 + lib/eval-event-log/
+    event-schema.json)待同步。本变更为 operator 直接决策(KG-29 预批选项①),
+    将由后续 /expert-forge 006 连同 KG-26/27/28 追认+审议。
+    
+    Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+diff --git a/framework/xenodev-bootstrap-kit/handback-validator/check-6-id-charset-and-final-path.sh b/framework/xenodev-bootstrap-kit/handback-validator/check-6-id-charset-and-final-path.sh
+index d71401c..9b61fb7 100755
+--- a/framework/xenodev-bootstrap-kit/handback-validator/check-6-id-charset-and-final-path.sh
++++ b/framework/xenodev-bootstrap-kit/handback-validator/check-6-id-charset-and-final-path.sh
+@@ -35,11 +35,15 @@ fi
+ 
+ # === 1.2 · prd_fork_id 字符集 ===
+ # v0.2 扩(OQ-4 解法 A · operator decision D2 · 2026-05-28):接受可选的 -v<major>.<minor> 后缀
+-# 旧:^[0-9]{3}[a-z]?(-p[A-Z])?$         接 006a-pM
+-# 新:^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$    接 006a-pM / 006a-pM-v0.2 / 007 / 007-v1.5
+-# 拒:006a-pM-v0(缺 minor) / 006a-pM-v0.2.3(三段) / 006a-pM-V0.2(大写)
+-if ! [[ "$PRD_FORK_ID" =~ ^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$ ]]; then
+-    ERRORS+=("prd_fork_id ($PRD_FORK_ID) not matching ^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?\$")
++# v0.3 扩(KG-29 · operator decision · 2026-07-01):-p 后缀放宽为多字符(首字符仍强制大写)
++#   动因:IDS /plan-start 铸的 fork id `009-pForge` 用 -p + 多字符后缀,旧正则 -p[A-Z] 只收单字符 → 阻断 hand-back。
++#   安全:仅在 -p 段追加 [a-zA-Z]*(不引入 / \ . .. 控制字符),path-traversal 防线(basename + realpath containment)不变。
++# 旧 v0.1:^[0-9]{3}[a-z]?(-p[A-Z])?$                              接 006a-pM
++# 旧 v0.2:^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$           接 006a-pM / 006a-pM-v0.2 / 007 / 007-v1.5
++# 新 v0.3:^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$  额外接 009-pForge / 008-pB(单字符仍过)
++# 拒:006a-pM-v0(缺 minor) / 006a-pM-v0.2.3(三段) / 006a-pM-V0.2(大写v) / 009-pforge(-p 后首字符小写)
++if ! [[ "$PRD_FORK_ID" =~ ^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$ ]]; then
++    ERRORS+=("prd_fork_id ($PRD_FORK_ID) not matching ^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?\$")
+ fi
+ 
+ # === 1.3 · iso_ts 字符集 ===

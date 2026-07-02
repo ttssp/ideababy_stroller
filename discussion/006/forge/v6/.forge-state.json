@@ -1,0 +1,14 @@
+{
+  "version": "v6",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "x_hash": "6b39d6badc8fa245ccc6a47735518e54",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "created": "2026-07-02T06:45:04Z",
+  "last_updated": "2026-07-02T13:10:00Z",
+  "stage_doc": "stage-forge-006-v6.md",
+  "convergence_outcome": "converged",
+  "verdict": "portability-refactor"
+}
