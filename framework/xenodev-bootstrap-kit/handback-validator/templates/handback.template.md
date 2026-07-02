@@ -3,9 +3,9 @@ discussion_id: {{DISCUSSION_ID}}
 prd_fork_id: {{PRD_FORK_ID}}
 handback_id: {{HANDBACK_ID}}
 from_build_repo: {{REPO_ROOT}}
-to_source_repo: /Users/admin/codes/ideababy_stroller
+to_source_repo: {{SOURCE_REPO}}
 workspace:
-  source_repo: /Users/admin/codes/ideababy_stroller
+  source_repo: {{SOURCE_REPO}}
   build_repo: {{REPO_ROOT}}
   working_repo: {{REPO_ROOT}}
   handback_target: {{HANDBACK_TARGET_DIR}}

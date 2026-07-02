@@ -17,7 +17,9 @@
 #     --tag <tag>[,<tag>...] --severity <low|medium|high> \
 #     --rationale "<text>" \
 #     --out <draft.md> \
-#     [--repo-root <path>]
+#     [--repo-root <path>] [--source-repo <IDS-repo-path>]
+#   --repo-root  = build 仓(XenoDev · HANDOFF.md 所在 · 默认从脚本位置推)
+#   --source-repo= IDS 源仓(hand-back 写回目标 · 默认 $IDS_REPO → sibling ../ideababy_stroller → fail-closed)
 
 set -euo pipefail
 
@@ -35,6 +37,7 @@ SECTION2=""
 SECTION3=""
 OUT=""
 REPO_ROOT=""
+SOURCE_REPO=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -48,6 +51,7 @@ while [[ $# -gt 0 ]]; do
         --section3) SECTION3="$2"; shift 2 ;;
         --out) OUT="$2"; shift 2 ;;
         --repo-root) REPO_ROOT="$2"; shift 2 ;;
+        --source-repo) SOURCE_REPO="$2"; shift 2 ;;
         --help|-h)
             sed -n '2,18p' "$0"
             exit 0
@@ -419,7 +423,21 @@ TS=$(date -u +%Y%m%dT%H%M%SZ)
 CREATED_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 HANDBACK_ID="${PRD_FORK_ID}-${TS}"
 BASE="${TS}-${HANDBACK_ID}.md"
-HANDBACK_TARGET_DIR="/Users/admin/codes/ideababy_stroller/discussion/${DISCUSSION_ID}/handback/"
+# SOURCE_REPO(IDS 仓 · hand-back 写回目标)= 跨仓,不硬编码(forge v6 KG-26)。优先级链:
+#   1. --source-repo CLI  2. $IDS_REPO 环境变量  3. sibling: REPO_ROOT(=XenoDev)的兄弟 ideababy_stroller
+#   4. fail-closed 让 caller 传 --source-repo(不静默写死 mac 路径)
+if [[ -z "$SOURCE_REPO" ]]; then
+    if [[ -n "${IDS_REPO:-}" && -d "${IDS_REPO}" ]]; then
+        SOURCE_REPO="$(cd "${IDS_REPO}" && pwd)"
+    elif [[ -d "$(dirname "$REPO_ROOT")/ideababy_stroller" ]]; then
+        SOURCE_REPO="$(cd "$(dirname "$REPO_ROOT")/ideababy_stroller" && pwd)"
+    else
+        echo "ERR: 找不到 IDS 源仓(hand-back 写回目标)。传 --source-repo <path> 或设 \$IDS_REPO" >&2
+        echo "  ⚠ 绝不硬编码 /Users/admin/...(mac 路径 · 跨机器会崩,forge v6 KG-26)" >&2
+        exit 2
+    fi
+fi
+HANDBACK_TARGET_DIR="${SOURCE_REPO}/discussion/${DISCUSSION_ID}/handback/"
 FINAL_PATH="${HANDBACK_TARGET_DIR}${BASE}"
 
 # === F3 修(round 2 降为 advisory):FINAL_PATH 撞库 advisory check ===
@@ -470,6 +488,7 @@ E_DISCUSSION_ID=$(escape_sed_replacement "$DISCUSSION_ID")
 E_PRD_FORK_ID=$(escape_sed_replacement "$PRD_FORK_ID")
 E_HANDBACK_ID=$(escape_sed_replacement "$HANDBACK_ID")
 E_REPO_ROOT=$(escape_sed_replacement "$REPO_ROOT")
+E_SOURCE_REPO=$(escape_sed_replacement "$SOURCE_REPO")
 E_HANDBACK_TARGET_DIR=$(escape_sed_replacement "$HANDBACK_TARGET_DIR")
 E_EXPECTED_REMOTE_URL=$(escape_sed_replacement "$EXPECTED_REMOTE_URL")
 E_REPO_MARKER=$(escape_sed_replacement "$REPO_MARKER")
@@ -490,6 +509,7 @@ sed \
     -e "s|{{PRD_FORK_ID}}|${E_PRD_FORK_ID}|g" \
     -e "s|{{HANDBACK_ID}}|${E_HANDBACK_ID}|g" \
     -e "s|{{REPO_ROOT}}|${E_REPO_ROOT}|g" \
+    -e "s|{{SOURCE_REPO}}|${E_SOURCE_REPO}|g" \
     -e "s|{{HANDBACK_TARGET_DIR}}|${E_HANDBACK_TARGET_DIR}|g" \
     -e "s|{{EXPECTED_REMOTE_URL}}|${E_EXPECTED_REMOTE_URL}|g" \
     -e "s|{{REPO_MARKER}}|${E_REPO_MARKER}|g" \

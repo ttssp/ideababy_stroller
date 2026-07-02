@@ -637,19 +637,26 @@ v2.0 协议升级回应 2 件 SOTA gap:
 
 | 字段 | 类型 | 必填 | 含义 | 用例 |
 |---|---|---|---|---|
-| `source_repo` | string (absolute path) | ✅ | PRD 源仓(IDS 仓路径) | `/Users/admin/codes/ideababy_stroller` |
-| `build_repo` | string (absolute path) | ✅ | build 目标仓(XenoDev 仓路径) | `/Users/admin/codes/XenoDev` |
+> ⚠ **下方"用例"列 + YAML 块是示例路径(某台机器),不是默认值 —— producer 必须按本机实际推断填**
+> (forge v6 KG-26):`source_repo`/`handback_target` 用 `git rev-parse --show-toplevel`/`realpath` 取仓根;
+> `build_repo`(XenoDev 跨仓)走优先级链 `$XENODEV_REPO` → sibling `../XenoDev` → fail-closed(**不 rev-parse**,
+> 它是另一个仓);见 `.claude/commands/plan-start.md` "实装动作"。**绝不硬编码 `/Users/admin/...` 或任何用户家目录。**
+
+| 字段 | 类型 | 必填 | 含义 | 用例(示例路径 · 按本机实际填) |
+|---|---|---|---|---|
+| `source_repo` | string (absolute path) | ✅ | PRD 源仓(IDS 仓路径) | 示例 `<IDS-repo-root>`,如 `/home/ys/codes/ideababy_stroller` |
+| `build_repo` | string (absolute path) | ✅ | build 目标仓(XenoDev 仓路径) | 示例 `<XenoDev-repo-root>`,如 `/home/ys/codes/XenoDev`(走优先级链推断) |
 | `working_repo` | string (absolute path) | ✅ | 当前 operator 所在仓(支持单 session 跨多仓 workspace) | 通常 = `source_repo` 或 `build_repo`;hand-off 中途切仓时显式记录 |
 | `handback_target` | string (absolute path) | ✅ | hand-back 包写回路径 | `<source_repo>/discussion/<id>/handback/` |
 
-YAML 表达(出现在 hand-off 包 / hand-back 包 frontmatter 中):
+YAML 表达(出现在 hand-off 包 / hand-back 包 frontmatter 中 · 下方为**示例值**,producer 填本机实际推断值):
 
 ```yaml
 workspace:
-  source_repo: /Users/admin/codes/ideababy_stroller
-  build_repo: /Users/admin/codes/XenoDev
-  working_repo: /Users/admin/codes/XenoDev
-  handback_target: /Users/admin/codes/ideababy_stroller/discussion/008/handback/
+  source_repo: <IDS-repo-root>          # 如 /home/ys/codes/ideababy_stroller(rev-parse/realpath 推断)
+  build_repo: <XenoDev-repo-root>       # 如 /home/ys/codes/XenoDev($XENODEV_REPO→sibling→fail-closed)
+  working_repo: <XenoDev-repo-root>
+  handback_target: <IDS-repo-root>/discussion/008/handback/
 ```
 
 #### §6.2.1 · handback_target 路径约束(consumer 必须校验)

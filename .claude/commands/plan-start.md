@@ -9,7 +9,7 @@ model: opus
 
 PRD branch **$ARGUMENTS** (e.g. `001a-pA`).
 
-> **v3.0 (M2 cutover, 2026-05-10)**:Per `framework/SHARED-CONTRACT.md` §6 v2.0,IDS 不再产 `specs/`,只产 hand-off 包(HANDOFF.md)写到 `discussion/<id>/<prd>/L4/`。spec/architecture/tasks/build/quality 全部移交 XenoDev build runtime(`/Users/admin/codes/XenoDev`)。本命令的 v2.2(产 specs/ + Codex review loop)已淘汰。
+> **v3.0 (M2 cutover, 2026-05-10)**:Per `framework/SHARED-CONTRACT.md` §6 v2.0,IDS 不再产 `specs/`,只产 hand-off 包(HANDOFF.md)写到 `discussion/<id>/<prd>/L4/`。spec/architecture/tasks/build/quality 全部移交 XenoDev build runtime(`$BUILD_REPO`,见"实装动作"优先级链)。本命令的 v2.2(产 specs/ + Codex review loop)已淘汰。
 
 ## Step 1 — locate the PRD
 
@@ -70,7 +70,7 @@ FORK-ORIGIN.md + the L3 stage doc now. OK?
 # §6.2 workspace schema 4 字段
 workspace:
   source_repo: <`realpath .` of IDS repo>
-  build_repo: /Users/admin/codes/XenoDev
+  build_repo: <`$BUILD_REPO`,见下"实装动作":${XENODEV_REPO} → sibling ../XenoDev → fail-closed;不硬编码>
   working_repo: <`realpath .` of IDS repo (operator 当前所在仓)>
   handback_target: <`realpath .`>/discussion/<root>/handback/
 
@@ -99,7 +99,7 @@ shared_contract_version_honored: 2.0
 
 **Handed off at**: <ISO timestamp>
 **PRD source**: <`realpath discussion/<root>/<parent-fork>/<prd-fork-id>/PRD.md`>
-**Build repo**: /Users/admin/codes/XenoDev
+**Build repo**: <`$BUILD_REPO`,见"实装动作"优先级链;本机实际值,不硬编码>
 **Workspace**: 见 frontmatter `workspace:` 块(§6.2 4 字段全填)
 **Source repo identity**: 见 frontmatter `source_repo_identity:` 块(XenoDev 写 hand-back 前必须按 §6.2.1 约束 3 校验)
 **SHARED-CONTRACT version honored**: 2.0
@@ -108,7 +108,7 @@ shared_contract_version_honored: 2.0
 
 operator 切到 build_repo 后:
 
-1. `cd /Users/admin/codes/XenoDev`
+1. `cd "$BUILD_REPO"`(= frontmatter `workspace.build_repo` 的实际值,如本机 `/home/ys/codes/XenoDev`)
 2. 读本 HANDOFF.md(全文)+ 引用的 PRD.md
 3. 在 XenoDev session 触发 XenoDev 自带的 spec-writer(per XenoDev AGENTS.md;**不**调 IDS 的 spec-writer subagent — XenoDev 派生自己的)
 4. spec-writer 产 XenoDev 内部 spec.md(7 元素 schema,具体格式见 XenoDev `templates/spec.template.md`)
@@ -162,7 +162,18 @@ SOURCE_REPO="$(realpath .)"
 HANDBACK_TARGET="${SOURCE_REPO}/discussion/<root>/handback/"
 EXPECTED_REMOTE="$(git config remote.origin.url 2>/dev/null || echo '')"
 REPO_MARKER="$(head -c 30 CLAUDE.md)"
-# 然后用 Write 工具落盘上面模板的实化版本
+# BUILD_REPO(XenoDev 仓)= 跨仓,不能 rev-parse(那给的是 IDS 仓根)。优先级链(forge v6 KG-26):
+#   1. 显式 $XENODEV_REPO 环境变量  2. sibling ../XenoDev  3. fail-closed 让 operator 填
+#   ⚠ 绝不硬编码 /Users/admin/codes/XenoDev(mac 路径,linux/别的机器会崩)
+if [[ -n "${XENODEV_REPO:-}" && -d "${XENODEV_REPO}" ]]; then
+  BUILD_REPO="$(realpath "${XENODEV_REPO}")"
+elif [[ -d "$(dirname "$SOURCE_REPO")/XenoDev" ]]; then
+  BUILD_REPO="$(realpath "$(dirname "$SOURCE_REPO")/XenoDev")"
+else
+  echo "❌ 找不到 XenoDev 仓:请设 \$XENODEV_REPO 或把 XenoDev 放在 IDS 兄弟目录 $(dirname "$SOURCE_REPO")/XenoDev" >&2
+  exit 1
+fi
+# 然后用 Write 工具落盘上面模板的实化版本(build_repo 填 $BUILD_REPO)
 mkdir -p discussion/<root>/<parent-fork>/<prd-fork-id>/L4/
 ```
 
@@ -174,7 +185,7 @@ test -f "$HANDOFF" && \
   grep -q "shared_contract_version_honored: 2.0" "$HANDOFF" && \
   grep -q "workspace:" "$HANDOFF" && \
   grep -q "source_repo_identity:" "$HANDOFF" && \
-  grep -q "/Users/admin/codes/XenoDev" "$HANDOFF" && \
+  grep -q "build_repo: ${BUILD_REPO}" "$HANDOFF" && \
   grep -q "§6.2.1" "$HANDOFF" && \
   echo "HANDOFF.md OK"
 ```
@@ -192,7 +203,7 @@ Generated:
 📋 Next step: switch to XenoDev build runtime
 
 [1] (默认) 切到 XenoDev 仓继续
-    → cd /Users/admin/codes/XenoDev
+    → cd "$BUILD_REPO"(见 HANDOFF frontmatter workspace.build_repo · 如本机 /home/ys/codes/XenoDev)
     → cat <abs path of HANDOFF.md>
     → 在 XenoDev session 触发 XenoDev 自己的 spec-writer
        (XenoDev 不调 IDS 的 spec-writer subagent;XenoDev 派生自己的)

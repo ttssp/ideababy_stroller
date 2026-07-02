@@ -188,14 +188,14 @@ Decisions logged: discussion/<id>/handback/HANDBACK-LOG.md
 Pending operator actions:
   - <M> PRD revisions      → /scope-inject <id> 或手工改 PRD 后 /plan-start <prd-fork-id>
   - <K> SHARED-CONTRACT 修订 → 手工改 framework/SHARED-CONTRACT.md(M2 cutover 后协议层 ACTIVE)
-  - <J> XenoDev spec 修订   → 跨仓:cd /Users/admin/codes/XenoDev && 改 spec
+  - <J> XenoDev spec 修订   → 跨仓:cd "$BUILD_REPO"(如本机 /home/ys/codes/XenoDev)&& 改 spec
   - <L> 信息式无操作         → 已入库 practice-stats
 
 📋 Next step menu:
 
 [1] (默认 if M ≥ 1) 修 PRD → /scope-inject <id>
 [2] (默认 if accumulated drift) 起新 forge → /expert-forge <id>
-[3] 切到 XenoDev 改 spec → cd /Users/admin/codes/XenoDev
+[3] 切到 XenoDev 改 spec → cd "$BUILD_REPO"(如本机 /home/ys/codes/XenoDev · 见 HANDOFF workspace.build_repo)
 [4] 暂停 → 决议已 log,稍后再做
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
