@@ -64,8 +64,14 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
 ### M1 · PIT 价格历史层(唯一关键新器官)
 - 唯一行情来源。范围 = **日线 bars + 拆分/分红复权 + PIT ticker/date 映射 + 退市股感知(survivorship-free)**。
 - **defer**(本 fork 明确不做):多市场统一/汇率/分钟级/tick。
-- **接口契约**:`(ticker, as-of date) → 复权收盘价`;所有字段带当时可见时间戳(as-of),
+- **接口契约**:`(ticker, as-of date) → 结构化复权价点`;返回**结构化对象**(adjusted_close +
+  命中行 provenance:hit_trade_date / hit_as_of / source / close_raw / factor_used),**非裸标量**
+  (可保留 float convenience 建于结构化接口之上)。所有字段带当时可见时间戳(as-of),
   CHECK/NOT NULL 级硬约束防 look-ahead(继承 004 把红线写进 DDL 的范式)。
+  - **⚠ 结构化返回决议来源**:handback `009-pForge-20260702T005910Z` 触发 #1(codex T002-R1-F2 [high])
+    → operator 2026-07-02 采纳。理由:裸标量丢失 O6「M2 alpha as-of 可复现」所需的命中行溯源,
+    且 `None` 无法区分 无价/退市/因子缺失。XenoDev spec D-M1-2/O1/P1 签名契约同步改;
+    影响 T003 查询引擎 + T012 M2 realized-return。见 `discussion/009/handback/HANDBACK-LOG.md`。
 - **数据源选型**(来自 M1 调研,证据票数见 §附录 A):
   - A 股 → **BaoStock**(证据最硬:qfq+hfq 复权因子 + 精确公式 + 原生 as-of 口径,几乎照抄)。
   - 美股 → **Tiingo 免费档**(免费源里复权最准,近 CRSP);备选 yfinance(起步快,但退市股不可靠,
