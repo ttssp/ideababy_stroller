@@ -1,0 +1,16 @@
+{
+  "version": "v3",
+  "phase": "done",
+  "scope": "forge-lite",
+  "convergence_mode": "strong-converge",
+  "x_hash": "76ceb877c9e54198386edfff5b1b2483",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "p1_convergence": "both-candidate-a-zero-divergence",
+  "p2_skipped": "forge-lite · P1 双方收敛候选 (a) · 无设计分歧 · 直接进 synthesizer",
+  "verdict": "选 (a) 加 factor_as_of=None 分离双 as_of 轴 · 两阶段 PIT 选择锁同源同天 · 非破坏扩 provenance · 解 T012 R6",
+  "stage_doc": "discussion/009/forge/v3/stage-forge-009-v3.md",
+  "created": "2026-07-03T09:38:25Z",
+  "last_updated": "2026-07-03T10:12:00Z"
+}

@@ -1,9 +1,9 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-03T09:19:52Z
+last_updated: 2026-07-04T00:00:00Z
 total_decisions: 10
-note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
+note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)
 ---
 
 # HANDBACK-LOG · discussion 009
@@ -168,6 +168,11 @@ cov 94% · 587 全绿无回归 · 13 commit 留任务分支)。**R6 揭 spec-sem
 - **⚠ 归属**: provider 是 T003 已 ship 件(price/provider.py + interface.py),改其 API **违 spec OUT-10
   (不改已 ship 004/provider 签名)= 跨仓契约改**。按 CLAUDE.md 铁律「跨仓协议改 / 重大架构转向 → 必须回
   IDS forge」→ **不走 scope-inject,须起 forge(或至少 forge-lite 定 provider 新契约)**,不在 XenoDev 当场改。
+- **✅ 已由 forge v3 定契约**(`discussion/009/forge/v3/stage-forge-009-v3.md` · forge-lite · 2026-07-03 ·
+  P1 双方零分歧强收敛候选 (a)):选 `get_adjusted_close(..., factor_as_of=None)` 加可选第三参数分离双 as_of
+  轴(判死 (c) 调用层重组 = 技术不可行/退化成 T012 私有约定;判 (b) 拆原子读 = 次选破坏单入口 provenance)。
+  三细节定死:factor 锁同 hit_trade_date+source · AdjustedPricePoint 非破坏扩 factor_as_of · factor 缺失沿用
+  None(结构化 outcome 降级 v0.2)。**XenoDev 授权改 009 自有 provider**(不碰 004 · 不违 OUT-10)。
 
 **T012 收尾指示**(回流后 operator 在 XenoDev 做):选 A → 待 provider 契约经 forge 定后,起 FU-task
 改 provider + 改 realized_return 重组两轴 + 补测 + REVIEW-LOG 收口 → merge 任务分支
@@ -178,4 +183,5 @@ cov 94% · 587 全绿无回归 · 13 commit 留任务分支)。**R6 揭 spec-sem
 **Operator note**: 选 A(PIT 严格 · alpha 数字要真防 look-ahead)+ 改 provider 走 forge(跨仓契约 · 违 OUT-10)。
 T012 待 provider 新契约定后收尾。这触发一个 provider 契约 forge(比 scope-inject 重)。
 
-**Follow-up commits**: pending(provider forge 待起 · FU-task 待起 · 本 LOG)
+**Follow-up commits**: ✅ provider forge v3 已定稿(`stage-forge-009-v3.md` · 2026-07-03)+ PRD §7 已同步指向新契约;
+⏳ 剩:XenoDev provider FU-task(改 interface.py/provider.py/models.py + 6 测)+ T012 realized_return.py 双轴调用 → merge 解 BLOCKED

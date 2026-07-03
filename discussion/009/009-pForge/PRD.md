@@ -78,10 +78,17 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
   不能用单一 valuation_as_of 一把取整行(否则 entry 价被 entry 后修订污染 → alpha 口径腐化)。
   - **决议来源**:handback `009-pForge-20260703T085623Z`(T012)决议项 1(codex R6 复现:entry=100@04-27 →
     04-30 修 90 → exit=110,单轴取整行误算 log(110/90) 而非执行价 log(110/100))→ operator 2026-07-03 选 A。
-  - **⚠ 触发 provider 契约变更(走 forge · 未落地)**:干净实现需 M1 provider(T003 已 ship)扩**分离的
-    close-version-as_of / factor-valuation-as_of**;改已 ship provider 签名违 **OUT-10 = 跨仓契约改** →
-    按铁律**须回 IDS 起 forge 定 provider 新契约**(非 scope-inject),再起 FU-task 收尾 T012。
-    **T012 在 provider 新契约定稿前保持 BLOCKED 不 merge。**
+  - **✅ provider 契约已由 forge v3 定稿**(`discussion/009/forge/v3/stage-forge-009-v3.md` · forge-lite ·
+    2026-07-03 · P1 双方零分歧强收敛):`get_adjusted_close(..., query_as_of, factor_as_of=None, adjust)` 加
+    **可选第三参数 `factor_as_of`**(query_as_of 管 close_raw 版本轴、factor_as_of 管复权因子轴,默认
+    `None → 退化=query_as_of` 即旧行为 · 向后兼容 T004/T005/T007)。契约级定死三细节:**①** factor 子查询
+    须锁 close_raw 命中行的**同一 hit_trade_date + 同一 source**(两阶段 PIT 选择,防跨源/跨天混算);
+    **②** `AdjustedPricePoint` 非破坏性扩 —— 保留 `hit_as_of`(收窄为 close 行 as_of)+ 新增 `factor_as_of`
+    字段(不改名);**③** factor 缺失沿用现返 `None` 语义(结构化 data-quality outcome 降级 v0.2)。
+    改的是 009 自有 `PITPriceProvider`(T002 定 · 本 fork 可改)→ **不违 OUT-10**(OUT-10 禁改 004
+    `PriceDataProvider`)。**T012 收尾** = XenoDev 起 provider FU-task 改 interface.py/provider.py/models.py +
+    6 项验收测试(R6 复现→修 + 向后兼容回归)→ realized_return.py 改双轴调用(entry `query_as_of=entry_as_of`
+    + `factor_as_of=exit_as_of`)→ 从 BLOCKED 解除 merge。
 - **数据源选型**(来自 M1 调研,证据票数见 §附录 A):
   - A 股 → **BaoStock**(证据最硬:qfq+hfq 复权因子 + 精确公式 + 原生 as-of 口径,几乎照抄)。
   - 美股 → **Tiingo 免费档**(免费源里复权最准,近 CRSP);备选 yfinance(起步快,但退市股不可靠,
