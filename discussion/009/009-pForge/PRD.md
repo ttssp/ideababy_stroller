@@ -72,6 +72,16 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
     → operator 2026-07-02 采纳。理由:裸标量丢失 O6「M2 alpha as-of 可复现」所需的命中行溯源,
     且 `None` 无法区分 无价/退市/因子缺失。XenoDev spec D-M1-2/O1/P1 签名契约同步改;
     影响 T003 查询引擎 + T012 M2 realized-return。见 `discussion/009/handback/HANDBACK-LOG.md`。
+- **⚠ entry 价语义 = 「执行时可见」(PIT 严格 · 分离价格版本轴与复权因子轴)**:
+  realized-return 算 entry 价时,**raw close 按 entry as_of 取(不含 entry 后的数据修订)、复权 factor 按
+  exit as_of 取**,adjusted = entry_raw(@entry as_of) × factor(@exit as_of)。**价格版本轴 ≠ 复权因子轴**,
+  不能用单一 valuation_as_of 一把取整行(否则 entry 价被 entry 后修订污染 → alpha 口径腐化)。
+  - **决议来源**:handback `009-pForge-20260703T085623Z`(T012)决议项 1(codex R6 复现:entry=100@04-27 →
+    04-30 修 90 → exit=110,单轴取整行误算 log(110/90) 而非执行价 log(110/100))→ operator 2026-07-03 选 A。
+  - **⚠ 触发 provider 契约变更(走 forge · 未落地)**:干净实现需 M1 provider(T003 已 ship)扩**分离的
+    close-version-as_of / factor-valuation-as_of**;改已 ship provider 签名违 **OUT-10 = 跨仓契约改** →
+    按铁律**须回 IDS 起 forge 定 provider 新契约**(非 scope-inject),再起 FU-task 收尾 T012。
+    **T012 在 provider 新契约定稿前保持 BLOCKED 不 merge。**
 - **数据源选型**(来自 M1 调研,证据票数见 §附录 A):
   - A 股 → **BaoStock**(证据最硬:qfq+hfq 复权因子 + 精确公式 + 原生 as-of 口径,几乎照抄)。
   - 美股 → **Tiingo 免费档**(免费源里复权最准,近 CRSP);备选 yfinance(起步快,但退市股不可靠,
