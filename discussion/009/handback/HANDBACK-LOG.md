@@ -1,9 +1,9 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-04T00:00:00Z
-total_decisions: 10
-note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)
+last_updated: 2026-07-05T00:00:00Z
+total_decisions: 12
+note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
 # HANDBACK-LOG · discussion 009
@@ -184,4 +184,73 @@ cov 94% · 587 全绿无回归 · 13 commit 留任务分支)。**R6 揭 spec-sem
 T012 待 provider 新契约定后收尾。这触发一个 provider 契约 forge(比 scope-inject 重)。
 
 **Follow-up commits**: ✅ provider forge v3 已定稿(`stage-forge-009-v3.md` · 2026-07-03)+ PRD §7 已同步指向新契约;
-⏳ 剩:XenoDev provider FU-task(改 interface.py/provider.py/models.py + 6 测)+ T012 realized_return.py 双轴调用 → merge 解 BLOCKED
+✅ **已收尾**(见下 2026-07-05 T012 收尾条 · handback `20260703T170209Z`):XenoDev FU-task shipped 双轴契约 +
+T012 realized_return 双轴调用 · merge `feat/009-spec` · **T012 BLOCKED 解除**。
+
+## 2026-07-05 · 009-pForge-20260703T170209Z(T012 收尾 · BLOCKED 解除 · verdict 实装订正)
+
+**Reviewed at**: 2026-07-05T00:00:00Z
+**Tags**: spec-gap-fix,feature
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer 模式 · validator 自动)
+**Related task**: T012(M2 realized-return · 双 as_of 轴收尾)
+
+**内容摘要**: XenoDev 按 forge v3 verdict 实装候选 (a) 双 as_of 轴 —— `get_adjusted_close` 加 `factor_as_of`,
+factor 锁 close 命中行同 trade_date+同 source。**R6 复现闭合**:entry 后同 trade_date 的 close_raw 修订
+(04-30→90)不再拉进 entry basis → **+9.5% 非 +20%**。4 文件改(interface/provider/models/realized_return ·
+全 009 fork 内)· 6 双轴验收测 + 2 R7 回归测 · **595 全套绿无回归** · provider cov 98%/realized 94% · ruff clean ·
+merge `feat/009-spec` → **T012 BLOCKED 解除**。reviewed-by=codex@2026-07-04(R7→R8 approve · 权威非 fallback)。
+
+**⚠ verdict 实装订正(codex R7 抓 1 high)**: forge v3 stage §细节1 原描述的**两阶段两次独立 SELECT**,
+在 SQLite autocommit 下**跨两个快照** → 并发 ingest 可拼「旧 close_raw + 新 factor」= silent-wrong(退化路径
+也破原子性)。**shipped 收紧为单语句 CTE**(`_SELECT_DUAL_AXIS_SQL` · SQLite 单语句 = 单一致快照原子读)+
+2 回归测(并发等价 + 结构 mutation-killer · 实证 kill 掉 two-SELECT)。**契约语义(factor 锁同源同天 + 双
+as_of provenance)完全不变**,只是把「两次 SQL / 单 SQL self-join 等价」的实现选择收紧为「必须单语句原子读」。
+
+**Operator decisions**:
+- [x] 修 PRD §"7 M1 契约" —— §细节① 加注 shipped 单 CTE(非 two-SELECT)+ T012 收尾状态改「已 shipped · BLOCKED 解除」
+- [x] 修 forge stage `stage-forge-009-v3.md` §细节1 —— 加「实装订正」note(two-SELECT → 单 CTE · 原子性)
+- [ ] 修 SHARED-CONTRACT(无 · 非协议层)
+- [ ] 无操作
+
+**Operator note**: T012 收尾干净 · BLOCKED 解除。codex R7 的原子性发现是 forge-lite(无 P3 对抗)+ strong-converge
+回声室的实证盲区 —— 恰好命中 stage doc §"What this menu underweights" 已预警的「两阶段之间未对抗验证」。
+契约语义未变,实装比 verdict 更严。**forge verdict 与 shipped 实现的差异已双向回写(PRD + stage doc)保留审计。**
+
+**Follow-up commits**: pending(本 LOG + PRD §7 + stage doc 订正 · 同一 IDS commit)
+
+## 2026-07-05 · 009-pForge-20260704T234247Z(F6 前提证伪 · 关闭 not-a-bug · 撤销 batch-6 F6 采纳)
+
+**Reviewed at**: 2026-07-05T00:00:00Z
+**Tags**: prd-revision-trigger
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer 模式 · validator 自动)
+**Related task**: F6(004 upsert INSERT OR REPLACE vs 0015 复合 FK)
+
+**内容摘要**: F6 **前提实证证伪 · 建议关闭 not-a-bug · 不 ship**。XenoDev 起 F6 后按 plan-mode 核真 schema +
+写 TDD 复现测,**前提站不住**:
+- **CASE B(同键 re-upsert · 即 T010-F6 说的复现路径 · 常见)**:有 alpha 子行时旧 `INSERT OR REPLACE` 同 PK →
+  **成功不炸 FK**。SQLite 对同 PK 的 REPLACE **不 orphan 子行**(子行 FK 目标 PK 值不变),非天真 DELETE+INSERT
+  跨 FK。4 个 F6 复现测跑**未改的旧 `advisor_repo.py`** → **全绿 = bug 不复现**。
+- **CASE A(advisor_id 跨 fetch 变 · 撞 (week_id,source_id) UNIQUE · 罕见)**:旧代码真炸,但**无简单 ON CONFLICT
+  能修**(本质是 re-parent 子行 = 数据迁移,归 `rebind_source_id_for_advisor_week`,不归 `upsert_weekly`)。
+- **决定性旁证**:`domain/advisor.py:27` v0.1 只有一个 advisor + `source_id=advisor_id` → **CASE A 在 v0.1 根本
+  不发生** → F6 连 edge 都不存在。
+
+**⚠ 撤销先前决议**: 本条**撤销 2026-07-03 batch T010 条(`20260703T034538Z`)的 F6 决议**「采纳 · 改 004
+`upsert_weekly` INSERT OR REPLACE → ON CONFLICT DO UPDATE」。原决议基于 codex 理论推演(REPLACE=DELETE+INSERT),
+**未算 SQLite 同 PK 实际行为** → 证伪。**不 ship ON CONFLICT no-op**(常见路径无 bug 可修 · 对真 edge 无效 ·
+装上 = 给「FK 风险已处理」假信心)。
+
+**Operator decisions**:
+- [ ] 修 PRD(无 · 见 note:CASE A 作 v0.2 known-edge · 本轮不写 PRD)
+- [ ] 修 SHARED-CONTRACT(无)
+- [x] 修 XenoDev spec(信息式)—— F6 关闭为 not-a-bug · CASE A(多 advisor re-parent)转 v0.2 known-edge 追踪
+      (归 rebind 路径 · 非 upsert_weekly · v0.1 不触发)
+- [x] 收悉入库(practice-stats:FU-task 先验证前提再动手 · 杀掉幻影 bug · 省一次无效 ship)
+
+**Operator note**: F6 是幻影 bug —— 好的 dogfood 结果:FU-task 没盲目实装,先做实前提就证伪了。诚实记录:
+IDS 侧原 handback-review F6 采纳决议 + 我写的 FU 指令都基于错误前提。**T016 不受阻**(v0.1 常见路径 upsert 本就不炸)。
+交付:worktree `aeff2a8` 保留 · 只提交 4 证伪测(对未改代码全绿 = 证据)· `advisor_repo.py` 一字未改 · 未 merge。
+
+**Follow-up commits**: pending(本 LOG · 同一 IDS commit)· CASE A v0.2 known-edge 追踪待 XenoDev spec 侧记(信息式)

@@ -82,13 +82,15 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
     2026-07-03 · P1 双方零分歧强收敛):`get_adjusted_close(..., query_as_of, factor_as_of=None, adjust)` 加
     **可选第三参数 `factor_as_of`**(query_as_of 管 close_raw 版本轴、factor_as_of 管复权因子轴,默认
     `None → 退化=query_as_of` 即旧行为 · 向后兼容 T004/T005/T007)。契约级定死三细节:**①** factor 子查询
-    须锁 close_raw 命中行的**同一 hit_trade_date + 同一 source**(两阶段 PIT 选择,防跨源/跨天混算);
+    须锁 close_raw 命中行的**同一 hit_trade_date + 同一 source**(防跨源/跨天混算 · **shipped 用单语句 CTE
+    `_SELECT_DUAL_AXIS_SQL` 原子读**,非 verdict 原描述的两阶段两次 SELECT —— codex R7 判 two-SELECT 在
+    autocommit 下跨快照会 silent-wrong,收紧为单一致快照;契约语义不变,见 stage doc §细节1 实装订正);
     **②** `AdjustedPricePoint` 非破坏性扩 —— 保留 `hit_as_of`(收窄为 close 行 as_of)+ 新增 `factor_as_of`
     字段(不改名);**③** factor 缺失沿用现返 `None` 语义(结构化 data-quality outcome 降级 v0.2)。
     改的是 009 自有 `PITPriceProvider`(T002 定 · 本 fork 可改)→ **不违 OUT-10**(OUT-10 禁改 004
-    `PriceDataProvider`)。**T012 收尾** = XenoDev 起 provider FU-task 改 interface.py/provider.py/models.py +
-    6 项验收测试(R6 复现→修 + 向后兼容回归)→ realized_return.py 改双轴调用(entry `query_as_of=entry_as_of`
-    + `factor_as_of=exit_as_of`)→ 从 BLOCKED 解除 merge。
+    `PriceDataProvider`)。**T012 收尾已 shipped**(handback `009-pForge-20260703T170209Z` · 2026-07-04):
+    4 文件改(interface/provider/models/realized_return · 全 009 fork 内)+ 6 双轴验收测 + 2 R7 回归测 ·
+    595 全套绿无回归 · provider cov 98% · merge `feat/009-spec` → **T012 BLOCKED 解除**。
 - **数据源选型**(来自 M1 调研,证据票数见 §附录 A):
   - A 股 → **BaoStock**(证据最硬:qfq+hfq 复权因子 + 精确公式 + 原生 as-of 口径,几乎照抄)。
   - 美股 → **Tiingo 免费档**(免费源里复权最准,近 CRSP);备选 yfinance(起步快,但退市股不可靠,

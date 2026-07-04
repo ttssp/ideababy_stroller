@@ -151,6 +151,16 @@ def get_adjusted_close(
   - `factor_as_of=None` 退化时:第二次查询用 `query_as_of` 作 `factor_as_of` → 命中行与第一次同一行 →
     factor 与 close_raw 同源同版本 = 旧单轴行为。
 
+> **⚠ 实装订正(post-ship · 2026-07-04 · handback `009-pForge-20260703T170209Z` T012 收尾)**:
+> 上述「两阶段两次独立 SELECT」在实装时被 codex R7 判为 **1 high** —— 两次独立 SELECT 在 SQLite
+> autocommit 下**跨两个快照**,并发 ingest 可拼「旧 close_raw + 新 factor」= silent-wrong,**退化路径
+> 也破原子性**。**shipped 契约改为单语句 CTE**(`_SELECT_DUAL_AXIS_SQL` · SQLite 单语句 = 单一致快照
+> 原子读)+ 2 回归测(并发等价 + 结构 mutation-killer · mutation 实证 kill 掉 two-SELECT 版本)→ R8
+> approve 0 findings。**契约语义(factor 锁同 hit_trade_date+source · 双 as_of provenance)完全不变,
+> 只是把「两次 SQL / 单 SQL self-join 等价」的实现选择收紧为「必须单语句原子读」**。本 stage §细节1 当时把
+> two-SELECT 列为主实现 + self-join 列为可选优化,低估了原子性 —— 是 forge-lite(无 P3 对抗)+ strong-converge
+> 回声室的一个实证盲区(见本文 §"What this menu underweights" 已预警的"两阶段之间未对抗验证"一条)。
+
 #### 细节 2 · AdjustedPricePoint provenance 双 as_of(非破坏性扩)
 
 **裁决:采纳 Codex 的非破坏性扩法 —— 保留 `hit_as_of`(语义收窄为 close_raw 行 as_of)+ 新增
