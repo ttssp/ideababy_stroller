@@ -6,17 +6,19 @@
 
 ---
 
-## 📌 What's new (2026-05-07)
+## 📌 What's new (2026-07-06)
 
-今天落地三项改进，把孵化器从"4 层主线"扩展到"4 层 + 横切层 + PRD 形态多元化"：
+自 5-07 以来最大的结构变化是**孵化器不再自己 build 代码**——IDS 收缩为"治理 + hand-off"，真正的工程执行搬到独立的 XenoDev 仓:
 
 | 改进 | 解决的问题 | 主要入口 |
 |---|---|---|
-| **横切层 `/expert-forge`** | 主线 L1-L4 不覆盖"已有 repo / 多份 stage 文档 / 外部材料"的双专家审阅 + SOTA 对标 + **强制收敛**到单一 verdict 的工作模式 | `/expert-forge <id>` · `/forge-inject <id>`（详见 §2.6） |
-| **4 种 PRD 形态** | L3→L4 fork 不再只能"单 candidate v0.1"，把 `phased / composite / v1-direct` 提升为一等公民，避免 operator 现场发明 | `/fork-phased` · `/fork-composite` · `/fork-v1` · `/fork-module-out`（详见 §2.2 的 4 种形态表） |
-| **GPT-5.4 → GPT-5.5 xhigh** | 统一升级所有 L1-L4 命令模板 / skill / agent 描述里的 Codex debater 模型名；新启动 idea 默认走新模型，已落盘文件保持原名 | 影响 30+ 文件的 docstring，无需 operator 操作 |
+| **IDS / XenoDev 两仓分工（M2 cutover）** | 本仓（IDS）只治理到 L4 hand-off；真正的 spec/tasks/build/quality 全部搬到 **XenoDev 仓**跑，跑完产 hand-back 包写回 IDS | `/plan-start` 产 `HANDOFF.md` → `cd XenoDev` 真开发 · 见 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md) |
+| **`specs/` 在 IDS 废弃（M3）** | IDS 不再产 spec 包（spec-writer/task-decomposer 移到 XenoDev 侧）；旧 `specs/` 4 个 fork 存作 forge v2 evidence，只读归档 | 铁律更新见 §6 · [`framework/SHARED-CONTRACT.md`](./framework/SHARED-CONTRACT.md) §6 v2.0 |
+| **hand-back 反向通道 + forge-lite** | XenoDev 的 build/ship/drift 产物回流 IDS，operator 用 `/handback-review` 逐包决议；`forge-lite` 是轻量 forge 变体，专治"下游集成契约 / 单点架构缺口"这类不必走完整双专家多轮的场景 | `/handback-review <id>` · `/expert-forge <id>`（§2.6） |
 
-下面 §2.2、§2.6、§5 已嵌入这些改动；想直接看每条怎么用，跳到 §5 命令速查表。
+> 历史里程碑（仍生效）:2026-05-07 落地了横切层 `/expert-forge`（§2.6）+ 4 种 PRD 形态（`/fork-phased` `/fork-composite` `/fork-v1` `/fork-module-out`，§2.2）。
+
+下面 §0、§2.4-2.6、§3.2、§4-8 已嵌入两仓改动；想直接看每条怎么用，跳到 §5 命令速查表。
 
 ---
 
@@ -29,9 +31,9 @@
 - 工程级 spec + 任务 DAG（阶段 4 的设计）
 - 真正的代码与测试（阶段 4 的产出，多个 idea 并行存在）
 
-operator 是**单个人类**(我自己)；执行体是一支 AI 团队：Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5、GPT-5.5 xhigh / GPT-5.3-Codex，再加上 Anthropic 的子智能体（subagent）系统与 Git Worktree 做并行隔离。
+operator 是**单个人类**(我自己)；执行体是一支 AI 团队：Claude Opus 4.7 / Sonnet 4.6 / Haiku 4.5、GPT-5.4 xhigh / Codex 5.3/5.4，再加上 Anthropic 的子智能体（subagent）系统与 Git Worktree 做并行隔离。
 
-> ⚠️ **关于根目录**：当前 `package.json` / `pnpm dev` / `next.config.mjs` / `src/app/` 等 **属于 idea 001-pA(`pi-briefing`)** 的工程交付物。本 worktree(`worktree-idea001`) 同时承载孵化器(根仓 `ideababy_stroller`)和 001-pA 工程包，上半部分根文件是 001-pA 的，下半部分目录(`discussion/` `specs/` `proposals/` `.codex-inbox/` …)是孵化器自身的。其它 idea(003-pA、004-pB…)各自的工程代码在 [`projects/<fork-id>/`](./projects) 中，互不污染。
+> ⚠️ **关于根目录**：根目录的 `package.json` / `pnpm dev` / `next.config.mjs` / `src/app/` 等是 **pre-M2 时代的历史工程包**——那时 IDS 内直接 build 代码（最早的 idea 001-pA `pi-briefing` 等）。**M2 cutover 后新 build 全部搬到 XenoDev 仓，IDS 根目录不再新增工程代码**（详见 §📌 What's new / [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md)）。所以本仓分两层看：**上半部分根文件**（`src/` `package.json` `specs/` `projects/` …）是历史工程包与归档；**下半部分目录**（`discussion/` `proposals/` `framework/` `.codex-inbox/` …）才是**当前活跃的孵化器骨架**。当前治理主线是 **idea 009 投资决策闭环**（分支 `forge/009-blueprint`，见 §7）。
 
 ---
 
@@ -54,7 +56,7 @@ operator 是**单个人类**(我自己)；执行体是一支 AI 团队：Claude 
 | 认知盲区 | **L1 Inspire 双模型并行 daydream + 价值验证 search** |
 | 层级混乱 | **4 层流水线 + 铁律：L1/L2 不谈技术、L3 才上 human 真实约束、L4 才工程** |
 | 模块互打 | **L4 spec-writer 出 spec → task-decomposer 切 DAG → file_domain 强约束 + worktree 并行 + 合并前 task-review** |
-| 漏盲点 | **跨模型对抗审：Claude 实现 → Codex GPT-5.5 xhigh 9 维 adversarial review →（可选）Opus adversarial-reviewer** |
+| 漏盲点 | **跨模型对抗审：Claude 实现 → Codex GPT-5.4 xhigh 9 维 adversarial review →（可选）Opus adversarial-reviewer** |
 | 上下文污染 | **多队列 Codex inbox/outbox 总线 + 任意层 fork(sibling 不嵌套) + Park/Abandon 树操作** |
 
 ---
@@ -230,12 +232,12 @@ cdx-peek 003-pA     # 偷看下一步要干嘛
 | 层级 | 模型 | 干什么 | 单位成本 |
 |---|---|---|---|
 | 架构层 | **Opus 4.7 (extended thinking)** | 跨模块决策 / 难 bug 根因 | 高 |
-| 规划层 | **Opus 4.7 plan-mode** / **GPT-5.5 xhigh** | spec / 任务分解 / 选型 | 中高 |
-| 审查层 | **GPT-5.5 (high) via codex-plugin** | 跨模型对抗审 | 中 |
-| 主力开发 | **Sonnet 4.6** / **GPT-5.3-Codex medium** | 90% 业务代码 + 单测 | 低中 |
+| 规划层 | **Opus 4.7 plan-mode** / **GPT-5.4 xhigh** | spec / 任务分解 / 选型 | 中高 |
+| 审查层 | **GPT-5.4 (high) via codex-plugin** | 跨模型对抗审 | 中 |
+| 主力开发 | **Sonnet 4.6** / **Codex 5.3/5.4 medium** | 90% 业务代码 + 单测 | 低中 |
 | 机械工 | **Haiku 4.5** / **Codex-Spark** | 格式化 / 重命名 / 样板 | 极低 |
 
-**铁律**：不要让 Opus 写样板代码（浪费），不要让 Haiku 做架构（崩盘）。**Opus 规划，Sonnet/Codex 执行，Codex 审查**。
+**铁律**：不要让 Opus 写样板代码（浪费），不要让 Haiku 做架构（崩盘）。**Opus 规划，Sonnet/Codex 执行，Codex 审查**。（模型名以 [`CLAUDE.md`](./CLAUDE.md) 为权威基线；已落盘的 forge/handback/specs 文件保持产出时的原型号，不回改。）
 
 ### 2.5 子智能体（Subagents）
 
@@ -256,6 +258,8 @@ cdx-peek 003-pA     # 偷看下一步要干嘛
 | `stage1-synthesizer` / `stage2-checkpoint` / `conclusion-synthesizer` | (legacy v2.1 三阶段辩论) | opus |
 
 > **个人偏好已固化**：`003-pA` build 阶段 parallel-builder 一律用 sonnet，忽略 task 的 recommended_model。
+>
+> ⚠️ **M2 后注意**：`spec-writer` / `task-decomposer` / `parallel-builder` 三个 build 侧子智能体现在**在 XenoDev 仓执行**（IDS 不再产 specs/、不再本仓 build）。上表保留它们是因为定义与派生指南仍归 IDS 治理（见 `framework/xenodev-*-derivation-guide.md`），但真正的调用发生在 XenoDev session。IDS 侧活跃的是 synthesizer 系（inspire/explore/scope/forge）+ 审查系。
 
 ### 2.6 横切层：`/expert-forge`（双专家审阅 + SOTA 对标 + 强制收敛）
 
@@ -331,6 +335,10 @@ Phase 4 · synthesizer       ── forge-synthesizer 子智能体出 stage doc
 
 详细协议见 [`.claude/skills/forge-protocol/SKILL.md`](./.claude/skills/forge-protocol/SKILL.md)（808 行，覆盖每个 Phase 的契约 / 护栏 / 失败模式）。
 
+#### forge-lite（轻量变体）
+
+不是所有 forge 都值得跑完整"双专家 × 5 Phase"。当标的是**单点问题**——一个下游集成契约要不要采纳、一处架构缺口怎么补、hand-back 揭出的某个决议——用 **forge-lite**：同一个 `/expert-forge <id>` 入口，但收敛更快、轮次更少。idea 009 的 forge v3（provider 双 as_of 轴契约）/ v4（O8 下游集成非方向 evidence）就是 forge-lite 产物。判据很简单：**争议面窄、证据基本齐、只需专家拍一个板** → lite；**方向未定、多份材料要综合、要防重大转向** → full。审"给共享域对象加字段/旁路"这类改动时，forge-lite 有一条硬纪律——**必须枚举该对象所有消费面**（渲染 / 序列化 / 导出 / 搜索 / 缓存键），不能只顺着 hand-back 指出的那一个病灶改。
+
 ### 2.7 10 质量门（v0.1 → 商业化前的硬关卡）
 
 `/quality-gate <fork-id>` 依次跑（任一不过不能 ship）：
@@ -385,17 +393,14 @@ claude
 
 ### 3.2 走完一个 idea 的标准路径
 
-> ⚠️ **L4 段已变更（M2 · per SHARED-CONTRACT §6 v2.0）**：下面示例里 `/plan-start` **之后**的
-> `/parallel-kickoff`、`/task-review`、`/quality-gate` 现在**都在 XenoDev 仓跑，不在 IDS**。IDS 的 L4
-> 只到 `/plan-start` 产 `HANDOFF.md` 为止，然后 `cd /Users/admin/codes/XenoDev && claude` 真开发。
-> 两仓怎么转见 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md)。下面 L1-L3 部分仍准确。
+> ⚠️ **L4 段已变更（M2 · per SHARED-CONTRACT §6 v2.0）**：L1-L3 全在 IDS,准确;**L4 从 `/plan-start` 起转仓**——细节见下面代码块 L4 段的内联注释。
 
 下面用 `001` 这个虚构 idea 演示。Claude Code 终端 **A** + Codex 终端 **B** 各开一个，全程不需要复制粘贴长 prompt。
 
 ```bash
 # ── L1 Inspire ──────────────────────────────────────
 [A] /inspire-start 001                       # Opus 写 L1R1(daydream,无 search)
-[B] cdx-run 001                              # GPT-5.5 xhigh 并行写 L1R1
+[B] cdx-run 001                              # GPT-5.4 xhigh 并行写 L1R1
 [A] /inspire-next 001                        # 双方读对方,做价值验证 search
 [B] cdx-run 001
 [A] /inspire-advance 001                     # inspire-synthesizer 出 menu
@@ -420,18 +425,28 @@ claude
 [A] /fork 001a from-L3 candidate-A as 001a-pA
                                              # 自动产出 PRD.md
 
-# ── L4 Plan ─────────────────────────────────────────
-[A] /plan-start 001a-pA                      # 触发 spec-writer + task-decomposer
-                                             # 同时把 Codex adversarial R1 写进 inbox
+# ── L4 Hand-off(IDS 侧到此为止)────────────────────
+[A] /plan-start 001a-pA                      # 触发 spec-writer + task-decomposer(注)
+                                             # 产出 HANDOFF.md + Codex adversarial R1 入箱
 [B] cdx-run 001a-pA                          # adversarial R1
 [A] /plan-adversarial-next 001a-pA           # R2/R3/R4(默认 reuse-session)
-                                             # 直至 verdict CLEAN
-                                             # 然后并行开工:
-[A] /parallel-kickoff 001a-pA T003,T004,T008
-                                             # 每个 task worktree 合并前必跑:
-[A] /task-review 001a-pA T003 --reviewer=claude-full
-[A] /quality-gate 001a-pA                    # 10 门质量检查
+                                             # 直至 verdict CLEAN → HANDOFF 定稿
+
+# ── 切 XenoDev 仓真开发(不在 IDS!见 XENODEV-WORKFLOW.md)──
+#   cd /Users/admin/codes/XenoDev && claude
+#   XenoDev 消费 HANDOFF.md,在那边跑:
+#     spec/tasks/build/quality —— /parallel-kickoff · /task-review · /quality-gate
+#   全部在 XenoDev 仓完成,IDS 不参与
+
+# ── hand-back 回流 IDS(闭环)──────────────────────
+[A] /handback-review 001                      # 参数是 discussion-id(如 001/008/009),不是 fork-id
+                                             # 决议 XenoDev 回流 discussion/<id>/handback/ 的 ship/violation/drift 包
 ```
+
+> 📌 **注**:M2 cutover 后,`spec-writer` / `task-decomposer` 及后续 build/review/quality 都在
+> **XenoDev 仓**执行(IDS 不再产 `specs/`)。IDS 的 L4 只到 `/plan-start` 产 `HANDOFF.md` +
+> `/plan-adversarial-next` 收敛为止,然后 `cd /Users/admin/codes/XenoDev && claude` 真开发。
+> 两仓怎么转、何时切回见 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md)。上面 L1-L3 部分仍完全准确。
 
 ### 3.3 任意时刻的"我现在该干嘛"
 
@@ -465,6 +480,7 @@ ideababy_stroller/
 ├── CLAUDE.md                       # 项目宪法（每个 Claude Code 会话自动加载）
 ├── AGENTS.md                       # CLAUDE.md 的软链接(给 Codex 读)
 ├── PLAYBOOK.md                     # 详细操作手册(~1000 行)
+├── XENODEV-WORKFLOW.md             # ★ 两仓操作入口(IDS↔XenoDev 何时切/怎么切)
 ├── lessons-learned.md              # 所有 abandon 沉淀的全局教训(倒序)
 ├── install.sh                      # 一次性 bootstrap
 │
@@ -476,22 +492,24 @@ ideababy_stroller/
 │   ├── 002/, 003/, 004/, 005/      # 其它 idea
 │   └── ...
 │
-├── specs/                          # L4 spec 包(spec-writer + task-decomposer 写)
-│   ├── 001-pA/  003-pA/  004-pB/   # 每个 PRD-fork 一个独立 spec 包
-│   │   ├── spec.md  architecture.md  tech-stack.md
-│   │   ├── SLA.md   risks.md   non-goals.md   compliance.md
-│   │   ├── dependency-graph.mmd    # Mermaid DAG
-│   │   └── tasks/T001..TNNN.md     # 并行友好的 task 卡
+├── framework/                      # ★ 两仓契约 & XenoDev 工具集(M2 后核心)
+│   ├── SHARED-CONTRACT.md           #   §6 = IDS↔XenoDev 分工/hand-back schema/切回决策矩阵(权威)
+│   ├── xenodev-bootstrap-kit/       #   XenoDev 仓 bootstrap + handback-validator + safety-floor
+│   └── xenodev-*-derivation-guide.md #  spec-writer/task-decomposer/parallel-builder 派生指南
 │
-├── projects/                       # 真实代码(parallel-builder 写)
-│   ├── 001-pA/                     # ⚠️ 当前根目录就是 001-pA 的工程包
-│   ├── 003-pA/   004-pB/           # 其它 idea 的工程,各自隔离
+├── specs/                          # ⚠️ DEPRECATED(M3)· 4 fork specs 存作 forge v2 evidence
+│   ├── 001-pA/  003-pA/  004-pB/   #   只读归档;IDS 不再产 spec 包(移到 XenoDev 侧)
+│   │   └── ...                      #   spec.md / architecture.md / tasks/ …(历史工件)
+│
+├── projects/                       # 历史 parallel-builder worktree(pre-M2)
+│   ├── 001-pA/                     #   旧根目录工程包;新 build 已移 XenoDev 仓
+│   ├── 003-pA/   004-pB/           #   其它 idea 的历史工程,各自隔离
 │
 ├── .claude/
 │   ├── settings.local.json         # 权限白名单 + 子智能体注册
-│   ├── commands/                   # 30+ 斜杠命令(见 §5)
-│   ├── agents/                     # 12 个子智能体定义
-│   ├── skills/                     # 8 个领域 skill(协议/SDD/质量门/...)
+│   ├── commands/                   # 37 个斜杠命令(见 §5)
+│   ├── agents/                     # 15 个子智能体定义
+│   ├── skills/                     # 9 个领域 skill(协议/SDD/质量门/...)
 │   ├── rules/                      # 路径作用域规则(specs 保护 / build 规则)
 │   └── worktrees/                  # 并行 build 隔离目录(.gitignore 中)
 │
@@ -507,11 +525,11 @@ ideababy_stroller/
     ├── codex-inbox-init.sh         # 初始化总线目录
     └── check-disjoint.sh           # 检查 worktree 文件域是否真不重叠
 
-# ── 以下属于 idea 001-pA(`pi-briefing`) 的工程交付,不是孵化器骨架 ──
-├── package.json  pnpm-lock.yaml    # Next.js 15 + React 19 + Drizzle
+# ── 以下是 pre-M2 历史工程包(不是孵化器骨架,新 build 已移 XenoDev 仓)──
+├── package.json  pnpm-lock.yaml    # Next.js 15 + React 19 + Drizzle(历史遗留)
 ├── biome.json   tsconfig.json
 ├── next.config.mjs   drizzle.config.ts   playwright.config.ts   vitest.config.ts
-├── src/                            # 多 idea 代码混居(005, 003-pA, 004-pB...)
+├── src/                            # 早期 idea 代码混居(001-pA/003-pA/004-pB…),已冻结
 └── tests/
 ```
 
@@ -536,11 +554,11 @@ ideababy_stroller/
 | `/scope-next <fork-id>` | L3R2 scope-reality search |
 | `/scope-advance <fork-id>` | 闭 L3，产 PRD 菜单 |
 | `/scope-inject <fork-id>` | 注入约束 |
-| `/plan-start <prd-fork>` | L4 启动：spec + task DAG + Codex adversarial R1 入箱 |
-| `/plan-adversarial-next <prd-fork>` | R2-R4 迭代审 |
-| `/parallel-kickoff <prd-fork> <task-ids>` | 并行 launch worktree |
-| `/task-review <prd-fork> T<NNN>` | 单 task 合并前的强制 review gate |
-| `/quality-gate <prd-fork>` | 10 门质量检查 |
+| `/plan-start <prd-fork>` | L4 启动：产 `HANDOFF.md` + Codex adversarial R1 入箱（IDS 侧 L4 到此为止） |
+| `/plan-adversarial-next <prd-fork>` | R2-R4 迭代审，直至 HANDOFF 定稿 |
+| `/handback-review <id>` | **决议 XenoDev 回流的 hand-back 包**（ship / spec violation / drift）· §6 v2.0 反向通道 |
+
+> ⚠️ **以下 3 个命令在 XenoDev 仓跑,不在 IDS**（M2 cutover 后）:`/parallel-kickoff <prd-fork> <task-ids>`（并行 launch worktree）· `/task-review <prd-fork> T<NNN>`（单 task 合并前强制 review gate）· `/quality-gate <prd-fork>`（10 门质量检查）。IDS 侧只保留它们的治理定义。两仓怎么转见 [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md)。
 
 ### 树管理
 
@@ -561,6 +579,8 @@ ideababy_stroller/
 |---|---|
 | `/expert-forge <id>` | 双专家审阅已有产物（repo / stage 文档 / 外部材料）+ SOTA 对标 + 强制收敛。**状态机模式**——同一命令反复跑，每次推进 1 个 Phase（intake → P1 → P2 → P3R1 → P3R2 → synthesizer）。详见 §2.6 |
 | `/forge-inject <id>` | 在任意 Phase 转换前注入 moderator 约束（同 `/scope-inject` 风格），下一轮 Opus + Codex 必须读取并响应 |
+
+> **forge-lite**:同一个 `/expert-forge <id>` 入口的轻量变体——标的是单点问题（下游集成契约 / 架构缺口 / hand-back 揭出的决议）时收敛更快、轮次更少（009 forge v3/v4 即是）。判据:争议窄+证据齐→lite；方向未定+要防重大转向→full。详见 §2.6。
 
 ### Legacy v2.1（保留作 escape hatch，已标 DEPRECATED）
 
@@ -585,19 +605,22 @@ ideababy_stroller/
 
 禁止：L1/L2 输出技术内容；自动生成 `AGENTS.md` / `CLAUDE.md`(LLM 生成的项目宪法质量崩)；从 build worker 改 specs；commit `.env*`；fork 深度 > 3 层。
 
+> ⚠️ **M2/M3 对齐**：上面第 3-7 条描述的是 **L4 build 语境**，而 build 已整体搬到 XenoDev 仓。在 **IDS 侧**，对应铁律收敛为一句:**`specs/` 已 DEPRECATED（M3），4 个 fork 存作 forge v2 evidence，IDS 完全不改**（与 CLAUDE.md「Prohibited」段一致）。TDD / task-review / 跨模型审查等 build 纪律在 XenoDev 仓生效，见 [`framework/SHARED-CONTRACT.md`](./framework/SHARED-CONTRACT.md) §6 + XenoDev `CLAUDE.md`。
+
 ---
 
-## 7. 当前正在跑的 idea（截至 2026-05-07）
+## 7. 当前正在跑的 idea（截至 2026-07-06）
 
 | ID | 标题 | 阶段 | 备注 |
 |---|---|---|---|
-| **001** Research Radar | 自动跟进 AI research 的 radar | L2 进行中 | 根目录工程包 `pi-briefing` 是其 fork `001-pA`(已 Phase 0 spec) |
-| **002** 每天赚 100 美元 | (vague seed) | L1 done · 3 forks 待入 L2 | `002b/002f/002g` |
-| **003** PARS | 并行自动化研究智能体系统 | L3 scoping | `003-pA` 已有完整 spec 包 + 在 `projects/003-pA/` 落地中 |
-| **004** 个人投资顾问+助手 | 投资分析智能体 | `004-pB` L4 |
-| **005** auto agentic coding | 让 Claude Code 自主完成开发的 framework | **L3 scoping**(本周) |
+| **006** auto agentic coding | 框架自审 forge 入口 | 治理中 | XenoDev dogfood 踩到的框架级问题攒进 `dogfood-backlog`，攒批回 IDS 起 `/expert-forge 006`；forge v6 已定稿（跨机器可移植性 verdict） |
+| **007** agent-emit | — | **L1** | `007a-agent-emit` |
+| **008** 投资顾问+助手智能体 | 受控自动翻页信号采集 | **XenoDev build + handback** | `008-pB`；forge v4（信号可靠性 spike）verdict 已定；build hand-back 在 `/handback-review` 决议中 |
+| **009** 投资决策闭环（集合体） | 接 004/008 连成七环节自转闭环 | **M2 build 中（当前主线）** | `009-pForge`；分支 `forge/009-blueprint`；forge v1-v4 全定稿（v3 provider 双 as_of 轴、v4 O8 非方向 evidence）；T012-T016 handback review 中 |
 
-> 🪞 **特别说明**：idea 005 本质上是在**对本仓库自己做元层级反思**——"什么是最可靠的 agentic coding pipeline"，结论将反过来更新本 repo 的 SKILL/agents/commands。
+> 🪞 **元层级说明**：**006（auto agentic coding）本质是对本仓 + XenoDev 自己做元层级反思**——"什么是最可靠的 agentic coding pipeline"。它不是普通产品 idea，而是框架级治理的 forge 入口，结论反过来更新本 repo 的 SKILL/agents/commands 与 XenoDev 契约。
+>
+> **历史 idea 001-005**（Research Radar / 每天赚 100 美元 / PARS / 投资顾问 004 / …）见 [`discussion/`](./discussion) 各自树 + [`proposals/proposals.md`](./proposals/proposals.md)。其中 004 已被 009 闭环纳为上游"纪律"环节。
 
 ---
 
@@ -607,13 +630,17 @@ ideababy_stroller/
 |---|---|
 | 每一步详细操作 | [`PLAYBOOK.md`](./PLAYBOOK.md) |
 | 项目宪法（铁律全文） | [`CLAUDE.md`](./CLAUDE.md) |
+| **两仓怎么用（IDS↔XenoDev 何时切/怎么切）** | [`XENODEV-WORKFLOW.md`](./XENODEV-WORKFLOW.md) |
+| **两仓契约 / hand-back schema / 切回决策矩阵** | [`framework/SHARED-CONTRACT.md`](./framework/SHARED-CONTRACT.md) §6 |
+| **hand-back 决议怎么做** | [`.claude/commands/handback-review.md`](./.claude/commands/handback-review.md) |
 | Codex 总线机制细节 | [`.codex-inbox/README.md`](./.codex-inbox/README.md) |
 | 各层协议（L1-L4 怎么写每一轮） | [`.claude/skills/{inspire,explore,scope}-protocol/SKILL.md`](.claude/skills/) |
 | 横切层 forge 协议（4+1 变量 / 5 phase / 状态机） | [`.claude/skills/forge-protocol/SKILL.md`](.claude/skills/forge-protocol/SKILL.md) |
 | SDD 工件契约(6 要素 spec) + 4 种 PRD 形态模板 | [`.claude/skills/sdd-workflow/SKILL.md`](.claude/skills/sdd-workflow/SKILL.md) · [`templates/PRD-{simple,phased,composite,v1-direct}.md`](.claude/skills/sdd-workflow/templates/) |
 | 任务分解启发式 | [`.claude/skills/task-decomposer-skill/SKILL.md`](.claude/skills/task-decomposer-skill/SKILL.md) |
 | 质量门跑哪些 | [`.claude/skills/quality-gate-runner/SKILL.md`](.claude/skills/quality-gate-runner/SKILL.md) |
-| 当前 001-pA 工程契约 | [`specs/001-pA/README.md`](./specs/001-pA/README.md) |
+| 当前主线 009 已接受结论 | [`discussion/009/ACCEPTED.md`](./discussion/009/ACCEPTED.md) · [`discussion/009/handback/HANDBACK-LOG.md`](./discussion/009/handback/HANDBACK-LOG.md) |
+| 历史 spec 包（forge v2 evidence · 只读归档） | [`specs/001-pA/README.md`](./specs/001-pA/README.md) |
 
 ---
 
