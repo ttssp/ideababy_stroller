@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-06T08:00:00Z
-total_decisions: 16
+last_updated: 2026-07-06T11:16:50Z
+total_decisions: 17
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -418,3 +418,25 @@ rationale 未进 hash / 无分歧类只 exact match。全是「推演看着对�
 
 **Follow-up commits**: pending(本 LOG + PRD §7 O8 已达成 · 同一 IDS commit)· dogfood-backlog 记录 + feedback memory 随后 ·
 #1 forge 协议改进待攒批 /expert-forge 006
+
+## 2026-07-06T11:16:50Z · 009-pForge-20260706T102608Z(T016 · M2 evaluate CLI shipped · registry-wiring spec-gap)
+
+**Reviewed at**: 2026-07-06T11:16:50Z
+**Tags**: feature, spec-gap
+**Severity**: medium
+**Validator**: ✅ 6 约束 PASS(绝对路径)· verdict-evidence 无该块跳过
+
+**Build-side 摘要(§1)**:
+T016 shipped M2 evaluate CLI(P2 PPV real-path owner)。`python -m decision_ledger.alpha.evaluate` 编排 resolve(T011)→ compute_realized(T012 真 PIT price 无 mock)→ triplet(T013)→ deflate(T014),upsert 真实行进 `analyst_alpha_eval`;`DbAlphaResultProvider` 读 0015 回 TripletMetrics 给 AlphaLane。P2 PPV 终点 = data.sqlite SELECT 得到真实行(端到端 on-disk 验证)。10 集成测试(真 PIT 无 mock)+ 004 全套 735 passed 无回归 · ruff clean · §4.4 verifier clean。
+- **red-team 抓 F1 ship-blocker(codex 漏)**:re-run 同 advisor 触发 IntegrityError 崩溃 + 丢新行;已修 `INSERT ON CONFLICT DO UPDATE`(0015 recomputable-table 语义 · provenance 协同刷新)。codex 因 sandbox 环境失败没真跑而漏 → 再次印证"没真跑的 review 漏实证 bug"。
+
+**Operator decisions**:
+- [x] **开单独任务 T016b** —— registry-wiring gap 决议:M2 alpha 数据已到 `analyst_alpha_eval`(交付),但**未到 production `conflict_report`**,因 `build_default` 没注册 alpha lane。gap 掉在 T015(defer)和 T016(file_domain 排除 registry.py)之间。decision = 开 **T016b** 专做 `build_default alpha_provider DI wiring`,file_domain 只碰 `registry.py`(scope 最小 · 可单独 review/verify)。capability 已证可达(DbAlphaResultProvider→AlphaLane→evidence 集成测试过)。
+- [x] **KG-37 记 dogfood-backlog** —— 确认**已入册** XenoDev `dogfood-backlog.md` L738(codex-review companion branch-mode 在 sandbox bwrap loopback 失败 → §3 review 强 hook 环境性失效)。不重复记;攒批回 IDS `/expert-forge 006`。
+- [ ] 修 PRD:否(registry wiring 是 task 边界问题非 PRD 产品决策 · T016b 在 XenoDev tasks/ 建卡)
+- [ ] 修 SHARED-CONTRACT:否
+- [ ] 无操作:否
+
+**Operator note**: registry gap 开 T016b 单独做(不折 T017-pre,保 file_domain 隔离可验证)。KG-37 已在 backlog,确认入册攒批 forge 006。T016 alpha 数据层达成 = M2 P2 PPV real-path 终点,只差 production DI 接线(T016b)。
+
+**Follow-up commits**: 本 LOG entry(IDS commit,pending)· T016b task 卡待在 XenoDev `specs/009-pForge/tasks/` 建(operator 切仓)· KG-37 已 XenoDev backlog L738 待攒批 forge 006
