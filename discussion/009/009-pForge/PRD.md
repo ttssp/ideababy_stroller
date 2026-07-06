@@ -99,11 +99,24 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
     评估 EODHD 个人档(月费个位数美元,唯一低价覆盖三市场 + 显式保留退市股)。
 
 ### M2 · alpha 头(闭环第一个可验证价值锚)
-- 产分析师 **Hit Ratio + 平均超额 + Z 显著性**(TipRanks 三件套)。
+- 产分析师 **Hit Ratio + 平均超额 + Z 显著性**(TipRanks 三件套)。**Z 显著性 = 双 Z**
+  (T013 build 决议 · operator 2026-07-05 授权 · handback `20260705T025527Z`):O6 两量各配自己的 Z ——
+  `z_hit`(命中率 vs 0.5 的二项 Z)+ `z_excess`(平均超额单样本 Z · ddof=1)。task body 字面单值 z_score
+  不足以覆盖「命中率显著」与「超额显著」两个独立命题,诚实扩展。
 - **防过拟合统计纪律**(v1 定):walk-forward/OOS 分割 + 交易成本 + **trial-count 记账** +
   **Deflated Sharpe Ratio + Probability of Backtest Overfitting**(Bailey & López de Prado)。
+  **walk-forward 窗口参数已定**(T014 build 决议 · operator 2026-07-05 授权 · handback `20260705T102002Z`):
+  按 entry_date 建滚动窗口 **train 18 月 / test 3 月 / step 3 月 + embargo 5 交易日**;DSR **只在 OOS 段**算
+  (防 in-sample/边界泄漏);完整 Bailey-LdP(skew/kurt 样本矩 + SR0 期望最大 Sharpe(N=trials·Euler-γ·Acklam
+  Z⁻¹)+ PBO 走 CSCV)· 纯 `math.erf` 无 scipy。**判不出 = 达标非失败**(O9/C12:trials<20 / n<2 / std=0 /
+  无 OOS 窗 → `insufficient_sample`,诚实标注不静默给数;真判不出触发 OQ-2 重估)。
 - alpha 得分实现为**一个新 StrategyModule lane**(平权进 004 的 conflict_reports,source_id 隔离,
-  不跨源合并)。
+  不跨源合并)。**⚠ O8「平权上台」的下游集成语义待 forge 澄清**(T015 揭 · handback `20260706T040059Z`):
+  alpha 本质是「分析师历史 edge 质量旁证」非「第四路方向票」(上游 excess 已按信号方向 signed),已定
+  `direction=NO_VIEW · is_directional=False · 强度进 evidence_strength`;但 004 下游(assembler 缓存键 +
+  Telegram/UI 双渲染 `signals[:3]`)为「恰好 3 路方向票」设计,承载不了「第四路非方向 evidence」→ 起 forge
+  决(a)ConflictReport 是否扩非方向 evidence 一等公民(b)缓存键是否纳入强度(c)渲染 N 路分区。
+  **alpha_lane.py 能力层已稳(28 测/100% cov)但未 merge**,待 forge 结论定 signal 形态后再上台。
 
 ## 5. Scope OUT(显式 non-goals · 每条引证据)
 

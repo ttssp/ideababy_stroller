@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-05T00:00:00Z
-total_decisions: 12
+last_updated: 2026-07-06T00:00:00Z
+total_decisions: 15
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -254,3 +254,116 @@ IDS 侧原 handback-review F6 采纳决议 + 我写的 FU 指令都基于错误�
 交付:worktree `aeff2a8` 保留 · 只提交 4 证伪测(对未改代码全绿 = 证据)· `advisor_repo.py` 一字未改 · 未 merge。
 
 **Follow-up commits**: pending(本 LOG · 同一 IDS commit)· CASE A v0.2 known-edge 追踪待 XenoDev spec 侧记(信息式)
+
+## 2026-07-06 · 009-pForge-20260705T025527Z(T013 · M2 alpha 统计聚合 · clean · 双 Z drift 回写 PRD)
+
+**Reviewed at**: 2026-07-06T00:00:00Z
+**Tags**: feature,drift
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer 模式 · validator 自动)
+**Related task**: T013(M2 alpha 头统计聚合层 · 三件套)
+
+**内容摘要**: T013 = 把 T012 per-signal RealizedResult 逐 horizon 聚合成分析师三件套(Hit Ratio + 平均超额 +
+Z 显著性)。新增 `alpha/metrics.py`(compute_triplet)· 全 009 fork 内 · 不违 OUT-10。**615 全绿无回归** ·
+metrics.py cov 100%(68 stmts)· ruff clean · 6 类 mutation 全 kill · codex **6 轮单调收敛**(每轮真
+silent-wrong-number:generator 双遍历耗尽→n=0 静默错数 / 畸形 COMPUTED 行污染 / hit 未绑 excess 符号 /
+重复样本放大 n→z 夸大 / 去重覆盖不全)→ R6 approve 0 material findings。
+
+**drift 决策(operator 2026-07-05 授权 · 已在 hand-back §2 记全)**: task body 字面 z_score 单值 → 扩为
+**z_hit(二项 Z vs 0.5)+ z_excess(单样本 Z · ddof=1)**。理由:O6「Hit Ratio + 平均超额 + Z 显著性」两量
+各配 Z 才完整覆盖「命中率显著」与「超额显著」两独立命题 · 诚实扩展非越界。逐 horizon 只出现行(报告层补齐是 T016)。
+
+**Operator decisions**:
+- [x] 修 PRD §"7 M2 alpha 头" —— 三件套 Z 显著性明确为双 Z(z_hit + z_excess)· 固化为 PRD 级契约(非仅 build 授权)
+- [ ] 修 SHARED-CONTRACT(无 · 非协议层)
+- [x] 收悉入库(practice-stats:codex 6 轮单调收敛 · 每轮实质 silent-wrong-number)
+
+**Operator note**: clean 交付 · T014 已解锁。双 Z drift 回写 PRD 固化。
+
+**Follow-up commits**: pending(本 LOG + PRD §7 双 Z · 同一 IDS commit)
+
+## 2026-07-06 · 009-pForge-20260705T102002Z(T014 · M2 防过拟合 · clean · 价值锚 · walk-forward 参数回写 PRD)
+
+**Reviewed at**: 2026-07-06T00:00:00Z
+**Tags**: feature,drift
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer 模式 · validator 自动)
+**Related task**: T014(M2 alpha 头防过拟合层 · 投资闭环第一个价值锚 · risks M2-R1)
+
+**内容摘要**: T014 = 完整 Bailey & López de Prado 防过拟合层。新增 `alpha/deflate.py`(deflate)· 全 009 fork
+内 · 不违 OUT-10。DSR 概率口径[0,1](skew/kurt 样本矩 + SR0 期望最大 Sharpe · N=trials·Euler-γ·Acklam Z⁻¹)+
+PBO 走 CSCV + walk-forward/OOS(真建滚动窗口)· 正态 CDF/PPF 纯 `math.erf` 无 scipy(对齐 metrics/realized_return
+惯例)。**656 全绿无回归** · cov 97%(229 stmts)· ruff clean · mutation 全 kill · codex **9 轮单调收敛**(PBO
+门禁/CSCV 丢行/trials 崩/重复样本 DSR 放大/generator 物化/非 COMPUTED 反向校验/CSCV 零方差 fold/walk-forward
+未实装泄漏)→ R9 approve 0 findings。教训:sibling 聚合层应主动 port T013 已修防线(多为 T013-parity)。
+
+**drift 决策(operator 2026-07-05 · 3 项 · 已在 hand-back §2 记全)**: ① results=list[RealizedResult](取 .excess
+回报序列 · TripletMetrics 不携序列不能喂 DSR);② 完整 Bailey-LdP(非简化 · skew/kurt+SR0+CSCV);③ walk-forward
+**本层真建窗口**(非 pre-split 契约 · 非 defer · task 明写 T014 建):train 18月/test 3月/step 3月 + embargo 5TD ·
+DSR 只在 OOS 算。**判不出 = 达标非失败**(O9/C12:trials<20 / n<2 / std=0 / 无 OOS 窗 → insufficient_sample)。
+
+**Operator decisions**:
+- [x] 修 PRD §"7 M2 alpha 头 · 防过拟合统计纪律" —— walk-forward 窗口参数(train18/test3/step3+embargo5TD)+ DSR 只在 OOS + insufficient_sample 语义 · 固化 PRD 级契约
+- [ ] 修 SHARED-CONTRACT(无)
+- [x] 收悉入库(practice-stats:codex 9 轮单调收敛 · T013-parity 教训)
+
+**Operator note**: 价值锚地基已铺 · T015 已解锁。**M2-R1 提示**:v0.1 单分析师历史可能不足建多 walk-forward 窗 →
+deflate 诚实标 insufficient_sample(O9/C12 达标非失败)· 若真判不出触发 OQ-2 重估(prd-revision-trigger)· 不静默给数。
+
+**Follow-up commits**: pending(本 LOG + PRD §7 walk-forward 参数 · 同一 IDS commit)
+
+## 2026-07-06 · 009-pForge-20260706T040059Z(T015 · alpha 上台 · 能力层稳但揭 O8 下游架构缺口 · 起 forge · 不 merge)
+
+**Reviewed at**: 2026-07-06T00:00:00Z
+**Tags**: prd-revision-trigger,drift
+**Severity**: high
+**6 约束自检**: ✅ all 6 PASS(consumer 模式 · validator 自动)
+**Related task**: T015(M2 alpha 头「上台」层 · AlphaLane StrategyModule · D-M2-1/O8)
+
+**内容摘要**: T015 = 把 T013 三件套包成新 StrategyModule lane,经 004 registry get_all() 平权进 conflict_reports
+(O8)。新增 `strategy/alpha_lane.py`(AlphaLane + AlphaResultProvider Protocol + Mock)· 全 009 fork 内 · 不违
+OUT-10。**能力层已稳**(28 测/100% cov · 684 全绿无回归 · ruff clean · mutation 全 kill)· **但 codex 3 轮
+adversarial 逐层钻出 T015 spec 没预见的下游集成架构缺口** → operator 决切回 IDS 起 forge · **未 merge**(下游
+澄清前 O8 不算真达成)· worktree + 8-commit 审计链保留。**reviewed-by 未标 approve**(R1-R3 全 needs-attention)。
+
+**已在 XenoDev 修完(不越界 · alpha_lane.py 内部)**:
+- R1-F1 [high] direction 系统性反向 —— 上游 `realized_return.py:231` excess 已按信号方向 signed,mean_excess
+  符号不含当前多空方向 → 改产 NO_VIEW 质量旁证(非方向票)。
+- R1-F3 TripletMetrics 矛盾值静默信任 → 加 `_metrics_inconsistency` 自洽校验 fail-closed。
+- R2-F1 [high] 不能借 Direction.NEUTRAL(004 NEUTRAL = 中性持仓观点 · 会把显著+/−/真中性塌缩成同一高置信
+  NEUTRAL)→ 改 `direction=NO_VIEW · confidence=0.0 · is_directional=False · signal_kind="alpha_quality_evidence"` ·
+  强度移到 `inputs_used["evidence_strength"]`。
+- R2-F2 + R3-F3 provider 异常分层 —— 可恢复(OSError/TimeoutError/ValueError)降级 NO_VIEW · 编程错
+  (AttributeError/TypeError)fail-loud 重抛 + error_type 结构化可观测。
+
+**⚠ 切回 IDS 的 2 个架构缺口(prd-revision-trigger 核心 · 均已核 004 真代码铁证)**:
+- **R3-F1 [high · silent-wrong]**: AlphaLane 有效结果全是 `no_view:confidence=0.0`(非方向证据必然),强度只在
+  `evidence_strength`。但 `conflict_report_assembler.py:159-164` 的 signals_hash 只 hash `{direction}:{confidence_bucket}`
+  → 强/弱/error/no-provider alpha 全 hash 成 `analyst_alpha=no_view:low` → **缓存键相同 → 复用旧
+  divergence_root_cause**(用户看到新 evidence_strength 但报告根因是旧的 = silent-wrong)。修需改 assembler
+  缓存键语义(纳入 reason/signal_kind/is_directional/evidence_strength/z_excess,或结构化输入前禁缓存)· **assembler = spine · 在 T015 file_domain 外**。
+- **R3-F2 [medium]**: O8 要 analyst_alpha 平权进 report.signals,assemble 层确实达成(4 路),但用户可见路径
+  **两处硬编码 3 路**:`telegram/conflict_narrative.py:54` `signals[:3]` + `ui/router_conflicts.py:169`
+  `first_three = signals[:3]` → 第四路在 Telegram+UI **完全丢失**。O8 测只断 assemble 覆盖不到渲染层。修需改
+  双渲染为 N 路 / 显式区分方向票 vs 非方向 evidence · **UI 层 · 在 T015 file_domain 外 · 且「非方向 evidence
+  怎么展示」是产品决策**。
+
+**为什么切回 IDS**:R3-F1/F2 不是 alpha_lane.py 内部 bug,是 D-M2-1 的 O8 定义与 004 实际下游架构之间的缺口。
+继续 XenoDev 硬修会把 T015 从「单文件 lane」膨胀成「改 assembler 缓存 + 双渲染 + 定义非方向 evidence 展示语义」
+的跨 spine 改动 —— 越 file_domain + 可能牵动其他 task + 「非方向 evidence 怎么承载/展示」是需要 forge 的产品/架构
+决策(V4 失败模式:静默扩范围绕治理)。
+
+**Operator decisions**:
+- [x] 起 forge 决 O8 下游集成(见下 Operator note · 非 scope-inject · 这是产品+架构决策 · 双模型对抗审)
+- [x] 修 PRD §"7 M2 alpha 头 · lane 条" —— 加 O8 下游集成待 forge 澄清指针 + alpha=NO_VIEW 非方向 evidence 定性 + alpha_lane 未 merge 状态
+- [ ] 修 SHARED-CONTRACT(无)
+- [x] 修 XenoDev spec(信息式 · forge 结论后)—— 待 forge 定 O8 下游语义后回 XenoDev 起下游集成 task(拆新或并入 T016)
+- [x] 收悉入库(practice-stats:codex 3 轮 adversarial 从「单文件 lane bug」逐层钻到「spec↔下游架构缺口」· 正确切回不硬修)
+
+**Operator note**: 起 **forge**(scope preview 已定 X)决三件事 —— (a)ConflictReport 是否扩「非方向 evidence」
+一等公民 vs 复用 direction 5 值 (b)缓存键语义是否纳入 evidence 强度(否则 R3-F1 silent-wrong)(c)Telegram/UI
+渲染从「固定 3 路方向票」改「N 路 + 方向票/非方向 evidence 分区」。**alpha_lane worktree 保留不 merge**,待 forge
+结论定 signal 形态(NO_VIEW+evidence vs 扩 direction)后再 merge —— 避免 ship「O8 假达成(assemble 进了但用户
+看不到 + 缓存 silent-wrong)」。这承 R1→R2 教训:alpha 本质是「分析师历史 edge 质量旁证」而非「第四路方向票」。
+
+**Follow-up commits**: pending(本 LOG + PRD §7 O8 指针 · 同一 IDS commit)· forge setup 随后 · alpha_lane 不 merge
