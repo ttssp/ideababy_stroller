@@ -111,12 +111,18 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
   Z⁻¹)+ PBO 走 CSCV)· 纯 `math.erf` 无 scipy。**判不出 = 达标非失败**(O9/C12:trials<20 / n<2 / std=0 /
   无 OOS 窗 → `insufficient_sample`,诚实标注不静默给数;真判不出触发 OQ-2 重估)。
 - alpha 得分实现为**一个新 StrategyModule lane**(平权进 004 的 conflict_reports,source_id 隔离,
-  不跨源合并)。**⚠ O8「平权上台」的下游集成语义待 forge 澄清**(T015 揭 · handback `20260706T040059Z`):
-  alpha 本质是「分析师历史 edge 质量旁证」非「第四路方向票」(上游 excess 已按信号方向 signed),已定
-  `direction=NO_VIEW · is_directional=False · 强度进 evidence_strength`;但 004 下游(assembler 缓存键 +
-  Telegram/UI 双渲染 `signals[:3]`)为「恰好 3 路方向票」设计,承载不了「第四路非方向 evidence」→ 起 forge
-  决(a)ConflictReport 是否扩非方向 evidence 一等公民(b)缓存键是否纳入强度(c)渲染 N 路分区。
-  **alpha_lane.py 能力层已稳(28 测/100% cov)但未 merge**,待 forge 结论定 signal 形态后再上台。
+  不跨源合并)。alpha 本质是「分析师历史 edge 质量旁证」非「第四路方向票」(上游 excess 已按信号方向
+  signed),已定 `direction=NO_VIEW · is_directional=False · 强度进 evidence_strength`。**✅ O8 下游集成语义
+  已由 forge v4 定稿**(`discussion/009/forge/v4/stage-forge-009-v4.md` · forge-lite · 2026-07-06 · P1 双方零
+  分歧强收敛 · T015 揭 handback `20260706T040059Z`):**(a)** ConflictReport **轻扩一等公民** —— StrategySignal
+  加一等 `is_directional`/`signal_kind`/`evidence_strength` + ConflictReport 加 `evidence_lanes` 旁路(默认空 ·
+  不动 3 路方向票主结构 · 不复用 direction 五值);**(b)** assembler 缓存键 **必须纳入 evidence 指纹**(triplet 扩
+  入 evidence 段 · 按显著性分档 strong/moderate/weak · 解 R3-F1 silent-wrong 硬 bug);**(c)** Telegram **真改**
+  (拆 3 路硬假设 → 方向票+evidence 区)· UI **加分区**(实测已透传第四路不丢 · forge 纠正了 hand-back 对 UI 的
+  截断断言)· evidence 展示「历史 edge 旁证 + 强度 + 样本 + 显著性」标注「不计入多空」。改的是 004 spine
+  (domain/services/telegram/ui)· 判为「授权下游集成」非越界(assembler cache 修复 = 修 004 既有 completeness
+  bug)。**落地** = XenoDev 拆新 FU-task「009-pForge O8 下游集成」(不并入 T016)→ 落地后 merge alpha_lane。
+  **alpha_lane.py 能力层已稳(28 测/100% cov)· 待下游集成落地后上台。**
 
 ## 5. Scope OUT(显式 non-goals · 每条引证据)
 

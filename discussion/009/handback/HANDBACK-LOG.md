@@ -366,4 +366,10 @@ adversarial 逐层钻出 T015 spec 没预见的下游集成架构缺口** → op
 结论定 signal 形态(NO_VIEW+evidence vs 扩 direction)后再 merge —— 避免 ship「O8 假达成(assemble 进了但用户
 看不到 + 缓存 silent-wrong)」。这承 R1→R2 教训:alpha 本质是「分析师历史 edge 质量旁证」而非「第四路方向票」。
 
-**Follow-up commits**: pending(本 LOG + PRD §7 O8 指针 · 同一 IDS commit)· forge setup 随后 · alpha_lane 不 merge
+**Follow-up commits**: ✅ forge v4 已定稿(`stage-forge-009-v4.md` · forge-lite · 2026-07-06 · P1 双方零分歧强收敛):
+(a) 轻扩一等公民 evidence_lanes 旁路 +(b) 缓存纳 evidence 指纹(R3-F1 硬解)+(c) Telegram 真改/UI 加分区 ·
+OUT-10 判为「授权下游集成」· 拆新 FU-task「009-pForge O8 下游集成」不并入 T016。
+**⚠ forge 纠正本 hand-back 的 R3-F2 UI 断言**:`router_conflicts.py:169-176` `return ordered_first_three + remaining`
+**透传第四路不丢**(双方 P1 + synthesizer 真读代码独立确认)· hand-back 说「双渲染都硬截断」不准 —— 只有 Telegram
+真丢,UI 真实缺口是「无分区 + 显示 no_view 0% 误导」。⏳ 剩:XenoDev 起 O8 下游集成 FU-task(改 004 spine
+domain/services/telegram/ui · alpha_lane 不动)→ 落地后 merge alpha_lane。

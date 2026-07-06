@@ -1,13 +1,18 @@
 {
   "version": "v4",
-  "phase": "1",
+  "phase": "done",
   "scope": "forge-lite",
   "convergence_mode": "strong-converge",
   "x_hash": "0e9b1a4d7c2f5836a21e4f90b7d6c318",
   "prefill_used": false,
   "opus_done": true,
-  "codex_done": false,
+  "codex_done": true,
+  "p1_convergence": "both-converge-zero-divergence · 轻扩一等公民+纳入缓存指纹+双渲染分区 · 双方独立纠 UI 反例",
+  "p2_skipped": "forge-lite · P1 双方零分歧强收敛 · Codex 明示不必补 P2 · 直接 synthesizer",
   "trigger": "T015 hand-back · O8 下游集成架构缺口",
+  "verdict": "O8 下游非方向 evidence:轻扩一等公民(evidence_lanes 旁路)+ 缓存纳 evidence 指纹(R3-F1 硬解)+ Telegram 真改/UI 加分区 · OUT-10 判授权下游集成 · 拆新 FU-task",
+  "stage_doc": "discussion/009/forge/v4/stage-forge-009-v4.md",
+  "handback_ui_correction": "R3-F2 UI 断言纠正:router_conflicts.py 透传第四路不丢(hand-back 说双渲染都硬截断不准)· 双方独立命中",
   "created": "2026-07-06T04:15:33Z",
-  "last_updated": "2026-07-06T04:15:33Z"
+  "last_updated": "2026-07-06T06:30:00Z"
 }
