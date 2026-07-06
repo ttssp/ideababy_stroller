@@ -40,3 +40,16 @@
 ---
 
 To resume: run `/status 001` —— 所有 artifact 保留，什么都没丢。
+
+---
+
+## 二次 park（2026-07-06）
+
+**上次 park 后发生了什么**：2026-04-23 首次 park 后曾 revive，proposals 状态改为 `exploring (L2 进行中)`，但 **L2 实际从未真正推进** —— `stage-L2-explore-001.md` 之后约 2 个月无实质动作，"exploring" 名不副实。
+
+**再次 park 原因**：名义在 L2 但长期停滞；operator 当前主攻投资闭环 009 + 框架 006，001 的 Research Radar 方向不在近期主推面。与其挂个假 exploring，不如诚实 park。
+
+**Revival condition**（沿用首次 + 补充）：market 出现新 prior art 让某条 direction 不再空白，或 operator 认知带宽腾出、想重拾 "judgement 形成" 这个 reframe 轴时。首次 park 的 revival checklist（上方）仍适用。
+
+**这次没丢任何东西**：L1 menu（13 directions）+ L2R1/R2 rounds + stage-L2-explore-001.md 全在。revive 时从 L2 继续或 `/inspire-inject` 重 steer 均可。
+

@@ -99,7 +99,7 @@
 ## **001**: Research Radar
 
 **提出日期 / Proposed**: 2026-04-22
-**状态 / Status**: exploring (L2 进行中，基于原 proposal；L1 menu 的 13 条 directions 保留作为灵感库，以后可随时 `/fork` 任意一条。历史 park 记录见 [PARK-RECORD](../discussion/001/PARK-RECORD.md)）
+**状态 / Status**: **parked**（二次 · L2 名义进行但 ~2 月停滞；L1 menu 的 13 条 directions 保留作灵感库，以后可随时 `/fork`。park 记录含首次+二次 park 见 [PARK-RECORD](../discussion/001/PARK-RECORD.md)）
 **初始野心等级 / Ambition**: M
 **成熟度 / Idea maturity**: direction-clear
 
@@ -138,7 +138,7 @@ Karpathy最近的autoresearch让我印象深刻，那个项目是给定一个任
 ## **002**: 每天赚100美元
 
 **提出日期**: 2026-04-23
-**状态**: L1 done · 3 forks in L2 pending
+**状态**: **parked**(L1 done · 3 forks 均未进 L2 · 冻结 ~2.5 月;见 [PARK-RECORD](../discussion/002/PARK-RECORD.md))
 **初始野心等级**: M
 **成熟度**: vague
 **L1 菜单**: [stage-L1-inspire.md](../discussion/002/L1/stage-L1-inspire.md)(crypto pivot 版 · 非-crypto 版已归档)
@@ -198,7 +198,7 @@ Karpathy的autoresearch
 ## **005**: auto agentic coding
 
 **提出日期**: 2026-05-06
-**状态**: menu-ready
+**状态**: **parked · superseded by 006**(005/006 同标题同日的重影;005 到 L3 + forge prefill 止,006 推到 forge v6。见 [PARK-RECORD](../discussion/005/PARK-RECORD.md))
 
 ### 想法 (必填)
 给定一个PRD，claude code可以几乎没有人工干预的情况下自主完成开发任务。我需要一个**可靠的、自动化程度最高**解决方案。
@@ -244,6 +244,16 @@ Karpathy的autoresearch
 
 ### 我诉求
 我希望双方凭借最强的AI专业能力以及最丰富的软件开发经验，通过调研、论证、思辨、构思、设计、整理归纳等方式，达成一套基于claude code实现**可靠**自动化开发的framework/pipeline的共识方案
+
+---
+
+## **007**: agent-emit(friction-tap · 测试夹具)
+
+**提出日期**: 2026-05-08
+**状态**: fake / test-fixture(测 006 dogfood · **非产品 idea** · 见 [discussion/007/FAKE-NOTE.md](../discussion/007/FAKE-NOTE.md))
+
+### 想法
+friction-tap:agent 被工具链卡住的当下自录一条摩擦 entry(不需 operator 主动动作),用于验证 006 auto-agentic-coding 框架的 self-monitoring 假设。**非独立产品** —— 它是测 006 dogfood 循环的合成夹具,已跑通 L1→L4(`007a-agent-emit/`),产物价值是框架证据。详见 [FAKE-NOTE](../discussion/007/FAKE-NOTE.md)。
 
 ---
 

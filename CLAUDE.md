@@ -33,11 +33,11 @@ of thinking that's worth keeping. Park is normal; Abandon comes with a lesson do
 ## XenoDev 跨仓(IDS = 治理 · XenoDev = 唯一 L4 build runtime)
 
 真正的代码开发**不在本仓**。本仓(IDS)管 idea→PRD→治理(L1-L4 hand-off + forge);
-`XenoDev`(`/Users/admin/codes/XenoDev`)是**唯一 L4 build runtime** —— 消费 IDS 的 hand-off
+`XenoDev`(本机路径见 `$XENODEV_ROOT`,当前为 `/home/ys/codes/XenoDev`)是**唯一 L4 build runtime** —— 消费 IDS 的 hand-off
 包,产可 ship 的代码,跑完产 hand-back 包写回 IDS。(per forge v2 verdict + SHARED-CONTRACT §6)
 
 - **何时从 IDS 切到 XenoDev**:L4 `/plan-start` 产出 HANDOFF.md 后 → **新开 XenoDev session** 真开发
-  (`cd /Users/admin/codes/XenoDev && claude`)。spec/tasks/build/quality 全在 XenoDev。
+  (`cd "$XENODEV_ROOT" && claude`,`$XENODEV_ROOT` 见 `~/.bashrc`)。spec/tasks/build/quality 全在 XenoDev。
 - **何时从 XenoDev 切回 IDS**(决策入口):
   - **框架级问题**(协议 / SKILL / hand-back / mirror / 并发机制的缺陷/优化)→ XenoDev 记
     `dogfood-backlog.md` → 攒批回 IDS 起 `/expert-forge 006`(框架级变更**只**走 forge,XenoDev 不当场改)
