@@ -1,0 +1,13 @@
+{
+  "version": "v4",
+  "phase": "1",
+  "scope": "forge-lite",
+  "convergence_mode": "strong-converge",
+  "x_hash": "0e9b1a4d7c2f5836a21e4f90b7d6c318",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": false,
+  "trigger": "T015 hand-back · O8 下游集成架构缺口",
+  "created": "2026-07-06T04:15:33Z",
+  "last_updated": "2026-07-06T04:15:33Z"
+}
