@@ -121,8 +121,15 @@ domain 短板。具体到本 fork:**"我说某分析师去年准,但没有 groun
   (拆 3 路硬假设 → 方向票+evidence 区)· UI **加分区**(实测已透传第四路不丢 · forge 纠正了 hand-back 对 UI 的
   截断断言)· evidence 展示「历史 edge 旁证 + 强度 + 样本 + 显著性」标注「不计入多空」。改的是 004 spine
   (domain/services/telegram/ui)· 判为「授权下游集成」非越界(assembler cache 修复 = 修 004 既有 completeness
-  bug)。**落地** = XenoDev 拆新 FU-task「009-pForge O8 下游集成」(不并入 T016)→ 落地后 merge alpha_lane。
-  **alpha_lane.py 能力层已稳(28 测/100% cov)· 待下游集成落地后上台。**
+  bug)。**✅ 已 shipped · O8 真达成**(handback `20260706T073428Z` · 2026-07-06 · merge `c2e8347`):XenoDev
+  FU-task「009-pForge O8 下游集成」按契约落地三模块 + alpha_lane 一并 ship · codex R1-R4 单调收敛 → operator
+  approve · **725 全套绿无回归** · mutation 全 kill。**⚠ 起手 grep 抓出 forge-lite 推演漏的 3 个消费面**并追平
+  (`router_decisions.py:155` draft_preview 第 4 渲染面 + `conflict_repo.py` 序列化两端硬伤=需 0016 migration 否则
+  evidence 落库即丢 + `decisions.css` 三列硬编码)· 两个 §underweights 未验点确认(`all_no_view` 短路不吞 evidence ·
+  evidence 进 prompt+cache 同源)· codex 另抓 4 个推演漏的 silent-wrong(has_divergence 可被改/prompt-hash 不同源/
+  方向票 rationale 未进 hash/无分歧类变体)。**M2 alpha 头闭环第一个价值锚正式上台 · T016 解锁。**
+  **has_divergence 语义正式化**:O8 顺带把它从「信任 LLM」改「方向票确定性推导」(≥2 不同实质方向 · 排 no_view) ——
+  operator 确认此判据对齐「分歧」定义 · 向后兼容(现有测无一断具体值)。
 
 ## 5. Scope OUT(显式 non-goals · 每条引证据)
 

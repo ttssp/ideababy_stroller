@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-06T00:00:00Z
-total_decisions: 15
+last_updated: 2026-07-06T08:00:00Z
+total_decisions: 16
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -371,5 +371,50 @@ adversarial 逐层钻出 T015 spec 没预见的下游集成架构缺口** → op
 OUT-10 判为「授权下游集成」· 拆新 FU-task「009-pForge O8 下游集成」不并入 T016。
 **⚠ forge 纠正本 hand-back 的 R3-F2 UI 断言**:`router_conflicts.py:169-176` `return ordered_first_three + remaining`
 **透传第四路不丢**(双方 P1 + synthesizer 真读代码独立确认)· hand-back 说「双渲染都硬截断」不准 —— 只有 Telegram
-真丢,UI 真实缺口是「无分区 + 显示 no_view 0% 误导」。⏳ 剩:XenoDev 起 O8 下游集成 FU-task(改 004 spine
-domain/services/telegram/ui · alpha_lane 不动)→ 落地后 merge alpha_lane。
+真丢,UI 真实缺口是「无分区 + 显示 no_view 0% 误导」。✅ **已落地**(见下 2026-07-06 O8-downstream 条 ·
+handback `20260706T073428Z`):XenoDev O8 下游集成 FU-task shipped(merge `c2e8347`)· alpha_lane 一并 ship ·
+**O8 真达成** · T016 解锁。
+
+## 2026-07-06 · 009-pForge-20260706T073428Z(O8-downstream · O8 真达成 · shipped · 起手 grep 抓 3 盲区)
+
+**Reviewed at**: 2026-07-06T00:00:00Z
+**Tags**: feature,spec-gap-fix
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer 模式 · validator 自动)
+**Related task**: O8-downstream(forge v4 授权的下游集成 · 兑现 T015 的 O8「alpha 平权上台」)
+
+**内容摘要**: O8 下游集成 = 让 alpha「非方向质量旁证」正确上台 004 conflict_report。**status: shipped**
+(merge `c2e8347` 到 feat/009-spec)· codex **R1-R4 单调收敛** → operator 收口 approve · **全 004 套 725 passed
+无回归** · mutation 全 kill · §4.4 verifier 全过 · alpha_lane(T015)一并 ship。**O8 真达成 · T016 解锁。**
+三模块全按 forge v4 verdict 落地:(a) StrategySignal 加一等 is_directional/signal_kind/evidence_strength +
+ConflictReport evidence_lanes 旁路(不升级 discriminated union)+ assembler 装配分流(守方向票≥3 不变量);
+(b) `_compute_signals_hash` 纳入 rationale_digest + evidence 显著性分桶 + has_divergence 确定性推导 +
+`_reconcile_root_cause` 文案-布尔一致 + 方向票 canonical 排序贯穿;(c) Telegram evidence 区 + 共享
+`_evidence_section.html` partial + `data-not-directional` + 「不计入多空」标注 + decisions.css auto-fit。
+序列化:0016 migration(evidence_lanes_json · forward-only)+ conflict_repo 两端。
+
+**🎯 §underweights guardrail 兑现(forge v4 硬要求起手 grep · 抓出 forge-lite 推演漏的 3 个消费面)**:
+1. `ui/router_decisions.py:155` draft_preview **第 4 渲染面**(forge 未提)→ 已加 evidence 分区。
+2. `repository/conflict_repo.py:32/81` **序列化两端(硬伤)**(forge 未提)→ evidence_lanes 落库即丢 = 新
+   silent-wrong → 已加 0016 migration + 序列化两端 + `_dict_to_signal` 默认兜底。
+3. `ui/static/decisions.css:13` `1fr 1fr 1fr` **三列硬编码**(forge 未提)→ 改 auto-fit 自适应。
+两个 §underweights 未验点确认:`all_no_view` 短路只看方向票**不吞 evidence** · evidence 进 cache 键必同进 prompt。
+**codex R1-R4 另抓 4 个推演漏的 silent-wrong**:has_divergence 可被 evidence 改 / prompt-hash 不同源 / 方向票
+rationale 未进 hash / 无分歧类只 exact match。全是「推演看着对但真跑/真审才暴露」的对称遗漏。
+
+**Operator decisions**:
+- [x] 修 PRD §"7 M2 alpha 头 · lane 条" —— O8 指针改「✅ 已 shipped · O8 真达成」+ 3 盲区追平 + has_divergence 正式化
+- [ ] 修 SHARED-CONTRACT(无)
+- [x] **修 XenoDev spec(信息式)+ 记 dogfood-backlog(§3 #1 框架级)** —— forge-lite 推演漏 3 消费面 →
+      「凡给共享域对象加旁路字段的下游集成,forge 推演阶段强制枚举该对象所有消费面(渲染/序列化/导出/搜索)」·
+      **攒批走 /expert-forge 006 改 forge 协议**(铁律:框架级变更只走 forge · 不当场改)· 另存 feedback memory 防再犯
+- [x] 收悉入库(practice-stats:O8 真达成 · codex R1-R4 + 起手 grep 印证「推演漏实证盲区」MEMORY 教训)
+
+**Operator note**: **O8 真达成 = M2 alpha 头闭环第一个价值锚正式上台** · 里程碑。§underweights guardrail 精确
+兑现(起手 grep + codex 对抗审把 forge/我推演漏的盲区全抓出)· 再次印证 [[forge-verdict-vs-empirical-ship]]。
+**#2 has_divergence 判据确认**:「≥2 不同实质方向(排 no_view · LONG/SHORT/NEUTRAL/WAIT 中 ≥2 种)= 分歧」符合
+「分歧」直觉定义 · 向后兼容(现有测无一断 has_divergence 具体值)· 采纳为定 · 若 T016 真数据揭示更细口径需求再回 forge。
+**#1 框架级发现走 dogfood-backlog 攒批回 006 forge**(非本 handback 当场改协议)。
+
+**Follow-up commits**: pending(本 LOG + PRD §7 O8 已达成 · 同一 IDS commit)· dogfood-backlog 记录 + feedback memory 随后 ·
+#1 forge 协议改进待攒批 /expert-forge 006
