@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-06T11:16:50Z
-total_decisions: 17
+last_updated: 2026-07-07T03:43:00Z
+total_decisions: 21
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -440,3 +440,103 @@ T016 shipped M2 evaluate CLI(P2 PPV real-path owner)。`python -m decision_ledge
 **Operator note**: registry gap 开 T016b 单独做(不折 T017-pre,保 file_domain 隔离可验证)。KG-37 已在 backlog,确认入册攒批 forge 006。T016 alpha 数据层达成 = M2 P2 PPV real-path 终点,只差 production DI 接线(T016b)。
 
 **Follow-up commits**: 本 LOG entry(IDS commit,pending)· T016b task 卡待在 XenoDev `specs/009-pForge/tasks/` 建(operator 切仓)· KG-37 已 XenoDev backlog L738 待攒批 forge 006
+
+---
+
+## 2026-07-06T17:07:06Z · 009-pForge-20260706T122339Z(T016b · alpha lane 生产接线 · shipped)
+
+**Reviewed at**: 2026-07-06T17:07:06Z
+**Tags**: feature
+**Severity**: low
+**Validator**: ✅ 6 约束 PASS(绝对路径 · KG-12 相对路径误报复现,见本轮 review 注)· 无 ids_verdict_evidence 块跳过
+
+**Build-side 摘要(§1)**:
+T016b alpha lane production wiring shipped。`build_default` 加 `alpha_provider` DI 参数(镜像既有 `xgboost_price_provider` 的 **DI-only** 先例):传 `AlphaResultProvider`(如 T016 的 `DbAlphaResultProvider`,读 0015 `analyst_alpha_eval` 回 `TripletMetrics`)才把 `AlphaLane`(source_id=analyst_alpha)注册为 `get_all()` 里的平权 lane(D-M2-1 · 非方向 evidence · registry 层无跨源合并/无 aggregate/winner)。**默认 None 不注册**(防 provider-less 的 `AlphaLane` 返回 NO_VIEW 占位污染 `conflict_report` + 掩盖缺接线)。AlphaLane 分支内 lazy-import(镜像 xgboost · 已确认无真实循环依赖)。这补上了掉在 T015(defer)与 T016(registry.py 在冻结 file_domain 外)之间的 registry-wiring gap —— 正是上轮 handback-review 009 决议开的 T016b。
+- **review**:codex adversarial-review 这轮**真跑了**(T016/KG-37 的 bwrap loopback sandbox 失败被证明是间歇性非硬阻),2 轮收敛 approve。R1(medium)抓到真实测试充分性缺口(原测只 assert `isinstance(AlphaLane)`,忘 forward provider 也会 pass 却退化 NO_VIEW)→ 强化断言注入 provider 身份 + `analyze()` 不返回 `fail_closed_no_alpha_provider`,mutation 验证过。R2 approve · 0 material findings。C8/C10/D-M2-1/R9 全 held。
+- **out of scope(记录非缺陷)**:wire.py 生产接线未动(004-pB registry→assembler→conflict_report 链现是 `_StubAssembler`,运行 app 无人调 build_default);`DbAlphaResultProvider` sync-conn vs app async-pool 张力留给真集成时(同 xgboost price_provider defer)。5 单测(mutation-proven)+ 004 全套 740 passed 无回归 · ruff clean · §4.4 verifier clean。T017 解锁。
+
+**Operator decisions**:
+- [ ] 修 PRD:否(生产接线是 task/集成边界问题,非 PRD 产品决策)
+- [ ] 修 SHARED-CONTRACT:否
+- [ ] 修 XenoDev spec:否
+- [x] **无操作(收悉 · practice-stats 入库)** —— T016b 干净交付 M2 alpha 生产接线能力(DI-only 与 xgboost 同姿态),无治理债。
+
+**Operator note**: 三包全收悉入库。T016b 达成 registry-wiring capability(capability 已证可达 · mutation 测过),生产真接线随 wire.py 一并 defer(StubAssembler 现实),与 xgboost 同 defer 姿态,合理。
+
+**Follow-up commits**: 本 LOG entry(IDS commit,pending)
+
+---
+
+## 2026-07-06T17:07:06Z · 009-pForge-20260706T131309Z(T017 · M2 契约测试 · M2 验收 gate · shipped)
+
+**Reviewed at**: 2026-07-06T17:07:06Z
+**Tags**: feature
+**Severity**: low
+**Validator**: ✅ 6 约束 PASS(绝对路径)· 无 ids_verdict_evidence 块跳过
+
+**Build-side 摘要(§1)**:
+T017 M2 契约测试 shipped = **M2 验收 gate**。把 spec §8 的 M2 三契约变成可跑 pytest(违反任一=BLOCK):(1) `test_m2_source_id_unique` = C8(AlphaLane `__init__` 不注入 registry/other lane · 签名审计禁词 registry/lane/assembler)+ R9(source_id=analyst_alpha 唯一 · 重复 register raises);(2) `test_m2_no_aggregate_in_004` = C10/R10 红线(ConflictReport+StrategySignal schema 无 winner/recommended/aggregate/priority/composite 字段 · schema 字段审计 + AST ClassDef→AnnAssign 审计防注释误读为字段);(3) `test_m2_no_cross_source` = AC-2/C10 端到端(真 `ConflictReportAssembler.assemble` + mock LLM:alpha 走 evidence_lanes 单 analyst_alpha 平权 lane · 三路方向票独立不合并 · runtime `hasattr(winner/aggregate)`=False)。**契约测试 TDD 姿态**:断言既存不变量(天生绿无自然红相)→ 用 **mutation 验证**证牙(4 个 mutation 各破一个不变量→目标测试 red rc=1 · revert 后全绿)。004 全套 743 passed 无回归 · ruff clean。
+- **⚠ review 值得注意(= 新 KG-38)**:先跑 codex(medium test-only→review tier),codex 后台 job 撞 `Reconnecting 2/5、3/5` session-stream 掉流,读完 5 个不变量源文件后**静默 7+ 分钟无 verdict**(status 仍 running · pid alive · reasoning stream 死)—— **session-DROP 非额度耗尽**。取消,按 CLAUDE.md fallback 换 code-reviewer subagent(medium single-layer test-only→single-pass)。fallback reviewer 独立重跑 assemble 复现路由,逐条核对 5 个 ground-truth 源 + spec §8 C8/C10,确认 scope(4 文件全 addition · 零生产代码),approve · 0 blocking + 3 非阻塞完整性 nuance(测试自身已披露为 defense-in-depth,delegate 给 004 R3 架构兜底)。REVIEW-LOG 标 `reviewed-by: subagent-fallback@2026-07-06`(**不冒充 codex**),注 codex 恢复后可选重跑(非 spine · blocks 空 · 优先级低)。
+- **C8 诚实解读(记录非 scope drift)**:spec §8 C8 字面说只接 `(LLMClient, SourceDataProvider)`,但 T016b(handback-review 009 决议)加的 `alpha_provider` 是 data-result provider 非 registry/lane · 测试按"无 registry/lane 类型注入"的真实意图编码 C8 而非死抠 arity==2 · docstring 透明记录分歧。
+
+**Operator decisions**:
+- [ ] 修 PRD:否(契约测试忠实 encode spec §8 既有不变量 · C8 分歧已随 T016b 决议接受)
+- [ ] 修 SHARED-CONTRACT:否
+- [ ] 修 XenoDev spec:否
+- [x] **无操作(收悉 · practice-stats 入库)** —— M2 验收 gate 到位。同时**记 KG-38**(见下)。
+
+**Operator note**: 三包全收悉。T017 是 M2 层验收 gate,mutation 证牙姿态正确(契约测试无自然红相靠 mutation 证)。KG-38(codex 后台 job session-stream 掉流/静默挂起)是新框架级问题,补进 forge v7 待跑批次簇1。fallback 到 subagent 且不冒充 codex = CLAUDE.md fallback 条款正确落地(印证 KG-32 缓解有效)。
+
+**Follow-up commits**: 本 LOG entry(IDS commit,pending)· KG-38 补 FORGE-006-v7-PENDING.md 簇1(本轮同 commit)
+
+---
+
+## 2026-07-06T17:07:06Z · 009-pForge-20260706T133231Z(M-fork-complete · 009-pForge fork 交付完成 · M3 go/no-go 交回 IDS)
+
+**Reviewed at**: 2026-07-06T17:07:06Z
+**Tags**: feature
+**Severity**: low
+**Validator**: ✅ 6 约束 PASS(绝对路径)· 无 ids_verdict_evidence 块跳过(治理/收尾摘要 · 无生产 diff · 无 review gate)
+
+**Build-side 摘要(§1)**:
+**009-pForge FORK-COMPLETE 收尾** —— 授权 scope 全交付,把 M3 go/no-go 决策交回 IDS 治理。fork scope = PRD phased [M1,M2],只交付围绕已 ship 的 004(决策壳)+008(采集)的 Strangler-Fig 前两期:**M1** = PIT bitemporal 价格历史层(唯一关键新器官)· **M2** = alpha 头(第一个可验证价值锚:分析师到底行不行)。**M3(calibration 头/统一壳/时序异质图谱/蒸馏 lane/两条回流线)显式 OUT OF SCOPE**(spec line 23 + OUT-1/2/5/6/7 · 越界=BLOCK),defer 在 fork 外等 operator 决策,而该决策本身 gate 在"M2 样本量够不够 DSR 显著"。**按 CLAUDE.md 决策矩阵,起 M3 = scope 扩张/重大架构转向,SSOT 是 IDS(idea L1/PRD L3/forge),必须在 IDS forge 不在 XenoDev 起(正是宪法防的 V4 失败模式)** → 不 build M3,交回控制权。
+- **SHIPPED**(全 merge 到 feat/009-spec):M1 = T001-T008(8 任务:bitemporal 表+alembic 0014 / PIT 域模型 / PITPriceProvider / Tiingo 美股 / BaoStock A股+HK 占位 / M1 ingest CLI=P1 PPV / M1 契约测试 / CurrentState 004 adapter+xgboost 真源接入)· M2 = T010-T017(analyst_alpha_eval+0015 / frozen join / realized-return C16 双 as_of / TipRanks 三件套 / walk-forward+DSR/PBO / AlphaLane 上台 / M2 evaluate CLI=P2 PPV / T016b 生产接线 / T017 契约测试)。每任务走全 parallel-builder 流(TDD/跨模型 review/逐任务 hand-back)· **18 条不可变记录**。终态:working tree clean · 004-pB 全套 **743 passed** / 4 skipped / 1 xfailed 无回归。
+- **PPV 双终点真路径(路径中无 mock)**:P1(M1)真 ingest CLI→真 alembic→真 source→`price_daily/ticker_status` SELECT-able(close_raw/adj_factor/trade_date/as_of)· P2(M2)真 evaluate CLI→frozen join→per-signal 双侧显式 as_of 的 PIT-native `get_adjusted_close`(无 mock 价 · 无 as_of=today adapter)→C16→DSR/PBO→`analyst_alpha_eval` SELECT-able + `conflict_report` 有 alpha source_id 且无 winner/aggregate。两条 anti-PPV 线全 held。
+
+**Operator decisions**:
+- [ ] 修 PRD:否(收尾摘要 · 授权 scope 全交付无偏离)
+- [ ] 修 SHARED-CONTRACT:否
+- [ ] 修 XenoDev spec:否
+- [x] **无操作(收悉 fork-complete 收尾 · practice-stats 入库)**
+- [x] **M3 go/no-go = 显式待决项(交回 operator · 本轮不起 forge)** —— 见下 Operator note。
+
+**Operator note**: **接受 009-pForge fork-complete 收尾**。M1+M2 授权 scope 全交付(20 任务 · 743 passed · PPV 双终点真路径无 mock),这是投资闭环第一个可验证价值锚落地。**M3 go/no-go 暂不决**:按 M-fork-complete 自陈,M3 gate 在"M2 样本量够不够 DSR 显著"——须先看 M2 实际 alpha 数字(真跑 evaluate CLI 出 analyst_alpha_eval 行 + DSR/PBO)才知道分析师 alpha 判不判得出;O9 不足样本诚实路径已在。**没看到数字前起 M3 forge = 信息不足下做重大架构决策**(正是 forge 反复防的 V4 失败模式)。DEFERRED/KNOWN-GAPS 三条(HK 付费源/wire.py 生产真集成 StubAssembler/M3 gate)均为授权 scope 内非缺陷,记录在案。dogfood 揭 KG-30~38(9 条)已 XenoDev backlog + FORGE-006-v7-PENDING 攒着,KG-38 本轮补入。
+
+**Follow-up commits**: 本 LOG entry(IDS commit,pending)· M3 go/no-go 待 operator 看 M2 alpha 数字后另行决策(未起 forge)
+
+---
+
+## 2026-07-07T03:43:00Z · 009-pForge-20260707T032617Z(P2-prod-precondition-gap · spec-gap · M3 gate 数字拿不到的根因)
+
+**Reviewed at**: 2026-07-07T03:43:00Z
+**Tags**: spec-gap
+**Severity**: medium
+**Validator**: ✅ 6 约束 PASS(绝对路径)· 无 ids_verdict_evidence 块跳过
+
+**Build-side 摘要(§1)**:
+build-then-probe 结果(**没碰生产凭据、没写任何数据、建库前就停**):**M3 go/no-go 的 gate 数字当前拿不到**,两个 gap。
+- **GAP 1(阻塞)· 缺 008→004 信号 backfill 链**:evaluate 读 004 的 `advisor_reports/strategy_signals/watchlist`(alpha/join.py 核实),**不读** 008 采集库。008 采集 pipeline 产的是**内容库**(collection.db:图文/回放/问答语料)非 004 信号行;当前部署**无**把 008 内容转成 004 信号行的实现路径。→ 004 源表空 → evaluate 结构上能跑但返 `resolved_signals=0/accepted_rows=0`(不崩,没数字)。
+- **GAP 2(为什么顺手补越界)· strategy_signals 无 advisor 定位键**:该表无 advisor_id 列(T011 red-team #B 已记),v0.1 单 advisor 假设下不误触,真多 advisor backfill 会双重归因。彻底修=给已 ship 的 004 加定位键 → 撞 **spec OUT-10**(不改已 ship 的 004 StrategyModule/信号产出 schema)= BLOCK。
+- **基础设施**:生产 data.sqlite 不存在(~/decision_ledger/ 无);alembic+evaluate 过 config.load_settings() 因缺 ANTHROPIC_API_KEY 硬失败(凭据隔离边界)。
+- **为何是 spec-gap 非 XenoDev 内部修**:缺的 backfill 链是**跨 fork 集成面,归属从未指派**(009 spec scope 是 M1 价格层 + M2 alpha 头消费**已存在的** 004 信号,假设上游已填但当前部署未填,填充路径不在任何 fork)。闭合它要么建新 ingestion 组件(fork/PRD 不存在)要么改已 ship 的 004(OUT-10 BLOCK)——都是 IDS 治理决策。记录而非行动也避开 V4 失败模式(不猜数据、不越 BLOCK 线凑数字)。**再次印证 build-then-probe 是照妖镜**:理论上"跑 evaluate 拿数字"看似一步,实证 probe 才发现整条输入链缺失([[forge-verdict-vs-empirical-ship]])。
+
+**Operator decisions**:
+- [ ] 修 PRD:否(本轮不改 PRD · smoke path 不需要)
+- [ ] 修 SHARED-CONTRACT:否
+- [ ] 修 XenoDev spec:否(单 advisor 假设已在 domain/advisor.py:28 · 只需显式确认非新增)
+- [x] **决议 1 · backfill 归属 = 先走 smoke path 拿真数字**(§3-(3))—— 手工塞**一个真 advisor 的少量真历史信号**(真 ticker/方向/日期)进 004 三表(advisor_reports+strategy_signals+watchlist)→ ingest 对应真价格(P1)→ 跑 evaluate → 得真 hit_rate/dsr/trial_count(或 O9 诚实 insufficient_sample)。**不建通用 backfill、不撞 OUT-10**,最快解锁 M3 决策且端到端验证 P2 全链。需 operator 提供真值 + 生产凭据(凭据不进 agent 上下文 · XenoDev 只给命令骨架 + 前置检查清单)。008→004 通用 bridge 的正式归属**暂不定**,待 smoke path 出的数字先告诉我们"分析师 alpha 判不判得出",再决定值不值得建通用桥。
+- [x] **决议 2 · advisor 定位键 = 保持 v0.1 单 advisor 显式假设,defer 键**(§3-(2))—— evaluate 对**恰好一个** advisor 正常工作。把"单 advisor"钉成显式 v0.1 约束,多 advisor 定位键 defer 到真需要多 advisor 时。**不授权 OUT-10 修订**(不改已 ship 的 004)。与 v0.1 scope 一致。
+
+**Operator note**: 组合决议 = smoke path + 单 advisor defer 键,两条都不建通用 backfill、不撞 OUT-10,最省事解锁 M3 gate。**M3 go/no-go 仍挂起**,现在多一个明确前置:operator 出一个真 advisor 的少量真历史信号 + 生产凭据 → XenoDev 跑 smoke path 出真 alpha 数字 → 看 DSR 显不显著 → 才谈 M3。这个 gap 是投资闭环的真卡点(M2 交付了"能算 alpha 的机器"但机器没输入,008 采集内容≠004 信号),记入 [[forge-009-closed-loop-inflight]] 与 [[closed-loop-investing-product-vision]] 的下游缺口。008→004 通用 bridge 归属留作未来 idea 候选(smoke path 出数字后再评估 ROI)。
+
+**Follow-up commits**: 本 LOG entry(IDS commit,pending)· smoke path 执行在 XenoDev(需 operator 出真值+凭据,command skeleton 由 XenoDev 给)· M3 go/no-go 待 smoke path 真数字后另议

@@ -11,19 +11,23 @@
 
 - **forge v6 已覆盖**:KG-1/2/4/6/13/14/26/27/28/29/30/31(跨机器可移植性 + 早期批)
 - **forge v4 已覆盖**:KG-36(forge-lite 漏消费面)
-- **⇒ pending(未进任何 forge)**:KG-12 · KG-22 · KG-23 · KG-32 · KG-33 · KG-34 · KG-35 · KG-37
+- **⇒ pending(未进任何 forge)**:KG-12 · KG-22 · KG-23 · KG-32 · KG-33 · KG-34 · KG-35 · KG-37 · **KG-38**(2026-07-06 T017 新撞)
 
 ## 聚簇(建议 forge v7 的 X 标的分组)
 
-### 簇 1 · codex-review 作为 review gate 的可靠性(最大簇 · 4 条同根 · 建议主攻)
+### 簇 1 · codex-review 作为 review gate 的可靠性(最大簇 · **5 条同根** · 建议主攻)
 codex-review companion 在多个维度上脆弱,fallback 机制不制度化:
 - **KG-23** · codex `--scope working-tree` 看不到「已 commit 未 merge」的改动 → 每轮 commit 后 review vacuous approve(空 diff)
 - **KG-32** · codex-review SKILL 无 fallback:codex 额度用尽/插件挂 → §3 review 强 hook 死锁(干等或违规无 review merge)
 - **KG-35** · companion `--wait` 的 verdict/findings 不稳定落 stdout log,需 `status --all` 兜底
 - **KG-37** · companion branch-mode 在 sandbox 下跑不了只读 git/rg(bwrap loopback 失败)→ review 环境性失效
-- **共同根因**:review gate 把 codex 当唯一可靠通道,但它在 scope 语义 / 额度 / 输出落盘 / 沙箱权限 四处都会失效。
+- **KG-38**(2026-07-06 T017 新撞)· codex review **后台 job session-stream 掉流/静默挂起**:job 撞 `Reconnecting 2/5、3/5`,
+  读完源文件后**静默 7+ 分钟无 verdict**(status 仍 running · pid alive · reasoning stream 死)—— 是 **session-DROP 非额度耗尽**,
+  与 KG-32(额度耗尽死锁)是**不同失效模态**(挂起态更隐蔽:不报错、不退出、干等)。T017 靠取消 + fallback 到 code-reviewer subagent 救回。
+- **共同根因**:review gate 把 codex 当唯一可靠通道,但它在 scope 语义 / 额度 / 输出落盘 / 沙箱权限 / **会话流稳定性** 五处都会失效。
   verdict 方向:fallback 分流制度化(codex 不可用→red-team/code-reviewer subagent · 标 subagent-fallback 不冒充 codex)
-  + review scope/序审查(working-tree vs branch)+ 输出提取加 fallback 链。**⚠ codex-review SKILL 是 IDS bootstrap-kit
+  + review scope/序审查(working-tree vs branch)+ 输出提取加 fallback 链 + **挂起态超时检测**(KG-38:不能只等 exit code,
+  reasoning-stream 静默 N 分钟须判为 DROP 触发 fallback,否则无限干等)。**⚠ codex-review SKILL 是 IDS bootstrap-kit
   mirror 件 → 改动落 IDS 三层同步,不在 XenoDev 当场改。**
 
 ### 簇 2 · handback tooling papercuts(2 条 · low severity · 顺手清)
@@ -52,11 +56,21 @@ codex-review companion 在多个维度上脆弱,fallback 机制不制度化:
 - **KG-12 重现**:`/handback-review 009` Step 4 validator 传**相对路径**误报「约束 5 id 不一致」,传绝对路径才 PASS。
   这是从 **live 命令侧**(非 README fixture)复现 KG-12,说明命令文档 Step 4 示例也该标"传绝对路径"。
 
+## 第二 session(M2 收尾 handback-review · 2026-07-06 · T016b/T017/M-fork-complete 三包)的 fresh evidence
+
+M2 收尾三包 review 中又撞两条,其中一条是**新 KG**:
+- **KG-38 首撞(新)**:T017 build 时 codex review 后台 job session-stream 掉流(`Reconnecting 2/5、3/5`)后**静默 7+ 分钟无 verdict**
+  (running/pid-alive 但 reasoning-stream 死),取消后 fallback 到 code-reviewer subagent 救回。**与 KG-32(额度死锁)不同模态**:
+  挂起态不报错不退出,更隐蔽。已入本文件簇1 + XenoDev dogfood-backlog(build 侧记 L 见 M-fork-complete §1)。
+- **KG-12 又重现(第二次连续)**:本轮 3 包 validator 仍是相对路径全 FAIL 约束5、绝对路径全 PASS —— **两个连续 handback-review
+  session 都撞同一坑**,证据强度升级(不是一次性偶发)。命令文档 Step 4 应硬性标"传 `$(realpath ...)`"。
+- **KG-31 又重现**:3 包 frontmatter `to_source_repo`/`source_repo` 仍 mac 字面 `/Users/admin/...`,`handback_target` 却对(linux)—— 同 KG-31。
+
 ## 下次怎么起
 
 ```
 /expert-forge 006          # Phase 0 intake 时:
-  X = XenoDev dogfood-backlog.md 的 pending 批次(KG-12/22/23/32/33/34/35/37)· 本文件是导航
+  X = XenoDev dogfood-backlog.md 的 pending 批次(KG-12/22/23/32/33/34/35/37/38)· 本文件是导航
   Y = 工程纪律 + 可靠性(review gate 脆弱性为主)
   Z = 对标 SOTA(CI review gate / fallback 模式)
   W = decision-list + refactor-plan(SKILL/协议层改法 · 落 IDS 三层同步)
