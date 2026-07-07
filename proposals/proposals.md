@@ -99,7 +99,7 @@
 ## **001**: Research Radar
 
 **提出日期 / Proposed**: 2026-04-22
-**状态 / Status**: **parked**（二次 · L2 名义进行但 ~2 月停滞；L1 menu 的 13 条 directions 保留作灵感库，以后可随时 `/fork`。park 记录含首次+二次 park 见 [PARK-RECORD](../discussion/001/PARK-RECORD.md)）
+**状态 / Status**: **exploring（revived 2026-07-06 · 转向 KG-radar / Topic Cartographer 方向）** —— operator 澄清真实愿景是 paper/方法知识图谱 + SOTA big-picture radar（= L1 Direction 7，非当年 fork 的窄简报 001-pA）。走新 fork 探索；001-pA 作 valid sibling 保留。见 [PARK-RECORD REVIVE 段](../discussion/001/PARK-RECORD.md)
 **初始野心等级 / Ambition**: M
 **成熟度 / Idea maturity**: direction-clear
 

@@ -53,3 +53,13 @@ To resume: run `/status 001` —— 所有 artifact 保留，什么都没丢。
 
 **这次没丢任何东西**：L1 menu（13 directions）+ L2R1/R2 rounds + stage-L2-explore-001.md 全在。revive 时从 L2 继续或 `/inspire-inject` 重 steer 均可。
 
+---
+
+## REVIVE（2026-07-06 · 转向 Topic Cartographer / KG-radar 方向）
+
+**为什么 revive**：operator 澄清了真实愿景 —— 要的不是当年 fork 的 **001-pA「PI Briefing Console」**（那是主动砍窄的每日简报版，PRD 明确删掉了知识图谱），而是一个 **Paper Radar agent**：持续收集 SOTA 文章、构建 paper/方法的**知识图谱 + 知识库**、帮 AI lab 负责人快速跟进 SOTA + 把握研究方向 **big picture**。
+
+**关键发现**：这个愿景几乎就是 001 最原始提案原文（"多层级 topic 知识库 + 时间线/同源/继承/对立检索 + 实时 SOTA"），且**精确匹配 L1 菜单 Direction 7「Topic Cartographer（做地图不做流）」** —— 节点=工作，边=derives-from/contradicts/generalizes/supersedes，看领域半年"位移"。**这条方向 L1 探过但从没 fork。**
+
+**重启方式**：fork Direction 7 为新 sibling（走 pipeline L2→L3→L4），**不是** build 那份错方向的窄 spec。001-pA（PI Briefing）作为一个 valid sibling 保留不动，其 paper 收集 pipeline / T001 LLM 成本教训 / 双 persona 可作参考。核心待解问题：与 Connected Papers / Litmaps / ResearchRabbit 的图视图差异化（L2/L3 必答）。方案见 `~/.claude/plans/robust-wondering-naur.md`。
+
