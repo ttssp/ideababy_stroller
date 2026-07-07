@@ -408,4 +408,4 @@ B（评估→留驻漏斗）保留了"朝 8-15 活地图迈步"的价值内核�
 ---
 
 ## Fork log
-（empty initially; updated by /fork* commands）
+- 2026-07-07T02:58:21Z · Candidate A「方向评估官（历史位移内嵌）」forked as `001-radar-pA`（status: just-created · PRD.md 已产 · simple 形态 · 下一步 /plan-start 001-radar-pA）· Candidate B 留菜单作数据驱动 v0.2 候选,未 fork
