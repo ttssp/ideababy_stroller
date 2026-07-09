@@ -1,0 +1,13 @@
+{
+  "version": "v7",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "x_hash": "024bf278a91ae3e183606b91a7d0b9c7",
+  "prefill_used": true,
+  "opus_done": true,
+  "codex_done": true,
+  "stage_doc": "stage-forge-006-v7.md",
+  "created": "2026-07-07T11:30:53Z",
+  "last_updated": "2026-07-07T16:50:00Z",
+  "notes": "P3R2 双方 converged 无 unresolved;Phase 4 synthesizer 产出 stage-forge-006-v7.md(decision matrix 16 行 + refactor plan 3 模块:A codex-review SKILL 状态机 / B SHARED-CONTRACT fork-id SSOT / C XenoDev 授权条目);quality check 全过;KG-B1 解阻排最优先"
+}

@@ -695,11 +695,9 @@ workspace:
 **约束 6 · id 字符集 + final-path containment**:
 - **id 字符集 regex**(producer 写入前 + consumer 读取前都必须校验):
   - `discussion_id` 必须匹配 `^[0-9]{3}$`(eg `008`)
-  - `prd_fork_id` 必须匹配 `^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$`(eg `008` / `008a` / `008a-pA` / `009-pForge` / `006a-pM-v0.2`)
-    - **`-p` 段**:`-p` + 首字符大写 + 可选后续字母(接单字符 `-pB` 与多字符 `-pForge`;KG-29 · 2026-07-01 放宽,原为 `-p[A-Z]` 仅单字符)
-    - **`-v` 段**:可选 `-v<major>.<minor>`(接 fork 的 PRD 版本变体 `-v0.2`;OQ-4 解法 A · 2026-05-28 加入)
-    - **拒**:`009-pforge`(-p 后首字符小写)/ `006a-pM-v0`(缺 minor)/ `006a-pM-v0.2.3`(三段)/ `006a-pM-V0.2`(大写 v)
-    - 仅字母/数字扩展,不引入 `/` `\` `.`(除 `-v` 段的单个小数点)`..` 控制字符 → path-traversal 防线(下方 filename basename + realpath containment)不受影响
+  - `prd_fork_id` 必须匹配 **§7 fork-id 语法 SSOT** 定义的 grammar(**v7 · 2026-07-08 起,正则字面量不再内嵌本约束,统一引用 §7**;check-6.sh / plan-start 铸造 / consumer 校验都 consume §7 同一定义,终结「铸造侧与校验侧各自演化正则」的跨仓漂移 = KG-B1 根因)
+    - **v7 正则**(§7 SSOT 权威值):`^[0-9]{3}[a-z]?(-[a-z0-9]+)*(-p[A-Z][a-zA-Z0-9]*)?(-v[0-9]+\.[0-9]+)?$`
+    - 相对 v0.3(`^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$`)的变化:新增中段 `(-[a-z0-9]+)*` = 零或多个 idea-slug 中段,**FULL 向后兼容**已铸 id 且解阻 `001-radar-pA`(中段 `-radar`)。演化史 + 兼容语料验证见 §7。
   - `<ISO ts>` 必须匹配 `^[0-9]{8}T[0-9]{6}Z$`(eg `20260520T103015Z`,UTC,无毫秒)
   - `handback_id` 必须严格等于 `<prd_fork_id> + "-" + <ISO ts>` 的拼接结果
   - 三个 id token 任意一处含 `/` `\` `..` 控制字符 (`\x00-\x1f\x7f`) 或绝对路径前缀 = `Drop`
@@ -1061,6 +1059,85 @@ cutover 时按此清单逐条勾选,确保所有 v1.1.0 consumer 同步迁移:
 - **§6 reverse hand-back 新增**:producer/consumer 为 XenoDev → IDS,通过 §6.3 schema + §6.4 路径约定流转
 
 forward(§3)+ reverse(§6)形成双向闭环 — 这是 forge 006 v2 verdict 的核心 binding(P3R2 双方完全合一,见 stage doc §"Evidence map" row 11)。
+
+---
+
+## §7 · fork-id 语法 SSOT(v7 · 2026-07-08 加 · forge 006 v7 verdict)
+
+> **本节是 fork-id charset 的唯一权威定义源(Single Source of Truth)**。IDS 铸造侧(`/plan-start`)、
+> XenoDev 校验侧(`handback-validator/check-6-id-charset-and-final-path.sh`)、consumer 侧
+> (`/handback-review`)**都必须 consume 本节定义,不得各自内嵌另一份正则字面量**。§6.2.1 约束 6 的
+> `prd_fork_id` regex 引用本节。
+
+### §7.1 · 为什么需要这一章(KG-B1 根因)
+
+fork-id 的**铸造**在 IDS(`/plan-start` 惯例),**校验**在 XenoDev(check-6 charset regex),两边历史上
+**没有共同定义源**,各自演化正则 → 每出一种新命名习惯就断一次,每次修还要跨分支漂:
+
+- v0.1 `^[0-9]{3}[a-z]?(-p[A-Z])?$` → 只接单字符 `-pB`
+- v0.2(OQ-4 · 2026-05-28)加 `-v<major>.<minor>` → 接 `006a-pM-v0.2`
+- v0.3(KG-29 · 2026-07-01)`-p` 段放宽多字符 → 接 `009-pForge`,但**只在 009 分支,main 停 v0.2**
+- **KG-B1(2026-07-07)**:`/plan-start` 铸的 `001-radar-pA`(带 idea-slug 中段 `-radar`)v0.3 仍不接 →
+  **001-radar-pA 全部 hand-back 无法发布,反向通道断裂**
+
+「逐例放宽 regex」= 教科书级**缺契约测试**症状(Schema Registry + Pact 消费者驱动契约测试是标准解法)。
+本章把语法定义权收到契约层作 SSOT,IDS/XenoDev 都变 consumer,check-6 regex 降级为「契约的一个实现」。
+
+### §7.2 · fork-id grammar(v7 正则 · 权威值)
+
+```
+^[0-9]{3}[a-z]?(-[a-z0-9]+)*(-p[A-Z][a-zA-Z0-9]*)?(-v[0-9]+\.[0-9]+)?$
+```
+
+分段语义:
+
+| 段 | 正则 | 含义 | 例 |
+|---|---|---|---|
+| root | `[0-9]{3}` | idea 编号(必填,三位数字) | `001` |
+| 紧贴单字母 | `[a-z]?` | 历史 fork 标识(数字后紧贴,可选) | `006a` / `002b` |
+| **中段 slug(v7 新增)** | `(-[a-z0-9]+)*` | 零或多个 idea-slug 中段(连字符分隔) | `-radar` / `-stablecoin-payroll` |
+| `-p` 后缀 | `(-p[A-Z][a-zA-Z0-9]*)?` | fork 后缀,首字符强制大写(可选) | `-pA` / `-pForge` |
+| `-v` 版本 | `(-v[0-9]+\.[0-9]+)?` | PRD 版本变体(可选,单小数点) | `-v0.2` |
+
+**v7 相对 v0.3 的唯一变化**:新增中段 `(-[a-z0-9]+)*`,解阻 `001-radar-pA` 及一切带 idea-slug 中段的 fork-id。
+
+### §7.3 · path-safe 字符集(安全约束)
+
+- 中段 slug 只允许 `[a-z0-9-]`(小写字母 / 数字 / 段间连字符),**显式禁** `/` `\` `.` `..` 控制字符
+  (`\x00-\x1f\x7f`)绝对路径前缀。
+- 本 grammar **不改变** §6.2.1 约束 6 的 filename basename + realpath containment **双防线**——它们是
+  defense-in-depth 第二道,charset regex 是第一道 input-shape validation,两道都保留(OWASP path-traversal 标准)。
+
+### §7.4 · 兼容策略 + 已知语义弱化
+
+- **FULL 向后兼容**:v7 grammar 是 v0.3 的超集,任何已铸 id 必须继续合法。定稿前已用**全量 23 个真实已铸
+  fork-id 语料**验证正则全绿(001-pA / 001-radar / 001-radar-pA / 002b-stablecoin-payroll / 002f-payroll-er /
+  002g-dao-bounty / 003-pA / 004-pB / 007a-agent-emit / 008-pB / 009-pForge / 006a-pM / 006a-pM-v0.2 / 纯数字 007
+  等),path-traversal 异常语料(`008/../../etc` / `001-radar-pA/x` / `../008` / 含控制字符)全拒。
+- **已知语义弱化(operator decision · 2026-07-08 · 接受)**:因中段 `(-[a-z0-9]+)*` 允许任意小写 slug,
+  v7 grammar **无法再靠正则区分**「中段恰好叫 pxxx」与「`-p` 后缀写成小写」——`009-pforge` / `001-radar-pa`
+  这类会被当普通中段接受(v0.3 靠 `-p[A-Z]` 强制大写拒它)。
+  - **分层裁定**:charset 层只管 **path-safe**;「`-p` 后缀首字母大写」的命名语义约束改由 **IDS 铸造侧
+    (`/plan-start`)保证**,不再让一个正则背两个职责。SSOT 分层:charset = path 安全(§7),命名语义 = 铸造侧。
+
+### §7.5 · consumer 清单(都 consume §7.2 · 不得各自内嵌正则)
+
+| consumer | 文件 | 落法 |
+|---|---|---|
+| XenoDev 校验侧 | `handback-validator/check-6-id-charset-and-final-path.sh` §1.2 | mirror 件 · SSOT 在 XenoDev · 授权条目下发改 regex 为 §7.2 值(见 §7.6) |
+| IDS 铸造侧 | `/plan-start`(fork-id 铸造) | 铸造时按 §7.2 grammar + §7.4 命名语义(-p 首字母大写)生成 |
+| consumer 校验 | `/handback-review` | 读包前按 §7.2 校验 |
+| 契约 fixture | `handback-validator/test-fixtures/` fork-id 语料 | 双仓同一语料:IDS 铸造侧全过 + XenoDev 接受侧全过(见 §7.6) |
+
+### §7.6 · 落地状态(v7 · 2026-07-08)
+
+- ✅ **本节(§7 SSOT)** + §6.2.1 约束 6 引用改造:IDS 侧直接落地(SHARED-CONTRACT SSOT 在 IDS)。
+- ⏳ **check-6.sh regex 改 §7.2 值**:mirror 件 · SSOT 在 XenoDev · **本轮不当场改**,作授权条目经
+  hand-off/dogfood-backlog 下发 XenoDev 改源 → cp -p 回 IDS mirror → 更新 MANIFEST SHA
+  (per forge v7 verdict 硬约束 K5 · operator D0=严格守铁律)。
+- ⏳ **001-radar-pA 解阻**:契约已定(本节),但真正放行需 check-6.sh 改完那一跳;本轮**未立即解阻**
+  (operator 知悉此代价 · D0 守铁律的必然结果)。
+- ⏳ **双仓契约 fixture 语料**:见授权条目 brief。
 
 ---
 
