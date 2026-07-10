@@ -1,0 +1,86 @@
+---
+doc_type: handback-decision-log
+first_created: 2026-07-10T06:46:12Z
+last_updated: 2026-07-10T06:46:12Z
+total_decisions: 5
+note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
+---
+
+# HANDBACK-LOG · discussion 001
+
+per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 XenoDev hand-back 包的决议日志。append-only。
+
+## 2026-07-10T05:55:46Z · 001-radar-pA-20260710T055546Z
+
+**Reviewed at**: 2026-07-10T06:46:12Z
+**Tags**: feature
+**Severity**: low
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T001 ship 通知(interface-before-impl 地基,11 frozen models + 8 Protocols)。KG-B1 deferred → forge 006 v7 A1 落地后 re-fire。findings(F1 Judgment 高置信绕过 + model_copy 残留、F2 method/claim graph)均已在 XenoDev 侧闭环,teeth-proven。§2/§3 待补(gen-handback 未传 --section2/--section3,producer 侧摩擦点,XenoDev T007 amendment 已注记)。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-10T06:34:36Z · 001-radar-pA-20260710T063436Z
+
+**Reviewed at**: 2026-07-10T06:46:12Z
+**Tags**: feature
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T002 ship 通知(OpenAlex retriever,P0.1 检索骨架)。codex KG-38 hang → subagent fallback,5 findings 全闭(含真 API 集成抓到 sort 全史古董论文 real defect)。附带新框架缺口 KG-B2(parallel-builder baseline drift)/ KG-B3(.gitignore 吞 red-green-log TDD 证据)—— 已记 XenoDev dogfood-backlog,按铁律攒批走 forge 006,本包无当场动作。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-10T06:34:38Z · 001-radar-pA-20260710T063438Z
+
+**Reviewed at**: 2026-07-10T06:46:12Z
+**Tags**: feature
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T003 ship 通知(slice-reconstructor,P0.1 收尾 = T004 盲测门输入)。codex KG-38 hang(第 5 次)→ fallback;F1 RT-2 大小写泄漏已修,F2 negative_control 接口缝路由 task-decomposer(不私改 frozen 接口)、F3/F4 路由 T012 —— defer 链路清晰,XenoDev 侧闭环。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-10T06:34:41Z · 001-radar-pA-20260710T063441Z
+
+**Reviewed at**: 2026-07-10T06:46:12Z
+**Tags**: feature
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T004 ship 通知(P0.2 轨迹可信度盲测门,全项目最承重 gate)。codex KG-38 hang(第 6 次)→ spine 级双 fallback(red-team + code-reviewer),F1(critical,seed 可反推)/F2/F3/F5/F7 全修 teeth-proven;双评审抓到单评审必漏的 F7(零真实切片空洞 PASS)。Deferred:F4 → T005 已补;F6 → KG-B4(gate STOP 未机器强制,框架缺口)走 dogfood-backlog → forge 006 攒批。gate 本体已修至可信,无 IDS 侧文档动作。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-10T06:34:43Z · 001-radar-pA-20260710T063443Z
+
+**Reviewed at**: 2026-07-10T06:46:12Z
+**Tags**: feature
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T005 ship 通知(DeepSeek LlmClient wire,补 T004-F4,盲测门 operator 可跑)。C8 双审计(security-auditor + code-reviewer)通过,key 零泄漏,F1-F3 全修。codex KG-38 hang 第 7 次(连续 4 task)—— KG-38 复发频率已系统化,属 forge 006 v7 review gate 状态机范围,等 XenoDev check-6 落地。下一步是 operator 亲跑盲测 sign-off(export DEEPSEEK_API_KEY → reconstruct → evaluate_gate),非文档动作。入 practice-stats。
+
+**Follow-up commits**: pending
