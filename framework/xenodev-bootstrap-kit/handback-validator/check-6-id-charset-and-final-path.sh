@@ -34,16 +34,19 @@ if ! [[ "$DISCUSSION_ID" =~ ^[0-9]{3}$ ]]; then
 fi
 
 # === 1.2 · prd_fork_id 字符集 ===
-# v0.2 扩(OQ-4 解法 A · operator decision D2 · 2026-05-28):接受可选的 -v<major>.<minor> 后缀
+# ⚠ SSOT = SHARED-CONTRACT §7 fork-id 语法(v7 · 2026-07-08 起正则不再各自演化 · 统一引用 §7 · KG-B1 根因终结)
 # v0.3 扩(KG-29 · operator decision · 2026-07-01):-p 后缀放宽为多字符(首字符仍强制大写)
-#   动因:IDS /plan-start 铸的 fork id `009-pForge` 用 -p + 多字符后缀,旧正则 -p[A-Z] 只收单字符 → 阻断 hand-back。
-#   安全:仅在 -p 段追加 [a-zA-Z]*(不引入 / \ . .. 控制字符),path-traversal 防线(basename + realpath containment)不变。
-# 旧 v0.1:^[0-9]{3}[a-z]?(-p[A-Z])?$                              接 006a-pM
-# 旧 v0.2:^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$           接 006a-pM / 006a-pM-v0.2 / 007 / 007-v1.5
-# 新 v0.3:^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$  额外接 009-pForge / 008-pB(单字符仍过)
-# 拒:006a-pM-v0(缺 minor) / 006a-pM-v0.2.3(三段) / 006a-pM-V0.2(大写v) / 009-pforge(-p 后首字符小写)
-if ! [[ "$PRD_FORK_ID" =~ ^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$ ]]; then
-    ERRORS+=("prd_fork_id ($PRD_FORK_ID) not matching ^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?\$")
+# v7 扩(KG-B1 · forge 006 v7 A1 · 2026-07-08):新增中段 (-[a-z0-9]+)* = 0+ idea-slug 中段(解阻 001-radar-pA 的 -radar)
+#   动因:IDS /plan-start 铸「带 idea-slug 中段」fork-id(如 001-radar-pA)· v0.3 只放宽 -p 不接中段 → 阻断该 fork 全部 hand-back。
+#   安全零损:中段字符集仅 [a-z0-9](不引 / \ . .. 控制字符)· path-traversal 三层防线(1.5 forbidden-char + §2 basename + §3 realpath containment)不变 · 同 KG-29 安全论证同构。
+# 旧 v0.1:^[0-9]{3}[a-z]?(-p[A-Z])?$                                              接 006a-pM
+# 旧 v0.2:^[0-9]{3}[a-z]?(-p[A-Z])?(-v[0-9]+\.[0-9]+)?$                           接 006a-pM / 006a-pM-v0.2 / 007
+# 旧 v0.3:^[0-9]{3}[a-z]?(-p[A-Z][a-zA-Z]*)?(-v[0-9]+\.[0-9]+)?$                  额外接 009-pForge / 008-pB
+# 新 v7  :^[0-9]{3}[a-z]?(-[a-z0-9]+)*(-p[A-Z][a-zA-Z0-9]*)?(-v[0-9]+\.[0-9]+)?$  额外接 001-radar-pA(中段 -radar)
+#   (相对 v0.3 变化:①新增中段 (-[a-z0-9]+)* ②-p 内 [a-zA-Z]*→[a-zA-Z0-9]* · 均无危险字符)
+# 拒:006a-pM-v0(缺 minor) / 006a-pM-v0.2.3(三段) / 006a-pM-V0.2(大写v) / 008/../../etc(traversal · 字符集无 / 拒)
+if ! [[ "$PRD_FORK_ID" =~ ^[0-9]{3}[a-z]?(-[a-z0-9]+)*(-p[A-Z][a-zA-Z0-9]*)?(-v[0-9]+\.[0-9]+)?$ ]]; then
+    ERRORS+=("prd_fork_id ($PRD_FORK_ID) not matching ^[0-9]{3}[a-z]?(-[a-z0-9]+)*(-p[A-Z][a-zA-Z0-9]*)?(-v[0-9]+\.[0-9]+)?\$")
 fi
 
 # === 1.3 · iso_ts 字符集 ===
