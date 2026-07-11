@@ -106,4 +106,4 @@ v1.1 优先方向(operator 定):
 
 gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PASS = smoke test 过,非终审发证(KG-B4 按此语义设计)。
 
-**Follow-up commits**: pending(v1.1 修订后一并)
+**Follow-up commits**: a3a5f57(决议入库)· 6024159(PRD v1.0→v1.1 落地)
