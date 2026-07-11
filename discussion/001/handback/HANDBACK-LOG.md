@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-10T06:46:12Z
-total_decisions: 5
+last_updated: 2026-07-11T14:04:49Z
+total_decisions: 6
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -84,3 +84,26 @@ per `framework/SHARED-CONTRACT.md` §6.4,本文件是 operator 在 IDS 端对 Xe
 **Operator note**: T005 ship 通知(DeepSeek LlmClient wire,补 T004-F4,盲测门 operator 可跑)。C8 双审计(security-auditor + code-reviewer)通过,key 零泄漏,F1-F3 全修。codex KG-38 hang 第 7 次(连续 4 task)—— KG-38 复发频率已系统化,属 forge 006 v7 review gate 状态机范围,等 XenoDev check-6 落地。下一步是 operator 亲跑盲测 sign-off(export DEEPSEEK_API_KEY → reconstruct → evaluate_gate),非文档动作。入 practice-stats。
 
 **Follow-up commits**: pending
+
+## 2026-07-11T13:53:03Z · 001-radar-pA-20260711T135303Z
+
+**Reviewed at**: 2026-07-11T14:04:49Z
+**Tags**: prd-revision-trigger
+**Severity**: high
+**Operator decisions**:
+- [x] 修 PRD(→ v1.1)
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [ ] 无操作(收悉)
+
+**Operator note**: P0.2 盲测门首次真判 FAIL(diffusion models · 封闭历史窗 2021→2023)。接受 trigger。三要件:①slice-2/3 可信 ②识伪精准命中 slice-1(反橡皮图章机制有牙)③新洞察为空 → FAIL 原因 = pipeline 当前配置只产领域常识综述。STOP 生效,T010/T011 未起,T002-A1 ship 留后 —— 边界纪律全部守住。
+
+v1.1 优先方向(operator 定):
+- **A1 要件③重 operationalize**:「新洞察」改为可达目标(如新证据链组合),长期主锚按 injection 移 O2(三跳回溯)+ O7(使用中偏差反馈)
+- **A2 语义切窗上调**:T012 按语义/事件切窗替代按数量切(本次 slice-2/3 挤 2023 半年粒度稀释信息密度)
+- **A3 分层阅读原则**:v1.1 全量喂 abstract(新洞察的物质基础,成本可忽略);全文不做全量 —— 仅对「位移锚点论文」或 O2 证据链回溯核验时选择性深读(operator 提出的分层阅读架构,与「结论可回溯」哲学咬合)
+- 细节取舍留给 v1.1 修订过程论证(injection 已要求下轮以「## Moderator injection response」回应)
+
+gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PASS = smoke test 过,非终审发证(KG-B4 按此语义设计)。
+
+**Follow-up commits**: pending(v1.1 修订后一并)
