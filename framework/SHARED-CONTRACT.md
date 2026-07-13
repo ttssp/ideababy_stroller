@@ -1,9 +1,9 @@
 ---
 doc_type: framework-shared-contract
-contract_version: 2.3
-status: v2.3
+contract_version: 2.4
+status: v2.4
 generated: 2026-05-08
-last_updated: 2026-05-31
+last_updated: 2026-07-13
 upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2) + discussion/006/forge/v3/stage-forge-006-v3.md (v3 · v0.2 11 项 backlog) + discussion/006/forge/v4/stage-forge-006-v4.md (v4 · post-v0.2 协议稳态化 → v2.3)
 ssot_owner: ideababy_stroller
 ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
@@ -1141,6 +1141,75 @@ fork-id 的**铸造**在 IDS(`/plan-start` 惯例),**校验**在 XenoDev(check-6
 
 ---
 
+## §8 · gate 执行语义 SSOT(v8 · 2026-07-13 加 · forge 006 v8 verdict · 簇①)
+
+> **本节是 gate 执行语义的唯一权威定义源(Single Source of Truth)**。gate 的**判定逻辑**
+> (`evaluate_gate` 返回 PASS/FAIL)已 ship 且不动;本节补的是**执行语义**——「判定 PASS 之后,
+> 下游动作凭什么信任这个 PASS、凭什么不能被重放/伪造」。IDS 契约侧(本节)、XenoDev 执行侧
+> (preflight 登记表 + `evaluate_gate` 接下游)都必须 consume 本节四不变量,不得各自内嵌另一套
+> 执行约定。
+
+### §8.1 · 为什么需要这一章(KG-B4 + KG-B7 根因)
+
+gate 有判定逻辑,**没有执行语义**——「判定为 PASS」与「下游据此放行」之间没有机器强制的绑定,
+两条独立缺口在 XenoDev dogfood 中各自实证:
+
+- **KG-B4(gate PASS 无机器强制)**:PASS 靠 `depends_on` markdown 声明,「T004 已 merge」
+  ≠「operator 签字 PASS」。code-reviewer 佐证:*nothing in shipped code gates action on
+  `evaluate_gate` return*——判定函数存在,但没有任何下游动作真的读它的返回值来 gate。这是
+  「防 V4 失控的 STOP 只是 markdown 约定」的直接症状。
+- **KG-B7(盲测 gate 试错/重放)**:answer-key 可复用 + operator 可无限重跑,codex 在 R12-14
+  三轮同族假 PASS——(a) replay 已判 run、(b) run_id 泄露复用、(c) FAIL-reason 泄露反推
+  answer-key。三轮都是**同一个根因**:gate 的一次 PASS 没有被登记为「一次性消费」,新 run 也
+  没作废旧签字。
+
+「gate 判定 ≠ gate 执行」是**缺执行语义**症状。业界成熟对应物现成:PASS artifact 存在性查验
+(CI required-check)、已判 run 一次性消费(ACME/AP2/OAuth nonce list)、新 run 作废 stale 签字
+(GitHub stale approvals)。本章把这三类组合成 gate 执行契约的四不变量,IDS/XenoDev 都变 consumer。
+
+### §8.2 · gate 执行语义四不变量(v8 · 权威定义)
+
+任何被标为 gate 的 task,其 PASS 到下游放行之间必须满足以下**四条不变量**(缺一即执行语义不完整):
+
+| # | 不变量 | 语义 | 业界对应物 |
+|---|---|---|---|
+| **(a)** | **gate task 语义** | gate task 在 frontmatter 显式标 `gate: true`;下游 task 的 `depends_on` 指向 gate task 时,消费的是 gate 的 **PASS artifact**,不是「已 merge」这一 git 事实 | CI required status check |
+| **(b)** | **PASS artifact 存在性机器查验** | 下游放行前必须**机器查验** gate PASS artifact 存在且格式合法(不是读 markdown 声明);artifact 不存在 = 视同 FAIL,fail-closed | required-check must be green |
+| **(c)** | **已判 run 登记一次性消费** | 每次 gate 判定产一个带唯一 run 标识的登记条目;同一 run 标识**只能被下游消费一次**(nonce 语义);重放已消费的 run 标识 = reject | ACME/AP2/OAuth nonce list |
+| **(d)** | **新 run 作废 stale 签字** | gate 的输入(被判对象)变化后产生新 run,新 run 一旦出现,**旧 run 的 PASS 签字自动作废**;下游只认对应「当前输入」的最新 PASS | GitHub stale approvals(push 后旧 approval 失效) |
+
+**四不变量的关系**:(a)(b) 治 KG-B4(PASS 要有机器可验的实体,不是声明);(c)(d) 治 KG-B7
+(一次 PASS 只能用一次,输入变了旧 PASS 就废)。四条合为一个执行契约,**不拆两个半吊子模块**
+(v8 verdict:B4+B7 合簇①,不各自补一半)。
+
+### §8.3 · 与既有强机制的边界(什么不动)
+
+- **判定逻辑本身不动**:`evaluate_gate` 的 PASS/FAIL 计算逻辑、盲测 gate 三要件(v1.2 后
+  ①②硬门槛)全部保持——本章只补「判定之后」的执行语义,不碰「怎么判定」。
+- **Safety Floor fail-closed 姿态一致**:(b) 的 artifact 不存在=视同 FAIL 与 Safety Floor
+  fail-closed 同构,不是新姿态。
+- **codex primary 地位不动**:gate 的 review 通道谁跑(codex/claude)不受本章影响。
+
+### §8.4 · consumer 清单(都 consume §8.2 · 不得各自内嵌执行约定)
+
+| consumer | 文件 | 落法 |
+|---|---|---|
+| XenoDev 执行侧 | preflight 登记表 + `evaluate_gate` 接进下游 preflight | mirror 件 · SSOT 在 XenoDev · **本轮不当场改**,作授权条目下发(见 §8.5 + AUTHORIZATION-BRIEF-v8) |
+| XenoDev task-decomposer | gate task 产 `gate: true` frontmatter + PASS 前置检查 | 授权条目下发 |
+| IDS 契约侧 | 本节(§8) | SHARED-CONTRACT SSOT 在 IDS · 直接落地 |
+
+### §8.5 · 落地状态(v8 · 2026-07-13)
+
+- ✅ **本节(§8 SSOT · 四不变量定义)**:IDS 侧直接落地(SHARED-CONTRACT SSOT 在 IDS)。
+- ⏳ **XenoDev preflight 登记表 + `evaluate_gate` 接下游**:执行侧实装 · **本轮不当场改**,作
+  授权条目经 hand-off/dogfood-backlog 下发 XenoDev 实装(per forge v8 verdict K5 硬约束 ·
+  只走 forge 决议后落地,不在 XenoDev 当场另改)。
+- ⏳ **task-decomposer gate task 前置检查**:授权条目下发。
+- ⚠ **登记表并发语义(v0.2 note)**:多 session 并行判同一 gate 的竞态(登记表文件锁?)v0.1
+  单 operator 场景不触发,留观察;真冲突后再加原子写/锁(forge v8 §"v0.2 note" 3)。
+
+---
+
 ## 验证
 
 ```bash
@@ -1166,6 +1235,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-07-13 v2.4 (forge v8 · 簇① · gate 执行语义 SSOT)**:新增 **§8 · gate 执行语义 SSOT**(排 §7 fork-id 邻位),把 gate 的**执行语义**收到契约层作 SSOT — 定四条不变量:(a) gate task 语义(`gate: true` frontmatter · depends_on 消费 PASS artifact 非「已 merge」git 事实);(b) PASS artifact 存在性机器查验(fail-closed · 不读 markdown 声明);(c) 已判 run 登记一次性消费(ACME nonce 语义 · 防 replay);(d) 新 run 作废 stale 签字(GitHub stale approvals 语义)。**根因**:KG-B4(gate PASS 无机器强制 · code-reviewer 佐证 nothing gates action on evaluate_gate return)+ KG-B7(codex R12-14 三轮同族假 PASS · replay/run_id 泄露/FAIL-reason 泄露)两条硬证据合簇(B4+B7 不拆两个半吊子)。**判定逻辑本身不动**(evaluate_gate PASS/FAIL 计算 + 盲测三要件不碰)· Safety Floor fail-closed / codex primary 地位不动。**consumer**:XenoDev preflight 登记表 + evaluate_gate 接下游 = 授权条目(本轮不当场改 · K5 硬约束 · 见 AUTHORIZATION-BRIEF-v8)。**非 BREAKING**(纯新增执行语义章 · 判定契约 0 修改 · 既有已 ship gate 不 break)。**v0.2 note**:登记表并发语义(多 session 竞态)v0.1 单 operator 不触发 · 留观察。Evidence:`discussion/006/forge/v8/stage-forge-006-v8.md`(operator [A] 全落)+ IDS commit(本波)。
 - **2026-05-31 v2.3 (forge v4 · P0 原子波 · post-v0.2-shipped 协议稳态化)**:§6 B-4-IDS 段三处更新 —— (1) `review_log_path` 字段说明 + 写法1示例改指 **immutable 记录** `real-review/<scope-slug>-<ts-slug>.md`(R-Q7 · sha256 binding 永久稳定 · singleton 仍作 latest-pointer 合法);(2) line 940-941 producer-side 可达+rehash 校验加 **[known-gap]** 注记 —— consumer-side(IDS handback-review)不实装(review_log_path 是 XenoDev repo-relative · IDS 本地不可达 · 字面实装 100% 误拒)· consumer 走 shallow(7 字段齐+enum+int);(3) consumer 实装件 mirror 进 bootstrap-kit(MANIFEST §wave-4)。XenoDev 半边(commit `223ff46`):抽 verdict-evidence 共享 lib(producer/consumer 双 source · 4 轮 codex adversarial-review 加固 · 含 F2 allowlist trust-boundary)+ R-Q7 immutable REVIEW-LOG。**非 BREAKING**:旧 hand-back 绑 singleton 仍合法读 · 新 immutable 范式只 forward 推荐 · consumer shallow 不拒旧包 · producer 0 backfill。**known-gap → forge backlog**:consumer shallow vs normative 矛盾 / singleton audit hazard / replay 600s 窗口(三处同根 · 见 §6 B-4-IDS known-gap 注记 + XenoDev `.work/IDS-handoff-006-forge-v4-P0.md` §4.5)· 需 forge v5 决议是否升级。Evidence:`discussion/006/forge/v4/stage-forge-006-v4.md`(operator C 全收)+ IDS commit(本波)+ XenoDev commit `223ff46`。
 - **2026-05-29 v0.2 IDS-wave-3-checkpoint(汇总 entry)**:wave 1-3 IDS-side ship 完整闭环 · 关联 prd_fork_id `006a-pM-v0.2` · 真路径 4 项协议补段全部 normative:**B-1 Cross-device publish**(§6 加段 · EXDEV fallback hardlink → cp + sha + ln · 真路径 wave 2 T204 ship)+ **B-2 enum 全复数统一**(`event-schema.json` enum 改 `handback_drifts` · reader OLD type 兼容 · 真路径 wave 1 T104 ship)+ **B-4-IDS Verdict evidence consumer contract**(§6 加段 · REVIEW-LOG 8 字段 yaml frontmatter schema + hand-back `ids_verdict_evidence` 7 字段 immutable evidence binding + transitional scoping 4 项 bind wave 3/X · 真路径 wave 2 T205 4 round adversarial-review ship)+ **B-3 v0.2-note**(本 changelog 上方一条 · IDS dir flock 不入主线 · 触发条件 + 升 P1 路径)。**真路径 wave 3 ship**:bootstrap.sh fixture mode 升级(6 round adv-review)+ verify-bootstrap.sh smoke test + verify-all-outcomes.sh SHIP-READY · IDS-wave-3-checkpoint(SLA.md §1.3 状态 1)reached。**真路径不**等于 v0.2-shipped(状态 2 必须 phase X TX01-TX04 ship + O6 round-trip)。MANIFEST 见 `framework/xenodev-bootstrap-kit/MANIFEST-v0.2.md` §wave-1/2/3 真路径(7 字段 × 19+19+7 数据行)。
 
