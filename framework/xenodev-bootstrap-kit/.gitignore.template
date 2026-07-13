@@ -54,6 +54,13 @@ Thumbs.db
 logs/
 *.log
 
+# === TDD 证据入仓豁免(KG-B3 修复 · forge 006 v8 簇④)===
+# red-green-log 是 TDD 红→绿证据,必须入 git(per SHARED-CONTRACT · 证据入仓)。
+# 路径无关豁免:不锚定仓根 tests/(XenoDev 项目在 projects/<feature>/tests/),
+# 匹配任意深度的 red-green-log/*.log。必须放在 *.log 之后才能覆盖其兜底。
+!**/red-green-log/
+!**/red-green-log/*.log
+
 # === 测试产出 ===
 .coverage
 htmlcov/
