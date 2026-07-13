@@ -79,6 +79,50 @@ cdx-queues              # 看所有队列与 HEAD 状态
 
 旧的单一 `latest.md` symlink 在 v2 已废弃 —— 多 idea 并行/多 worktree 不再冲突。
 
+## Session-per-idea worktree 规约 (forge 006 v8 · 簇② · 2026-07-13)
+
+> **根因**:并行多线的**分支拓扑从未成为框架对象**。实证:001/006/009 三 idea 20+ commits
+> 混在 `forge/009-blueprint` 一根命名分支上(混线发生在**有规约意识的 operator** 身上,说明
+> 光靠自觉不够)。本节把「一个 session 只 working on 一个 idea、各自独立 worktree」定为规约。
+
+**默认命令**:每开一个 session working on 某个 idea,用 Claude Code **原生** worktree flag:
+
+```
+claude -w <idea>        # 复用原生 -w/--worktree,零自建;自动建分支 + 独立目录
+```
+
+- **命名约定**:worktree 目录名 / 分支名 = idea id(如 `001`、`006`、`009-pForge`)。
+- **零自建**:复用 Claude Code 原生 `-w`(forge v8 P2 双方本机 `claude --help` 实证已有),
+  不造启动器。
+
+**main 分支生命周期**(operator 原话「只有刚开始 proposal 的时候用 main」的规约化):
+
+```
+proposal on main                          # 新 idea 起于 main(/propose 写 proposals.md)
+  → idea worktree branch                  # 之后每个 session 在 idea 独立 worktree/分支
+  → accepted governance artifact
+    经 human checkpoint 合回 main          # 定稿的治理产物合回 main
+  → branch cleanup                        # 合回后清理 idea 分支
+```
+
+- **checkpoint 复用既有决策点**,不新设仪式——自然候选:`handback-review` 决议后 /
+  stage 文档定稿后 / forge verdict 落地后。合回频率由 operator 节奏定。
+- **合回前 main 不得反向污染**:idea 分支上只累积**本 idea** 的内容,不夹带其它 idea。
+
+**warn 型起步(不阻断)**:本规约 P0 只做 **warn 型 preflight**——session 的
+worktree/分支名与 working idea 不匹配时**提示不拦截**。hook block(commit-time 硬拦)留 v0.2,
+升级判据 = warn 上线后 mismatch 混线**仍复发 ≥2 次**(判据数据来自真跑,对齐 v7「真跑校准」先例)。
+
+**生效范围**:本规约对 forge v8 落地后**新开的 session** 生效;**存量混线分支**
+(如当前 `forge/009-blueprint` 已有的 001/006/009 交织历史)**不追溯拆分**——强拆已 push 前
+的连续历史反而增乱,让它随各 idea 自然 checkpoint 合回 main 后清理即可。
+
+**跨仓一致**:XenoDev 侧同构规约(见 XenoDev `CLAUDE.md`);hand-back / outbox 包 frontmatter
+加 `current_idea` / `worktree` / `baseline` 三字段(跨仓通道自带拓扑自证 · 授权条目下发)。
+
+**已知局限(v0.2 note)**:worktree **不隔离** DB/env/端口/运行时服务(SOTA 提醒)——XenoDev
+两 session 并行跑测试的资源互斥面,出现第一次真冲突后再规约化(forge v8 §"v0.2 note" 4)。
+
 ## Tool preferences
 
 - Search: `rg` (ripgrep), never raw `grep`
