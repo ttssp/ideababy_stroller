@@ -599,6 +599,41 @@ SHARED-CONTRACT 的 frontmatter 含 `contract_version: <semver>`(本文件 v1):
 - **Version**: meta-level(描述自己)
 - **Error-handling**: contract_version 不在 supported 区间 → autodev_pipe 拒绝运行 + 提示用户升级
 
+#### Interface 5 · LlmClient messages-style 契约(v2 · forge 006 v8 · 簇③ · 2026-07-13)
+
+> **根因(KG-B5)**:`LlmClient.complete(prompt: str)` 单字符串入口**结构上无法表达
+> 「这是数据不是指令」**——把待处理数据和系统指令拼进同一个 string,是 prompt-injection 的
+> 结构性温床。codex 对该接口做了**九轮** review 仍不收敛:单字符 lookalike → 变体标签 →
+> ASCII 转义自败 → Unicode 角括号 → letter-class → 多字符编码,残留「未知编码面」是硬 followup。
+> **九轮不收敛 = 证据链完整**(string-sanitize 路线本身错,不是 sanitizer 写得不够好)。
+> 唯一结构性解是 **role 分离**(system=指令 / user=数据),对齐 OpenAI Model Spec instruction
+> hierarchy + OWASP LLM01 的标准防御。
+
+- **Producer**: `framework/SHARED-CONTRACT.md` 本 Interface(messages-style v2 契约 SSOT)
+- **Consumer**: XenoDev `LlmClient` 实装(bootstrap-kit 若内嵌 `complete(prompt)` 形状则为 mirror consumer)+ 一切调 LLM 的 task(001 项目内 reconstructor / gate / CLI / fake 至少四处)
+- **Schema**:
+  - **v2 正典 = messages-style**:调用入口接 `messages: list[{role, content}]`,`role ∈ {system, user, assistant}`;**指令走 system,数据走 user**;数据**永不**进指令通道。
+  - **v1 = legacy adapter**:`complete(prompt: str)` **降级为 legacy adapter**——内部包装成 `[{role: "user", content: prompt}]` 调 v2,**单向依赖**(v1 依赖 v2,v2 不依赖 v1)。保留仅为兼容既有调用点,新代码禁用。
+  - **provider 层支持**:主流 provider(Anthropic Messages / OpenAI Chat)原生支持 role 分离,无需自建。
+  - **allowlist 序列化保留**:字符 allowlist / 序列化清洗**降级为 defense-in-depth**保留,**不删**——SOTA 明言 role 分离**亦非 proof**(仍可能有绕过面),两道防线并存(纵深防御)。
+- **Version**: contract_version 2.4+(本 Interface 随 §5 一并 bump)
+- **Error-handling**:
+  - 新 task 传 `prompt: str` 单字符串 → 走 legacy adapter(合法但 lint 警告 · 推荐迁 v2)。
+  - 数据被拼进 system 通道 → **契约违反**(数据必须走 user role);由 XenoDev 实装侧 lint / review 拦。
+  - v1/v2 迁移期:兼容测试**同语料双跑**(v1 adapter 输出 == v2 messages 输出),保证降级等价。
+
+**迁移路径(动冻结契约给路径 · K 硬约束)**:
+1. 契约定 messages-style v2 正典(本 Interface · IDS SSOT · 直接落地)。
+2. 新 task 一律强制 v2;`complete(prompt)` 标 legacy adapter(不立即删)。
+3. 旧消费面(001 项目内 reconstructor/gate/CLI/fake ≥4 处)在**下一个自然接触点收编**,
+   **不专开迁移 task**(防过度工程);兼容测试覆盖 v1/v2 同语料双跑。
+4. **v0.2 note**:旧 v1 直接消费面三个月后仍残留 → 裁是否专开收编 task(forge v8 §"v0.2 note" 2)。
+
+**落地状态(v8 · 2026-07-13)**:
+- ✅ 本 Interface 5(messages-style v2 契约 SSOT + legacy adapter 定义)· IDS 直接落地。
+- ⏳ XenoDev `LlmClient` v2 + legacy adapter 实装 + 兼容测试 · 授权条目下发(AUTHORIZATION-BRIEF-v8 簇③ · **本轮不当场改** · K5)。
+- ⚠ **迁移爆炸半径待落地前 grep**:bootstrap-kit 模板是否内嵌 `complete(prompt)` 形状未定(P1-Opus §3.2 未决),XenoDev 实装前需 grep 消费面清点(forge v8 refactor plan 模块③ 风险条)。
+
 ### 客观依据
 
 - **idea_gamma2 五元组已运行 30 天** — Pattern 级借鉴(非 Component cp)
@@ -1235,6 +1270,7 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 
 ## Changelog
 
+- **2026-07-13 v2.4 (forge v8 · 簇③ · LlmClient messages-style v2 契约)**:§5 加 **Interface 5 · LlmClient messages-style 契约(v2)**,把 LLM 调用入口的 role 分离收到契约层。**根因 KG-B5**:`complete(prompt: str)` 单字符串结构上无法表达「数据非指令」,codex **九轮** review string-sanitize 不收敛(单字符 lookalike → 变体标签 → ASCII 转义自败 → Unicode 角括号 → letter-class → 多字符编码 · 残留未知编码面)= 证据链完整,唯一结构性解是 role 分离(system=指令/user=数据 · 对齐 OpenAI Model Spec + OWASP LLM01)。**Schema**:messages-style(`messages: list[{role, content}]`)为 **v2 正典**;`complete(prompt)` 降 **legacy adapter**(v1 包装 v2 · 单向依赖 · 新代码禁用);allowlist 序列化降 **defense-in-depth 保留不删**(role 分离亦非 proof · 纵深防御)。**迁移路径**(动冻结契约给路径 · K 硬约束):契约定 v2 → 新 task 强制 v2 → 旧消费面(001 reconstructor/gate/CLI/fake ≥4 处)下一个自然接触点收编不专开 task → 兼容测试 v1/v2 同语料双跑。**consumer**:XenoDev LlmClient v2 + adapter 实装 = 授权条目(本轮不当场改 · K5 · 见 AUTHORIZATION-BRIEF-v8 簇③)。**⚠ 迁移爆炸半径**:bootstrap-kit 是否内嵌 `complete(prompt)` 形状未定 · 实装前 grep 消费面。**v0.2 note**:v1 直接消费面三个月后仍残留 → 裁是否专开收编 task。Evidence:`discussion/006/forge/v8/stage-forge-006-v8.md`(operator [A] 全落 · 簇③)+ IDS commit(本波)。
 - **2026-07-13 v2.4 (forge v8 · 簇① · gate 执行语义 SSOT)**:新增 **§8 · gate 执行语义 SSOT**(排 §7 fork-id 邻位),把 gate 的**执行语义**收到契约层作 SSOT — 定四条不变量:(a) gate task 语义(`gate: true` frontmatter · depends_on 消费 PASS artifact 非「已 merge」git 事实);(b) PASS artifact 存在性机器查验(fail-closed · 不读 markdown 声明);(c) 已判 run 登记一次性消费(ACME nonce 语义 · 防 replay);(d) 新 run 作废 stale 签字(GitHub stale approvals 语义)。**根因**:KG-B4(gate PASS 无机器强制 · code-reviewer 佐证 nothing gates action on evaluate_gate return)+ KG-B7(codex R12-14 三轮同族假 PASS · replay/run_id 泄露/FAIL-reason 泄露)两条硬证据合簇(B4+B7 不拆两个半吊子)。**判定逻辑本身不动**(evaluate_gate PASS/FAIL 计算 + 盲测三要件不碰)· Safety Floor fail-closed / codex primary 地位不动。**consumer**:XenoDev preflight 登记表 + evaluate_gate 接下游 = 授权条目(本轮不当场改 · K5 硬约束 · 见 AUTHORIZATION-BRIEF-v8)。**非 BREAKING**(纯新增执行语义章 · 判定契约 0 修改 · 既有已 ship gate 不 break)。**v0.2 note**:登记表并发语义(多 session 竞态)v0.1 单 operator 不触发 · 留观察。Evidence:`discussion/006/forge/v8/stage-forge-006-v8.md`(operator [A] 全落)+ IDS commit(本波)。
 - **2026-05-31 v2.3 (forge v4 · P0 原子波 · post-v0.2-shipped 协议稳态化)**:§6 B-4-IDS 段三处更新 —— (1) `review_log_path` 字段说明 + 写法1示例改指 **immutable 记录** `real-review/<scope-slug>-<ts-slug>.md`(R-Q7 · sha256 binding 永久稳定 · singleton 仍作 latest-pointer 合法);(2) line 940-941 producer-side 可达+rehash 校验加 **[known-gap]** 注记 —— consumer-side(IDS handback-review)不实装(review_log_path 是 XenoDev repo-relative · IDS 本地不可达 · 字面实装 100% 误拒)· consumer 走 shallow(7 字段齐+enum+int);(3) consumer 实装件 mirror 进 bootstrap-kit(MANIFEST §wave-4)。XenoDev 半边(commit `223ff46`):抽 verdict-evidence 共享 lib(producer/consumer 双 source · 4 轮 codex adversarial-review 加固 · 含 F2 allowlist trust-boundary)+ R-Q7 immutable REVIEW-LOG。**非 BREAKING**:旧 hand-back 绑 singleton 仍合法读 · 新 immutable 范式只 forward 推荐 · consumer shallow 不拒旧包 · producer 0 backfill。**known-gap → forge backlog**:consumer shallow vs normative 矛盾 / singleton audit hazard / replay 600s 窗口(三处同根 · 见 §6 B-4-IDS known-gap 注记 + XenoDev `.work/IDS-handoff-006-forge-v4-P0.md` §4.5)· 需 forge v5 决议是否升级。Evidence:`discussion/006/forge/v4/stage-forge-006-v4.md`(operator C 全收)+ IDS commit(本波)+ XenoDev commit `223ff46`。
 - **2026-05-29 v0.2 IDS-wave-3-checkpoint(汇总 entry)**:wave 1-3 IDS-side ship 完整闭环 · 关联 prd_fork_id `006a-pM-v0.2` · 真路径 4 项协议补段全部 normative:**B-1 Cross-device publish**(§6 加段 · EXDEV fallback hardlink → cp + sha + ln · 真路径 wave 2 T204 ship)+ **B-2 enum 全复数统一**(`event-schema.json` enum 改 `handback_drifts` · reader OLD type 兼容 · 真路径 wave 1 T104 ship)+ **B-4-IDS Verdict evidence consumer contract**(§6 加段 · REVIEW-LOG 8 字段 yaml frontmatter schema + hand-back `ids_verdict_evidence` 7 字段 immutable evidence binding + transitional scoping 4 项 bind wave 3/X · 真路径 wave 2 T205 4 round adversarial-review ship)+ **B-3 v0.2-note**(本 changelog 上方一条 · IDS dir flock 不入主线 · 触发条件 + 升 P1 路径)。**真路径 wave 3 ship**:bootstrap.sh fixture mode 升级(6 round adv-review)+ verify-bootstrap.sh smoke test + verify-all-outcomes.sh SHIP-READY · IDS-wave-3-checkpoint(SLA.md §1.3 状态 1)reached。**真路径不**等于 v0.2-shipped(状态 2 必须 phase X TX01-TX04 ship + O6 round-trip)。MANIFEST 见 `framework/xenodev-bootstrap-kit/MANIFEST-v0.2.md` §wave-1/2/3 真路径(7 字段 × 19+19+7 数据行)。
