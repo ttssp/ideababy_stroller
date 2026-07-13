@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-11T14:04:49Z
-total_decisions: 6
+last_updated: 2026-07-13T09:54:36Z
+total_decisions: 10
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -107,3 +107,63 @@ v1.1 优先方向(operator 定):
 gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PASS = smoke test 过,非终审发证(KG-B4 按此语义设计)。
 
 **Follow-up commits**: a3a5f57(决议入库)· 6024159(PRD v1.0→v1.1 落地)
+
+## 2026-07-12T02:13:20Z · 001-radar-pA-20260712T021320Z
+
+**Reviewed at**: 2026-07-13T09:54:36Z
+**Tags**: feature
+**Severity**: low
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T002-A1 ship(封闭历史窗 --from/--to-date,v1.1 hand-off 解除留后后走完 review→ship)。codex approve 0 findings,默认近期窗字节级回归守卫。§2/§3 已填(--section2/--section3 修复生效)。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-12T07:26:00Z · 001-radar-pA-20260712T072600Z
+
+**Reviewed at**: 2026-07-13T09:54:36Z
+**Tags**: feature
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T003-A1 ship(语义切窗 = PRD v1.1 A2,P0.2 首跑 FAIL 根因收口)。gap-based significance-gated 切窗,切片数自适应;codex adversarial 4 轮 3 real findings 全闭 → approve。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-12T21:37:22Z · 001-radar-pA-20260712T213722Z
+
+**Reviewed at**: 2026-07-13T09:54:36Z
+**Tags**: feature
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T003-A2 ship(abstract 输入 = PRD v1.1 A3 分层阅读)。prompt-injection 防御 codex 10 轮收口(decode→NFKC→allowlist→json)。**KG-B5** 架构级 followup(string 消毒不可证完备,真根治 = LlmClient system/user role 分离 = 动 T001 冻结接口)——XenoDev 守铁律未当场改,已记 dogfood-backlog 攒批走 forge 006;v0.1 自用风险可控。入 practice-stats。
+
+**Follow-up commits**: pending
+
+## 2026-07-13T06:09:50Z · 001-radar-pA-20260713T060950Z
+
+**Reviewed at**: 2026-07-13T09:54:36Z
+**Tags**: feature
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] 无操作(收悉)
+
+**Operator note**: T004-A1 ship(要件③ operationalize = PRD v1.1 A1,gate spine)。new_evidence_chain schema(type/statement/o2_traceable_ref)与 PRD v1.1「新证据链」定义精确对齐;RERUN-PASS artifact 为 T010/T011 唯一前置;codex adversarial 14 轮轮轮真 finding(2 critical:run-binding 防 replay、FAIL reason 防 oracle)。**KG-B7** followup(trial-error/replay 泄露族系统性根治 = 框架层单次执行强制,同 KG-B4 族)→ dogfood-backlog 走 forge。**gate 现可 operator 重跑 P0.2**(换方向/换窗多轮)。入 practice-stats。
+
+**Follow-up commits**: pending
