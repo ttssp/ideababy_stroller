@@ -20,3 +20,18 @@
 
 ### Required response
 下一次 PRD 修订(v1.1)或下一轮 L3 相关 round,双模型必须以 "## Moderator injection response" 一节回应本注入(明确 gate 语义、O2/O7 权重、历史窗回溯的取舍)。
+
+## Injection @ 2026-07-13T10:43:29Z
+**Type**: Hard constraint
+**Binding on**: Both models
+
+**operator 价值重定义(2026-07-13,P0.2 重跑决策时)**:001 对 operator 的最大价值 = 帮助跟踪领域动态、梳理 SOTA 工作脉络、及时同步有价值内容;产出**不必是 operator 不知道的**——"operator 知不知道"是个人属性,应通过后期使用(journal/taste 反馈)逐步了解积累,不应作为开工前的硬门槛。
+
+**落地(v1.2)**:
+1. P0.2 盲测 gate 硬门槛收敛为要件①(真切片可信)+ 要件②(识伪命中)——防胡编、防造假不可信;
+2. 要件③(新证据链/新洞察)从 gate 硬门槛**降级为使用期校准信号**:进 O5 journal/taste 反馈闭环,长期学习"operator 知不知道/在不在意"的个人边界;
+3. scope 不变:v0.1 仍是单次评估工具;operator 的「跟踪动态/及时同步」诉求属 Candidate B(常驻雷达)方向,记入 PRD v0.2 展望,v0.1 不转向;
+4. 首跑成绩(①✅ ②✅ ③空)按 v1.2 语义构成 PASS 证据;是否直接复用 or 快速重判,由 XenoDev 按其防 replay 设计决定。
+
+### Required response
+下一次 PRD 修订(v1.2)必须以 "## Moderator injection response" 回应(gate 三要件收敛、要件③去向、Candidate B 展望)。

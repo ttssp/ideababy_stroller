@@ -1,8 +1,9 @@
 # PRD · 001-radar-pA · "方向评估官（历史位移内嵌）"
 
-**Version**: 1.1  (human-approved revision)
+**Version**: 1.2  (human-approved revision)
 **Created**: 2026-07-07T02:58:21Z
 **Revised**: 2026-07-11 · v1.0→v1.1:P0.2 盲测门首判 FAIL(handback `001-radar-pA-20260711T135303Z`)决议 + moderator injection(`../L3/moderator-notes.md` @2026-07-10T08:19:13Z)——O4 两层化 + 要件③重 operationalize + 语义切窗/分层阅读原则
+**Revised (v1.2)**: 2026-07-13 · operator 价值重定义(injection @2026-07-13T10:43:29Z):gate 硬门槛收敛为要件①②,要件③降级为使用期校准信号;Candidate B 诉求记 v0.2 展望
 **Source**: discussion/001/001-radar/L3/stage-L3-scope-001-radar.md · Candidate A
 **Approved by**: human moderator
 **PRD-form**: simple
@@ -46,7 +47,7 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 
 ## Scope OUT (explicit non-goals)
 
-- **常驻 8-15 topic 持续跟进 / 留驻 / re-scan / 组合盘**——那是 Candidate B(数据驱动的 v0.2);A 里 topic 地图是评估副产物,不做后台持续 ingest
+- **常驻 8-15 topic 持续跟进 / 留驻 / re-scan / 组合盘**——那是 Candidate B(数据驱动的 v0.2);A 里 topic 地图是评估副产物,不做后台持续 ingest(**v1.2 注**:operator 2026-07-13 明示「跟踪动态/及时同步有价值内容」为其核心诉求——Candidate B 复活信号已确认,v0.1 用起来后优先评估 v0.2 转向)
 - **watch / re-scan**——v0.2 扩展位(Undermind 先例:watch 后加且没伤采用)
 - 跨 topic 视图、方法迁移检测、区域 alert、任何 push / 每日 feed
 - 问答 / 报告生成器(不撞 Elicit/Undermind/OpenScholar 的 synthesis 面)
@@ -57,10 +58,10 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 - **O1** 3 个月内完成 ≥5 次真实新方向评估,其中 ≥1 次实际改变了 operator 的投入决策
 - **O2** 任一 briefing 的任一判断都能在 3 次点击内到达原文证据
 - **O3** 30 分钟内出初判(评估延迟是产品属性,不是实现细节)
-- **O4** 信任分两层校准(v1.1 重写,per P0.2 首跑 FAIL 决议 + moderator injection):
-  - **初始层 · P0.2 盲测 gate = smoke test**:对 operator 已深耕方向(含封闭历史窗回溯形态)盲测,三要件:①真切片全判"可信" ②注入的阴性对照被正确识伪 ③点名 ≥1 条**新证据链**(定义见下)。PASS = 地基无明显烂、解锁 Phase 1+,**不是**可信性终审;FAIL → prd-revision-trigger STOP 铁律(不降级续建,防 V4)。
+- **O4** 信任分两层校准(v1.2 修订,per operator 价值重定义 injection @2026-07-13):
+  - **初始层 · P0.2 盲测 gate = smoke test**:对 operator 已深耕方向(含封闭历史窗回溯形态)盲测,硬门槛两要件:①真切片全判"可信" ②注入的阴性对照被正确识伪。PASS = 叙事真实可信 + 识伪有效、解锁 Phase 1+,**不是**可信性终审;FAIL → prd-revision-trigger STOP 铁律(不降级续建,防 V4)。
+  - **要件③(新证据链)v1.2 降级为使用期校准信号**:gate 运行时仍记录「有无新证据链」(schema 保留:(i) operator 读前不知道的新事实 claim,或 (ii) 已知事实间未见过的结构连接,均须可顺 O2 三击核验),但**不挡 PASS**——"operator 知不知道"是个人属性,由 O5 journal/taste 反馈在使用中逐步学习,非开工前硬门槛(operator 2026-07-13 决议:001 核心价值 = 跟踪动态、梳理 SOTA 脉络、及时同步,不必是 operator 未知内容)。
   - **长期层 · 信任主锚**:靠使用中持续校准兑现——O2(任一判断 3 击回溯原文)+ O5(journal 后验复核 + taste 标记)承担;非 gate 一次发证。
-  - **「新证据链」operationalize(要件③)**:以下任一,且可顺 O2 三击核验:(i) operator 读前不知道的新事实 claim;(ii) operator 已知事实间**未见过的结构连接**(如"方法族 A 的技术 X 被领域 B 借入解决问题 C"的具体链条)。纯词频常识综述两者都产不出——要件③可达但仍有牙。
 - **O5** journal ≥1 条"当时 briefing 判断 → 后验证实"记录(信任第一块砖)
 
 ## Real-world constraints
@@ -89,7 +90,7 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 
 1. **延迟预算是否分快慢两档**(30 分钟初判 vs 学生开题当场讨论要更快档)——建议 v0.1 单档,自用数据说话。非骨架决定,不阻塞。
 2. **briefing 结论词表最终形态**(借 Tech Radar 四环起步,分几级/用什么词需拿真产出给 3-5 同行看反应)——v0.1 中后期非正式验证,不阻塞。
-3. ⚠ **共享地基假设(v1.1 更新:已部分兑现,问题演进)**:P0.2 盲测 gate 已建成并首次真跑(2026-07-11 · diffusion models · 封闭历史窗 2021→2023):识伪 ✅(阴性对照被精准命中,反橡皮图章机制有牙)、真切片可信 ✅、新洞察 ❌ → FAIL 触发本次 v1.1 修订。问题演进为 **P0.2 重跑协议**:pipeline 落地语义切窗 + abstract 输入后重跑;可换方向/换历史窗多轮盲测提升统计功效(单轮 3 切片 1 负控,瞎猜命中率 1/3);重跑 PASS 才解锁 Phase 1+(T010/T011)。FAIL→STOP 铁律不变。
+3. ⚠ **共享地基假设(v1.2 更新:①②已实证,③降级)**:P0.2 首跑(2026-07-11 · diffusion models · 封闭历史窗 2021→2023)识伪 ✅(负控被精准命中)、真切片可信 ✅、新洞察空——v1.1 语义下 FAIL;v1.2 语义(硬门槛=①②)下**该次实证即构成 PASS 证据**。是否直接复用首跑签字重判 or 快速新跑一轮,由 XenoDev 按其 anti-replay/run-binding 设计决定(不得绕过 RERUN-PASS artifact 机制本身——它仍是 T010/T011 唯一前置)。多轮盲测从解锁前置转为**可选的使用期校准活动**。FAIL→STOP 铁律与 KG-B4 机器强制语义不变。
 
 ---
 
@@ -101,6 +102,13 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 2. **长期质量主锚移 O2 + O5 → 采纳**:「结论可回溯」由 O2(3 击到原文)落地;「使用中反馈偏差」由 O5(journal 后验复核 + taste 标记)落地——信任是使用中校准出来的,非 gate 发证。已落 O4 长期层。(注:XenoDev spec 侧对应编号为 O2/O7,映射由 spec-writer 维护,PRD 不追 spec 编号。)
 3. **历史窗回溯验证 → 采纳且已实装**:封闭历史窗(`--from-date/--to-date`,XenoDev T002-A1,102 tests green 待 ship)成为盲测标准形态——拿 operator 已知答案的深耕期窗口考管线,信号强于近期窗。P0.2 首跑即用此形态。
 4. **KG-B4 机器强制语义 → 确认**:强制的是「FAIL 不降级续建」(STOP 铁律);非「一次 PASS 永久免检」。gate 类 task 的机器强制设计按此语义执行(XenoDev 侧 dogfood-backlog 在册,攒批走 forge 006)。
+
+### v1.2 response(Injection @2026-07-13T10:43:29Z · operator 价值重定义)
+
+1. **gate 硬门槛收敛①② → 采纳**:P0.2 判 PASS/FAIL 只看真切片可信 + 识伪命中;已落 O4 初始层。
+2. **要件③降级使用期校准 → 采纳**:new_evidence_chain schema 保留、gate 记录但不挡 PASS;进 O5 journal/taste 闭环学习 operator 个人边界。已落 O4。
+3. **Candidate B 展望 → 记档不转向**:「跟踪动态/及时同步」诉求记入 Scope OUT v1.2 注(v0.2 优先评估项);v0.1 维持单次评估工具。
+4. **首跑证据处置 → 移交 XenoDev**:v1.2 语义下首跑①②实证构成 PASS 证据;复用 or 快速重判由 build 侧按 anti-replay 设计定。
 
 ---
 
