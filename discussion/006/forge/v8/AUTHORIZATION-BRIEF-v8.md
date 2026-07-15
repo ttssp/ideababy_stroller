@@ -47,11 +47,16 @@ operator [A]=全量落地但守铁律 → IDS 只落契约/规约,XenoDev 侧实
 
 ### 簇② · 分支拓扑执行侧(P0/P1)
 
-#### A2 · warn 型 worktree preflight
-- **文件**: XenoDev runtime 侧 session 启动 preflight
-- **改**: session 的 worktree/分支名与 working idea 不匹配时 **warn 提示不阻断**(hook block 留 v0.2)。
-- **动因**: XenoDev 侧同构 IDS worktree 规约(见 IDS CLAUDE.md「Session-per-idea worktree 规约」)。
+#### A2 · warn 型 worktree preflight + XenoDev CLAUDE.md 同构规约章
+- **文件**:
+  1. XenoDev `CLAUDE.md` — **补「Session-per-idea worktree 规约」章**(与 IDS CLAUDE.md 同构):默认 `claude -w <idea>`、命名约定 worktree/分支名 = idea id、一个 session 只 working on 一个 idea(切 idea = 换 session 非原 session 内切)、**用法要点**(单 idea 实质开发在该 session 内畅所欲言 · 跨 idea 另开 session)。
+  2. XenoDev runtime 侧 session 启动 preflight。
+- **改**:
+  - CLAUDE.md 规约章:文字规约先行(operator 心智锚点 · 即使 preflight 未上线也先有规矩可依)。
+  - preflight:session 的 worktree/分支名与 working idea 不匹配时 **warn 提示不阻断**(hook block 留 v0.2)。
+- **动因**: XenoDev 侧同构 IDS worktree 规约(IDS CLAUDE.md「Session-per-idea worktree 规约」已写 · 明写「XenoDev 侧同构规约见 XenoDev CLAUDE.md」· 本条兑现)。operator 明确要求用法落 CLAUDE.md(2026-07-15 确认)。
 - **⚠ v0.2 note**: warn 上线后 mismatch 混线仍复发 ≥2 次 → 升 commit-time block(判据数据来自真跑)。
+- **⚠ 运行时资源提醒**(写进规约章): worktree **不隔离** DB/env/端口/运行时服务,多 session 并行跑测试会撞资源 → 第一次真冲突后规约互斥(v0.2 note 4)。
 
 #### A3 · outbox/handback frontmatter 加拓扑三字段
 - **文件**: `handback-validator/gen-handback.sh`(XenoDev SSOT · IDS mirror)+ codex outbox 写入点
