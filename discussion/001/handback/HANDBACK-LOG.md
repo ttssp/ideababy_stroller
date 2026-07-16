@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-16T08:52:00Z
-total_decisions: 12
+last_updated: 2026-07-16T10:16:54Z
+total_decisions: 13
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -198,3 +198,19 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: forge 001 v1 收敛(strong-converge · 无 unresolved · stage-forge-001-v1.md)。verdict:人肉盲测二值签字 gate 从 T010/T011 前置退役(KG-B8 采纳);新前置 = 机器可判三项(trace schema 完整 / 证据 3 击可达 / 轻量文件级审计通道);识伪 retire-as-gate keep-as-calibration(产出只入 journal,零解锁语义);FAIL→STOP 双道(机器道代码级 wiring = KG-B4 改写落点 · 治理道 = prd-revision-trigger 通道);KG-B7 反作弊面现状冻结不再投资。operator 选 stage 文档 Decision menu [A] 落地。⚠ 落地前置警告:三项 checker「秒级可判」是推演,XenoDev 实装前先用真 briefing 验一次(forge §underweights 回声室预警)。**T010/T011 解锁语义自本决议起按 PRD v1.3 O4 执行**。
 
 **Follow-up commits**: ddbd14c(forge v1 产物 + 第 11 条决议入库)· 3e34ba7(PRD v1.2→v1.3 落地)· XenoDev 侧 pending(spec §5/§6 + DAG + gate.py 降级 + trace-validator,待 build session)
+
+## 2026-07-16T08:58:07Z · 001-radar-pA-20260716T085807Z
+
+**Reviewed at**: 2026-07-16T10:16:54Z
+**Tags**: prd-revision-trigger
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [ ] 无操作(收悉)
+- [x] 起 forge v2 重裁(/expert-forge 001 · 「机器可判三项」①② 资格 + T010/T011 解锁前置 + KG-B9/B4 同簇)
+
+**Operator note**: forge v1 verdict 自带的落地硬前置(§underweights:实装前用真 briefing 验三项 checker 秒级可判性)被 XenoDev 真跑触发 STOP:三项里 ①(trace/provenance schema 完整性)② (证据 3 击可达性)在当前 pipeline 拓扑下**无底料可判**——真 briefing(run-877f1c1e)零引用类 token;TimeSlice/DisplacementNarrative 无 source 回链;CLI 空传图;paper→slice 映射在 LLM 调用后被丢。根因 = **循环依赖**:能产出机器可解析 trace 的环节(T011 图+source 锚 / T021 证据链)恰是 gate 下游、被同一 gate 所 gate;checker 底料 ⊂ gate 所 gate 的范围。独立对抗子代理交叉核验零分歧。这是 forge v1 Decision menu [B] 的字面适用条件(「XenoDev 真跑后三项 checker 可判性被推翻,需重裁」),走 verdict 自定义 STOP 出口起 v2,**不直接改 PRD**(①② 资格重裁属治理层,绕过 forge = 重蹈 V4)。v2 议题:①② 资格重裁(trace 前移 / 分阶段前置 / 重估「机器判 trace」是否该作解锁前置还是 O2/O7 使用期抽查对象)+ T010/T011 解锁前置再定义 + KG-B9(checker 底料循环依赖)与 B4 同簇处置(B4 wiring 对象一半不存在)。XenoDev 侧 gate/pipeline 代码保留不动,gate 未 PASS,T010/T011 维持 blocked。连续第三次同型教训:forge 推演决议 ≠ 真跑可行(v1 预警自兑现,真跑前置挡下了「先建 checker 再发现无底料」的过度投资)。
+
+**Follow-up commits**: pending(待 /expert-forge 001 v2)
