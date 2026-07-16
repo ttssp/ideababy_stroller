@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-13T09:54:36Z
-total_decisions: 10
+last_updated: 2026-07-15T10:25:36Z
+total_decisions: 11
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -167,3 +167,19 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: T004-A1 ship(要件③ operationalize = PRD v1.1 A1,gate spine)。new_evidence_chain schema(type/statement/o2_traceable_ref)与 PRD v1.1「新证据链」定义精确对齐;RERUN-PASS artifact 为 T010/T011 唯一前置;codex adversarial 14 轮轮轮真 finding(2 critical:run-binding 防 replay、FAIL reason 防 oracle)。**KG-B7** followup(trial-error/replay 泄露族系统性根治 = 框架层单次执行强制,同 KG-B4 族)→ dogfood-backlog 走 forge。**gate 现可 operator 重跑 P0.2**(换方向/换窗多轮)。入 practice-stats。
 
 **Follow-up commits**: pending
+
+## 2026-07-15T09:32:26Z · 001-radar-pA-20260715T093226Z
+
+**Reviewed at**: 2026-07-15T10:25:36Z
+**Tags**: prd-revision-trigger
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [ ] 无操作(收悉)
+- [x] 起 forge 同簇审(/expert-forge 001 · KG-B8 gate 形态 + KG-B4/B7 同簇)
+
+**Operator note**: P0.2 盲测 gate **形态本身**被 operator 真跑拒签(填①②、拒③),升级为治理层质疑——非首跑那种能力层 FAIL。operator 三条批评:①operator 非可靠打分器(单轮统计功效低)②应留痕可审计而非盲测签字 ③应边用边迭代而非前置一次性闸门。与 injection 77a5176(主锚移 O2+O7)同向且更进一步。决议走 §3.C 路线:**不直接改 PRD**,起 forge 把 KG-B8(gate 形态该不该存在)+ KG-B4(gate 无机器强制)+ KG-B7(反作弊单次执行)同族三层一簇审,产 PPV 结构 verdict 后再动 PRD/spec——避免重蹈 T004-A1「先花 14 轮硬化 B7、再被 B8 推翻前提」的过度投资教训。gate 未 PASS,T010/T011 维持 blocked 至 forge 决议落地。
+
+**Follow-up commits**: pending(待 /expert-forge 001)
