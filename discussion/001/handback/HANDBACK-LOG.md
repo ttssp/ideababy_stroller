@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-15T10:25:36Z
-total_decisions: 11
+last_updated: 2026-07-16T08:52:00Z
+total_decisions: 12
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -183,3 +183,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: P0.2 盲测 gate **形态本身**被 operator 真跑拒签(填①②、拒③),升级为治理层质疑——非首跑那种能力层 FAIL。operator 三条批评:①operator 非可靠打分器(单轮统计功效低)②应留痕可审计而非盲测签字 ③应边用边迭代而非前置一次性闸门。与 injection 77a5176(主锚移 O2+O7)同向且更进一步。决议走 §3.C 路线:**不直接改 PRD**,起 forge 把 KG-B8(gate 形态该不该存在)+ KG-B4(gate 无机器强制)+ KG-B7(反作弊单次执行)同族三层一簇审,产 PPV 结构 verdict 后再动 PRD/spec——避免重蹈 T004-A1「先花 14 轮硬化 B7、再被 B8 推翻前提」的过度投资教训。gate 未 PASS,T010/T011 维持 blocked 至 forge 决议落地。
 
 **Follow-up commits**: pending(待 /expert-forge 001)
+
+## 2026-07-16T07:57:27Z · 001-radar-pA-20260715T093226Z · follow-up(forge v1 verdict 落地)
+
+**Reviewed at**: 2026-07-16T07:57:27Z
+**Tags**: prd-revision-trigger(follow-up · 承接第 11 条决议)
+**Severity**: high
+**Operator decisions**:
+- [x] 修 PRD §"O4 / Open questions #3 / Scope OUT"(v1.2 → v1.3)
+- [ ] 修 SHARED-CONTRACT
+- [x] 修 XenoDev spec(跨仓 · 待 XenoDev session 按 refactor-plan 四模块落地)
+- [ ] 无操作
+
+**Operator note**: forge 001 v1 收敛(strong-converge · 无 unresolved · stage-forge-001-v1.md)。verdict:人肉盲测二值签字 gate 从 T010/T011 前置退役(KG-B8 采纳);新前置 = 机器可判三项(trace schema 完整 / 证据 3 击可达 / 轻量文件级审计通道);识伪 retire-as-gate keep-as-calibration(产出只入 journal,零解锁语义);FAIL→STOP 双道(机器道代码级 wiring = KG-B4 改写落点 · 治理道 = prd-revision-trigger 通道);KG-B7 反作弊面现状冻结不再投资。operator 选 stage 文档 Decision menu [A] 落地。⚠ 落地前置警告:三项 checker「秒级可判」是推演,XenoDev 实装前先用真 briefing 验一次(forge §underweights 回声室预警)。**T010/T011 解锁语义自本决议起按 PRD v1.3 O4 执行**。
+
+**Follow-up commits**: ddbd14c(forge v1 产物 + 第 11 条决议入库)· 3e34ba7(PRD v1.2→v1.3 落地)· XenoDev 侧 pending(spec §5/§6 + DAG + gate.py 降级 + trace-validator,待 build session)
