@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-16T10:16:54Z
-total_decisions: 13
+last_updated: 2026-07-16T13:35:18Z
+total_decisions: 14
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -214,3 +214,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: forge v1 verdict 自带的落地硬前置(§underweights:实装前用真 briefing 验三项 checker 秒级可判性)被 XenoDev 真跑触发 STOP:三项里 ①(trace/provenance schema 完整性)② (证据 3 击可达性)在当前 pipeline 拓扑下**无底料可判**——真 briefing(run-877f1c1e)零引用类 token;TimeSlice/DisplacementNarrative 无 source 回链;CLI 空传图;paper→slice 映射在 LLM 调用后被丢。根因 = **循环依赖**:能产出机器可解析 trace 的环节(T011 图+source 锚 / T021 证据链)恰是 gate 下游、被同一 gate 所 gate;checker 底料 ⊂ gate 所 gate 的范围。独立对抗子代理交叉核验零分歧。这是 forge v1 Decision menu [B] 的字面适用条件(「XenoDev 真跑后三项 checker 可判性被推翻,需重裁」),走 verdict 自定义 STOP 出口起 v2,**不直接改 PRD**(①② 资格重裁属治理层,绕过 forge = 重蹈 V4)。v2 议题:①② 资格重裁(trace 前移 / 分阶段前置 / 重估「机器判 trace」是否该作解锁前置还是 O2/O7 使用期抽查对象)+ T010/T011 解锁前置再定义 + KG-B9(checker 底料循环依赖)与 B4 同簇处置(B4 wiring 对象一半不存在)。XenoDev 侧 gate/pipeline 代码保留不动,gate 未 PASS,T010/T011 维持 blocked。连续第三次同型教训:forge 推演决议 ≠ 真跑可行(v1 预警自兑现,真跑前置挡下了「先建 checker 再发现无底料」的过度投资)。
 
 **Follow-up commits**: pending(待 /expert-forge 001 v2)
+
+## 2026-07-16T13:35:18Z · 001-radar-pA-20260716T085807Z · follow-up(forge v2 verdict 落地)
+
+**Reviewed at**: 2026-07-16T13:35:18Z
+**Tags**: prd-revision-trigger(follow-up · 承接第 13 条决议)
+**Severity**: high
+**Operator decisions**:
+- [x] 修 PRD §"O4 / Open questions #3 / Scope OUT"(v1.3 → v1.4)
+- [ ] 修 SHARED-CONTRACT
+- [x] 修 XenoDev spec(跨仓 · 待 XenoDev session 按 refactor-plan A'/B'/C'/D' 四模块落地)
+- [ ] 无操作
+
+**Operator note**: forge 001 v2 收敛(strong-converge · converged 无 unresolved · stage-forge-001-v2.md · 当天走完 P0→P4)。verdict:①②(trace schema 完整性 / 证据 3 击可达性)从 T010/T011 解锁前置**退役**(采纳 KG-B9 循环依赖;深层病灶 = ① 谓词对象「判断/边」在解锁时点结构性不存在),重绑 T021/T022 ship 验收(验收测名字面即此两项)+ O2/O7 使用期抽查;**新解锁前置 = a1 单一谓词**(per-slice source 映射最小前移,走 P0.1 amendment 通道不被 gate 挡,T010/T011 同批解锁);**生效条件写死「真 briefing rerun 自证 PASS」**(v1「建议真跑」升级为硬条款 = 本轮最重要机制强化);解锁语义显式 stage-0 + 自托管点;KG-B4 wiring 改绑 a1 映射+审计通道结构+治理记录;B7 冻结/识伪零解锁/双道 STOP 维持。operator 选 stage 文档 Decision menu [A] 落地。⚠ 落地警告(§underweights):「a1 谓词秒级可判」仍是推演(与 v1 被推翻假设同型,故生效条款硬门兜底);a1 动冻结 TimeSlice,实装前逐面枚举消费面。**T010/T011 解锁语义自本决议起按 PRD v1.4 O4 执行**。v3 触发条件:a1 真跑仍不可判 / T021 落地时 ①② 在 Phase 2 出口不可判 / 使用期抽查范式失效 / TimeSlice 消费面代价远超 S-M。
+
+**Follow-up commits**: f7e2f32(forge v2 产物 + 第 13 条决议入库)· dc8f4b4(PRD v1.3→v1.4 落地)· XenoDev 侧 pending(dogfood-backlog 回填段本次已 append 未 commit,spec §5 + DAG + a1 amendment + unlock-preflight checker 待 build session)
