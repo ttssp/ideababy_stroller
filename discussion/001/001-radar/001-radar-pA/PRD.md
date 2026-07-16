@@ -1,9 +1,10 @@
 # PRD · 001-radar-pA · "方向评估官（历史位移内嵌）"
 
-**Version**: 1.2  (human-approved revision)
+**Version**: 1.3  (human-approved revision)
 **Created**: 2026-07-07T02:58:21Z
 **Revised**: 2026-07-11 · v1.0→v1.1:P0.2 盲测门首判 FAIL(handback `001-radar-pA-20260711T135303Z`)决议 + moderator injection(`../L3/moderator-notes.md` @2026-07-10T08:19:13Z)——O4 两层化 + 要件③重 operationalize + 语义切窗/分层阅读原则
 **Revised (v1.2)**: 2026-07-13 · operator 价值重定义(injection @2026-07-13T10:43:29Z):gate 硬门槛收敛为要件①②,要件③降级为使用期校准信号;Candidate B 诉求记 v0.2 展望
+**Revised (v1.3)**: 2026-07-16 · forge 001 v1 verdict(`discussion/001/forge/v1/stage-forge-001-v1.md` · hand-back `001-radar-pA-20260715T093226Z` 决议链):P0.2 人肉盲测二值签字 gate 从 T010/T011 前置退役(采纳 KG-B8),改机器可判最小验收三项;识伪降为零解锁语义的可选校准;FAIL→STOP 双道保留
 **Source**: discussion/001/001-radar/L3/stage-L3-scope-001-radar.md · Candidate A
 **Approved by**: human moderator
 **PRD-form**: simple
@@ -52,16 +53,22 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 - 跨 topic 视图、方法迁移检测、区域 alert、任何 push / 每日 feed
 - 问答 / 报告生成器(不撞 Elicit/Undermind/OpenScholar 的 synthesis 面)
 - 全覆盖(不把 arxiv 全量塞进图)· **全量全文抓取**(分层阅读红线:abstract 全量、全文只深读锚点)· lab 共享 / 团队协作 · 账号 / 计费
+- **人肉盲测二值签字作解锁闸门**(v1.3 注:operator 真跑拒签 + SOTA 无此先例形态 + KG-B8 采纳)· **四样本 certification 语义**(统计功效只够 smoke)· **review queue / journal 回溯作阻断前置**(全归使用期治理,否则重造更宽 gate)· **KG-B7 反作弊面的进一步投资**(现状冻结,不删已 ship 代码)
 
 ## Success — observable outcomes
 
 - **O1** 3 个月内完成 ≥5 次真实新方向评估,其中 ≥1 次实际改变了 operator 的投入决策
 - **O2** 任一 briefing 的任一判断都能在 3 次点击内到达原文证据
 - **O3** 30 分钟内出初判(评估延迟是产品属性,不是实现细节)
-- **O4** 信任分两层校准(v1.2 修订,per operator 价值重定义 injection @2026-07-13):
-  - **初始层 · P0.2 盲测 gate = smoke test**:对 operator 已深耕方向(含封闭历史窗回溯形态)盲测,硬门槛两要件:①真切片全判"可信" ②注入的阴性对照被正确识伪。PASS = 叙事真实可信 + 识伪有效、解锁 Phase 1+,**不是**可信性终审;FAIL → prd-revision-trigger STOP 铁律(不降级续建,防 V4)。
-  - **要件③(新证据链)v1.2 降级为使用期校准信号**:gate 运行时仍记录「有无新证据链」(schema 保留:(i) operator 读前不知道的新事实 claim,或 (ii) 已知事实间未见过的结构连接,均须可顺 O2 三击核验),但**不挡 PASS**——"operator 知不知道"是个人属性,由 O5 journal/taste 反馈在使用中逐步学习,非开工前硬门槛(operator 2026-07-13 决议:001 核心价值 = 跟踪动态、梳理 SOTA 脉络、及时同步,不必是 operator 未知内容)。
-  - **长期层 · 信任主锚**:靠使用中持续校准兑现——O2(任一判断 3 击回溯原文)+ O5(journal 后验复核 + taste 标记)承担;非 gate 一次发证。
+- **O4** 信任分两层校准(v1.3 修订,per forge 001 v1 verdict @2026-07-16):
+  - **初始层 · P0.2 解锁前置 = 机器可自动判最小验收三项**(取代 v1.2 的盲测二值签字 gate):
+    ① trace/provenance schema 完整性(每条位移判断/边带 source trace,机器可解析);
+    ② 证据 3 击可达性(O2 三击链路机器可解析、引用可解析到原文条目);
+    ③ 轻量审计通道就位(留痕可被 operator 抽查的最小**文件级**结构存在且命名一致——v0.1 不得膨胀为重基础设施)。
+    三项秒级机器判、无人肉停机;任一 FAIL → 机器道 STOP(防 V4 铁律以新形态保留)。
+  - **FAIL→STOP 双道**:机器道 = 可复现机器可验失败(缺 trace / 时间线断裂 / 引用不可达 / 留痕结构不一致)→ pipeline 内自动阻断下游(须**代码级 wiring**,非 markdown 约定 = KG-B4 改写落点);治理道 = operator 使用期抽查发现叙事级造假/系统性失真 → 既有 prd-revision-trigger hand-back 通道(流程级 STOP)。
+  - **识伪盲测 = 可选的使用期校准活动**(retire-as-gate, keep-as-calibration):operator 自发起、无签字模板、无 PASS/FAIL 裁决;产出**只写 journal 作校准证据,零解锁语义**(封死借尸还魂回前置)。要件③(新证据链)schema 保留于校准活动内(v1.2 语义延续)。四样本级别的活动只承担 smoke 诊断,**不承担 certification 语义**(若未来要认证,按目标功效反推样本量)。
+  - **长期层 · 信任主锚**(v1.2 延续并强化):O2(任一判断 3 击回溯原文,**升级为验收机制**)+ O5(journal 后验复核 + taste 标记)+ operator 使用期抽查(非盲判)承担;非 gate 一次发证。
 - **O5** journal ≥1 条"当时 briefing 判断 → 后验证实"记录(信任第一块砖)
 
 ## Real-world constraints
@@ -90,7 +97,7 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 
 1. **延迟预算是否分快慢两档**(30 分钟初判 vs 学生开题当场讨论要更快档)——建议 v0.1 单档,自用数据说话。非骨架决定,不阻塞。
 2. **briefing 结论词表最终形态**(借 Tech Radar 四环起步,分几级/用什么词需拿真产出给 3-5 同行看反应)——v0.1 中后期非正式验证,不阻塞。
-3. ⚠ **共享地基假设(v1.2 更新:①②已实证,③降级)**:P0.2 首跑(2026-07-11 · diffusion models · 封闭历史窗 2021→2023)识伪 ✅(负控被精准命中)、真切片可信 ✅、新洞察空——v1.1 语义下 FAIL;v1.2 语义(硬门槛=①②)下**该次实证即构成 PASS 证据**。是否直接复用首跑签字重判 or 快速新跑一轮,由 XenoDev 按其 anti-replay/run-binding 设计决定(不得绕过 RERUN-PASS artifact 机制本身——它仍是 T010/T011 唯一前置)。多轮盲测从解锁前置转为**可选的使用期校准活动**。FAIL→STOP 铁律与 KG-B4 机器强制语义不变。
+3. ⚠ **共享地基假设(v1.3 更新:解锁前置改形态)**:T010/T011 解锁前置 = O4 初始层**机器可判三项**(「RERUN-PASS 仍是唯一前置」的 v1.2 表述**废止**)。历史盲测证据(首跑 20260711 + 重跑 20260713,两轮①✅②✅)用途从「重判签字」改为「校准活动的历史样本」入 journal;多轮盲测 = 可选校准,不挡解锁。FAIL→STOP 铁律以双道形态保留;机器道 wiring 是 KG-B4 改写落点(代码级强制,非 markdown 约定)。⚠ 落地前置警告(forge §underweights 回声室预警):「三项 checker 秒级可判」是推演——XenoDev 实装前先用一次真 briefing 验证可判性,任一项做不到秒级机器判则回头重审该项资格。
 
 ---
 
@@ -109,6 +116,15 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 2. **要件③降级使用期校准 → 采纳**:new_evidence_chain schema 保留、gate 记录但不挡 PASS;进 O5 journal/taste 闭环学习 operator 个人边界。已落 O4。
 3. **Candidate B 展望 → 记档不转向**:「跟踪动态/及时同步」诉求记入 Scope OUT v1.2 注(v0.2 优先评估项);v0.1 维持单次评估工具。
 4. **首跑证据处置 → 移交 XenoDev**:v1.2 语义下首跑①②实证构成 PASS 证据;复用 or 快速重判由 build 侧按 anti-replay 设计定。
+
+### v1.3 response(forge 001 v1 verdict @2026-07-16 · `../../forge/v1/stage-forge-001-v1.md`)
+
+(回应 hand-back `001-radar-pA-20260715T093226Z` 三条批评 · 双专家 strong-converge · operator 已批准落地)
+
+1. **P0.2 盲测二值签字退役 → 采纳 KG-B8**:解锁前置改 O4 机器可判三项;operator 从「一次性考官」移位「使用期抽查者 + journal 校准」(批评①②③的直接落地;SOTA 无「人肉盲测二值作阻断闸门」先例)。已落 O4 初始层。
+2. **FAIL→STOP 双道保留 → 防 V4 精神不丢**:机器道(可复现失败自动阻断,须代码级 wiring = KG-B4 改写落点)+ 治理道(prd-revision-trigger 通道;本次 forge 自身即该通道运转实证)。已落 O4。
+3. **识伪 keep-as-calibration → 采纳**:零解锁语义、产出只入 journal;KG-B7 反作弊面现状冻结不再投资(吸取 T004-A1 十四轮硬化被 B8 推翻前提的过度投资教训)。已落 O4 + Scope OUT。
+4. **XenoDev 落地路径**:spec §5/§6 + dependency-graph 前置重定义 + gate.py/injector.py 降级校准工具 + trace-validator 新增 + journal/抽查记录最小 schema,参 stage 文档 §Refactor plan 四模块(A:M · B:S · C:M · D:S);**落地前先用一次真 briefing 验证三项 checker 秒级可判性**(forge §underweights 回声室预警)。
 
 ---
 
