@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-17T05:29:55Z
-total_decisions: 17
+last_updated: 2026-07-17T07:02:01Z
+total_decisions: 18
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -274,3 +274,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: 仅勾选「起 forge v3 重裁 gate 形态」——当前唯一关键路径,T010/T011 解锁、KG-B10、SHARED-CONTRACT 修订全 gated 在 gate 形态裁决之后。§3.2 暂缓 + §3.3 锁定为既有状态自然延续(上一条决议已在册),不需另行动作。附带入册:① a1 机制内存层验证生效(6/6 source_refs 真挂 TimeSlice + model_copy 往返保留),forge v3 不必再审 a1 对错;② 001 主线第四次「推演≠真跑」(首跑 FAIL / operator 拒 gate / KG-B9 循环依赖 / 本次真跑走不到 gate 判定);③ model 名以账号 `/models` 端点为真相源,非公开文档;④ DEEPSEEK key 轮换维持上条决议 pending 在册(本次未勾选为新 follow-up)。
 
 **Follow-up commits**: pending(IDS 侧:`/expert-forge 001` 起 forge v3;XenoDev 侧:worktree-001-radar-pA 领先 main 含 `7d0a64c` 未 push,push 需 operator 确认)
+
+## 2026-07-17T05:24:16Z · 001-radar-pA-20260717T052416Z · follow-up(forge v3 verdict 落地)
+
+**Reviewed at**: 2026-07-17T07:02:01Z
+**Tags**: prd-revision-trigger(follow-up)
+**Severity**: high
+**Operator decisions**:
+- [x] 修 PRD(**DONE**:v1.4→v1.5 · O4 初始层重写为「分流 + 两层 + 机器自证」+ Scope OUT 补两条 + Open questions #3 更新 + v1.5 response;operator 经 forge v3 Decision menu [A] 显式批准)
+- [ ] 修 SHARED-CONTRACT(维持暂缓 · **KG-B10 前提已收窄**至校准 run answer-key 密封完整性 + 自证记录防伪两处,方向 = 受控 writer/密码学绑定;spine 子协议细节与 SHARED-CONTRACT 通用层仍留后续)
+- [x] 修 XenoDev spec(**授权下发**:dogfood-backlog 已 append「forge 001 v3 处置结果回填」段(worktree 副本 · 未 commit 留 XenoDev session 消费);四模块 A″(评估 run 生成时落 audit + 可见渲染面)/ B″(preflight 换 evidence bundle)/ C″(--calibration 分流 + 泄露面对抗验证)/ D″(07-17 真产物自证序列 + journal 字段级小改)全 S 级;audit_channel 防伪 spine 面冻结)
+- [x] 收悉 forge v3 verdict(strong-converge · converged 无 unresolved:**g1 永久退役出解锁链;评估 run 证据生成时落盘始终可见;T010/T011 解锁全机器自证人不在判定回路;校准 run 只密封 answer-key 零解锁语义;g3 折入 O2/O7 信号;防 V4 双道保留**)
+
+**Operator note**: 选 forge v3 Decision menu **[A] 全量落地**。⚠ **本决议显式覆盖第 16 条(hand-back `001-radar-pA-20260717T032424Z`)中「RERUN-PASS artifact 未退役 · 仍是 gate spine 底座 · 被 T004-A2 preflight 内部消费」的定位**——RERUN-PASS 一步退出 preflight 消费链(无双轨过渡窗口),其生成机制随校准活动保留或废止按 build 实况定,不再影响解锁链。生效条款「真 briefing rerun 自证 PASS」的 PASS 语义改写为 B′+D′ 机器谓词对真产物成立(自证对 07-17 真跑产物 diffusion-models-20260717T051551Z 立即可跑)。⚠ forge v3 §underweights 预警在案:回声室连续第三次高危;「S 级改接」「分流后校准泄露面收窄」仍是推演——D″ 立即自证是最后防线,v4 触发条件四条已列(改接超 S 级 / 泄露面未收窄 / 抽查范式失效 / KG-B10 校准面防伪方向不受控),任一命中走 prd-revision-trigger 回流。DEEPSEEK key 轮换维持 pending 在册。
+
+**Follow-up commits**: IDS 侧 786d2a1(forge v3 全程产物 + 决议 17 入库)· ac71653(PRD v1.4→v1.5)· 本条 entry commit;XenoDev 侧 pending:四模块 A″/B″/C″/D″ 实装(dogfood-backlog 回填段随 XenoDev session 消费时一并 commit;worktree 领先 main 未 push)
