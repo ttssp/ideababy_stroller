@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-17T04:30:44Z
-total_decisions: 16
+last_updated: 2026-07-17T05:29:55Z
+total_decisions: 17
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -259,3 +259,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: 三项决议:① 收悉 #1 BLOCKING 收口,pending 列划掉「§5 #1」——调度图现强制走 preflight,prose 前置与结构依赖已对齐。② KG-B10 spine 子协议 forge 时机 = **维持暂缓,等 D' 真 rerun**(与上一条决议 + 本包 §3.2 建议一致,防 forge v5「审没真跑过的东西」教训;codex critical 提级入册为紧迫度信号)。③ D' 真 rerun = **先轮换 DEEPSEEK key 再授权跑**(该 key 有泄露前科且 008/001 共用,本包 §4 亦建议轮换;轮换后再在 XenoDev 侧跑 reconstruct 真跑,PASS + 独立核验一致方解锁 T010/T011)。KG-B11(spec-writer SKILL REVIEW-LOG 非 immutable)不单独起 IDS 侧动作——已在 XenoDev dogfood-backlog 在册,随框架批次攒批走 006 forge。当前 pending 链:key 轮换 → D' 真 rerun → PASS 解锁 T010/T011 → KG-B10/spine 裁决走 forge(KG-B11 同簇)。
 
 **Follow-up commits**: pending(operator:轮换 DEEPSEEK key;XenoDev 侧:D' 真 rerun 自证;IDS 侧:SHARED-CONTRACT 修订仍随 spine 裁决)
+
+## 2026-07-17T05:24:16Z · 001-radar-pA-20260717T052416Z
+
+**Reviewed at**: 2026-07-17T05:29:55Z
+**Tags**: prd-revision-trigger
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD(不直接改 —— gate 形态经 forge v3 裁定后再回写 PRD/HANDOFF)
+- [ ] 修 SHARED-CONTRACT(维持暂缓 · KG-B10「post-gate」时机前提取决于 gate 形态,形态先定 —— 本包 §3.2 真跑硬证据支持既有暂缓判断)
+- [ ] 修 XenoDev spec(无需 —— 本包即 D′ 真 rerun 证据回流;项目内 gate/pipeline 代码保留不动,per §3.3)
+- [x] **起 forge v3 重裁 gate 形态**(采纳 §3.1:裁 gate 存废/形态四方向——盲测二值签字 vs 留痕可审计验收 vs 非阻断 smoke signal vs 信任移 O7 后验——+ 新维度「a1 产物 per-slice source 映射何时/如何对 operator/审计可见」;真跑证据已齐,前三次裁决都缺的"真跑过"证据本次补上)
+
+**Operator note**: 仅勾选「起 forge v3 重裁 gate 形态」——当前唯一关键路径,T010/T011 解锁、KG-B10、SHARED-CONTRACT 修订全 gated 在 gate 形态裁决之后。§3.2 暂缓 + §3.3 锁定为既有状态自然延续(上一条决议已在册),不需另行动作。附带入册:① a1 机制内存层验证生效(6/6 source_refs 真挂 TimeSlice + model_copy 往返保留),forge v3 不必再审 a1 对错;② 001 主线第四次「推演≠真跑」(首跑 FAIL / operator 拒 gate / KG-B9 循环依赖 / 本次真跑走不到 gate 判定);③ model 名以账号 `/models` 端点为真相源,非公开文档;④ DEEPSEEK key 轮换维持上条决议 pending 在册(本次未勾选为新 follow-up)。
+
+**Follow-up commits**: pending(IDS 侧:`/expert-forge 001` 起 forge v3;XenoDev 侧:worktree-001-radar-pA 领先 main 含 `7d0a64c` 未 push,push 需 operator 确认)
