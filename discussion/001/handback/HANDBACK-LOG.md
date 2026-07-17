@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-16T23:05:46Z
-total_decisions: 15
+last_updated: 2026-07-17T04:30:44Z
+total_decisions: 16
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -244,3 +244,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: forge v2 verdict [A] 四模块落地收悉(承接第 14/15 条)。§6 gate-spine 子协议(「下游 provenance 机器不可伪造绑上游 gate PASS」· A' 面 gate-PASS artifact 可伪造 + D' 面 selfcheck 只信 caller 布尔 = 两面同病)裁决 = **暂缓·记录待裁**:build 侧已诚实降级为「非不可伪造安全边界 · 只结构检查」+ 程序纪律,fail-closed 仍挡无意/低技巧误用;KG-B10 已入 XenoDev dogfood-backlog;forge v3 / 拆独立 task / SHARED-CONTRACT 通用层的取舍等 D' 真 rerun 自证跑完后再定,避免 KG-B7 过度投资。SHARED-CONTRACT 修订因此标 pending、随 spine 裁决一并走。当前唯一 BLOCKING = §5 #1:DAG/frontmatter 结构依赖未改前,按图调度的 parallel-builder 可绕过 preflight/selfcheck(prose 前置已改但结构依赖未改),机器道 wiring 不完整——下一步最优先。
 
 **Follow-up commits**: pending(XenoDev 侧:spec-writer 落 §5 DAG/frontmatter 结构改;IDS 侧:SHARED-CONTRACT 修订随 spine 裁决)
+
+## 2026-07-17T03:24:24Z · 001-radar-pA-20260717T032424Z
+
+**Reviewed at**: 2026-07-17T04:30:44Z
+**Tags**: build-complete
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT(维持 **pending** · KG-B10 spine 裁决时机不变 = 等 D' 真 rerun 出真证据后走 forge;codex 2026-07-17 re-review 提级 critical 仅作**紧迫度记录**,不改时序)
+- [ ] 修 XenoDev spec(无需 —— 本包即 spec 结构改的收口报告)
+- [x] 收悉 #1 BLOCKING 收口(上一包 §5 #1 = **DONE**:commit `a09d45b` · DAG 边 T003-A3→T004-A2→T004-A4 + T010/T011 `depends_on` 重绑 `[T004-A2,T004-A4]` · 机器道 wiring 结构闭合 · 纯 docs/spec 0 src · 318 passed · practice-stats 入库)
+
+**Operator note**: 三项决议:① 收悉 #1 BLOCKING 收口,pending 列划掉「§5 #1」——调度图现强制走 preflight,prose 前置与结构依赖已对齐。② KG-B10 spine 子协议 forge 时机 = **维持暂缓,等 D' 真 rerun**(与上一条决议 + 本包 §3.2 建议一致,防 forge v5「审没真跑过的东西」教训;codex critical 提级入册为紧迫度信号)。③ D' 真 rerun = **先轮换 DEEPSEEK key 再授权跑**(该 key 有泄露前科且 008/001 共用,本包 §4 亦建议轮换;轮换后再在 XenoDev 侧跑 reconstruct 真跑,PASS + 独立核验一致方解锁 T010/T011)。KG-B11(spec-writer SKILL REVIEW-LOG 非 immutable)不单独起 IDS 侧动作——已在 XenoDev dogfood-backlog 在册,随框架批次攒批走 006 forge。当前 pending 链:key 轮换 → D' 真 rerun → PASS 解锁 T010/T011 → KG-B10/spine 裁决走 forge(KG-B11 同簇)。
+
+**Follow-up commits**: pending(operator:轮换 DEEPSEEK key;XenoDev 侧:D' 真 rerun 自证;IDS 侧:SHARED-CONTRACT 修订仍随 spine 裁决)
