@@ -1,11 +1,12 @@
 # PRD · 001-radar-pA · "方向评估官（历史位移内嵌）"
 
-**Version**: 1.4  (human-approved revision)
+**Version**: 1.5  (human-approved revision)
 **Created**: 2026-07-07T02:58:21Z
 **Revised**: 2026-07-11 · v1.0→v1.1:P0.2 盲测门首判 FAIL(handback `001-radar-pA-20260711T135303Z`)决议 + moderator injection(`../L3/moderator-notes.md` @2026-07-10T08:19:13Z)——O4 两层化 + 要件③重 operationalize + 语义切窗/分层阅读原则
 **Revised (v1.2)**: 2026-07-13 · operator 价值重定义(injection @2026-07-13T10:43:29Z):gate 硬门槛收敛为要件①②,要件③降级为使用期校准信号;Candidate B 诉求记 v0.2 展望
 **Revised (v1.3)**: 2026-07-16 · forge 001 v1 verdict(`discussion/001/forge/v1/stage-forge-001-v1.md` · hand-back `001-radar-pA-20260715T093226Z` 决议链):P0.2 人肉盲测二值签字 gate 从 T010/T011 前置退役(采纳 KG-B8),改机器可判最小验收三项;识伪降为零解锁语义的可选校准;FAIL→STOP 双道保留
 **Revised (v1.4)**: 2026-07-16 · forge 001 v2 verdict(`discussion/001/forge/v2/stage-forge-001-v2.md` · hand-back `001-radar-pA-20260716T085807Z` 决议链):v1.3「机器可判三项」中 ①② 因循环依赖(KG-B9,XenoDev 真跑证实)退役出 T010/T011 解锁前置,重绑 T021/T022 ship 验收 + O2/O7 使用期抽查;新解锁前置 = a1 per-slice source 映射单一谓词,生效条件写死「真 briefing rerun 自证 PASS」
+**Revised (v1.5)**: 2026-07-17 · forge 001 v3 verdict(`discussion/001/forge/v3/stage-forge-001-v3.md` · hand-back `001-radar-pA-20260717T052416Z` 决议链):D′ 真 rerun 证实 a1 机制内存层生效但真跑走不到判定(a1 验证产物被锁在被否 gate 形态后面 = 隐依赖环 · 第四次「推演≠真跑」)——g1(人肉盲测二值签字)永久退役出解锁链;新 gate 形态 = 按 run 类型分流 + 两层 + 信号;评估 run 证据生成时落盘始终可见,T010/T011 解锁全机器自证;校准 run 只密封 answer-key、零解锁语义
 **Source**: discussion/001/001-radar/L3/stage-L3-scope-001-radar.md · Candidate A
 **Approved by**: human moderator
 **PRD-form**: simple
@@ -56,23 +57,26 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 - 全覆盖(不把 arxiv 全量塞进图)· **全量全文抓取**(分层阅读红线:abstract 全量、全文只深读锚点)· lab 共享 / 团队协作 · 账号 / 计费
 - **人肉盲测二值签字作解锁闸门**(v1.3 注:operator 真跑拒签 + SOTA 无此先例形态 + KG-B8 采纳)· **四样本 certification 语义**(统计功效只够 smoke)· **review queue / journal 回溯作阻断前置**(全归使用期治理,否则重造更宽 gate)· **KG-B7 反作弊面的进一步投资**(现状冻结,不删已 ship 代码)
 - **trace schema 完整性 / 证据 3 击可达性作 T010/T011 解锁前置**(v1.4 注:循环依赖 KG-B9——trace 底料由 gate 下游的 T011/T021 产,真 briefing 零 trace token;两项本身不删,迁 Phase 2 出口验收 + 使用期抽查)
+- **人肉签字参与任何解锁判定**(v1.5 注:g1 永久退役出解锁链——operator 07-15 拒签三条批评 · SLSA 硬门人不在判定回路 · forge v3 verdict)· **评估 run 的 post-gate 证据重生成**(v1.5 注:OSCAL「证据应是管线副产物非 ex-post 重建」;评估 run 改生成时落盘,校准 run 密封面不受影响)
 
 ## Success — observable outcomes
 
 - **O1** 3 个月内完成 ≥5 次真实新方向评估,其中 ≥1 次实际改变了 operator 的投入决策
 - **O2** 任一 briefing 的任一判断都能在 3 次点击内到达原文证据
 - **O3** 30 分钟内出初判(评估延迟是产品属性,不是实现细节)
-- **O4** 信任分两层校准(v1.4 修订,per forge 001 v2 verdict @2026-07-16;v1.3「机器可判三项」因循环依赖 KG-B9 废止——①② 的底料由 gate 下游的 T011/T021 产,真 briefing 无字可判):
-  - **初始层 · T010/T011 解锁前置 = a1 单一谓词(同批解锁)**:a1(per-slice source 映射最小前移——管线生成叙事时保留 slice→source refs;走 P0.1 amendment 通道,不建图不做 judge,不违 RT-2)落地后,机器秒级判三件:
-    ① briefing 带 per-slice source 映射且逐项可解析到检索语料;
-    ② 轻量审计通道结构就位(a1 后非空壳,内有 slice 源映射可查;最小**文件级**,v0.1 不得膨胀为重基础设施);
-    ③ 产物命名一致。
-    **生效条件(写死)**:谓词须在**现有真 briefing rerun 上自证 PASS** 方可生效;合成 fixture 仅作回归测试,不得替代生效自证(「前置 gate 形态」连续两次被现实打回后的硬要求)。
-    **解锁语义(显式)**:一次性 stage-0 治理动作 + 最小机器谓词,不承担 certification;**自托管点条款**:Phase 2 出口(T021/T022)完整 trace 验收生效后,机器验收面从 a1 谓词升级为完整 trace 验收。
-  - **原 ①② 迁移(退役出解锁前置,资格改写非删除)**:trace/provenance schema 完整性 + 证据 3 击可达性重绑两处——T021/T022 ship 验收(其验收测名字面即此两项,底料彼时天然存在)+ O2/O7 使用期抽查对象(生产 trace 抽样审计,贴「边用边抽查」工作流)。
-  - **FAIL→STOP 双道**:机器道 = a1 谓词任一 FAIL → pipeline 内自动阻断下游(须**代码级 wiring**;wiring 对象 = a1 映射 + 审计通道结构 + 治理 STOP 记录,全为真实存在的文件级 artifact = KG-B4 改写落点更新);治理道 = operator 使用期抽查发现叙事级造假/系统性失真 → 既有 prd-revision-trigger hand-back 通道(流程级 STOP)。
-  - **识伪盲测 = 可选的使用期校准活动**(retire-as-gate, keep-as-calibration):operator 自发起、无签字模板、无 PASS/FAIL 裁决;产出**只写 journal 作校准证据,零解锁语义**(封死借尸还魂回前置)。要件③(新证据链)schema 保留于校准活动内(v1.2 语义延续)。四样本级别的活动只承担 smoke 诊断,**不承担 certification 语义**(若未来要认证,按目标功效反推样本量)。
-  - **长期层 · 信任主锚**(v1.2 延续并强化):O2(任一判断 3 击回溯原文,**升级为验收机制**)+ O5(journal 后验复核 + taste 标记)+ operator 使用期抽查(非盲判)承担;非 gate 一次发证。
+- **O4** 信任分两层校准(v1.5 修订,per forge 001 v3 verdict @2026-07-17;v1.4「真 briefing rerun 自证 PASS」的二值/人肉读法废止——D′ 真 rerun 证实 a1 机制内存层生效,但 a1 验证产物被锁在被否 gate 形态后面(隐依赖环:D′ 自证→B′ 谓词→audit.json→gate PASS→人肉盲测签字),真跑走不到判定 = 第四次「推演≠真跑」):
+  - **初始层 · T010/T011 解锁前置 = 评估 run 全机器自证(人不在判定回路)**:
+    ① a1 per-slice source 映射**生成时落盘、始终可见**(证据是管线副产物;废止评估用途的 post-gate ex-post 重生成 = SOTA 点名反模式);
+    ② B′ 结构谓词(映射可解析 + briefing 覆盖 + 命名一致 · 硬阻断 · fail-closed)对真产物成立;
+    ③ D′ 真 rerun 自证(独立核验一致)入 A1SelfCheckRecord journal,机器核验通过。
+    preflight 消费对象从 RERUN-PASS 文本**一步换为 evidence bundle**(audit.json + briefing + D′ journal 记录),无双轨过渡;**人肉签字与二值 PASS 彻底移出解锁链**(g1 永久退役)。
+    **生效条件(写死)**:上述谓词须对 **07-17 真跑产物(diffusion-models-20260717T051551Z)立即可跑自证**——用既有确定性 retrieval+切窗生成 audit.json(不烧 key、不要求 gate PASS 前置)→ B′+D′ 双路径核验入 journal。合成 fixture 仅作回归,不得替代生效自证(v1.4 条款延续)。
+    **解锁语义(v1.4 延续)**:一次性 stage-0 治理动作,不承担 certification;自托管点条款不变(Phase 2 出口 ①② 生效后机器验收面升级)。
+  - **run 类型分流(v1.5 新增 · 显式命名)**:评估 run(默认)= 透明留痕即解锁凭据,新增 human-readable 审计渲染面(operator 可读的留痕入口);校准 run(operator `--calibration` 自发起可选)= 保留盲测密封 + 负控 + answer-key,**只密封 answer-key 不密封证据通道**,产出零解锁语义只入 journal。密封是校准活动属性,不是管线默认属性(sealed-exam 先例)。
+  - **原 ①② 迁移**(v1.4 延续不变):trace/provenance schema 完整性 + 证据 3 击可达性重绑 T021/T022 ship 验收 + O2/O7 使用期抽查对象。
+  - **FAIL→STOP 双道**(延续 · 机器道 wiring 对象更新):机器道 = B′ 结构谓词任一 FAIL → 自动阻断下游(wiring 对象 = evidence bundle,全为真实文件级 artifact);治理道 = prd-revision-trigger hand-back 通道(流程级 STOP)。叙事级非阻断信号**折入 O2/O7 journal 带 escalation,不设独立 smoke 层**(「a warning nobody reads is not a gate」)。
+  - **识伪盲测 = 校准 run 专属**(v1.3 retire-as-gate keep-as-calibration 延续,v1.5 落地为分流):校准产出零解锁语义;要件③ schema 保留于校准活动内;RERUN-PASS 生成机制随校准活动保留或废止按 build 实况定,**不再被 preflight 消费**(hand-back 16「spine 底座」定位被 forge v3 显式覆盖)。
+  - **长期层 · 信任主锚**(v1.2 延续并强化):O2(任一判断 3 击回溯原文,**升级为验收机制**)+ O5(journal 后验复核 + taste 标记)+ operator 使用期抽查(非盲判,经 human-readable 审计面)承担;非 gate 一次发证。
 - **O5** journal ≥1 条"当时 briefing 判断 → 后验证实"记录(信任第一块砖)
 
 ## Real-world constraints
@@ -101,7 +105,9 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 
 1. **延迟预算是否分快慢两档**(30 分钟初判 vs 学生开题当场讨论要更快档)——建议 v0.1 单档,自用数据说话。非骨架决定,不阻塞。
 2. **briefing 结论词表最终形态**(借 Tech Radar 四环起步,分几级/用什么词需拿真产出给 3-5 同行看反应)——v0.1 中后期非正式验证,不阻塞。
-3. ⚠ **共享地基假设(v1.4 更新:循环依赖续裁)**:「机器可判三项作 T010/T011 解锁前置」的 v1.3 表述**废止**(XenoDev 真跑证实 ①② 无底料可判,循环依赖 = KG-B9;v1.3 的落地前置警告预言命中,verdict 自定义 STOP 出口被正当触发)。新解锁前置 = O4 初始层 **a1 单一谓词**(T010/T011 同批解锁);原 ①② 迁 T021/T022 ship 验收 + O2/O7 使用期抽查。历史盲测证据用途不变(校准活动历史样本入 journal);多轮盲测 = 可选校准,不挡解锁。FAIL→STOP 铁律以双道形态保留;机器道 wiring 对象更新为 a1 映射 + 审计通道结构 + 治理 STOP 记录(KG-B4 改写落点)。⚠ 新落地前置警告(forge v2 §underweights):「a1 谓词秒级可判」与「①② 在 Phase 2 出口可判」仍是推演——故生效条件已写死为真 briefing rerun 自证 PASS(不达标按双道回流,触发 forge v3);a1 动冻结 TimeSlice,实装前须逐面 grep 枚举消费面(forge-lite 教训:序列化面最易 silent 丢)。
+3. ⚠ **共享地基假设(v1.5 更新:gate 形态重裁)**:v1.4「a1 生效条款 = 真 briefing rerun 自证 PASS」的**二值/人肉读法废止**(D′ 真 rerun 证实真跑走不到判定——a1 验证产物被隐依赖环锁在被否 gate 形态后面 = 第四次「推演≠真跑」;v1.4 落地前置警告再次预言命中)。新表述:T010/T011 解锁 = **B′ 结构谓词 + D′ 自证 + A1SelfCheckRecord journal 机器核验**(无签字无 RERUN-PASS 消费);评估/校准 run 分流;a1 产物评估 run 生成时落盘始终可见。⚠ 新落地前置警告(forge v3 §underweights):模块 A″/B″/C″/D″「S 级改接」与「分流后校准 run 泄露面收窄」仍是**推演**(与 v1/v2 被真跑推翻的 S 级估计同型)——D″ 对 07-17 真产物立即自证是最后防线;改接远超 S 级 / 泄露面未收窄 / 抽查范式失效 / KG-B10 校准面防伪方向不受控,任一即触发 forge v4。XenoDev 实装前须逐面 grep 枚举 audit 消费面(KG-36 教训),并补分流泄露面对抗验证(同 ts 命名可 diff 旁路)。
+
+(v1.4 历史表述存档:新解锁前置 = a1 单一谓词同批解锁,生效条件「真 briefing rerun 自证 PASS」;机器道 wiring 对象 = a1 映射 + 审计通道结构 + 治理 STOP 记录。)
 
 ---
 
@@ -138,6 +144,15 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 2. **新解锁前置 = a1 单一谓词 → 采纳**:per-slice source 映射最小前移(SOTA「生成时织入 lineage」正解,SLSA/W3C PROV 背书;gate.py:219 注释自证管线缺件,非 forge 外加发明);走 P0.1 amendment 通道不被 gate 挡(T002-A1/T003-A1/A2 三次先例);T010/T011 同批解锁。已落 O4 初始层。
 3. **真 rerun 自证生效条款 → 结构强制**:v1「建议真跑」升级为「生效条件写死」(吸取 v1 信推演被真跑推翻的教训);解锁语义显式 stage-0 + 自托管点条款,防新前置第三次被误读为 certification。已落 O4 + Open questions #3。
 4. **XenoDev 落地路径(v2)**:refactor plan 四模块——A'(a1 amendment,S-M,实装前逐面 grep 枚举 TimeSlice 消费面)/ B'(unlock-preflight checker + KG-B4 wiring,S)/ C'(审计通道最小文件结构,S)/ D'(真 briefing rerun 自证协议,S);v1 模块 B(gate.py 降级校准工具)、D(journal schema)继续有效,A/C 被 A'/C' 替换。
+
+### v1.5 response(forge 001 v3 verdict @2026-07-17 · `../../forge/v3/stage-forge-001-v3.md`)
+
+(回应 hand-back `001-radar-pA-20260717T052416Z` D′ 真 rerun 结构盲区 · 双专家 strong-converge 无 unresolved · operator 已批准落地(Decision menu [A])。注:v1.4 response 第 3 点的生效条款即本次触发器——XenoDev 执行 D′ 真 rerun,证实真跑走不到判定,机制第四次正常工作。)
+
+1. **g1 永久退役出解锁链 → 采纳**:隐依赖环成立(a1 自证→B′→audit.json→gate PASS→被否盲测签字;三条 a1 可见路径全由「保识伪难度」锁死);RERUN-PASS 一步退出 preflight 消费链,无双轨过渡(hand-back 16「spine 底座」定位被显式覆盖)。已落 O4 初始层 + Scope OUT。
+2. **按 run 类型分流 + 两层 + 信号 → 采纳**:评估 run 证据生成时落盘始终可见(SLSA attestation / OSCAL「管线副产物」/ PyPI attestations 三重背书);校准 run 只密封 answer-key 不密封证据通道(sealed-exam / HF public-private leaderboard / SLSA VSA 先例);g3 折入 O2/O7 journal 信号 + escalation 不设独立层(advisory-gate 划线判据)。已落 O4。
+3. **生效条款 PASS 语义改写 → 机器谓词**:PASS = B′+D′ 对真产物成立 + journal 机器核验,人不在判定回路;自证步骤对 07-17 真跑产物立即可跑(第四次「推演≠真跑」后铁律)。已落 O4 + Open questions #3。
+4. **XenoDev 落地路径(v3)**:refactor plan 四模块——A″(CLI 评估 run 生成时落 audit.json + human-readable 审计渲染面,S)/ B″(preflight 消费对象换 evidence bundle · 去 gate-PASS 检查(评估 run),S)/ C″(`--calibration` 分流 flag + 密封面维持,S)/ D″(对 07-17 真产物跑通自证序列 + A1SelfCheckRecord 字段级小改,S);**显式冻结** audit_channel 防伪 spine 面(KG-B10 收窄至校准面,细节留后续);B′/D′ 谓词逻辑原样复用。
 
 ---
 
