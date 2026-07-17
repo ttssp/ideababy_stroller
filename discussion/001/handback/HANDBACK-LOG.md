@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-17T07:02:01Z
-total_decisions: 18
+last_updated: 2026-07-17T16:50:59Z
+total_decisions: 19
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -289,3 +289,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: 选 forge v3 Decision menu **[A] 全量落地**。⚠ **本决议显式覆盖第 16 条(hand-back `001-radar-pA-20260717T032424Z`)中「RERUN-PASS artifact 未退役 · 仍是 gate spine 底座 · 被 T004-A2 preflight 内部消费」的定位**——RERUN-PASS 一步退出 preflight 消费链(无双轨过渡窗口),其生成机制随校准活动保留或废止按 build 实况定,不再影响解锁链。生效条款「真 briefing rerun 自证 PASS」的 PASS 语义改写为 B′+D′ 机器谓词对真产物成立(自证对 07-17 真跑产物 diffusion-models-20260717T051551Z 立即可跑)。⚠ forge v3 §underweights 预警在案:回声室连续第三次高危;「S 级改接」「分流后校准泄露面收窄」仍是推演——D″ 立即自证是最后防线,v4 触发条件四条已列(改接超 S 级 / 泄露面未收窄 / 抽查范式失效 / KG-B10 校准面防伪方向不受控),任一命中走 prd-revision-trigger 回流。DEEPSEEK key 轮换维持 pending 在册。
 
 **Follow-up commits**: IDS 侧 786d2a1(forge v3 全程产物 + 决议 17 入库)· ac71653(PRD v1.4→v1.5)· 本条 entry commit;XenoDev 侧 pending:四模块 A″/B″/C″/D″ 实装(dogfood-backlog 回填段随 XenoDev session 消费时一并 commit;worktree 领先 main 未 push)
+
+## 2026-07-17T09:25:47Z · 001-radar-pA-20260717T092547Z
+
+**Reviewed at**: 2026-07-17T16:50:59Z
+**Tags**: build-complete · prd-revision-trigger
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD(不直接改 —— 生效条款标的经 forge v4 裁定 α/β/γ 后再回写 PRD v1.5 O4)
+- [ ] 修 SHARED-CONTRACT(维持暂缓 · KG-B10 spine 子协议在册冻结;协议面已收窄至校准 run answer-key 密封完整性 + 自证记录防伪两处,细节随 spine 裁决)
+- [ ] 修 XenoDev spec(无需 —— spec amendment_3 已收口 codex@2026-07-17;四模块实装属 build 产物)
+- [x] **起 forge v4 重裁生效条款标的**(采纳 §6:α 生效自证改对评估 run 新产物跑 / β 07-17 产物特批 pre-split 豁免 / γ 生效条款改「首个评估 run 产物落地即自证」+ 07-17 降为校准活动历史样本;**XenoDev 倾向 γ**;v4 触发实为「生效条款前提在真跑下不成立」= 第五次「推演≠真跑」,v3 §underweights 四条监测项 ①-④ 均未命中)
+
+**Operator note**: 仅勾选「起 forge v4」——四模块机制采纳(354 passed · codex 9 轮 adversarial approve · round-2 真生产 bug「评估产物标题非 B′ 可解析」已修 · 有界护栏 finding 全修)与 D″ STOP 诚实定性(07-17 真产物系 pre-split 校准产物,评估自证正确 fail-closed 不假 PASS · operator 已决 Option A)一并收悉入册,不需另行动作。⚠ 投递异常记录:本包滞留 XenoDev worktree `.work/handback-forge-v3-landing.md` 未投递(producer 端漏最后一步),由 IDS 侧代跑 producer 6 约束 PASS 后补投递入库(consumer 6 约束亦 PASS)。附带在册:① XenoDev worktree-001-radar-pA 上本批 forge v3 实装(13 改 + 8 新文件)**尚未 commit**,且分支领先 main 26+ commits 未 push,待 operator 确认收编;② KG-B10 spine 子协议维持冻结在册(防 KG-B7 过度投资),随后续 forge 裁;③ pre-existing lint 债 F541×2(tests/test_reconstruct.py:658-659 · T003-A2 引入)记录在案不入本批 scope;④ DEEPSEEK key 轮换维持 pending 在册(本批 D″ 用确定性 retrieval 未烧 key)。
+
+**Follow-up commits**: pending(IDS 侧:`/expert-forge 001` 起 forge v4 重裁生效条款标的;XenoDev 侧:forge v3 实装收编 commit + worktree push 均待 operator 确认)
