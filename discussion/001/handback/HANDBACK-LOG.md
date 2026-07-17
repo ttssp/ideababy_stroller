@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-16T13:35:18Z
-total_decisions: 14
+last_updated: 2026-07-16T23:05:46Z
+total_decisions: 15
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -229,3 +229,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: forge 001 v2 收敛(strong-converge · converged 无 unresolved · stage-forge-001-v2.md · 当天走完 P0→P4)。verdict:①②(trace schema 完整性 / 证据 3 击可达性)从 T010/T011 解锁前置**退役**(采纳 KG-B9 循环依赖;深层病灶 = ① 谓词对象「判断/边」在解锁时点结构性不存在),重绑 T021/T022 ship 验收(验收测名字面即此两项)+ O2/O7 使用期抽查;**新解锁前置 = a1 单一谓词**(per-slice source 映射最小前移,走 P0.1 amendment 通道不被 gate 挡,T010/T011 同批解锁);**生效条件写死「真 briefing rerun 自证 PASS」**(v1「建议真跑」升级为硬条款 = 本轮最重要机制强化);解锁语义显式 stage-0 + 自托管点;KG-B4 wiring 改绑 a1 映射+审计通道结构+治理记录;B7 冻结/识伪零解锁/双道 STOP 维持。operator 选 stage 文档 Decision menu [A] 落地。⚠ 落地警告(§underweights):「a1 谓词秒级可判」仍是推演(与 v1 被推翻假设同型,故生效条款硬门兜底);a1 动冻结 TimeSlice,实装前逐面枚举消费面。**T010/T011 解锁语义自本决议起按 PRD v1.4 O4 执行**。v3 触发条件:a1 真跑仍不可判 / T021 落地时 ①② 在 Phase 2 出口不可判 / 使用期抽查范式失效 / TimeSlice 消费面代价远超 S-M。
 
 **Follow-up commits**: f7e2f32(forge v2 产物 + 第 13 条决议入库)· dc8f4b4(PRD v1.3→v1.4 落地)· XenoDev 侧 pending(dogfood-backlog 回填段本次已 append 未 commit,spec §5 + DAG + a1 amendment + unlock-preflight checker 待 build session)
+
+## 2026-07-16T17:01:53Z · 001-radar-pA-20260716T170153Z
+
+**Reviewed at**: 2026-07-16T23:05:46Z
+**Tags**: build-complete
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [x] 修 SHARED-CONTRACT(**pending** · §6 spine 通用 checker 层「下游 provenance 机器强制绑上游 gate PASS」· 随 spine 裁决一并落地;框架级变更按规约只走 forge,不当场直改)
+- [x] 修 XenoDev spec(跨仓 · **§5 #1 BLOCKING**:spec-writer 落 DAG 边 T003-A3→T004-A2→T004-A4 + T010/T011 `depends_on` 改绑 T004-A4 + 加测断言 DAG/frontmatter 不再有 T004A1 直连;#2 三个 amendment task doc(T003-A3/T004-A2/T004-A4)纳入 frozen spec)
+- [x] 收悉四模块 build-complete(A'/B'/C'/D' 全 DONE · 318 passed · ruff clean · 13 轮 codex adversarial 全 finding 真实 · practice-stats 入库)
+
+**Operator note**: forge v2 verdict [A] 四模块落地收悉(承接第 14/15 条)。§6 gate-spine 子协议(「下游 provenance 机器不可伪造绑上游 gate PASS」· A' 面 gate-PASS artifact 可伪造 + D' 面 selfcheck 只信 caller 布尔 = 两面同病)裁决 = **暂缓·记录待裁**:build 侧已诚实降级为「非不可伪造安全边界 · 只结构检查」+ 程序纪律,fail-closed 仍挡无意/低技巧误用;KG-B10 已入 XenoDev dogfood-backlog;forge v3 / 拆独立 task / SHARED-CONTRACT 通用层的取舍等 D' 真 rerun 自证跑完后再定,避免 KG-B7 过度投资。SHARED-CONTRACT 修订因此标 pending、随 spine 裁决一并走。当前唯一 BLOCKING = §5 #1:DAG/frontmatter 结构依赖未改前,按图调度的 parallel-builder 可绕过 preflight/selfcheck(prose 前置已改但结构依赖未改),机器道 wiring 不完整——下一步最优先。
+
+**Follow-up commits**: pending(XenoDev 侧:spec-writer 落 §5 DAG/frontmatter 结构改;IDS 侧:SHARED-CONTRACT 修订随 spine 裁决)
