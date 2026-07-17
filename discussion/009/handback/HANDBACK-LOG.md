@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-07T03:43:00Z
-total_decisions: 21
+last_updated: 2026-07-17T09:25:00Z
+total_decisions: 23
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -540,3 +540,81 @@ build-then-probe 结果(**没碰生产凭据、没写任何数据、建库前就
 **Operator note**: 组合决议 = smoke path + 单 advisor defer 键,两条都不建通用 backfill、不撞 OUT-10,最省事解锁 M3 gate。**M3 go/no-go 仍挂起**,现在多一个明确前置:operator 出一个真 advisor 的少量真历史信号 + 生产凭据 → XenoDev 跑 smoke path 出真 alpha 数字 → 看 DSR 显不显著 → 才谈 M3。这个 gap 是投资闭环的真卡点(M2 交付了"能算 alpha 的机器"但机器没输入,008 采集内容≠004 信号),记入 [[forge-009-closed-loop-inflight]] 与 [[closed-loop-investing-product-vision]] 的下游缺口。008→004 通用 bridge 归属留作未来 idea 候选(smoke path 出数字后再评估 ROI)。
 
 **Follow-up commits**: 本 LOG entry(IDS commit,pending)· smoke path 执行在 XenoDev(需 operator 出真值+凭据,command skeleton 由 XenoDev 给)· M3 go/no-go 待 smoke path 真数字后另议
+
+## 2026-07-17T03:09:16Z · 009-pM3prime-20260716T162427Z(T013 · E0+E1 全站 ship · E1 替身 STOP 需真 LLM 复核 · 4 决议)
+
+**Reviewed at**: 2026-07-17T03:09:16Z
+**Tags**: prd-revision-trigger
+**Severity**: medium
+**Validator**: ✅ 6 约束 PASS(绝对路径)· 无 ids_verdict_evidence 块跳过 R-Q6 预检
+
+**Build-side 摘要(§1/§2)**:
+E0(口径预注册)+ E1(密度普查/两层金标)全站实装完成(T001-T012 · 869 passed/7 skip/1 xfail · ruff clean),两条 PPV 真库端到端验过。**首要结论**:E1 密度普查产诚实 STOP(accepted 0 / rejected 29 全 no_direction · per-market {US:0,CN:0,HK:0} 全 < 候选阈值 30),**但 0-accepted 来自确定性 `literal_ticker_proposer` 替身**(英文 ASR 转写里中文情绪词/隐性荐股无法字面命中),**是"下界/占位"非真密度,不可据以否定 M3'**。真密度需真 LLM 提取器(`--proposer llm`),llm proposer 端到端接线本 fork 留 NotImplementedError 待授权。另:密度口径 spec 张力(per-horizon fan 3 桶 = 假独立证据,已修 per-market)· record_tickers=weak_association(literal_rate≈0.325 · 走 verify 路径)· 两层金标 harness 就绪未真跑(Layer-2 硬要真人第二源 D-7 · gate fail-closed 默认关)· gate extractor_variant known-gap(E2 设计输入)。codex 双挂死(KG-38 第 8 击)走 subagent fallback(red-team+code-reviewer 双跑 · 8 findings 全修)。
+
+**Operator decisions**:
+- [x] 修 PRD §"附录 B(密度口径/阈值)":per-market 口径确认 + 阈值语义改 advisory(决议 1/2)
+- [ ] 修 SHARED-CONTRACT:否
+- [x] 修 XenoDev spec(信息式):授权补接 llm proposer(决议 3)· variant-gap 记 E2 设计输入(决议 4)
+- [ ] 无操作:否
+
+- **决议 1 · 密度口径 = per-market horizon-independent(确认)**:采纳 hand-back 建议,确认 XenoDev 修正实装(review HIGH#1)。horizon 是 E2 回测窗选择、非提取时属性,一条信号 fan 进 3 个 horizon 桶 = 假独立证据。PRD 附录 B 口径随之回写。
+- **决议 2 · 预注册阈值 = 签 30/stratum 为 advisory 参考阈值**(threshold_hash_candidate=97c58440426f8770):系统照常输出「过/不过参考线」的诚实判定并留事前预期记录(防事后挪标准),**但非自动毙刀** —— E2 go/no-go 由 operator 看完整密度报告后人工拍板。⚠ 本决议**修改了 hand-back 原建议的硬闸门语义**(operator 权衡:30 反推自 M2 walk-forward、无实证基础,不提前拍死;advisory 保住预注册纪律的诚实留底,又保留事后分析空间)。XenoDev 实装时 verdict 照出,但 gate 语义标 advisory。
+- **决议 3 · 授权真密度补跑**:授权 XenoDev 补接 `build_llm_proposer` → decision_ledger.llm 客户端(温度 0 · 输出 schema=ProposedSpan[]),operator 随后配 LLM 凭据(`--token-env`)跑真密度普查(读中文原文语义抽)。E1 真数字是 M3' ROI 闸门。
+- **决议 4 · E2/E3 = 维持不授权 + 纸面设计先行**:forge v5 三条 BLOCK 红线维持(E2 历史回测/E3 forward 线做进 XenoDev = 越界);但启动 **E2 设计输入清单 + 接口草案(纯文档 · 零代码)**,gate extractor_variant gap(gold 表加 variant 列 + gate WHERE 加此维)为清单第一条。E1 放行后开发照单起跑。
+- **收悉**:金标真跑待 operator 配真人第二标注源(D-7 · 非 LLM)后排期;codex 恢复后对 census 密度口径/PIT 时区/Krippendorff α/0017 migration 优先补跑权威确认(KG-38 fallback 补偿)。
+
+**Operator note**: E2/E3 现状确认 = **零代码**(hand-off 只授权 E0+E1),非"待测试"。operator 原倾向提前搭 E2 架子,经权衡后维持红线:证伪链的意义就是上游毙掉时下游零沉没成本(且沉没成本会让人舍不得毙,V4 失败模式);E2 图纸未定稿(口径刚改/variant 列缺/金标未跑),提前施工大概率返工。折中 = 纸面设计输入先行。阈值 advisory 化同理:不确定的数不拍死,但事前预期必须留底。E2/E3 解锁三条件 = 真密度显著 + 两层金标过 + operator 授权,当前均未满足。
+
+**Follow-up commits**: 本 LOG entry(IDS commit,pending)· PRD 附录 B 回写(per-market + advisory 语义,pending)· llm proposer 接线 + 真普查在 XenoDev(待 operator 凭据)· E2 设计输入清单(纯文档,XenoDev 或 IDS 侧起草)
+
+## 2026-07-17T09:25:00Z · 009-pM3prime-20260717T081757Z(KG40-density-blocked · E1 真密度被 proposer 契约缺陷系统性阻断 · 起 forge 009 专场)
+
+**Reviewed at**: 2026-07-17T09:25:00Z
+**Tags**: prd-revision-trigger
+**Severity**: high
+**Validator**: ✅ 6 约束 PASS(consumer 模式 · 绝对路径)· 无 ids_verdict_evidence 块跳过 R-Q6 预检
+**Related task**: KG40-density-blocked(E1 真密度收口 · 接续第 22 条决议 3 授权)
+
+**Build-side 摘要(§1/§2)**:
+第 22 条决议 3 授权的真密度普查真跑结果:DeepSeek(deepseek-v4-flash · 温度 0 · JSON mode ·
+sample 200)跑 61 分钟处理 58 条 → **56 条 finish_reason=length 截断 + 2 条返空 + 0 成功 span
+(≈100% 失败)**,按 census 守门(`llm_parse_failures>0 → 0-accepted 不可信`)+ runbook 铁律
+主动 TERM 停跑(key 停烧)。**根因(KG-40)**:`_build_extraction_prompt` 要求 LLM 产原文
+**字符偏移**(span_start/end 整数),推理型模型在长语料 + JSON mode 下烧爆 4096 token 输出
+预算 → JSON 未闭合即截断。smoke 7 条(2/7 截断)没暴露规模,真跑 200 才现形。**结论:E1
+真密度读数不成立**(非 below/meets threshold,是工具契约缺陷)→ E2/E3 第一解锁条件仍未满足。
+两条候选修法(①改产逐字文本片段 + 下游 `str.find` 回锚 · 需处置子串多处出现歧义 vs ②分块喂 ·
+破坏全局偏移语义)均动 extractor 引文锚定 C3 契约(PRD §7-3)= spine 级,XenoDev 未当场改。
+附:codex adversarial-review 本 project 累计第 5 次挂死 0 verdict(KG-38 复现 #3/#4/#5),全靠
+subagent fallback 双跑(red-team + code-reviewer)审出并逼修 9 个真 bug(含 cache 串号 CRITICAL)。
+
+**Operator decisions**:
+- [x] **决议 1 · 起 forge 009 专场(forge-lite)定 extraction proposer 契约** —— 裁定候选①
+      (文本片段 + `str.find` 回锚 + 歧义 typed rejection)vs 候选②(分块)vs 第三方案,含
+      §7-3 引文锚定契约的歧义处置。**与 006 框架批次解耦**(E1 收口是 M3' ROI 闸门,不等 006
+      排期;先例 = provider 契约走 forge v3)。契约定稿 + XenoDev 改线后才授权重跑真普查。
+- [x] **决议 2 · 修 PRD §"4-E1" + version 头(v0.3)** —— E1 加 blocked-by-KG-40 状态注记
+      (读数不成立 ≠ STOP · 守门拦下截断假 0 · 修法走 forge)。本轮已回写,与第 22 条 pending
+      的附录 B 回写同一 commit 收口。
+- [x] **决议 3 · `llm_parse_failures` 守门固化 = 采纳,进 forge 议题** —— 与候选裁定同场定稿进
+      proposer 契约:任何 proposer 实现必须报 parse/api failure 计数,>0 则 0-accepted 判不可信,
+      不许静默当真 0 密度(防「工具失败被误读成密度结论」通用护栏)。
+- [ ] 修 SHARED-CONTRACT:否
+- [x] **修 XenoDev spec(信息式 · forge 结论后)** —— proposer 契约 verdict 落地后回 XenoDev 起
+      FU-task 改接线 + 重跑真普查。
+- [x] **收悉入库(4 项)**:① E2/E3 维持不授权(三条件第一条未满足 · forge v5 三条 BLOCK 红线
+      不动);② KG-40(high)+ KG-38 复现 #3/#4/#5(建议⑥升级 fallback 默认首选)已入 XenoDev
+      dogfood-backlog,攒批回 /expert-forge 006;③ 已交付资产收悉(DeepSeek 接线/双口径密度/
+      签字 threshold_hash 落库/E1 runbook + E2-design-inputs · 907 passed · 未 commit 领先 origin
+      20 · 契约修好后重跑不需重做);④ codex 恢复后对 DeepSeek 接线/cache 语义/签字 hash/双口径
+      密度优先补审作权威确认。
+
+**Operator note**: 这次真跑不算失败——它精确定位了 spine 契约缺陷,且 census 守门(上轮 red-team
+fallback 逼加的)把「截断假 0」和「真没信号」区分开,没让全 0 图被误当 STOP 依据。再次实证
+smoke 绿 ≠ 真跑可行([[forge-verdict-vs-empirical-ship]] 第 N 击)。proposer 契约是 009 spine
+非 006 框架件,专场 forge 与 006 攒批解耦,避免 M3' ROI 闸门被框架批次排期拖住。E1 真密度链
+当前状态:契约裁定(forge)→ XenoDev 改线 → 重跑真普查 → 才有 E2 go/no-go 的输入。
+
+**Follow-up commits**: pending(本 LOG + PRD v0.3 同一 IDS commit)· forge 009 专场待起
+(/expert-forge 009 · 议题 = proposer 契约候选裁定 + 歧义处置 + 护栏固化)· XenoDev 改线 +
+重跑待 forge verdict

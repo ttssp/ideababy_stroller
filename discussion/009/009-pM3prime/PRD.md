@@ -1,6 +1,8 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.1
+**Version**: v0.3(2026-07-17 回写 handback `009-pM3prime-20260717T081757Z` 决议:E1 真密度
+普查 **blocked-by-KG-40** 状态注记 · proposer 契约裁定走 forge 009 专场;见 HANDBACK-LOG 第 23 条。
+v0.2 同日:密度口径 per-market + 阈值 30/stratum 签 advisory 语义;见 HANDBACK-LOG 第 22 条)
 **Created**: 2026-07-16
 **Source**: forge stage-forge-009-v5.md(§Next-version PRD draft + §Decision matrix + §dev plan)+ discussion/009/forge/v5/xenodev-alpha-assets-snapshot.md
 **Approved by**: human operator(2026-07-16,forge v5 Decision menu [A] · **只授权 E0+E1**)
@@ -64,8 +66,18 @@ operator-input 文档 §1)。
 - **提取层 rejection taxonomy**:对齐 M2 join 七类拒绝的精神(歧义默认拒绝),定义提取层
   的 typed rejection 枚举(如:sector-only 无标的 / 无方向语义 / 无时点 / 纯理念-心理按摩 /
   多标的不可拆 / 反讽-引用他人观点等——具体枚举 E0 定)。
-- **预注册密度阈值**:普查前先写下"多少条算够"(含分市场/分 horizon 的最低样本量推算,
-  参照 M2 walk-forward 与 DSR 显著性所需 trial 数)。写入本 PRD 附录后不得回改。
+- **预注册密度阈值**:普查前先写下"多少条算够"(按**分市场**最低样本量推算,参照 M2
+  walk-forward 与 DSR 显著性所需 trial 数)。写入本 PRD 附录后不得回改。
+  - **口径裁定(2026-07-17 handback 决议 1)**:密度计数 = **per-market · horizon-independent**。
+    一条疑似信号在提取时**结构上无 horizon**(horizon 是 E2 回测窗选择,非提取属性),按
+    per (market, horizon) 计数会把 1 条信号 fan 进 3 个 horizon 桶 = 假独立证据(review HIGH#1
+    已修,XenoDev 实装与本口径对齐)。
+  - **已签阈值(2026-07-17 handback 决议 2)**:**每 stratum(= market)30 条**
+    (threshold_hash=97c58440426f8770 · 反推自 M2 walk-forward 18/3/3 + min_trials<20)。
+    **语义 = advisory 参考阈值**:普查照常输出「过/不过参考线」的诚实 verdict,留事前预期
+    记录(防事后挪标准);但**非自动毙刀** —— E2 go/no-go 由 operator 依完整密度报告
+    (per-market 明细/拒绝构成/密度分布)人工拍板,不由阈值机械触发。阈值数字本身仍受
+    §7-5 不可回改约束。
 - **疑似信号 schema 定稿**:`extracted_signals`(ticker / 方向 / 时点=published_at /
   出处引文 / 置信 / 提取器版本 / 口径版本)+ `extraction_rejections`(typed)+
   `trial_ledger`(提取器变体 × 口径版本 × horizon)三表 DDL——**009 自有表,不写 004
@@ -76,6 +88,15 @@ operator-input 文档 §1)。
   published_at 秒级)按 E0 口径普查可提取疑似信号密度,产出真数字与预注册阈值对比。
   顺带**查明 record_tickers 表(777 行)语义**(采集侧弱关联/标题命中/已消歧候选三选一),
   决定提取头 ticker 解析的复用/校验/重建。
+  - **⚠ 状态(2026-07-17 · blocked-by-KG-40 · handback 决议 · HANDBACK-LOG 第 23 条)**:
+    首次真 LLM 密度普查(DeepSeek · 温度 0 · JSON mode · sample 200)被 proposer prompt
+    契约缺陷系统性阻断——prompt 要求 LLM 产原文**字符偏移**(span_start/end),推理型模型
+    在长语料下烧爆输出预算,56/58 条 finish_reason=length 截断 + 0 成功 span。**真密度读数
+    不成立**(既非 below 也非 meets threshold,是工具契约缺陷;census `llm_parse_failures>0`
+    守门正确拦下「截断假 0」,未误判 STOP)。两条候选修法(①改产逐字文本片段 + 下游
+    `str.find` 回锚 vs ②分块喂)均动引文锚定契约(§7-3)= spine 级 → **裁定走 forge 009
+    专场**(议题含 `llm_parse_failures` 守门固化为 proposer 强制不变量),契约定稿 +
+    XenoDev 改线后方可重跑。**E2/E3 解锁第一条件(真密度显著)持续未满足。**
 - **金标两层验收**(两层全过才允许未来进回测;operator 可当标注者之一,**不单独终审**——
   需第二标注源 + 分歧仲裁):
   - **层 1 · span 抽取验收**:疑似信号语句有没有被找到(Krippendorff α + span P/R/F1,
@@ -102,8 +123,9 @@ operator-input 文档 §1)。
 - **E0 · 口径预注册**(预估 S):口径文档 + rejection taxonomy + 预注册阈值 + 三表 DDL。
   停止条件:定不出可审计口径 → 停,回 IDS 重估(证伪链的用途就是允许诚实停止)。
 - **E1 · 密度普查 + 两层金标**(预估 M):普查数字 + record_tickers 判定 + 金标两层 + hand-back。
-  停止条件:密度 < 预注册阈值 → 停(insufficient_sample 诚实路径);金标任一层不过 → 停,
-  不谈回测。
+  停止条件:密度 < 预注册参考阈值 → 产 STOP verdict(insufficient_sample 诚实记录)并
+  hand-back,**E2 go/no-go 由 operator 依完整密度报告终裁**(阈值 advisory 语义,见 §4-E0);
+  金标任一层不过 → 停,不谈回测。
 - ~~E2 历史窗先导~~ / ~~E3 forward 确证线~~ —— **不在本 fork**,gate = E1 数字 + operator 另行授权。
 
 ## 7. BLOCK 级硬约束(§8 契约测试须覆盖 · forge v5 verdict 定死)
@@ -149,7 +171,8 @@ operator-input 文档 §1)。
 1. **金标两层具体数值门槛**(α 精确值 / span P/R 下限 / 映射一致率):实现时**预注册**,
    原则已定死(有门槛 + 两层全过才放行)。
 2. **record_tickers 语义**:E1 查明前不得当已消歧数据用。
-3. **密度阈值具体数**:E0 推算(参照 DSR 显著性所需样本量),operator 拍板后预注册。
+3. ~~**密度阈值具体数**~~ → **已决(2026-07-17)**:30/stratum · per-market · advisory 语义
+   (threshold_hash=97c58440426f8770),operator 经 handback 决议签字,详见 §4-E0 口径裁定。
 4. **LLM 提取器的权重面 look-ahead**(parametric look-ahead bias):E0/E1 期间影响有限
    (金标对照的是人工标注非未来收益),但 E2 授权评估时必须重新正视;cutoff 早于语料期的
    对照模型为可选加固。
