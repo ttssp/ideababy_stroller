@@ -1,12 +1,13 @@
 # PRD · 001-radar-pA · "方向评估官（历史位移内嵌）"
 
-**Version**: 1.5  (human-approved revision)
+**Version**: 1.6  (human-approved revision)
 **Created**: 2026-07-07T02:58:21Z
 **Revised**: 2026-07-11 · v1.0→v1.1:P0.2 盲测门首判 FAIL(handback `001-radar-pA-20260711T135303Z`)决议 + moderator injection(`../L3/moderator-notes.md` @2026-07-10T08:19:13Z)——O4 两层化 + 要件③重 operationalize + 语义切窗/分层阅读原则
 **Revised (v1.2)**: 2026-07-13 · operator 价值重定义(injection @2026-07-13T10:43:29Z):gate 硬门槛收敛为要件①②,要件③降级为使用期校准信号;Candidate B 诉求记 v0.2 展望
 **Revised (v1.3)**: 2026-07-16 · forge 001 v1 verdict(`discussion/001/forge/v1/stage-forge-001-v1.md` · hand-back `001-radar-pA-20260715T093226Z` 决议链):P0.2 人肉盲测二值签字 gate 从 T010/T011 前置退役(采纳 KG-B8),改机器可判最小验收三项;识伪降为零解锁语义的可选校准;FAIL→STOP 双道保留
 **Revised (v1.4)**: 2026-07-16 · forge 001 v2 verdict(`discussion/001/forge/v2/stage-forge-001-v2.md` · hand-back `001-radar-pA-20260716T085807Z` 决议链):v1.3「机器可判三项」中 ①② 因循环依赖(KG-B9,XenoDev 真跑证实)退役出 T010/T011 解锁前置,重绑 T021/T022 ship 验收 + O2/O7 使用期抽查;新解锁前置 = a1 per-slice source 映射单一谓词,生效条件写死「真 briefing rerun 自证 PASS」
 **Revised (v1.5)**: 2026-07-17 · forge 001 v3 verdict(`discussion/001/forge/v3/stage-forge-001-v3.md` · hand-back `001-radar-pA-20260717T052416Z` 决议链):D′ 真 rerun 证实 a1 机制内存层生效但真跑走不到判定(a1 验证产物被锁在被否 gate 形态后面 = 隐依赖环 · 第四次「推演≠真跑」)——g1(人肉盲测二值签字)永久退役出解锁链;新 gate 形态 = 按 run 类型分流 + 两层 + 信号;评估 run 证据生成时落盘始终可见,T010/T011 解锁全机器自证;校准 run 只密封 answer-key、零解锁语义
+**Revised (v1.6)**: 2026-07-18 · forge 001 v4 verdict(`discussion/001/forge/v4/stage-forge-001-v4.md` · hand-back `001-radar-pA-20260717T092547Z` 决议链):D″ 生效自证真跑正确 fail-closed STOP——v1.5 钦点标的「07-17 真产物」实为 pre-split 校准产物,评估/校准分流禁止评估自证消费它(第五次「推演≠真跑」= 生效条款标的错配)——采 γ · 正式 amendment(非 waiver):生效自证标的改「首个评估 run 产物」(同 stem · 同一验收事件),首个自证 PASS = 条款生效事件;07-17 降校准活动历史样本(exclusion 非豁免);β cut;key 轮换写入 runbook 序列不进机器谓词
 **Source**: discussion/001/001-radar/L3/stage-L3-scope-001-radar.md · Candidate A
 **Approved by**: human moderator
 **PRD-form**: simple
@@ -70,7 +71,13 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
     ② B′ 结构谓词(映射可解析 + briefing 覆盖 + 命名一致 · 硬阻断 · fail-closed)对真产物成立;
     ③ D′ 真 rerun 自证(独立核验一致)入 A1SelfCheckRecord journal,机器核验通过。
     preflight 消费对象从 RERUN-PASS 文本**一步换为 evidence bundle**(audit.json + briefing + D′ journal 记录),无双轨过渡;**人肉签字与二值 PASS 彻底移出解锁链**(g1 永久退役)。
-    **生效条件(写死)**:上述谓词须对 **07-17 真跑产物(diffusion-models-20260717T051551Z)立即可跑自证**——用既有确定性 retrieval+切窗生成 audit.json(不烧 key、不要求 gate PASS 前置)→ B′+D′ 双路径核验入 journal。合成 fixture 仅作回归,不得替代生效自证(v1.4 条款延续)。
+    **生效条件(v1.6 修订 · amendment 非 waiver,per forge 001 v4 verdict @2026-07-18;v1.5「对 07-17 真产物立即可跑自证」废止——该标的是 pre-split 校准产物,分流禁止评估自证消费它,真跑正确 STOP = 第五次「推演≠真跑」)**:
+    ① **每个评估 run 产物落地后,在同一验收事件内**以同 stem evidence bundle(audit.json + briefing + D′ journal 记录)跑 B′+D′ 自证;自证前该产物不得作解锁凭据(不得先投入产品使用、自证无限期挂起);
+    ② **首个自证 PASS 的评估 run = 条款生效事件**,T010/T011 随之机器解锁;
+    ③ 自证 **FAIL** → 机器道 STOP + hand-back 回流(documented deviation),修复后下一评估 run 重试(Argo abort→fix→new rollout 同构);
+    ④ **未跑/未过** → 维持 blocked = `landed-not-yet-effective` 态(诚实且无 deadline,判据 B′+D′ 预定义;不跑评估 run 就不解锁,阻塞是自我施压的)。
+    **条款内 runbook 兑现序列(预注册,防悬空)**:DEEPSEEK key 轮换 → operator 授权 → 首个默认评估 run(烧 key;自证序列本身不烧 key)→ 同一验收事件内跑同 stem 自证。**key 轮换是操作/授权前置,不进入 B′/D′ 机器 PASS 谓词**。合成 fixture 仅作回归,不得替代生效自证(v1.4 条款延续)。
+    **07-17 产物处置(v1.6)**:diffusion-models-20260717T051551Z 降为**校准活动历史样本**——exclusion 非豁免:不销毁、不豁免、不作 PASS 证据;answer-key/run-binding 维持密封;决议 log / 脚本注记如实记录其 pre-split 身份(与 v1「retire-as-gate keep-as-calibration」一致化 · 污染治理 exclusion 背书)。
     **解锁语义(v1.4 延续)**:一次性 stage-0 治理动作,不承担 certification;自托管点条款不变(Phase 2 出口 ①② 生效后机器验收面升级)。
   - **run 类型分流(v1.5 新增 · 显式命名)**:评估 run(默认)= 透明留痕即解锁凭据,新增 human-readable 审计渲染面(operator 可读的留痕入口);校准 run(operator `--calibration` 自发起可选)= 保留盲测密封 + 负控 + answer-key,**只密封 answer-key 不密封证据通道**,产出零解锁语义只入 journal。密封是校准活动属性,不是管线默认属性(sealed-exam 先例)。
   - **原 ①② 迁移**(v1.4 延续不变):trace/provenance schema 完整性 + 证据 3 击可达性重绑 T021/T022 ship 验收 + O2/O7 使用期抽查对象。
@@ -105,9 +112,9 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 
 1. **延迟预算是否分快慢两档**(30 分钟初判 vs 学生开题当场讨论要更快档)——建议 v0.1 单档,自用数据说话。非骨架决定,不阻塞。
 2. **briefing 结论词表最终形态**(借 Tech Radar 四环起步,分几级/用什么词需拿真产出给 3-5 同行看反应)——v0.1 中后期非正式验证,不阻塞。
-3. ⚠ **共享地基假设(v1.5 更新:gate 形态重裁)**:v1.4「a1 生效条款 = 真 briefing rerun 自证 PASS」的**二值/人肉读法废止**(D′ 真 rerun 证实真跑走不到判定——a1 验证产物被隐依赖环锁在被否 gate 形态后面 = 第四次「推演≠真跑」;v1.4 落地前置警告再次预言命中)。新表述:T010/T011 解锁 = **B′ 结构谓词 + D′ 自证 + A1SelfCheckRecord journal 机器核验**(无签字无 RERUN-PASS 消费);评估/校准 run 分流;a1 产物评估 run 生成时落盘始终可见。⚠ 新落地前置警告(forge v3 §underweights):模块 A″/B″/C″/D″「S 级改接」与「分流后校准 run 泄露面收窄」仍是**推演**(与 v1/v2 被真跑推翻的 S 级估计同型)——D″ 对 07-17 真产物立即自证是最后防线;改接远超 S 级 / 泄露面未收窄 / 抽查范式失效 / KG-B10 校准面防伪方向不受控,任一即触发 forge v4。XenoDev 实装前须逐面 grep 枚举 audit 消费面(KG-36 教训),并补分流泄露面对抗验证(同 ts 命名可 diff 旁路)。
+3. ⚠ **共享地基假设(v1.6 更新:生效条款标的重裁)**:v1.5「自证对 07-17 真产物立即可跑」的**标的表述废止**(D″ 生效自证真跑正确 fail-closed STOP——07-17 产物是 pre-split 校准产物,v3 自己的评估/校准分流禁止评估自证消费它 = 第五次「推演≠真跑」= 生效条款标的错配;v1.5 落地前置警告「D″ 立即自证是最后防线」再次预言命中,但命中的是四条监测项之外的第五种)。新表述:生效自证标的 = **首个评估 run 产物**(同 stem evidence bundle · 同一验收事件内 B′+D′ 自证);首个自证 PASS = 条款生效;07-17 降校准活动历史样本。**v4 amendment lineage**:γ 经 forge v4 prospective amendment 批准(documented deviation → hand-back 19 → forge v4 → 本修订),任何再偏离须再走 deviation→amendment 循环。⚠ 新落地前置警告(forge v4 §underweights):自证脚本参数化「S 级」+「同一验收事件靠 runbook 纪律未机器强制」仍是**推演**(与 v1/v2/v3 的 S 级估计同型)——**首个评估 run 的真跑自证是本 amendment 的最后防线**;再次 STOP / 参数化远超 S / 事件锚僵尸化 / 验收事件纪律被打破 / key 轮换持续 pending 阻塞生效,任一即触发 forge v5。
 
-(v1.4 历史表述存档:新解锁前置 = a1 单一谓词同批解锁,生效条件「真 briefing rerun 自证 PASS」;机器道 wiring 对象 = a1 映射 + 审计通道结构 + 治理 STOP 记录。)
+(v1.5 历史表述存档:T010/T011 解锁 = B′ 结构谓词 + D′ 自证 + A1SelfCheckRecord journal 机器核验;自证对 07-17 产物立即可跑;v4 触发条件四条 = 改接超 S / 泄露面未收窄 / 抽查范式失效 / KG-B10 方向不受控。v1.4 历史表述存档:新解锁前置 = a1 单一谓词同批解锁,生效条件「真 briefing rerun 自证 PASS」;机器道 wiring 对象 = a1 映射 + 审计通道结构 + 治理 STOP 记录。)
 
 ---
 
@@ -153,6 +160,15 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 2. **按 run 类型分流 + 两层 + 信号 → 采纳**:评估 run 证据生成时落盘始终可见(SLSA attestation / OSCAL「管线副产物」/ PyPI attestations 三重背书);校准 run 只密封 answer-key 不密封证据通道(sealed-exam / HF public-private leaderboard / SLSA VSA 先例);g3 折入 O2/O7 journal 信号 + escalation 不设独立层(advisory-gate 划线判据)。已落 O4。
 3. **生效条款 PASS 语义改写 → 机器谓词**:PASS = B′+D′ 对真产物成立 + journal 机器核验,人不在判定回路;自证步骤对 07-17 真跑产物立即可跑(第四次「推演≠真跑」后铁律)。已落 O4 + Open questions #3。
 4. **XenoDev 落地路径(v3)**:refactor plan 四模块——A″(CLI 评估 run 生成时落 audit.json + human-readable 审计渲染面,S)/ B″(preflight 消费对象换 evidence bundle · 去 gate-PASS 检查(评估 run),S)/ C″(`--calibration` 分流 flag + 密封面维持,S)/ D″(对 07-17 真产物跑通自证序列 + A1SelfCheckRecord 字段级小改,S);**显式冻结** audit_channel 防伪 spine 面(KG-B10 收窄至校准面,细节留后续);B′/D′ 谓词逻辑原样复用。
+
+### v1.6 response(forge 001 v4 verdict @2026-07-18 · `../../forge/v4/stage-forge-001-v4.md`)
+
+(回应 hand-back `001-radar-pA-20260717T092547Z` D″ 生效自证 STOP · 双专家 strong-converge 无 unresolved · operator 已批准落地(Decision menu [A])。注:v1.5 response 第 3 点「自证对 07-17 产物立即可跑」即本次触发器——XenoDev 执行 D″ 真跑,三道守卫正确拦下校准产物流入评估解锁面,机制第五次正常工作;命中的是 v3 四条监测项之外的第五种「生效条款标的错配」。)
+
+1. **采 γ · 生效标的改写 → 采纳(amendment 非 waiver)**:生效自证标的从「07-17 真产物」改「首个评估 run 产物」(同 stem · 同一验收事件内 B′+D′ 自证);首个自证 PASS = 条款生效事件;FAIL → STOP+回流+下次重试;未跑/未过 = landed-not-yet-effective(诚实无 deadline 有判据,canary blocked-until-verified 正统背书)。已落 O4 生效条件段 + Open questions #3。
+2. **07-17 降校准活动历史样本 → 采纳**:exclusion 非豁免(污染治理零 grandfather 豁免先例 + 临床 protocol「waivers not permitted」跨域合围);不销毁、不豁免、不作 PASS 证据;answer-key 维持密封。已落 O4。
+3. **β cut · α 非独立选项 → 采纳**:β 是跨域明文反模式(放行须穿三道守卫 = 拆护栏);α 收编为 γ 的立即执行 note(operator 授权 + key 轮换完成后可即刻跑)。已落 O4 runbook 序列。
+4. **XenoDev 落地路径(v4)**:a. **即刻收编** forge v3 worktree 实装 commit(状态命名「机制 landed」,与「条款生效」显式两态);b. `selfcheck-07-17.sh` S 级参数化(direction/ts/briefing · 只复用现有 D″ 入口/守卫 · 禁新判据/旁路/spine;超 S 回落手工模板);c. key 轮换 → 授权 → 首个默认评估 run → 同事件自证。护栏三道守卫 + 14 测 + KG-B10 冻结全 keep 零削弱。
 
 ---
 
