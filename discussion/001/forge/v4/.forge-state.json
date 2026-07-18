@@ -1,0 +1,12 @@
+{
+  "version": "v4",
+  "phase": "done",
+  "stage_doc": "stage-forge-001-v4.md",
+  "convergence_mode": "strong-converge",
+  "x_hash": "91d8e5078bca472cfb53bcdd7f58b004",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "created": "2026-07-17T17:10:00Z",
+  "last_updated": "2026-07-18T08:30:00Z"
+}
