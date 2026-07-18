@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-17T16:50:59Z
-total_decisions: 19
+last_updated: 2026-07-18T08:55:00Z
+total_decisions: 20
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -304,3 +304,18 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: 仅勾选「起 forge v4」——四模块机制采纳(354 passed · codex 9 轮 adversarial approve · round-2 真生产 bug「评估产物标题非 B′ 可解析」已修 · 有界护栏 finding 全修)与 D″ STOP 诚实定性(07-17 真产物系 pre-split 校准产物,评估自证正确 fail-closed 不假 PASS · operator 已决 Option A)一并收悉入册,不需另行动作。⚠ 投递异常记录:本包滞留 XenoDev worktree `.work/handback-forge-v3-landing.md` 未投递(producer 端漏最后一步),由 IDS 侧代跑 producer 6 约束 PASS 后补投递入库(consumer 6 约束亦 PASS)。附带在册:① XenoDev worktree-001-radar-pA 上本批 forge v3 实装(13 改 + 8 新文件)**尚未 commit**,且分支领先 main 26+ commits 未 push,待 operator 确认收编;② KG-B10 spine 子协议维持冻结在册(防 KG-B7 过度投资),随后续 forge 裁;③ pre-existing lint 债 F541×2(tests/test_reconstruct.py:658-659 · T003-A2 引入)记录在案不入本批 scope;④ DEEPSEEK key 轮换维持 pending 在册(本批 D″ 用确定性 retrieval 未烧 key)。
 
 **Follow-up commits**: pending(IDS 侧:`/expert-forge 001` 起 forge v4 重裁生效条款标的;XenoDev 侧:forge v3 实装收编 commit + worktree push 均待 operator 确认)
+
+## 2026-07-17T09:25:47Z · 001-radar-pA-20260717T092547Z · follow-up(forge v4 verdict 落地)
+
+**Reviewed at**: 2026-07-18T08:55:00Z
+**Tags**: build-complete · prd-revision-trigger(follow-up · 承接第 19 条决议)
+**Severity**: high
+**Operator decisions**:
+- [x] 修 PRD(**DONE**:v1.5→v1.6 · O4 生效条件段整段替换(标的:07-17 真产物 → 首个评估 run 产物 · 同 stem · 同一验收事件 · 四态显式:同事件自证/首个 PASS 生效/FAIL 回流重试/未跑 landed-not-yet-effective)+ 07-17 处置一句(降校准活动历史样本 · exclusion 非豁免)+ Open questions #3 更新(v4 amendment lineage + v5 触发条件五条)+ v1.6 response;operator 经 forge v4 Decision menu 选 [2]=[A] 显式批准)
+- [ ] 修 SHARED-CONTRACT(维持暂缓 · KG-B10 spine 冻结不变;「同一验收事件」ts 间隔机器强制与密钥治理通用化均降 v0.2 note,攒首批评估 run 实况后与 spine 同窗裁)
+- [x] 修 XenoDev spec(**授权下发**:dogfood-backlog append「forge 001 v4 处置结果回填」段(worktree 副本 · 未 commit 留 XenoDev session 消费);三件事:a. **即刻收编** forge v3 worktree 实装 commit(状态命名「机制 landed」)b. selfcheck 脚本 S 级参数化(direction/ts/briefing · 只复用现有 D″ 入口/守卫 · 禁新判据/旁路/spine · 超 S 回落手工模板)c. key 轮换 → 授权 → 首个默认评估 run → 同一验收事件内同 stem 自证)
+- [x] 收悉 forge v4 verdict(strong-converge · converged 无 unresolved:**采 γ · 正式 amendment 非 waiver;β cut(ML eval hygiene 零豁免先例 + 临床 protocol「waivers not permitted」跨域合围);α 收编为 γ 立即执行形态;key 轮换写入 runbook 序列不进 B′/D′ 机器谓词;护栏三道守卫 + 14 测 + KG-B10 冻结全 keep 零削弱**)
+
+**Operator note**: 选 forge v4 Decision menu **[A] 落地**(operator 回复 [2] = 直接落地)。生效语义自此两态:**机制 landed**(XenoDev 收编 commit 即达)≠ **条款生效**(首个评估 run 自证 PASS 才达);landed-not-yet-effective 是诚实中间态,无 deadline 有判据(canary blocked-until-verified 正统)。⚠ forge v4 §underweights 预警在案:回声室连续第四次高危(双方 P1 独立同构;缓解证据 = P2 源不重叠互证 + GPT 回声室自检产出 amendment 正当性条件反向材料);「同一验收事件」现靠 runbook 纪律未机器强制(悬空风险从标的错配换位到自证时机);参数化 S 级仍是推演——**首个评估 run 的真跑自证是本 amendment 的最后防线**。⚠ 生效时点实质由 key 轮换节奏决定(轮换自决议 16 起三连 pending,持续 pending 则条款诚实停在 landed-not-yet-effective;v5 触发条件⑤在案)。v5 触发条件五条:首个评估 run 再 STOP / 参数化远超 S / 事件锚僵尸化 / 验收事件纪律被打破 / key 轮换持续 pending 阻塞生效。
+
+**Follow-up commits**: IDS 侧 pending 本 session(forge v4 全程产物 + PRD v1.5→v1.6 + 本条 entry);XenoDev 侧 pending:a. 收编 commit(即刻)b. 脚本参数化 c. key 轮换 → 首个评估 run → 同事件自证(dogfood-backlog 回填段随 XenoDev session 消费时一并 commit;worktree 领先 main 未 push)
