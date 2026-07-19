@@ -1,7 +1,14 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.3(2026-07-17 回写 handback `009-pM3prime-20260717T081757Z` 决议:E1 真密度
-普查 **blocked-by-KG-40** 状态注记 · proposer 契约裁定走 forge 009 专场;见 HANDBACK-LOG 第 23 条。
+**Version**: v0.5(2026-07-19 回写 handback `009-pM3prime-20260718T143324Z` 决议:**E1 真普查
+完成**(102 records · 0 truncation = KG-40 根治实证)· strong 密度 {US: 40, CN: 1, HK: 0} ·
+operator 弱锚抽查后终裁 **E2 密度前提 per-market 化:US 成立 · CN/HK STOP**;见 HANDBACK-LOG
+第 25 条。
+v0.4 2026-07-18:KG-40 契约阻断**已解除**——forge v6「引文回锚制」落地(XenoDev commit
+76036af · 993 passed · codex 18 轮 R18 approve)· operator **授权重跑 E1 真普查**;见
+HANDBACK-LOG 第 24 条。
+v0.3 2026-07-17:E1 真密度普查 **blocked-by-KG-40** 状态注记 · proposer 契约裁定走 forge 009
+专场;见 HANDBACK-LOG 第 23 条。
 v0.2 同日:密度口径 per-market + 阈值 30/stratum 签 advisory 语义;见 HANDBACK-LOG 第 22 条)
 **Created**: 2026-07-16
 **Source**: forge stage-forge-009-v5.md(§Next-version PRD draft + §Decision matrix + §dev plan)+ discussion/009/forge/v5/xenodev-alpha-assets-snapshot.md
@@ -27,6 +34,10 @@ v0.2 同日:密度口径 per-market + 阈值 30/stratum 签 advisory 语义;见 
 - **只授权 E0 + E1**。**E2(历史窗先导)/ E3(forward 确证线)显式 defer 到本 fork 之外**——
   gate 在 E1 的两个真数字:密度普查结果(vs 预注册阈值)+ 金标两层验收结果。数字经 hand-back
   交回 IDS,operator 看数决定是否另行授权 E2/E3。build runtime 把 E2/E3 做进来 = 越界 = BLOCK。
+- **密度 gate 判定语义 = per-market**(2026-07-19 终裁 · HANDBACK-LOG 第 25 条):「真密度
+  显著」按 market 各自判定,**不要求全域齐过**——真普查读数 per-market 分化(US 超阈 ·
+  CN/HK 真稀疏)证明全域单一判定会把 US 的有效密度误杀在 CN/HK 的语料结构性稀疏里。E2 若
+  获授权,评估范围限于密度前提成立的 market(当前 = US);CN/HK 补语料后可另启普查再议。
 - 每站独立可用:E0 完成 = 有了可审计的"疑似信号"定义与拒绝口径(即使 E1 不跑也是资产);
   E1 完成 = 知道"这条路值不值得继续投"(密度+提取器可靠性两个真数字)。
 - forge v5 §underweights 明示:**整个 M3' verdict 的 ROI 锚点(语料密度)从未实测,E1 就是
@@ -97,6 +108,30 @@ operator-input 文档 §1)。
     `str.find` 回锚 vs ②分块喂)均动引文锚定契约(§7-3)= spine 级 → **裁定走 forge 009
     专场**(议题含 `llm_parse_failures` 守门固化为 proposer 强制不变量),契约定稿 +
     XenoDev 改线后方可重跑。**E2/E3 解锁第一条件(真密度显著)持续未满足。**
+  - **✅ 解除(2026-07-18 · KG-40 阻断已解 · handback 决议 · HANDBACK-LOG 第 24 条)**:
+    forge v6 verdict「引文回锚制」四条款落地(XenoDev commit 76036af):LLM 只产逐字引文
+    quote(不产偏移 · 不回填 published_at),偏移由 `anchoring.py` 确定性分层回锚
+    (exact→normalized→fuzzy 审计层);occurrence 消解经 R16 熔断裁决按契约「证不出用 DP」
+    分支切 DP(单一归一坐标候选表 · 位置序分配)。census_invalid 硬门 + 三类失败计数
+    (上条决议 3 的护栏)已固化为 typed 契约。993 passed · codex 18 轮 adversarial-review
+    R18 approve。**operator 已授权重跑真普查**(重跑前确认 DEEPSEEK key 就位;读数 =
+    exact+normalized 硬下界 + fuzzy 分层另报 + weak_anchor 率人工终裁)。真密度读数产出前,
+    **E2/E3 解锁第一条件(真密度显著)仍未满足**——解锁判定以重跑读数为准。
+  - **✅ 完成(2026-07-19 · E1 真普查读数 + operator 终裁 · HANDBACK-LOG 第 25 条)**:
+    新契约重跑(sample-size 40 × 3 form · DeepSeek v4-flash · 温度 0 · prompt_v2):102
+    records 处理 · **0 truncation · 三类失败计数全 0**(vs 07-17 旧契约 58/58 全截断)=
+    KG-40 根治实证,census_invalid 硬门未触发,**读数有效**。**strong 密度 = {US: 40,
+    CN: 1, HK: 0}** vs advisory 阈 30/stratum · verdict=below_threshold_advisory(CN/HK
+    触发)但 US 超阈(+10)= per-market 分化非全域稀疏。拒绝构成:sector_only 175(语料
+    特性主因)· unanchorable_citation 13 · no_direction 4;fuzzy 率 1/42 极低。IDS 侧弱锚
+    抽查(29 条语义弱锚逐条切原文核验):build 自报 83% 含 5 条小写 ticker 误计
+    (mu/amd/mrvl/hood/rddt 实为真锚)→ 真语义弱锚 71%;~23/29 为真隐性信号(「老黄/
+    达子」→NVDA ·「美光」→MU ·「谷子」→GOOGL · ASR 转错「新一生」→300502 等)=
+    **M3'「隐性信号可被口径捕捉」假设首次正面实证**;可疑过度联想仅 6 条可定位(ETF 权重
+    枚举簇 ×5 + sector→name ×1),最保守全毙 US 40→34 **仍 > 30**。**终裁:「真密度显著」
+    per-market 判定——US 成立 · CN/HK 不成立(真稀疏 · 分市场 STOP · 补语料后可另启普查)。**
+    E2/E3 解锁三条件中**第一条件对 US 已满足**;第二条件(两层金标)仍未满足(待真人第二
+    标注源,见 §4-E1 金标);E2 正式授权仍需三条件齐 + operator 另行授权,范围限 US market。
 - **金标两层验收**(两层全过才允许未来进回测;operator 可当标注者之一,**不单独终审**——
   需第二标注源 + 分歧仲裁):
   - **层 1 · span 抽取验收**:疑似信号语句有没有被找到(Krippendorff α + span P/R/F1,
@@ -126,7 +161,9 @@ operator-input 文档 §1)。
   停止条件:密度 < 预注册参考阈值 → 产 STOP verdict(insufficient_sample 诚实记录)并
   hand-back,**E2 go/no-go 由 operator 依完整密度报告终裁**(阈值 advisory 语义,见 §4-E0);
   金标任一层不过 → 停,不谈回测。
-- ~~E2 历史窗先导~~ / ~~E3 forward 确证线~~ —— **不在本 fork**,gate = E1 数字 + operator 另行授权。
+- ~~E2 历史窗先导~~ / ~~E3 forward 确证线~~ —— **不在本 fork**,gate = E1 数字 + operator
+  另行授权(密度 gate **per-market**:US 已过 · CN/HK STOP,见 §4-E1 2026-07-19 注记;
+  金标两层仍未过,三条件未齐)。
 
 ## 7. BLOCK 级硬约束(§8 契约测试须覆盖 · forge v5 verdict 定死)
 
@@ -178,3 +215,7 @@ operator-input 文档 §1)。
    对照模型为可选加固。
 5. **EQM 解释质量评分**:可选旁支(廉价预筛/蒸馏远期素材),不进主链;operator 若想升主链
    另起 forge。
+6. **口径 v2 迭代候选(2026-07-19 抽查产出 · 非本轮缺陷 · 不 rollback 读数)**:两类过度
+   联想样本已定位——① ETF 成分权重枚举 → 逐股个股信号(src=60232 簇 ×5:枚举成分 ≠
+   逐股荐买);② 板块词 → 单一 ticker(「美存储」→MU)。下轮口径版本迭代时并入 rejection
+   判据(口径版本 = trial ledger 记账维度,变更须记账,§7-1/§7-5)。

@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-17T09:25:00Z
-total_decisions: 23
+last_updated: 2026-07-19T00:57:37Z
+total_decisions: 25
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -618,3 +618,107 @@ smoke 绿 ≠ 真跑可行([[forge-verdict-vs-empirical-ship]] 第 N 击)。prop
 **Follow-up commits**: pending(本 LOG + PRD v0.3 同一 IDS commit)· forge 009 专场待起
 (/expert-forge 009 · 议题 = proposer 契约候选裁定 + 歧义处置 + 护栏固化)· XenoDev 改线 +
 重跑待 forge verdict
+
+## 2026-07-18T13:54:41Z · 009-pM3prime-20260718T133419Z(KG40-anchoring-dp · 引文回锚制落地 + DP 重写 R18 approve · 授权重跑真普查)
+
+**Reviewed at**: 2026-07-18T13:54:41Z
+**Tags**: spec-gap-fix
+**Severity**: high
+**Validator**: ✅ 6 约束 PASS(consumer 模式 · 绝对路径)· 无 ids_verdict_evidence 块跳过 R-Q6 预检
+**Related task**: KG40-anchoring-dp(接续第 23 条决议 1 → forge v6 verdict [A] 的落地收口)
+
+**Build-side 摘要(§1/§2)**:
+forge v6「引文回锚制」四条款契约改造完成(XenoDev commit **76036af** · 13 files · +2515/-231 ·
+feat/009-spec 未 push):新模块 `anchoring.py` 确定性分层回锚(exact→normalized→fuzzy→
+not_found/ambiguous),核心 = **occurrence 消解 DP 重写**——单一归一坐标候选表 · 位置序分配 ·
+三口径(distinct/capacity/分配)共源 → R13-R16 的 raw-vs-normalized 口径不对称**构造性移除**。
+`census.py`:prompt_v2(LLM 只产逐字引文)· census_invalid 硬门(失败计数>0 → rollback + 非零
+exit · 不声称落库)· 三类失败计数 fail-closed · 模型无关预算 · variant 身份(llm_extraction_v2)。
+验证:**993 passed · 7 skipped · lint clean · codex 18 轮真跑 adversarial-review R18 approve ·
+0 material**。硬边界全守(caliber v1 / gold_layer / 0017 / 004 未碰 · provenance 走 detail 不落库)。
+决议链:R16 四轮同轴熔断 → operator 裁 [2] DP = **v6 契约「贪心证不出四语义 → 用 DP」分支执行**
+(非新决策);R17 暴露两 latent(F1 NFKC 多字符展开假 strong → 回映边界校验;F2 distinct==demand
+不保证非重叠可行 → 区间调度 capacity)——旧贪心码同漏 · 非 DP 引入;R18 确认自洽。熔断机制实证
+有效(四轮同轴 → 裁决终结 → 两轮收敛)。附 KG-41:codex 本 worktree 跨天恢复,推翻 KG-38
+「必挂 · fallback 首选」判断 → fallback 判据需加时效性(框架级)。
+
+**Operator decisions**:
+- [x] **决议 1 · 授权重跑 E1 真普查**(第 23 条「契约定稿 + 改线后才授权重跑」条件已满足)——
+      XenoDev-009 新 session 按 E1 runbook(tier 读数版)跑 sample-size 真普查;**重跑前确认
+      DEEPSEEK key 就位**(key 值不 log/不入 context 铁律不变);读数产出(exact+normalized
+      硬下界 + fuzzy 分层另报 + weak_anchor 率)经 hand-back 交回,才谈 E2 go/no-go。
+- [x] **修 PRD §"4-E1" + Version 头(v0.4)** —— blocked-by-KG-40 状态注记追加「已解除」段
+      (保留 v0.3 原注记作审计);E2/E3 解锁第一条件在真密度读数产出前仍未满足。
+- [ ] 修 SHARED-CONTRACT:否
+- [ ] 修 XenoDev spec:否(FU 已收口,spec 无遗留)
+- [x] **决议 2 · KG-41 归入 006 攒批**(hand-back 建议进 forge 009 被改判:fallback 判据在
+      XenoDev CLAUDE.md = 框架件非 009 产品域,与 KG-38 复现批合并,下次 /expert-forge 006 议
+      「fallback 判据加时效性」)。
+- [x] **收悉入库(4 项)**:① R8 弱锚计入 verdict defer = operator 冻结口径(隐性信号前提 ·
+      非缺陷 · 真跑读数时结合 weak_anchor 率人工终裁);② R10 并发 stats 竞态 defer = 假设场景
+      (单进程串行无此路径 · docstring 已约束 · 并发化时重审);③ 76036af 未 push(push 需
+      operator 在 XenoDev 侧确认);④ 熔断机制实证有效(「预写 fallback 分支 + 同轴熔断」模式
+      成立,见 forge-verdict-vs-empirical-ship 案例 3)。
+
+**Operator note**: R16 熔断没有变成治理事故,是因为 v6 契约把「贪心可能证不出」预写成了带判据的
+fallback 分支——裁决只是执行分支,R13-R16 的对抗测试直接变成 DP 验收套件。R17 两个 latent 缺陷
+(旧贪心同样漏)说明 DP 的清晰结构反而暴露了贪心结构藏住的洞。E1 链当前状态:契约已修 → 重跑
+已授权 → 真密度读数 → E2 go/no-go。KG-40 从发现到解除:2026-07-17 真跑现形 → forge v6 一天收敛 →
+2026-07-18 落地 + 18 轮 review 收口。
+
+**Follow-up commits**: pending(本 LOG + PRD v0.4 同一 IDS commit)· 重跑授权下发 = operator 持
+本条决议开 XenoDev-009 session(启动 prompt 见本次 review 输出)· KG-41 已在 XenoDev
+dogfood-backlog 攒批,IDS 侧无需另建文件
+
+## 2026-07-19T00:57:37Z · 009-pM3prime-20260718T143324Z(E1 真普查完成 · KG-40 根治实证 · 弱锚抽查后终裁 US 分市场 go)
+
+**Reviewed at**: 2026-07-19T00:57:37Z
+**Tags**: prd-revision-trigger
+**Severity**: high
+**Validator**: ✅ 6 约束 PASS(consumer 模式 · 绝对路径)· 无 ids_verdict_evidence 块跳过 R-Q6 预检
+**Related task**: E1-real-census-rerun(接续第 24 条决议 1 的授权重跑 · E1 链收口)
+
+**Build-side 摘要(§1/§2)**:
+E1 真密度普查重跑完成(引文回锚制新契约 · commit 76036af · 真 DeepSeek v4-flash · 温度 0 ·
+prompt_v2)。**KG-40 根治实证**:07-17 旧契约 58/58 全截断 → 本次 102 records · **0 truncation ·
+三类失败全 0**,census_invalid 硬门未触发,读数有效。**strong 密度 = {US: 40, CN: 1, HK: 0}**
+vs advisory 阈值 30/stratum;verdict=below_threshold_advisory(CN/HK 触发)但 US 单市场超阈
+(+10)——per-market 分化非全域稀疏。拒绝构成:sector_only 175(语料特性主因)·
+unanchorable_citation 13(not_found 4 + ambiguous 9 = DP 消解正确不猜)· no_direction 4;
+fuzzy 率 1/42 极低。threshold_hash 库内核对 == 第 22 条期望值。weak_anchor_accepted 自报
+34/41(83%),高率触发 R8 defer 的「operator 抽查引文质量」条款。
+
+**IDS 侧弱锚抽查(本次 review 现场做 · 全量 29 条语义弱锚逐条切原文核验)**:
+- **83% 口径修正**:build 侧 34/41 用区分大小写字面判据,其中 5 条是分析师小写 ticker
+  (mu/amd/mrvl/hood/rddt)实为无争议真锚 → **真语义弱锚 = 29/41(71%)**。
+- **~23/29 为教科书级真隐性信号**(M3' 前提场景实证):「老黄/达子」→NVDA ·「美光」→MU ·
+  「谷子」→GOOGL ·「coke」→KO ·「新一生」(ASR 转错"新易盛")→300502 · 跨句指代
+  (him=Walmart)→WMT 等,无幻觉铁证。
+- **可疑过度联想簇 = 6 条(全在 US)**:① src=60232 ETF 权重枚举簇 ×5(KO/PG/PM/PEP/MO —
+  IYK 成分权重表被拆成 5 条个股 long conf 0.7);② id=5「美存储大涨」→MU(sector→name 推断)。
+- **鲁棒性结论**:最保守折扣(6 条全毙)后 US 40→34 **仍 > 30**;US 超阈对抽查折扣稳健。
+
+**Operator decisions**:
+- [x] **决议 1 · E2 终裁:US 分市场 go · CN/HK STOP**(advisory 人工终裁 · 抽查后裁定)——
+      「真密度显著」前提对 US market 成立(最保守折扣 34>30);CN=1/HK=0 真稀疏(单团队语料
+      美股为主 · 结构性限制),CN/HK 分市场 STOP,补语料后可另启普查再议。
+- [x] **修 PRD(E2 闸门 per-market 化)**——M3' PRD「真密度显著」前提 / E2 解锁条件改写为
+      分市场语义(US/CN/HK 各自判),记录本次真普查读数 + 抽查折扣依据;E2 对 US 解锁。
+- [ ] 修 SHARED-CONTRACT:否
+- [x] **修 XenoDev spec(信息式 · 口径反馈)**——跨仓信息式记录两条:① E2 分市场执行口径
+      (US go / CN·HK STOP);② sector_only 口径延伸建议:「ETF 成分权重枚举 → 个股信号」与
+      「板块词 → 单一 ticker」两类过度联想样本已定位(src=60232 簇 ×5 + id=5),建议下轮口径
+      迭代时并入 rejection 判据(非本轮缺陷 · 不 rollback 读数)。实际改动在 XenoDev 侧 session 做。
+- [x] **收悉入库(3 项)**:① 契约层健康 —— 引文回锚制 + census_invalid 硬门 + DP 消解真跑
+      全绿,KG-40 已根治,无契约缺陷需回 forge;② R8 弱锚口径 defer 按约定完成人工终裁闭环
+      (本条即终裁);③ R10 并发 defer 延续(单进程串行无此路径)。
+
+**Operator note**: 弱锚抽查是本条决议的关键输入:handback 自报 83% 弱锚率吓人,切原文逐条核后
+实际语义弱锚 71%,其中八成是 M3' 立项时赌的那类真隐性信号(中文俚语/别名/ASR 噪声指代)——
+这正是「隐性信号可被口径捕捉」假设的第一次正面实证。可疑的只有一簇可定位的 ETF 权重枚举
+(枚举成分 ≠ 逐股荐买)+ 一条 sector→name,毙掉也不改 US 超阈结论,故 US go 裁得放心。
+E1 链就此收口:KG-40 发现(07-17)→ forge v6 契约(当天)→ DP 落地 R18 approve(07-18)→
+真普查读数 + 终裁(07-19)。E2 的下一步输入 = per-market 化后的 PRD。
+
+**Follow-up commits**: pending(本 LOG + PRD per-market 修订同一 IDS commit)· XenoDev 侧
+信息式 spec 记录待 operator 开 XenoDev-009 session 时带入
