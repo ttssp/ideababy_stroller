@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-18T08:55:00Z
-total_decisions: 20
+last_updated: 2026-07-19T00:29:52Z
+total_decisions: 22
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -319,3 +319,33 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: 选 forge v4 Decision menu **[A] 落地**(operator 回复 [2] = 直接落地)。生效语义自此两态:**机制 landed**(XenoDev 收编 commit 即达)≠ **条款生效**(首个评估 run 自证 PASS 才达);landed-not-yet-effective 是诚实中间态,无 deadline 有判据(canary blocked-until-verified 正统)。⚠ forge v4 §underweights 预警在案:回声室连续第四次高危(双方 P1 独立同构;缓解证据 = P2 源不重叠互证 + GPT 回声室自检产出 amendment 正当性条件反向材料);「同一验收事件」现靠 runbook 纪律未机器强制(悬空风险从标的错配换位到自证时机);参数化 S 级仍是推演——**首个评估 run 的真跑自证是本 amendment 的最后防线**。⚠ 生效时点实质由 key 轮换节奏决定(轮换自决议 16 起三连 pending,持续 pending 则条款诚实停在 landed-not-yet-effective;v5 触发条件⑤在案)。v5 触发条件五条:首个评估 run 再 STOP / 参数化远超 S / 事件锚僵尸化 / 验收事件纪律被打破 / key 轮换持续 pending 阻塞生效。
 
 **Follow-up commits**: IDS 侧 pending 本 session(forge v4 全程产物 + PRD v1.5→v1.6 + 本条 entry);XenoDev 侧 pending:a. 收编 commit(即刻)b. 脚本参数化 c. key 轮换 → 首个评估 run → 同事件自证(dogfood-backlog 回填段随 XenoDev session 消费时一并 commit;worktree 领先 main 未 push)
+
+## 2026-07-18T13:54:00Z · 001-radar-pA-20260718T135400Z
+
+**Reviewed at**: 2026-07-18T14:19:01Z
+**Tags**: feature(语义 = build-complete 里程碑;因 gen-handback tag enum 已剔除 `build-complete` 改用合法值 `feature`,漂移本身见下)
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD(无需 —— 机制 landed 里程碑与 PRD v1.6 O4 两态语义完全一致,条款生效路径不变)
+- [ ] 修 SHARED-CONTRACT(不当场改 —— KG-B5 族三项产者工具漂移未授权攒批动作,仅在册,见 note)
+- [ ] 修 XenoDev spec(无需 —— §a 4 commit 收编 + §b 参数化即第 20 条决议授权 a/b 的执行结果,spec 无新缺口)
+- [x] 无操作(**收悉 · 机制 landed 里程碑确认**):§a 收编 4 commit(`11e81dd` feat / `6d442af` test +55 · 354 passed 零回归 / `4c626a7` docs / `a43da36` refactor 参数化)= forge v4 verdict §a/§b 待办全落地;§c 条款生效维持 operator 门控显式 deferred(key 轮换 → 选方向 → 授权烧 key → 首个评估 run 同事件自证)
+
+**Operator note**: 仅勾选「收悉·里程碑确认」。生效状态自此:**机制 landed = DONE**(第 20 条授权 a/b 兑现 · 参数化 S 级达标 codex adversarial approve 0 material findings · 三道守卫零削弱)· **条款生效 = landed-not-yet-effective**(诚实中间态维持 · 待 §c)。§underweights 兑现监测入册:✅ 参数化确 S 级(v5 触发条件②缓解);⏳「同一验收事件」仍 runbook 纪律(v5 触发④在案);⏳ 首个评估 run 真跑自证仍是本 amendment 最后防线(再 STOP = 第六次「推演≠真跑」= v5 触发①)。**在册未授权动作项(operator 未勾选,不视为决议)**:① KG-B5 族 ×3 产者工具漂移(仓根 HANDOFF `git_common_dir_hash` 陈旧 `11c3…`→实际 `bbf1…`,mode-1 短路不阻断 / gen-handback tag enum 剔除 `build-complete` 与已投递实践漂移 / gen-handback template 硬编码 macOS 路径无占位符 + `REPO_ROOT` 与 section-base 耦合,本包 3 字段系 producer 手工修正)—— 已由 XenoDev 记 dogfood-backlog 在册,随框架批次归 006 forge 时机由 operator 另裁;② KG-B10(校准面防伪方向)/ KG-B11(SKILL §3.2.1 协议债)维持原判在册;③ F541×2 ruff 债(tests/test_reconstruct.py:658-659 · pre-existing)未授权顺清,维持记录在案;④ 附带修复 `731b685`(仓根 stale 008-pB HANDOFF 字节 mirror 修复)收悉 —— 本包正确产 001 身份即其生效验证。⚠ 投递方式正常(producer 直投,无上次 `.work/` 滞留异常复发)。
+
+**Follow-up commits**: pending(IDS 侧:本 hand-back 包 + 本条 entry 入库 commit;XenoDev 侧:worktree 31 commit 领先 main 未 push,收编已完成待 operator 定 push 节奏;§c 序列维持 operator 门控)
+
+## 2026-07-18T23:16:42Z · 001-radar-pA-20260718T231642Z
+
+**Reviewed at**: 2026-07-19T00:29:52Z
+**Tags**: feature(语义 = forge v4 §c 条款生效事件里程碑;gen-handback enum 无 `clause-effectuation`,沿用第 21 条同判据,enum 漂移维持在册)
+**Severity**: medium
+**Operator decisions**:
+- [x] 修 PRD(**DONE 本 session**:v1.6 生效状态标注三处——① header 加 Effective 行(`landed-not-yet-effective` → `landed-and-effective`)② O4 生效条件段加生效记录(标的 `diffusion-models-20260718T231343Z` · 同一验收事件 B′+D′ 自证 PASS · unlock-preflight exit 0 · 生效绑定 stem,后续评估 run 各自按①履行同事件自证义务)③ Open questions #3 加兑现注记(最后防线兑现 · v5 触发①④未触发 · 残留监测继续在案)。**条款文本零改动,版本号维持 v1.6**——生效是状态兑现非条款修订,不 bump 版本)
+- [ ] 修 SHARED-CONTRACT(无需 —— 两态语义已随 v4 verdict 落 PRD,协议层无新缺口;KG-B10 spine 冻结维持)
+- [ ] 修 XenoDev spec(无需 —— 本次是 runbook 纪律路径的正确执行,只复用现有 `run_selfcheck_sequence` + 三道守卫,无新增判据/旁路,spec 无新缺口)
+- [ ] 无操作(不适用 —— 本条有 PRD 状态标注动作)
+
+**Operator note**: 选「确认生效 + 修 PRD」。**两态迁移在本 discussion 收口:机制 landed = DONE(第 21 条)· 条款生效 = DONE(本条)= landed-and-effective**。第六次「推演≠真跑」判定**落生效侧**(真跑 PASS 非被推翻)——上游 forge/推演 verdict 四连被下游真跑推翻的链,在本条款以真跑 PASS 收口。真跑证据链:首个默认评估 run `diffusion-models-20260718T231343Z`(operator 三前置门逐一显式授权:key 就位確认(C8 合规 · presence/长度检查 · 值不进 stdout · C12 hook 两度 fail-closed 已尊重不绕)/ 方向 diffusion models / 授权烧 key;真 OpenAlex + 真 DeepSeek · 封闭历史窗 2021→2023 与 selfcheck 缺省窗逐字一致 · 新 ts 与 07-17 校准样本干净隔离不撞 ①b 守卫)→ 同一验收事件内一气呵成:B′ 四件全 PASS · D′ `unlock_allowed=True`/`is_fixture=False`/独立检索双路径一致 · audit_digest 入 append-only journal → unlock-preflight 四参齐 exit 0 → **T010/T011 hard-block 解除**(机器核验 · 人不在判定回路)。§underweights 兑现监测收册:✅ v5 触发①(首个评估 run 再 STOP)未触发;✅ v5 触发④(先用后证/隔日补证)未触发——一气呵成守住,但「同一验收事件」仍 runbook 纪律未机器强制,继续在案;⏳ KG-B10 provider-proof spine 未触及维持冻结(本次走的正是纪律默认路径 · 归 IDS forge 决落地时机)。**在册未授权动作项(不视为决议)**:KG-B11 / KG-B5 族(gen-handback template macOS 硬编码本次**再次触发**,本包 4 字段系 producer 手工修正为 Ubuntu canonical 值;建议 template 占位 + env 化 · REPO_ROOT 与 section-base 解耦)随框架批次归 006 forge 攒批,时机 operator 另裁。**T010/T011 后续(build 侧)**:可起跑,起跑前 parallel-builder 会再跑 unlock-preflight 作 hard-block 门;生效绑定本 evidence bundle stem,换方向/换窗需对新评估 run 重跑自证。⚠ 投递方式正常(producer 直投 · 无 `.work/` 滞留复发)。
+
+**Follow-up commits**: pending 本 session(IDS 侧:本 hand-back 包 + PRD v1.6 生效标注 + 本条 entry 入库 commit;XenoDev 侧:worktree 33 commit 领先 main 未 push,push 节奏 operator 另定)
