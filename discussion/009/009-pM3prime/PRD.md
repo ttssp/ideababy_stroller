@@ -1,6 +1,12 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.5(2026-07-19 回写 handback `009-pM3prime-20260718T143324Z` 决议:**E1 真普查
+**Version**: v0.6(2026-07-23 回写 handback `009-pM3prime-20260723T082127Z`[FU-KG42] 决议 · forge
+009-pM3prime **v1** verdict:**§4-E1 Layer-2 金标 D-7 改写** —— 第二源资格从「领域独立真人」refactor
+为「错误独立性代理(外证据锚定 + 逐维双错率证成 · 不靠品牌/领域深度)」· **frozen §2×D-7 收窄为验收级
+暂不可满足 · operator 配证据协议可自任独立第二源无须外求真人** · 跨 vendor 强模型不得当 Layer-2 终审
+(SOTA 无背书)· 红线 `gold_layer2.py:81` 保留 · 降级口径(Layer-1 交付 + Layer-2 known-limitation);
+见 §4-E1 D-7 改写块 + §7-4 + HANDBACK-LOG 第 26 条 + `forge/v1/stage-forge-009-pM3prime-v1.md`。
+v0.5 2026-07-19 回写 handback `009-pM3prime-20260718T143324Z` 决议:**E1 真普查
 完成**(102 records · 0 truncation = KG-40 根治实证)· strong 密度 {US: 40, CN: 1, HK: 0} ·
 operator 弱锚抽查后终裁 **E2 密度前提 per-market 化:US 成立 · CN/HK STOP**;见 HANDBACK-LOG
 第 25 条。
@@ -137,6 +143,47 @@ operator-input 文档 §1)。
   - **层 1 · span 抽取验收**:疑似信号语句有没有被找到(Krippendorff α + span P/R/F1,
     数值门槛实现时预注册);
   - **层 2 · 可交易映射验收**:sector/ticker/方向/horizon/时点映射对不对(映射级一致率)。
+
+  > **⚠ D-7 改写(2026-07-23 · forge 009-pM3prime v1 verdict · HANDBACK-LOG 第 26 条)**
+  > **Source**: `discussion/009/009-pM3prime/forge/v1/stage-forge-009-pM3prime-v1.md` §Next-version PRD draft
+  > (Reviewer A=Claude Opus 4.8 · B=GPT-5.6-Sol xhigh · strong-converge · converged · 无 unresolved)。
+  >
+  > **背景**:E1 US 密度 go 后推进 Layer-2 撞 frozen PRD **§2(单人不懂投资)× 本节 Layer-2 金标(D-7 原要
+  > 领域独立真人第二源)互斥** → Layer-2 无合格验收主体 → 诚实 STOP。forge 经两组零论文重叠的正交 SOTA
+  > (Nine Judges 跨 vendor 错误相关 φ=0.6 · Correlated Errors 350+ 模型 60% 同错 · 人 n_eff 是 LLM 2 倍 ·
+  > AmbER 长尾别名共享流行度先验 · FActScore/SAFE 独立性来自外证据锚定非品牌)收敛出下述改写。
+  >
+  > **① D-7 新措辞(替换「Layer-2 用真人第二标注源」的独立性理据)**:
+  > > Layer-2 gold 的第二源**不得以模型家族 / provider 异源作为独立性代理**。合格第二源须**独立于提取器
+  > > 盲标**(不先看提取器输出)、**以可追溯外部证据作答**、并**通过任务内校准**(含长尾/歧义样本)。独立性靠
+  > > **外部证据锚定 + 任务内盲测逐维双错率**证成,**不靠来源品牌 / 领域深度**。`human`(**含 operator 本人**,
+  > > 若独立于提取器且遵循证据协议)是当前可执行的独立性默认;跨 vendor 模型未经任务内校准不得替代 Layer-2
+  > > 终审。**无法判断须 abstain;冲突未仲裁不得通过。**
+  >
+  > **② 验收铰链四条**(挂在 Layer-2 定义下):
+  > 1. **外证据锚定**:每个判断绑定外部证据与来源;事实维度(ticker/交易所)由权威知识源核验。
+  > 2. **盲测校准前置**:资格启用前完成含长尾/歧义样本的盲测校准集(直击 AmbER 冷门别名 2 倍误取)。
+  > 3. **逐维双错率报告**:按 5 维(sector/ticker/direction/horizon/timepoint)报告双错率 + abstain +
+  >    覆盖率;可接受门槛**预注册**(§4-E0 OQ-1 精神:先写下再测)。
+  > 4. **人审歧义 + 仲裁留痕**:歧义/方向/时点维度必须人(operator 或加强复核者)审;冲突保留仲裁链;
+  >    未闭环 fail-closed。
+  >
+  > **③ §2 × 本节 Layer-2 金标 关系澄清(消 handback「无验收主体」死结)**:
+  > - **非产品级真互斥**:operator「不懂投资」**不阻断**独立第二源 —— 要的是**独立性,非领域深度**。
+  > - 冲突仅「**当前资源下 Layer-2 全量验收暂不可满足**」→ 给降级口径:**Layer-1 span 一致性可交付 +
+  >   Layer-2 标 known-limitation**;operator 过证据协议校准后解锁全量。
+  > - **operator 可自任独立第二源 · 无须前置外求真人**;外部真人**不是 v0.1 前置门槛**,当 operator 尾部
+  >   校准不过线 / abstain 覆盖不足 / 同类歧义持续复发时,再评估升级引入领域标注者(可选加强)。
+  >
+  > **④ 红线保留(不动)**:第二 LLM 直接当 Layer-2 终审 = V4 失败模式;`gold_layer2.py:81`
+  > (`second_source_kind != 'human' → raise`)**保留**。新增「外证据锚定辅助」仅作用 **Layer-1**(窄义 (a))。
+  > 以后若任务内数据证明某种证据锚定模型达到**预注册的逐维独立性门槛**,可重审其 Layer-2 资格,但
+  > **不得按 provider 品牌直接放行**。
+  >
+  > **⑤ 三条 v0.2 待解**(实装前解 · 见 forge stage §What this menu underweights):逐维双错率可接受阈值
+  > 具体数字 · 「外证据锚定」用哪个权威知识源核验 ticker(受红线约束不引入 look-ahead)· operator 自任第二源
+  > 时技术上如何保证「独立于提取器」(标注 UI/流程隔离 · 主路最脆弱技术假设)。
+
 - **E1 hand-back**:密度数字 + 金标两层结果 + record_tickers 判定,经 hand-back 交回 IDS,
   operator 决定 E2/E3 授权与否。
 
@@ -174,7 +221,9 @@ operator-input 文档 §1)。
 3. **引文锚定 + 提取稳定性**:每条疑似信号必须附原文出处(可复核);温度 0 / 提取器版本化 /
    同文本同版本必须同输出(一致性测试)。
 4. **金标 gate**:未过两层金标,`extracted_signals` 不得流向任何回测消费方(mutation-killer:
-   移除 gate 断言应致测试失败)。
+   移除 gate 断言应致测试失败)。**Layer-2 第二源资格红线(2026-07-23 · forge v1 · 见 §4-E1 D-7 改写 ④)**:
+   第二 LLM 直接当 Layer-2 终审 = V4 = BLOCK;`gold_layer2.py:81`(`second_source_kind != 'human' → raise`)
+   保留;外证据锚定的模型辅助仅可作用 Layer-1,越界进 Layer-2 终审 = BLOCK。
 5. **预注册不可回改**:密度阈值在普查开始后修改 = BLOCK(记录在案的口径/阈值变更须走
    hand-back 决议)。
 

@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-19T00:57:37Z
-total_decisions: 25
+last_updated: 2026-07-23T10:10:00Z
+total_decisions: 26
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -722,3 +722,46 @@ E1 链就此收口:KG-40 发现(07-17)→ forge v6 契约(当天)→ DP 落地 R
 
 **Follow-up commits**: pending(本 LOG + PRD per-market 修订同一 IDS commit)· XenoDev 侧
 信息式 spec 记录待 operator 开 XenoDev-009 session 时带入
+
+## 2026-07-23T10:10:00Z · 009-pM3prime-20260723T082127Z(FU-KG42 · 金标 Layer-2 第二源冲突 · 起 forge 009-pM3prime v1 收敛)
+
+**Reviewed at**: 2026-07-23T10:10:00Z
+**Tags**: prd-revision-trigger
+**Severity**: medium
+**Operator decisions**:
+- [x] **修 PRD §"4-E1/D-7"(手工改 · 已落地)**——operator 裁 Decision menu [A],D-7 改写草案
+      (新措辞 + 验收铰链四条 + §2×D-7 澄清 + 红线保留 + 3 v0.2 待解)已抄进 PRD §4-E1 + §7-4;
+      **PRD v0.5 → v0.6**。
+- [ ] 修 SHARED-CONTRACT
+- [ ] 修 XenoDev spec(本仓内,信息式)
+- [x] **起 forge 009(专场)—— 已完成 v1,verdict 已产出**(operator 裁「起 forge 009」·
+      本条为 forge 触发决议,PRD 改写落点在 forge stage §Next-version PRD draft,operator 读
+      stage 文档后经 Decision menu [A] 手工改 PRD 已落地)
+
+**Operator note**: handback 主诉 = frozen PRD §2(单人不懂投资)× §4-E1/D-7(领域独立真人第二源)
+互斥 → 两层金标 Layer-2 无合格验收主体 → E1 诚实 STOP。validator 6/6 PASS(初判 check-5 FAIL 系
+相对路径 gotcha · 传 realpath 后 PASS · 又一次复证 [[forge-006-v7]]「validator 必须传绝对路径」)。
+声明已核实(gold_layer2.py:81 human 硬约束真实 · commit 6f11186 零代码留痕属实 · KG-42 在
+dogfood-backlog:789)。operator 核心质疑「2026 异源强模型能否当合法第二源」→ 起 `/expert-forge
+009-pM3prime` v1(Reviewer A=Claude Opus 4.8 · B=**GPT-5.6-Sol xhigh** 异源第二源本身呼应议题;
+为此改 codex config→gpt-5.6-sol + 软链→0.144.5,均真跑验证 · 见 [[codex-version-model-config]])。
+
+**Forge v1 verdict(converged · strong-converge · 无 unresolved)**:保留 gate 骨架 + 双层链 +
+D-7 Layer-2 fail-closed 实质;第二源从来源类型硬编码 refactor 为三项分离契约(错误独立性/领域能力/
+最终仲裁权);**跨 vendor 强模型不得当 Layer-2 独立终审 —— 两组零论文重叠正交 SOTA 一致证明**
+(Nine Judges 跨 vendor φ=0.6 · Correlated Errors 350+ 模型 60% 同错 · 人 n_eff 是 LLM 2 倍 ·
+AmbER 长尾别名共享流行度先验 · FActScore/SAFE 独立性来自外证据锚定非品牌)。**frozen §2×D-7 非
+产品级真互斥 → 收窄为「当前资源下 Layer-2 全量验收暂不可满足」;operator 配可审计证据协议后可
+自任独立第二源(靠独立性而非领域深度)· 无须前置外求真人**(消 handback「无验收主体」死结)。
+可执行路 (b)降级验收 + (c)重定义真人源;窄义 (a) 外证据锚定模型辅助仅进 Layer-1;未校准前
+fail-closed。红线:第二 LLM 直接当 Layer-2 终审 = V4 · `gold_layer2.py:81` 保留。三方向裁决 +
+D-7 改写草案(新措辞 + 验收铰链四条)见 `discussion/009/009-pM3prime/forge/v1/stage-forge-009-pM3prime-v1.md`。
+**皇冠自证**:双方 P1 都独立倒向 refactor(重演 forge v5 双模型回声室),但 P2 各自跑零重叠 SOTA
+都推翻自己 P1 = 引正交外证据破收敛(G-R1 原教训正确执行)—— 本轮 forge 恰是「不能靠双模型互审自证、
+须引外部实证」的正面演示,也正是 D-7 想守护的道理。3 条 v0.2 note 待解(逐维双错率阈值 / 核验知识源 /
+operator 独立于提取器的隔离流程)。KG-42 框架缺口(第二源可得性立项前置校验)归 006 攒批。
+
+**Follow-up commits**: pending(本 LOG 第 26 条 + forge v1 全产物 + **PRD v0.6 D-7 改写落地** +
+codex 环境层修复同批 · 未 push)· **PRD 改写已落地(Decision menu [A] 完成 · §4-E1 D-7 改写块 + §7-4)**·
+下一步 = 回 XenoDev-009 `claude -w 009-pM3prime` 按新契约实装第二源资格层(起跑前解 3 v0.2 note:
+逐维双错率阈值 / 核验知识源 / operator 独立于提取器的隔离流程)
