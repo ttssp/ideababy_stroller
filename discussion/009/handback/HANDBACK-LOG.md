@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-23T10:10:00Z
-total_decisions: 26
+last_updated: 2026-07-23T15:04:24Z
+total_decisions: 27
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -765,3 +765,46 @@ operator 独立于提取器的隔离流程)。KG-42 框架缺口(第二源可得
 codex 环境层修复同批 · 未 push)· **PRD 改写已落地(Decision menu [A] 完成 · §4-E1 D-7 改写块 + §7-4)**·
 下一步 = 回 XenoDev-009 `claude -w 009-pM3prime` 按新契约实装第二源资格层(起跑前解 3 v0.2 note:
 逐维双错率阈值 / 核验知识源 / operator 独立于提取器的隔离流程)
+
+## 2026-07-23T15:04:24Z · 009-pM3prime-20260723T134606Z(FU-D7-layer2 · forge v1 D-7 改写 build 侧落地 · KG-42 死结解 · subagent-fallback 4 轮 approve)
+
+**Reviewed at**: 2026-07-23T15:04:24Z
+**Related task**: FU-D7-layer2
+**Tags**: feature
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对 realpath)。⚠ 首次跑 FAIL 于约束 5(id consistency)——
+根因是 `$HANDBACK_DIR` 尾斜杠致路径出现 `discussion/009/handback//` 双斜杠,validator 提取 `<X>` 段的 regex 断链;
+传 `realpath` 归一后 all-6 PASS。**又一次复证 [[001-radar-gate-fail-prd-v11]] / [[forge-006-v7]]「validator 必须传绝对路径」gotcha**(非真 corruption)。
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence:` 父键 · 本包非机器 verdict-evidence 包)
+
+**Operator decisions**:
+- [ ] 修 PRD §"—"(不勾选:D-7 改写已在 PRD v0.6 §4-E1 · 本包非 re-litigate 产品语义 · 见 LOG 第 26 条)
+- [ ] 修 SHARED-CONTRACT §"—"(不勾选:本包无协议层变更诉求)
+- [x] **接收 build-ship · 收悉入库**(确认 D-7 改写 build 侧落地 · subagent-fallback 4 轮对抗 approve · 0 ship-blocking 红线 breach · 1054 passed · 作 practice-stats 入库)
+- [x] **记 KG-42 框架治理 defer 归 IDS forge**(§3-3:① 证伪链金标框架加「第二源可得性」立项前置校验 ② PRD 模板加「金标验收主体来源」字段 · build 侧未当场改 framework=dogfood 铁律 · 攒批留待 forge 议)
+
+**Operator note**:
+本 hand-back 是 forge 009-pM3prime **v1 verdict 的 XenoDev build 侧落地回报**(build-ship + 残留 defer),非再抛问题——
+闭合 LOG 第 26 条留的「回 XenoDev-009 按新契约实装第二源资格层」。**KG-42 死结解**:第二源从「领域独立真人」refactor 为
+「错误独立性代理」(三分离契约 · 外证据锚 + 逐维双错率证成)→ operator 可自任独立第二源(靠独立盲标非领域深度)。
+交付 7 改 + 5 新(alembic 0018 扩 `gold_layer2_result` 12 列 + 新子表 `gold_layer2_dimension` · `gold_layer2.py` 三纯函数 +
+`evaluate_layer2` 演进 · 新 `blind_annotate.py` 两阶段盲标 CLI · SLA/spec/dogfood 回填)· **1054 passed**(was 993 · +61)·
+**红线 4 轮复验逐字节不变**(`gold_layer2.py:203` 第二 LLM/跨 vendor 未校准终审仍 raise · gate.py fail-closed 不动 ·
+caliber_hash=`46fbd4b7b46d397b` 不变)。**第 26 条留的 3 个 v0.2 note 本 build 全解**:逐维双错率阈值→方法学推算 + C6 预注册
+(reconcile/CLI 偏离冻结门槛→raise · 从 advisory 升为结构 fail-closed · R4 根因修)· 核验知识源→复用 004 `watchlist`(PIT-neutral)·
+隔离流程→`blind_annotate.py` 两阶段盲标 + 时序可证伪。
+
+**cross-model review 处置(关键决议)**:codex 真路径**挂死**(job stalled 18min+ 无 verdict · 同 KG-38/KG-B12 codex-hang)→
+build 侧按 CLAUDE.md fallback 段走 red-team + code-reviewer 双跑(4 轮单调收敛 4→3→3→1 approve · REVIEW-LOG 标 `subagent-fallback@2026-07-23` 未冒充 codex)。
+build 侧建议「codex 恢复后优先补跑权威确认」。**operator 裁定:接受 subagent-fallback 为终态,不要求 codex 补跑**——
+理由:4 轮 red-team+code-reviewer 对抗收敛 + 红线逐字节 4 轮复验 + 11 findings 全 latent library-layer footgun(生产路始终 fail-closed · 无一 false-PASS 逃逸到 ship)已足;
+本裁定是对 build 侧「过桥非替代」建议的 operator 侧显式收口(**偏离 build 侧建议已如实记录**)。
+
+**残留 defer(非本决议 close · 已收悉)**:① operator 真盲标产真数字(harness 全就位 · 待真跑 · 同 O8「待第二源真跑」性质)·
+② watchlist 补权威数据(B1 · **本环境 watchlist 空 → ticker 外证据锚 coverage=0 → fail-closed 硬锚** · E2 前置 · 本 fork 外 · 零代码解锁 ·
+红线:严禁本 fork 现填交易所清单可能引 look-ahead)· ③ blind 隔离技术不可证性(B5 · honor-system + 时序可证伪已是最强可得 · 更强隔离=PRD 治理级由 operator 决)。
+**E2 解锁三条件 US market 仍未齐**:① 真密度 [US ✅ 决议 25] · ② 两层金标 [🔶 harness 扩契约就位 · 门槛预注册 · 待 operator 真盲标 + watchlist 补数] ·
+③ operator 授权 [❌] → 第 2 条未真跑完 → **E2 不授权**(E2 历史窗回测 / E3 forward 线做进 XenoDev = 越界 BLOCK)。
+
+**Follow-up commits**: pending(本 LOG 第 27 条决议入库 · 未 push)· build-ship 产物在 XenoDev-009 `feat/009-spec` 工作树(7 改 + 5 新 · 1054 passed · 未 commit/未 push · push 前需 operator 确认)·
+下一活 = operator 真盲标跑 + watchlist 补数(B1)解 E2 解锁条件 ② · codex 补跑本决议已裁定不做(接受 fallback 终态)
