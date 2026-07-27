@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-19T00:29:52Z
-total_decisions: 22
+last_updated: 2026-07-27T13:10:17Z
+total_decisions: 28
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -349,3 +349,100 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **Operator note**: 选「确认生效 + 修 PRD」。**两态迁移在本 discussion 收口:机制 landed = DONE(第 21 条)· 条款生效 = DONE(本条)= landed-and-effective**。第六次「推演≠真跑」判定**落生效侧**(真跑 PASS 非被推翻)——上游 forge/推演 verdict 四连被下游真跑推翻的链,在本条款以真跑 PASS 收口。真跑证据链:首个默认评估 run `diffusion-models-20260718T231343Z`(operator 三前置门逐一显式授权:key 就位確认(C8 合规 · presence/长度检查 · 值不进 stdout · C12 hook 两度 fail-closed 已尊重不绕)/ 方向 diffusion models / 授权烧 key;真 OpenAlex + 真 DeepSeek · 封闭历史窗 2021→2023 与 selfcheck 缺省窗逐字一致 · 新 ts 与 07-17 校准样本干净隔离不撞 ①b 守卫)→ 同一验收事件内一气呵成:B′ 四件全 PASS · D′ `unlock_allowed=True`/`is_fixture=False`/独立检索双路径一致 · audit_digest 入 append-only journal → unlock-preflight 四参齐 exit 0 → **T010/T011 hard-block 解除**(机器核验 · 人不在判定回路)。§underweights 兑现监测收册:✅ v5 触发①(首个评估 run 再 STOP)未触发;✅ v5 触发④(先用后证/隔日补证)未触发——一气呵成守住,但「同一验收事件」仍 runbook 纪律未机器强制,继续在案;⏳ KG-B10 provider-proof spine 未触及维持冻结(本次走的正是纪律默认路径 · 归 IDS forge 决落地时机)。**在册未授权动作项(不视为决议)**:KG-B11 / KG-B5 族(gen-handback template macOS 硬编码本次**再次触发**,本包 4 字段系 producer 手工修正为 Ubuntu canonical 值;建议 template 占位 + env 化 · REPO_ROOT 与 section-base 解耦)随框架批次归 006 forge 攒批,时机 operator 另裁。**T010/T011 后续(build 侧)**:可起跑,起跑前 parallel-builder 会再跑 unlock-preflight 作 hard-block 门;生效绑定本 evidence bundle stem,换方向/换窗需对新评估 run 重跑自证。⚠ 投递方式正常(producer 直投 · 无 `.work/` 滞留复发)。
 
 **Follow-up commits**: pending 本 session(IDS 侧:本 hand-back 包 + PRD v1.6 生效标注 + 本条 entry 入库 commit;XenoDev 侧:worktree 33 commit 领先 main 未 push,push 节奏 operator 另定)
+
+## 2026-07-19T01:28:21Z · 001-radar-pA-20260719T012821Z
+
+**Reviewed at**: 2026-07-23T07:59:19Z
+**Tags**: feature(T010 检索规模化强化 build-ship · Phase 1 · spec §5 P1.1)
+**Severity**: low
+**Operator decisions**:
+- [ ] 修 PRD(无需 —— T010 `ScaledRetriever` 实现与 spec §5 P1.1 + OUT-5/C6/C9 完全一致,无 PRD/spec 缺口)
+- [ ] 修 SHARED-CONTRACT(无需 —— §4.4 verifier 实证 SHARED-CONTRACT 0 改动)
+- [ ] 修 XenoDev spec(无需 —— 加层非改骨架,file_domain 只 `scale.py`,不改 T002 `openalex.py` 骨架)
+- [x] 无操作(**收悉 · T010 feature ship 确认**):`ScaledRetriever` compose 多 base retriever 合并去重 + 有界时序截断(`SCALE_MAX_PAPERS=1000` · OUT-5 不追全 · 超界诚实截断保时序前段)· C9 run-ephemeral 纯内存零文件写(禁 Candidate B 底座 · 有测锁)· codex review path-B(risk=low)**approve 0 finding** · 10 test cov 100% · **364 passed 零回归** · §4.4 verifier PASS(拓扑序 + diff 边界)。集成基线 = worktree 分支(非 main · 领先 33+ commit)。
+
+**Operator note**: 仅勾选「无操作·收悉入库」+「KG-B5 dogfood 归 006」。T010 是 forge v4 §c 条款生效(第 22 条 landed-and-effective)后 unlock-preflight exit 0 解阻 T010/T011 的首个 build-ship,依赖门(depends_on T004-A2/A4)满足。**在册未授权动作项(不视为决议)**:KG-B5 族 dogfood 本次再触发 —— ① gen-handback template macOS 硬编码(producer 手工修 5 字段 + 补 baseline/worktree)② codex-review SKILL §0.1 companion 路径版本漂移(硬编码 `codex/1.0.3/` · 包称 Ubuntu 实际 `1.0.4/`)—— 随框架批次归 006 forge 攒批,时机 operator 另裁。**交叉核验补充(非包内自报)**:(a) IDS 侧 bootstrap-kit 源模板 `handback-validator/templates/handback.template.md` 已用 `{{REPO_ROOT}}`/`{{SOURCE_REPO}}` 占位符(正确);被诉硬编码的是 **XenoDev 侧** template 副本 → 属跨仓修,非 IDS 修。(b) codex `1.0.*` plugin cache 本机 `~/.claude/` 不存在,无法从 IDS 侧证实 `1.0.4`,系 XenoDev-side 观察。**⚠ validator 调用注记**:6 约束校验须传绝对路径 —— `/handback-review` 命令模板字面用相对 `"$HANDBACK_DIR/<file>.md"` 会令 check-5 path 正则(`.*/discussion/`)误判 corruption FAIL;本次改传 realpath 后两包均 exit 0 PASS(此系命令模板 latent bug,与包内容无关)。
+
+**Follow-up commits**: pending 本 session(IDS 侧:两 hand-back 包 + 本条 entry 入库 commit;XenoDev 侧:worktree 33+ commit 领先 main 未 push,push 节奏 operator 另定)
+
+## 2026-07-19T01:35:23Z · 001-radar-pA-20260719T013523Z
+
+**Reviewed at**: 2026-07-23T07:59:19Z
+**Tags**: feature(T011 方法/claim 级图构建 build-ship · Phase 1 · spec §5 P1.2 · 差异化根 C6 · FU-T011-edge-provenance 折入)
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD(无需 —— 节点=方法/claim 非论文级(C6 防退化)+ 边关系级 source 锚(反 OUT-8 真理机)与 PRD O2 语义一致;冻结接口改是 spec/接口结构矛盾收口,非 PRD 语义变更 —— 见 note)
+- [ ] 修 SHARED-CONTRACT(无需 —— 协议层无新缺口)
+- [ ] 修 XenoDev spec(无需 —— FU-T011-edge-provenance 已在 build 侧折入 T011 branch,commit `a8cd87d` + task doc `7d4c441` + 状态更新;spec 无新缺口)
+- [x] 无操作 —— 但含**冻结接口改动确认**(见下,operator 已勾「确认冻结改·收悉」):
+  **✅ 确认冻结 domain 改 `GraphEdge.source_ref: SourceRef | None`(operator build 侧已授权 · IDS review 确认符合 T001 契约治理)**:spec §O2 + T011 task Outputs 明写「边挂 source_ref 锚供 T021 三击」,但 `GraphEdge`(T001 **冻结** domain · `model_config=_FROZEN`)无 source 字段 + `domain/` 在 T011 file_domain(`graph/**`)外 = 真 spec/冻结接口结构矛盾。codex adversarial-review **5 轮**收口(confirm-review reviewer 反对节点-only stub —— 无边无法兑现方法关系图目标 · T012/T020 依赖边判 structural_connection)→ operator 决 T011 gated 到 FU 先做 · 合并为**一个完整方法关系图** ship(拒节点-only stub)· 授权改冻结 T001 domain 加 `source_ref`(默认 None **向后兼容** · T003 空图/现有构造不破 · **385 passed** 验)。**同 KG-B5「结构改 frozen 授权」先例 · 非语义重写**。T011 交付:节点=方法/claim + 节点/边**均带真 source 锚**(只锚真检索 ref · 幻觉关系/悬挂/无锚边 fail-closed 丢弃 · 可 O2 三击)· `GRAPH_MAX_NODES=50`/`GRAPH_MAX_EDGES=200` 有界(OUT-5)· 复用 `reconstruct` 注入防御 + `_sample_window` 采样(codex 9 轮硬化,不重造)· C9 run-ephemeral · C8 key 注入 · 31 test cov 95% · ruff clean · **385 passed 零回归**。
+
+**Operator note**: 勾选「确认冻结改·收悉」+「KG-B5 dogfood 归 006」—— **未升级 forge**。operator 明确将 `GraphEdge.source_ref` 判为 **spec/冻结接口结构矛盾的收口**(同 KG-B5 frozen 授权先例 · 默认 None 向后兼容 385 passed 验),**不视为触及 PRD O2 语义或需 forge 追认**(handback 决议级确认即足)。**T021 依赖链就位**:边 provenance 已落地 → T021(证据链强制)现可 depends_on FU-T011-edge-provenance(O2 三击到边的物理前提满足)。**在册未授权动作项(不视为决议)**:KG-B5 族 dogfood 三项 —— gen-handback template macOS 硬编码 / codex-review SKILL codex 路径 `1.0.3` 漂移 / eval-event-log writer.sh 接口漂移(真接 JSON via stdin · 非 parallel-builder SKILL §6.4 文档的 `--type` flag)—— 随框架批次归 006 forge 攒批,时机 operator 另裁。**注**:真 LLM 集成 build(task V2)deferred 未授权烧 key(C8 · 同 `_build_real_llm` 惯例 · 单测注入 fake LLM 全覆盖逻辑)。
+
+**Follow-up commits**: pending 本 session(IDS 侧:两 hand-back 包 + 本条 entry 入库 commit;XenoDev 侧:worktree 领先 main 未 push,FU-T011 折入 commit `a8cd87d`/`7d4c441` 在 worktree,push 节奏 operator 另定)
+
+## 2026-07-23T09:16:35Z · 001-radar-pA-20260723T091635Z
+
+**Reviewed at**: 2026-07-23T09:35:06Z
+**Tags**: feature(T012 历史切片重建收口·图上精化 build-ship · Phase 1 · spec §5 P1.3 · 差异化根 C6 图证据)
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD(无需 —— `GraphFinalizedReconstructor` 实现与 spec §5 P1.3 + C6/OUT-5/C9/C8/RT-2 一致;位移叙事经图信号精化点出 `structural_connection`(要件③首跑 FAIL「无新证据链」那格收口方向),无 PRD 缺口)
+- [ ] 修 SHARED-CONTRACT(无需 —— §4.4 verifier 实证 SHARED-CONTRACT 0 改动)
+- [ ] 修 XenoDev spec(无需 —— **零冻结 domain 改动**:图锚作 finalize 副产物(finalize.py 内本地 frozen dataclass · **非 domain**)· 吸取 T011 冻结矛盾教训「能不改冻结就不改」;仅新增 finalize.py,不改 reconstructor/slicer/writer 骨架)
+- [x] 无操作(**收悉 · T012 feature ship 确认**):post-gate 图上精化 —— 在 T003 时间密度切窗 + T011 方法/claim 图基础上产最终 2-3 切片位移叙事(供 Phase 2 judge),每切片挂窗内图节点/边锚(供 T021 证据链 3 击),图接合关系喂 LLM 精化 prompt 引导点出 `structural_connection`。**轻量·锚+提示形态**(operator plan-mode 批准三决策:图信号=锚+提示不改切窗算法 / 端到端集成测 deferred / 图锚作 finalize 副产物非 domain)。复用单一真相不重造(`_canonicalize_doc_ref` gate + `_serialize_untrusted_field`+`_strip_judgment_words` 注入防御+RT-2 双保险)· 边落窗由**边关系级 source_ref** 判定(跨窗结构连接不丢)· 有界 `_MAX_RELATIONS_IN_PROMPT=40`/`_NARRATIVE_MAX_CHARS=800`(OUT-5)· C9 零落盘 · grep 门 `Judgment|radar_ring|briefing` 空(未偷做 judge/简报)· **22 test cov 100%** · **419 passed 零回归**(397+22)· §4.4 verifier(拓扑序 + diff 仅 finalize.py+tests/ + SHARED-CONTRACT 0 改)。**scope 边界确认(同 T011 finding#1 决议 · 不越)**:finalize 只挂结构锚 + 图信号引导 LLM,**不**做语义证据核验(强制 3 击到真原文核对 = T021 的活),避 scope creep;T021 现可 depends_on [T011, T012](节点/边锚 + 切片图锚就位)。
+
+**Operator note**: 勾选「无操作·收悉入库」+「KG-B12 归 006·记环境已修」。**codex review 轨迹诚实**:round-1~3 三轮真 codex review 单调收敛(全 P2 级 · finding 逐轮更窄 = 前轮修复暴露的对称遗漏 · 全修+补测钉住 · typical approaching-approve 轨迹:r1 边落窗改边关系级 ref 判定 / r2 补 `reconstruct` 入口实现 T001 Protocol 可替换 T003 双入口 / r3 叙事回灌截断+空 ref 边守卫)· **round-4(确认收尾轮)= codex 后端环境故障(非代码/非 verdict)** → operator 决接受 r1~3 收敛证据 ship(同 009 codex 额度耗尽 subagent-fallback 精神 · 不因环境故障无限阻 ship)· hand-back 诚实标 round-4 未拿 codex 确认(reviewed-by = codex r1~3 收敛 + operator-accepted)。**KG-B12 处置 = 归 006 forge · 环境层已修记录在案**:KG-B12(codex 后端强推新模型 `gpt-5.6-sol` · 本地 codex CLI `1.0.4` 太旧 → round-4 `Codex error 400 "requires a newer version of Codex"` + `Reviewer failed` + exit 1 · 重试同错非瞬时 · codex-review gate 全线不可用 · high)。**⚠ 交叉核验(consumer 端实测 · 非包内自报)**:KG-B12 报的「gate 全线不可用」是 **build 时(09:16)** 状态;**环境层根因今天 17:16 已修** —— 本机 `~/.local/bin/codex` softlink 今日重指 → `codex-cli 0.144.5`(正是 `gpt-5.6-sol` 所需 `≥0.144.5`),与 forge009 上下文 memory(codex 双版本 + 5.6-sol 版本门槛 · 又一次「推演≠真跑」· 有备份可回滚)一致。故 **KG-B12 环境层修复 = 已完成(operator 今日 forge009 已做)**;归 006 forge 的是**框架层硬化**:① SKILL §0.1 加 codex 可用性/模型兼容性 preflight(起 review 前探 · 早 fail)② §7 补「后端模型版本 gate 失败」failure mode 显式处置(=环境故障非代码 · 不消耗 §4.2 四轮上限)③ codex 全不可用时 subagent-fallback 兜底策略(同 009 先例 · medium task 是否值得待议)+ codex plugin 升级(环境层 · 已修)。**在册未授权动作项(不视为决议)**:KG-B5 族 dogfood 三项沿用(gen-handback template macOS 硬编码 · codex-review SKILL 路径 `1.0.3`→`1.0.4` 漂移(与 KG-B12 同族 · B12 更严重因后端强推新模型) · eval-event-log writer.sh 真接 JSON via stdin 非 SKILL 文档 `--type` flag),随框架批次归 006 forge 攒批。**注**:真方向端到端集成(task Verification 检索→图→切片烧 key)deferred 未授权烧 key(C8 · 同 T011)。
+
+**Follow-up commits**: pending 本 session(IDS 侧:本 hand-back 包 + 本条 entry 入库 commit,与 #23/#24 同批;XenoDev 侧:T012 合并回 worktree 分支(T010 `9bd150c` / T011 `f11a7b6` / T012 base=f11a7b6)· worktree 领先 main 未 push · push 节奏 operator 另定)。**下一活 = 起跑 T020(judge · depends_on T012)/ T021(证据链强制 · depends_on [T011,T012])**:新开 XenoDev session `claude -w 001-radar-pA`,起跑前重跑 unlock-preflight 作 hard-block 门。
+
+## 2026-07-23T13:29:18Z · 001-radar-pA-20260723T132918Z
+
+**Reviewed at**: 2026-07-23T15:03:08Z
+**Tags**: prd-revision-trigger(spec 内部字面契约矛盾 · T020 结构成型度判断 judge · P1 级 · codex round-10 实证)
+**Severity**: high
+**Operator decisions**:
+- [x] 修 PRD/spec §O2:**采 A1(producer 推荐 · 最小改)** —— spec §O2 加**低置信豁口条款**「`low_confidence=True 且 evidence=()` 的判断(证据不足 · O4 诚实信号)豁免 O2 的 3 击证据链强制;O2 只对**高置信/有锚**判断生效」· 对应改 §1 in-scope + §6「每条判断 3 击」为「每条**高置信**判断 3 击」。改在 **XenoDev spec**(`specs/001-radar-pA/spec.md` · O2=line 45 / §1 in-scope=line 60 / O1 长期锚=line 40),IDS PRD 语义**不改**(O2/O4/OUT-8 语义本已自洽 · 矛盾在 spec 派生层的字面耦合,非 PRD 缺口)。
+- [ ] 改 T001 冻结 Judge Protocol 返非 Judgment 状态(**否决 A2** —— 触 KG-B5 冻结 interface 改 · 授权成本高 · 下游 T022 需另路渲染 · A1 已足)
+- [ ] 裁 O2 字面优先 · 稀疏不产判断(**否决 A3** —— 丢 O4「证据不足以判」诚实产品信号 · 违 PRD「诚实第一块砖」精神 · producer 亦标不推荐)
+- [ ] 无操作(**否决** —— T020/T021/T022 ship 合法性会持续悬空 · Phase 2 停滞)
+- [x] **A4 附带项 → 攒批回 forge**:根因 KG-25(冻结 domain 不约束字段 → 消费端无限深 patch · 与本 spec 矛盾同源)记 XenoDev `dogfood-backlog.md` + 归 forge 攒批,与 **KG-B5 族 / KG-B11 / KG-B12** 一并起 `/expert-forge`(审 domain 最小约束:`SourceRef.ref` min_length / period 格式 / 图字段 max_length)· 符合 CLAUDE.md「框架级变更只走 forge」铁律 · 不当场改。
+
+**Operator note**: 勾选「A1 spec 加低置信豁口(推荐)」+「A4 攒批回 forge(推荐)」。**矛盾性质裁定**:operator 采 producer 判 —— 这是 **spec 派生层两条 outcome 的字面契约矛盾**(O2「任一判断 3 击」vs O4/OUT-8「无证据必标低置信但未声明豁免证据链」在 `low_confidence=True ∧ evidence=()` 稀疏格直接对撞),**非 T020 代码错**。T020 impl 诚实守 OUT-8 反真理机红线(无真锚不伪造证据链)= 正确价值排序;A1 是把「已在跑的正确行为」正式落 frontmatter,**T020 现行为即 A1 目标形态 · 零行为变更 · 零冻结改**,与 memory 记 v6/R16 正面解法「实现选择类条款写成 A+判据+fallback」同构。**红线守护确认**:A1 继续守 OUT-8(不得为满足 O2 放松反真理机 = 那才是真理机)。**consumer 端交叉核验(非包内自报 · 我已逐条比对 XenoDev spec 原文 + judge.py + round-10 review-log)**:(a) spec 原文引证属实 —— O2(spec.md:45「任一判断 ≤3 击 · source_ref 可解析」)/ §1 in-scope(:60「每条判断 3 击」)/ O4(:47「低置信显式标注不做真理机」)/ OUT-8(:76「无证据判断必须标低置信」),四条字面确如包述,OUT-8 确**未**声明「低置信→豁免 O2」、O2 确**无**「低置信除外」;(b) round-6 interim 决已写进 `judge.py:87-91/116/127/251` 注释+契约测(「T021 对 low_confidence=True 且 evidence=() 判断豁口」)但**未落 frozen spec 字面** = 包述「决议是 plan,spec 字面未改,契约合法性悬空」属实;(c) round-10 P1 finding 实证(`T020-round10.md:52`「不要让稀疏判断绕过证据链强制 · 低置信标记并未在现有契约中豁免证据链」)= codex 独立复核,非推演。**验证器注记(同 #23/#24/#25 复现)**:6 约束校验须传绝对路径 —— 命令模板字面相对 `"$HANDBACK_DIR/<file>.md"` 因 `$HANDBACK_DIR` 尾斜杠致 `handback//` 双斜杠 → check-5 path 正则误判 corruption FAIL;传 realpath 后 6 约束全 exit 0 PASS(此系命令模板 latent bug,与包内容无关 · 已多次归 006 攒批)。**在册未授权动作项(不视为决议)**:KG-B5 族 dogfood(gen-handback template macOS 硬编码 / codex-review SKILL 路径漂移 / eval-event-log writer.sh 接口漂移)+ KG-B12(codex 后端强推 gpt-5.6-sol · 环境层今日 17:16 已修软链→0.144.5 · 框架层硬化待 forge)沿用,随框架批次归 006 forge 攒批。
+
+**Follow-up commits**: pending 本 session(IDS 侧:本 hand-back 包 + 本条 entry 入库 commit;**A1 spec 落地待跨仓** —— 需 `cd "$XENODEV_ROOT"` 改 `specs/001-radar-pA/spec.md` §O2/§1/§6 加低置信豁口条款(或经 `/scope-inject 001` 若走 IDS PRD 侧,但本裁定改在 XenoDev spec 派生层);A4 forge backlog 记 XenoDev `dogfood-backlog.md`。XenoDev 侧 T020 worktree 分支 `task/001-radar-pA-T020-judge` 保留 blocked-on-spec,spec 加豁口后解 blocked · merge · 起 T021)。**下一活 = 跨仓落 A1**:改 XenoDev spec §O2 加豁口 → 回 XenoDev session `claude -w 001-radar-pA` 解 T020 blocked · merge · 起 T021(证据链强制 · depends_on [T011,T012] · 据 A1 豁口实装:断链=ship-blocker 只对高置信判断)。
+
+## 2026-07-27T11:36:53Z · 001-radar-pA-20260727T113653Z
+
+**Reviewed at**: 2026-07-27T13:10:17Z
+**Tags**: feature(T021 证据链强制 + source_ref 真解析 build-ship · A1 豁口 owner 实装 · depends_on [T011,T012])/ drift(①评审门来源 ≠ codex ②评审中真跑复现 KG-29 项目级 high 缺陷)
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD(无需 —— 本包 §3 未提任何 PRD 缺口;T021 是第 26 条决议 A1 豁口的实装,PRD 语义未被触碰)
+- [ ] 修 SHARED-CONTRACT(无需 —— 无协议层改动诉求)
+- [ ] 修 XenoDev spec(本轮无需 —— 恒等映射设计决定属 §3 B「已由 operator 批准 · 供存档不需再决」)
+- [x] 无操作(**收悉 · T021 feature ship 确认**):`src/radar/evidence/`(anchors/enforce/exemption)对**非豁免**判断强制「anchor 真存在 ∧ anchor 映射 ref 与自报 `source_ref` 同一文档身份 ∧ 该文档确在本次真检索语料内 ∧ 链 ≤3 击」;豁免判定两步(step A 集合级有序分支 A-1 sparse → A-2 no-provenance · canonical 校验前置;step B 逐条分类),**豁免资格从原始数据重算不读 caller 自报 flag**(反 KG-B10「caller 自报=可伪造」)。契约测 256(+1 strict xfail)· `radar.evidence` coverage 100% · 全量 716 passed · ruff clean · mutation 12/12 全杀。**诚实边界(spec-sanctioned)**:只证证据链 **provenance 身份**,不证文档内容语义支撑该判断 —— spec §6 明写语义核验仍归 operator 人审、结构锚必须真指向本 run 产物,operator 2026-07-27 已裁「语义支撑接受为已知残留」。
+- [x] **框架级 3 条 → 归 006 forge 攒批**(见本轮 #28 合并勾选,不当场改 · 符 CLAUDE.md「框架级变更只走 forge」铁律)
+- [x] **T022 门禁裁定 → 见本轮 #28**(本包 §3 A 提的唯一 blocking 项「T022 是否 gated 在 FU-KG29 之后」已被同批次 #28 的 FU ship 就地回答)
+
+**Operator note**: 勾选「无操作·收悉入库」+「框架级归 006」+「T022 直接起跑」。**评审门来源诚实标注(drift ①)**:codex round-10..13 各获一次真 verdict(全 needs-attention · finding 逐条实测复现后修),对 round-14 提交 `3ffb6ce` 起复审时撞**账号级配额墙**,真实报错 `Codex error: You've hit your usage limit ... try again at Aug 2nd, 2026 7:04 AM.` → companion 返 `Codex did not return valid structured JSON` + exit 1;重置窗口 ≈6 天使「暂挂等重置」不可行 → operator 2026-07-27 **授权改独立子代理 ×2 评审并要求显式标注来源 ≠ codex**,两份(红队对抗视角 + 正确性/可维护性视角)均判 needs-attention,共 7 条 finding 全部实测复现后修。⚠ producer 明确声明**未把 commit 摘要喂给任何模型换 approve、未自评自签、不冒充 codex verdict**(KG-28 红线)—— 该诚实标注是本包可信度的承重面。**operator 补跑裁定**:08-02 配额重置后**对 T021 + FU-KG29 两 task 补跑一次 codex adversarial-review 把账做平** —— 独立子代理两轮共挖 12 条真 finding 质量不差,但**它们不是协议规定的那道门**,补跑同时也是对替代路径质量的一次真实校准数据。**KG-29 缺陷性质(drift ②)**:`graph/builder.py:90` 的 `prompt_ref_canon = {canonical: 原始ref}` 以 canonical 为唯一键、**碰撞时后者静默覆盖前者**;真跑复现(非推演)—— 语料同含 `https://repo.example/paper` 与 `.../paper/` 两篇不同文档,LLM 明确返前者、builder 实际锚到后者,无异常无日志;judge 原样复制该错 ref,enforcement 查 membership 时**它确实在语料里** → **全链无 blocker**,即 O2「3 击回溯真原文」在该链上是**假的**。越 T021 file_domain(`src/radar/evidence/**`)故按「不当场改」纪律只记不改,域内以 `xfail(strict=True, raises=AssertionError)` 钉住 + 生产链绑定测断言逐个 node/edge 锚到预期那一篇。**consumer 端交叉核验(IDS 侧实跑 · 非采信包内自报)**:(a) `enforce_evidence_chain` 生产消费点 —— `rg` 全 `projects/001-radar-pA/src/` 仅命中 `enforce.py` 定义与 `__init__.py` 再导出,**零 caller** = 包述「KG-29 属潜伏未在跑」属实,该事实是 T022 门禁裁定的关键缓解依据;(b) XenoDev worktree `worktree-001-radar-pA` 上 T021 commit `7febdde` 在册。**在册设计决定(§3 B · 存档不再决)**:文档身份 = **恒等映射(逐字)弃归一折叠** —— 折叠版连续 5 轮被 codex 证出可执行碰撞(query/fragment 被吞 → arXiv 版本与 DOI 尾斜杠被裁 → 空分隔符不可区分 → IPv6 方括号被剥 → IPvFuture 不含冒号 → port 转 int 丢词法 → `urlsplit` 静默删控制字符),根因「归一必须单射」在通用 URL 上极难成立,而同一 key 同时用于 anchor↔ref 一致性与 corpus membership,任一碰撞都让未检索资源穿过两道门;恒等映射天然单射使该证明义务整体消失。前提**机器可验非假设**(`test_verbatim_ref_identity_holds_across_the_real_production_chain` 用 fake LLM 故意返别名以证 builder 锚回原始串;上游一旦改成让 LLM 自填 ref 该测立刻转红),折叠版全部碰撞用例保留为回归网。
+
+**Follow-up commits**: pending 本 session(IDS 侧:本 hand-back 包 + #28 包 + 两条 entry 入库 commit;XenoDev 侧 T021 `7febdde` 在 `worktree-001-radar-pA` 分支,未 push,push 节奏 operator 另定)。**下一活见 #28**。
+
+## 2026-07-27T12:45:18Z · 001-radar-pA-20260727T124518Z
+
+**Reviewed at**: 2026-07-27T13:10:17Z
+**Tags**: spec-gap-fix(FU-KG29-canonical-collision 两层根治 build-ship · 解除 codex 判定的「阻塞 ship」项)/ drift(①评审门来源仍 ≠ codex ②§4.4 自查违规 → 重建分支)
+**Severity**: high
+**Operator decisions**:
+- [ ] 修 PRD(无需 —— 本包 §3 未提 PRD 缺口;FU 是项目级缺陷修复,PRD 语义未触碰)
+- [ ] 修 SHARED-CONTRACT(无需)
+- [ ] 修 XenoDev spec(**本轮不改** —— DOI 分支 `rstrip('/')` 同类残留越权裁为「记为已知残留暂不动」,见下)
+- [x] 无操作(**收悉 · FU-KG29 ship 确认 · codex 阻塞项解除**):两层根因两层修 —— ①`credibility/gate.py` canonicalizer 停止对通用 URL 做无差别 `rstrip("/")`(该函数存在理由是消 DOI/arXiv 变体假 STOP,通用 URL 尾斜杠**从来不在该理由射程内**),path 改逐字保留、DOI/arXiv 折叠不动(既有 `test_canonicalize_doc_ref_maps_variants_to_same_key` 继续绿 = 未伤初衷);②`graph/builder.py` 单层字典改 `_RefIndex`:`exact`(原串逐字集 · **优先命中不经归一**)+ `alias`(canonical→原串 · **仅收唯一对应一篇**的 · 一对多整条剔除)→ 查不到即 **fail-closed 丢锚绝不猜**。全量 730 passed · `gate.py` 97% / `builder.py` 96% · ruff clean · mutation 8/8 全杀。T021 那条 `xfail(strict=True)` 修好后自动 XPASS(strict) 报错精确提示拆标记 —— **跨 task 跟踪钉机制走通一整轮**,marker 已拆转常规回归测。
+- [x] **T022 起跑:直接起(不 gated)** —— codex 在 T021 round-12 判「KG-29 落地前阻塞 ship」,本 FU 即该落地:缺陷两层收口 + mutation 8/8 证有牙 + xfail 转常规回归测永久钉住 + `enforce_evidence_chain` 至今无生产消费点(消费点在 T022)故 **KG-29 从未真正暴露**,赶在 T022 起跑前修完。→ **T022 现无 KG-29 相关阻塞,授权起跑**。
+- [x] **DOI 分支 `rstrip('/')` 残留 → 记为已知残留暂不动** —— 现由 fail-closed(歧义丢锚)兜住且既有测依赖它,docstring 已如实标注;要动需单独评估,不在本轮。
+- [x] **框架级 4 条 → 归 006 forge 攒批**(本轮合并勾选 · 覆盖 #27+#28 两包):**KG-29 谓词 SSOT 缺失** / **KG-20 替代评审路径档** / **方法论 8 条回流 review checklist** / **handback frontmatter 路径失真(新 · consumer 端发现)**。
+
+**Operator note**: 勾选「无操作·收悉」+「T022 直接起跑(推荐)」+「08-02 补跑两个 task 的 codex 评审(推荐)」+「DOI 残留记为已知暂不动(推荐)」+ 框架级四条全归 006。**评审门来源(drift ①)**:与 #27 同因 —— codex 仍在账号级配额墙内(重置 2026-08-02),本 task `risk_level: high` 本应强制 path A adversarial-review,按 operator 对**同一阻塞**的裁定走独立子代理 ×2 并显式标注来源 ≠ codex,两份均判 needs-attention,**5 条 finding 全部实测复现后修**。其中 **[I1] 是 producer 自己引入的缺陷且方向与本 FU 论点相反** —— 去掉全局 `rstrip("/")` 竟**同时加宽** DOI 分支(旧码因先 rstrip 使 `https://doi.org/` 永进不了 DOI 分支;去掉后其 body 为空却铸出 `doi:` key,于是 `doi:` / `https://doi.org/` / `http://doi.org/` / `https://dx.doi.org/` 塌成同一 key = 直接构成锚伪造面),而 docstring 只写了收窄 —— 「整个 FU 的论点是不折叠规范没保证的东西,实现却在别处折叠得更多」。[I2] 空 canonical 无守卫(`doc://` 剥前缀后空壳锚),而兄弟消费点 `finalize.py` 早在 codex round-3 就为此加过守卫、重写索引时无人提醒带上 = KG-29 框架级那半的**第二次自证**。[I3] 修完 canonicalizer 后三条以 KG-29 命名的测把 `_RefIndex` 整层还原掉照样绿(已重指到仍构成真碰撞的 DOI 变体 + 加前置断言)。[I4] R1 结论对理由错(实测 P0.2 解锁路径 canonicalize 调用数 = 0 · 真因是该路径压根不经 canonicalizer)。[红队 medium] 尾斜杠不符即掉锚系有意为之(不按其主推荐恢复容差 —— 那会部分撤销本修复),但掉锚零可观测属实 → 补诊断指向真根因。⚠ 同样明确声明未喂摘要换 approve、未自评自签、不冒充 codex verdict。**§4.4 自查违规处置(drift ②)**:pre-merge verifier 抓到起跑前的 `file_domain` 修正混在第一个 `test:` commit 里(违反「`test:` commit 只许动 `tests/`」)且 task doc 不在 `file_domain` 内 = diff 越界;虽 gate 的**意图**(防生产代码藏进 test commit)未被违反(改的是文档),producer 仍**重建分支**拆出独立 `docs(task):` 提交 + 补 file_domain,重跑三项全过 —— **不给自己开例外**的处置与「给自己开例外一次,下次就没有可援引的标准」的自陈一并留档可审。**consumer 端交叉核验(IDS 侧实跑 · 非采信自报)**:(a) `pytest --collect-only -q` = **730 tests collected**,与包述 730 passed 一致;(b) `rg xfail tests/` 仅命中 `test_evidence.py:823-826` 的 docstring 历史记述,**marker 确已拆** = 「xfail 转常规回归测」属实;(c) worktree `worktree-001-radar-pA` HEAD `6a50f3a`(FU)在 T021 `7febdde` 之上,DAG 顺序与包述一致;(d) `enforce_evidence_chain` 零生产 caller(见 #27)= 「从未真正暴露」属实。**⚠ consumer 端新发现(两包均未自报 · 已入 006 攒批)**:本轮两包 frontmatter `to_source_repo` / `workspace.source_repo` 均写 **`/Users/admin/codes/ideababy_stroller`**(已死 mac 路径),而 `handback_target` 是正确的 `/home/ys/...`;同机同仓相隔 4 小时的 `20260723T091635Z` 写 `/home/ys`、`132918Z` 写 `/Users/admin` → **至少一个是错的**。`gen-handback.sh:425-438` 本身有 forge v6 KG-26 的 fail-closed 解析链(`--source-repo` → `$IDS_REPO` → sibling → fail,**不会**写死 mac 路径),故这两包该字段**不是走那条链产的**;validator 不拦是因约束 3 用 repo_marker/remote/hash 而非该字段 → **跨仓 audit trail 上的静默失真**(与 KG-B5 族 gen-handback template macOS 硬编码同族,本次是**产出物实证**而非模板阅读)。**在册未授权动作项(不视为决议)**:KG-B5 族 / KG-B11 / KG-B12(环境层软链已修) / KG-25 沿用,随框架批次归 006 forge 攒批。
+
+**Follow-up commits**: pending 本 session(IDS 侧:#27 + #28 两 hand-back 包 + 两条 entry 入库 commit,未 push;XenoDev 侧 FU `6a50f3a` 在 `worktree-001-radar-pA`,未 push)。**下一活 = 起 T022(PPV-P2 · briefing+evaluate CLI)**:新开 XenoDev session `claude -w 001-radar-pA`,起跑前重跑 unlock-preflight 作 hard-block 门;T022 起跑时把「上游 T021/FU-KG29 评审门为替代路径、08-02 后补跑 codex」记入 task doc 作评审债显式标注。**待办(时点触发)**:2026-08-02 codex 配额重置后补跑 T021 + FU-KG29 的 adversarial-review。**待办(攒批)**:框架级四条起 `/expert-forge 006`。
