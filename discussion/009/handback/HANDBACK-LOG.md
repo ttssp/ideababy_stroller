@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-27T07:46:28Z
-total_decisions: 28
+last_updated: 2026-07-27T10:05:38Z
+total_decisions: 29
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -861,3 +861,83 @@ operator 在决议中补充:**「operator 不具备标注能力,后续开发要�
 - **下一活 ①(不等 forge · 可立即起)**= `cd "$XENODEV_ROOT"`(009 线为 `/home/ys/codes/XenoDev-009`)→ `claude -w 009-pM3prime` 落地 D-1(a) + D-2 + D-3。**IDS 侧建议的验收判据**:改完重跑 `scripts/layer2-feasibility-probe.py` 至 **exit 0**(证明存在一组合法输入使 `passed=1`)—— 即把 KG-43 提的那道门先用在它自己的修复上。该项 operator 未勾选,记为建议非决议。
 - **下一活 ②(治理主线)**= 起 `/expert-forge 009`(v2 专场)重审 KG-42:**在 operator 领域判断力不足(全维)的真实约束下,金标 Layer-2 的验收主体是谁 / 是否改非人工验收路(如事后市场真值回标)/ 是否降级为单一事实维 / 或 Layer-2 长期 blocked 并据此重定 E2 解锁条件**。一并带 KG-43(冻结门槛前置可达性验证门)。
 - **残留 defer(非本决议 close)**:① watchlist 补权威数据(B1 · 未变 · 红线:严禁本 fork 现填交易所清单可能引 look-ahead;另注 build 侧提醒 —— 若照 gold ticker 反推 curate,外证据锚会退化为同义反复,该清单须来自 operator 外部权威认知)② blind 隔离技术不可证性(B5 · 未变)③ **operator 真盲标产真数字 —— 本条状态变更:从「待真跑」改为「待 forge v2 定主体后重估」**。
+
+## 2026-07-27T10:05:38Z · 009-pM3prime-20260727T065748Z(forge 009-pM3prime **v2** verdict 落地 · operator 选 **[C] 局部接受** · **v1 推论撤销 · KG-42 死结未真解** · PRD v0.6→v0.7)
+
+**Reviewed at**: 2026-07-27T10:05:38Z
+**Related task**: FU-KG43(承第 28 条 · 本条是该决议触发的 forge v2 verdict 落地,非新 hand-back)
+**Tags**: prd-revision-trigger
+**Severity**: high
+**6 约束自检**: n/a(本条非 hand-back 包决议 · 是 forge verdict 落地入库 · 沿第 26 条先例)
+**verdict-evidence 预检**: n/a
+
+**forge run 摘要**:`discussion/009/009-pM3prime/forge/v2/`(8 round file 齐 · Reviewer A=Claude Opus 4.8 ·
+B=GPT-5.6-Sol xhigh · strong-converge · **converged 无 unresolved** · A 侧让步 2 条 · 残余降 4 条 v0.2 note ·
+~26 次检索 / ~17 独立源 · **与 v1 零论文重叠**)。stage doc: `stage-forge-009-pM3prime-v2.md`(15,652 字符)。
+Phase 4 synthesizer 经 operator 选择**在主进程产出**(未调 forge-synthesizer 子代理)。
+
+**Operator decisions**:
+- [x] **修 PRD**(v0.6→**v0.7**)· §4-E1 新增 **🔴 D-7 v2 修订块**(8 条 a-h)+ §7 新增 **🔴 E2/E3 解锁条件修订表**
+- [ ] 修 SHARED-CONTRACT §"—"(不勾选:KG-43 是框架级但走 forge 攒批,不直改协议层)
+- [x] **记 KG-43 三道门归 IDS forge 006 攒批**(dogfood 铁律:框架级变更只走 forge,不当场改)
+- [x] **[C] 局部接受**(见下 Operator note 的三段式处置)
+
+**Operator note**:
+
+**决议 = forge v2 Decision menu [C] 局部接受**,三段式:
+
+**✅ 采纳(否定性结论全落)**
+- **(a) 撤销 forge v1「operator 可自任 Layer-2 第二源」推论**。断裂点是**范畴替换**:v1 由
+  「`mapping_agreement_rate()` 不含金融逻辑」推出「标注不需领域深度」—— 该函数是**比较器**(只做 `==`),
+  标注劳动在于五元组**怎么产生**;且 v1 用以支撑的「事实维可外证据核验」**只覆盖 ticker/timepoint 两维**,
+  sector/direction/horizon 三维无任何外锚。**错误独立性解决「不共享盲点」,不产生真值。**
+- **KG-42「无验收主体」死结并未真解,只是被 D-7 挪了位置** → **第 27 条「KG-42 死结解」判定作废**
+  (本条以新增 entry 记录撤销,不改原 entry · 沿 2026-07-05 F6 撤销先例)。
+- **(b) 撤销 07-25 gold 协议的 validity 地位**:`gold`=考据版 / `human`=盲标版 = **同一人两次标注**,
+  按 **Krippendorff 信度三分类(stability / reproducibility / accuracy)只测 stability,不测 validity**。
+  该数字**在测量理论上不是对 machine 映射正确性的验收**;作 stability 记录可留,不得当 validity 用。
+  (v1 契约缺角:D-7 草案详写 human 资格却**从未定义 gold provenance**,而双错率恰相对 gold 定义 → 判据悬空。
+  正因未定义,operator 才于 07-25 临时补协议,而**该补丁直接生产了本轮困境**。)
+- **(c) 全量五维 Layer-2 作为 correctness gate 在 v0.1 不成立,且不因换主体/调门槛而成立**;
+  v1「§2 × Layer-2 非产品级真互斥」的判断**在 correctness 维度撤销** —— 它就是真互斥。
+- **(d) E2 解锁条件 ② 拆两条**:②-a 诊断 lane(待定)/ **②-b 回测 lane 明确 blocked(非「待跑」)**;
+  含**反自欺条款**(②-a 过不得记作 ② 满足)。
+- **(f) 门槛形态修正判据(跨场景通用)**:**看数后下调既有阈值数字 = 移动球门(禁);换形态 +
+  新 `caliber_version` 预注册 + 废止旧 pass 语义 = 方法学修正(可);形态改亦不得 retroactively 解锁旧 gate。**
+- **KG-43 三道冻结前置门**归 forge 006 攒批:① **存在性证明**(构造理想输入证 `passed=1` 可达)
+  ② **真值证明**(验收锚从哪来 / 谁能独立证伪 / 成本是否本 tier 可承受)③ **形态检验**(门槛形态是否合乎
+  该问题的标准处理方式 —— 形态错比数字错更难救:数字受 C6 约束尚可版本化修正,形态错则整套预注册语义作废)。
+
+**⏸ 挂起(本次不采纳为既定验收面)**
+- **(e) groundedness 降级面** —— forge verdict 主张把 Layer-2 验收对象由 correctness 降为 groundedness
+  (**被引原文是否真支撑该五元组** · 只需阅读理解 · 009 引文回锚基础设施已就位 · 归因文献实测高达
+  **57% 引文为事后合理化**故非稻草人验收)。**operator 选 [C] 挂起**,理由取自 forge 自身
+  §underweights 的自曝:**groundedness 的统计效力两边都没算** —— correctness 侧「41 条 × 门槛 0.05 →
+  约 2 条错即翻盘」的问题换成 groundedness 后**原样存在**。
+  **解锁前置 = 零成本效力探针须先证明其在 n≈41 上具区分力**;出数字后另行决议。
+  若日后采纳,**硬边界必须同时写死**:groundedness 过 ≠ 映射正确 ≠ 有 alpha ≠ 授权回测
+  (此条为 Reviewer B 行使复核权时的 binding 条件:边界写不硬则整条 verdict 回退纯 STOP)。
+
+**❌ 本次不做**
+- 不改 SLA 门槛数字(**C6 不变**);形态重注册待 (e) 决议后与 groundedness 一并做。
+- 不动红线 `gold_layer2.py:203`、gate fail-closed 骨架、E1 US 密度终裁(第 25 条)。
+
+**方法论沉淀(两条,均可复用)**:
+1. **「该事实并非新信息」** —— `risks.md` E1-R2 下游注(2026-07-23)已载「operator 无合格金融判断」,
+   且该文件**就在 v1 的 X 清单里**。v1 读过并将其重新解释掉。故本轮性质是**裁决 v1 的推论**而非处理新事实
+   ——「证据在场却被解释掉」是一种独立于「证据缺失」的失败模式,值得进 forge 006 议。
+2. **回声室判据的正面执行** —— 双方 P1 同姿态收敛(已标警报),真正对抗只发生在 P2:
+   双方文献**零重叠**(A 走 Krippendorff + Correctness-is-not-Faithfulness;B 走 Snow + FEVER/CFEVER +
+   Dorner & Hardt),**各自推翻了自己 P1 的一部分**,再落到同一出路。**本 verdict 的可信度基本全押在 P2 这一环**
+   —— 若 P2 检索面有共同盲区,双方会一起错。此为 stage doc §underweights 明载的自曝。
+
+**Follow-up commits**: pending(本 LOG 第 29 条 + PRD v0.7 + forge v2 全产物[8 round file + config + state +
+stage doc] + codex 总线 inbox/outbox p1-p3r2 + HEAD · 纯 009 不夹带 001 · 未 push)
+- **下一活 ①(解 (e) 挂起 · 优先)** = XenoDev session 跑 **groundedness 效力探针**(零成本 · 判 n≈41 是否具区分力)
+  → 出数字后回 IDS 决议是否采纳 groundedness lane。
+- **下一活 ②(与本轮正交 · 可并行)** = XenoDev 落地第 28 条已决的 **D-1(a) + D-2 + D-3** 门槛自洽性修复
+  (启动 prompt 已备:`scratchpad/XENODEV-startup-FU-KG43-fix.md`;含 IDS review 侧新发现的 O8 验收终点不一致)。
+- **残留 defer**:① watchlist 补权威数据(B1 · 未变)② blind 隔离技术不可证性(B5 · 未变)
+  ③ **operator 真盲标产真数字 —— 本条状态再降级**:correctness 盲标在 v0.1 已判不成立,
+  41 条盲标机会**保持未使用**(全程未泄露机器答案),是否改作 groundedness 用途待 (e) 决议
+  ④ **Layer-1 主体问题全程未处置**(门槛仍空 · 不得默认已解)。

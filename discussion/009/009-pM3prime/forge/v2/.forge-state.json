@@ -1,0 +1,21 @@
+{
+  "version": "v2",
+  "phase": "done",
+  "convergence_mode": "strong-converge",
+  "x_hash": "3e134daff92fc92300a3bec84fa84054",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": true,
+  "fork_id": "009-pM3prime",
+  "triggering_handback": "009-pM3prime-20260727T065748Z",
+  "stage_doc": "stage-forge-009-pM3prime-v2.md",
+  "synthesized_by": "main-process (operator chose over forge-synthesizer subagent)",
+  "p1_outcome": "both CONCERNS · converged on gold-provenance gap · echo-chamber flag raised",
+  "p2_outcome": "both CONCERNS · zero source overlap · both independently reached groundedness · each overturned part of own P1",
+  "p3r1_outcome": "3 disagreements surfaced · Codex ruled on all 3 · A conceded 2 (E2 split · Dorner v0.2+)",
+  "p3r2_outcome": "CLEAN · converged · no unresolved · boundary-sufficiency check PASSED by B",
+  "open_disagreements": 0,
+  "v02_notes": 4,
+  "created": "2026-07-27T08:12:58Z",
+  "last_updated": "2026-07-27T09:20:00Z"
+}

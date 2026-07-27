@@ -1,6 +1,15 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.6(2026-07-23 回写 handback `009-pM3prime-20260723T082127Z`[FU-KG42] 决议 · forge
+**Version**: v0.7(2026-07-27 回写 handback `009-pM3prime-20260727T065748Z`[FU-KG43] 决议 · forge
+009-pM3prime **v2** verdict · operator 选 **[C] 局部接受** · HANDBACK-LOG 第 29 条:
+**🔴 撤销 v1「operator 可自任 Layer-2 第二源」推论**(范畴替换 —— 比较器领域中立 ≠ 标注劳动领域中立;
+三解释维无外锚)· **KG-42 死结未真解 · 第 27 条「死结解」判定作废** · **撤销 07-25 gold 协议的 validity
+地位**(同一人两版 = Krippendorff stability ≠ validity)· **全量五维 correctness gate 在 v0.1 不成立且
+不因换主体/调门槛而成立** · **E2 解锁条件 ② 拆两条,②-b 回测 lane 明确 blocked** · 候选降级面
+groundedness **[C] 下挂起**,待零成本效力探针证明 n≈41 具区分力后另议 · 门槛形态修正判据(数字 vs 形态)采纳 ·
+红线 `gold_layer2.py:203` 与 E1 US 密度结论不动;见 §4-E1 **D-7 v2 修订块** + §7 + HANDBACK-LOG 第 29 条 +
+`forge/v2/stage-forge-009-pM3prime-v2.md`。
+v0.6 2026-07-23 回写 handback `009-pM3prime-20260723T082127Z`[FU-KG42] 决议 · forge
 009-pM3prime **v1** verdict:**§4-E1 Layer-2 金标 D-7 改写** —— 第二源资格从「领域独立真人」refactor
 为「错误独立性代理(外证据锚定 + 逐维双错率证成 · 不靠品牌/领域深度)」· **frozen §2×D-7 收窄为验收级
 暂不可满足 · operator 配证据协议可自任独立第二源无须外求真人** · 跨 vendor 强模型不得当 Layer-2 终审
@@ -184,6 +193,62 @@ operator-input 文档 §1)。
   > 具体数字 · 「外证据锚定」用哪个权威知识源核验 ticker(受红线约束不引入 look-ahead)· operator 自任第二源
   > 时技术上如何保证「独立于提取器」(标注 UI/流程隔离 · 主路最脆弱技术假设)。
 
+  > **🔴 D-7 v2 修订(2026-07-27 · forge 009-pM3prime v2 verdict · HANDBACK-LOG 第 29 条 · operator 选 [C] 局部接受)**
+  > **Source**: `discussion/009/009-pM3prime/forge/v2/stage-forge-009-pM3prime-v2.md`
+  > (Reviewer A=Claude Opus 4.8 · B=GPT-5.6-Sol xhigh · strong-converge · converged · 无 unresolved)。
+  > **本块优先于上方 v1 改写块**;v1 原文保留仅供追溯,其 ①③ 的关键结论已被下述 (a)(c) 撤销。
+  >
+  > **背景(前提塌陷)**:2026-07-27 operator 自陈**对金融新闻 sector / direction / horizon / timepoint /
+  > ticker 五维均无领域判断力**(非投入不足,是能力问题)→ v1「operator 可自任独立第二源」的落地前提由本人推翻。
+  > 注:该事实**并非新信息** —— `risks.md` E1-R2 下游注(2026-07-23)已载「operator 无合格金融判断」,
+  > 且该文件在 v1 的 X 清单内;v1 读过并将其重新解释掉。故本轮性质是**裁决 v1 的推论**,非处理新事实。
+  >
+  > **(a) 撤销 v1「operator 可自任 Layer-2 第二源」推论**。断裂点是一次**范畴替换**:v1 由
+  > 「`mapping_agreement_rate()` 不含金融逻辑」推出「标注不需领域深度」—— 但该函数是**比较器**(只做 `==`),
+  > 标注劳动在于**五元组怎么产生**;且 v1 用以支撑的「事实维可外证据核验」**只覆盖 ticker 与 timepoint 两维**,
+  > sector / direction / horizon 三维无任何外锚。**错误独立性解决「两方不共享盲点」,不产生真值。**
+  > → **KG-42「无验收主体」死结并未真解,只是被 D-7 挪了位置**;HANDBACK-LOG 第 27 条「KG-42 死结解」判定**作废**。
+  >
+  > **(b) 撤销 07-25 gold 协议作为 validity 依据的地位**。`gold`=operator 考据版 / `human`=operator 盲标版
+  > 是**同一人两次标注**,按 Krippendorff 信度三分类(stability / reproducibility / accuracy)
+  > **只测 stability,不测 validity**。该数字**在测量理论上不是对 machine 映射正确性的验收**。
+  > 作为 stability 记录可保留,**不得当 validity 用**。(v1 的契约缺角:D-7 草案详写 human 资格,
+  > 却从未定义 **gold provenance**,而双错率恰是相对 gold 定义的 —— 判据悬空。)
+  >
+  > **(c) 全量五维 Layer-2 作为「correctness gold gate」在 v0.1 判定不成立**,
+  > **且不因换主体、不因调门槛而成立**。v1 ③「§2 × Layer-2 金标 **非产品级真互斥**」的判断
+  > **在 correctness 维度上撤销** —— 它**就是**真互斥:产品定义(单人自用·不懂投资)与验收要求
+  > (五维映射正确性)在 v0.1 不可同时满足,是**能力与 validity 锚的结构问题**,不是资源问题。
+  >
+  > **(d) E2 解锁条件 ② 拆为两条**(见 §7 E2/E3 解锁条件同步修订):
+  > - **②-a 诊断 lane**:可产**开发证据**(口径校准 / failure 分类 / 提取器变体比较)。
+  > - **②-b 回测 lane**:历史窗回测需 correctness 验收过 → **v0.1 明确 blocked(非「待跑」)**,
+  >   原因是**缺 validity 锚**而非缺劳动。
+  > - **⚠ 反自欺条款**:②-a 过**不得**被记作条件 ② 满足。任何文档把降级结果表述为「两层金标过」
+  >   = 口径漂移,须回 hand-back。
+  >
+  > **(e) 候选降级面 = groundedness · 本次 [C] 决议下【挂起,不予采纳为既定验收面】**。
+  > forge v2 verdict 提出把 Layer-2 验收对象由 **correctness**(映射对不对 · 需领域判断)降级为
+  > **groundedness**(**被引原文是否真支撑该五元组** · 只需阅读理解),且 009 引文回锚基础设施
+  > (`raw_ref`/`span_start`/`span_end`)已就位。**operator 选 [C]:该面暂不写入 PRD 作为验收面**,
+  > 解锁前置 = **零成本效力探针**须先证明其在 **n≈41 上具备区分力**
+  > (forge §underweights 自曝:groundedness 的统计效力**两边都没算**;correctness 侧「41 条 × 门槛 0.05
+  > → 约 2 条错即翻盘」的问题换成 groundedness 后原样存在)。探针出数字后另行决议是否采纳。
+  > **若采纳,硬边界必须同时写死**:groundedness 过 **≠** 映射正确 **≠** 有 alpha **≠** 授权回测。
+  >
+  > **(f) 门槛形态修正判据**(采纳 · 跨场景通用):**看数后下调既有阈值数字 = 移动球门(禁);
+  > 换形态 + 新 `caliber_version` 预注册 + 废止旧 pass 语义 = 方法学修正(可);形态改亦不得
+  > retroactively 解锁旧 gate。** 具体:Layer-2 固定逐维 coverage 阈是方法学上过时形态
+  > (标准形态为 risk-coverage 曲线 / AURC)—— 但**本次不改数字**,形态重注册待 (e) 决议后一并做。
+  >
+  > **(g) 红线保留(不动)**:`gold_layer2.py:203` 第二 LLM / 跨 vendor 未校准模型当 Layer-2 终审 → raise。
+  > gate fail-closed 骨架不动。E1 US 密度结论(第 25 条)不动。
+  >
+  > **(h) 未处置项(v0.2 note · 见 forge v2 stage §v0.2 notes)**:① Dorner & Hardt 变体比较路径
+  > (v0.2+ · **带前置验证义务**:须先证 operator 标注噪声与真值**正相关**,该假设在三解释维未经检验且可能为假)
+  > · ② partial identification 界宽在 n≈41 未验 · ③ **Layer-1 主体问题全程未处置**(门槛仍空 · 同样 blocked-on 真盲标)
+  > · ④ 「operator 慢考据 gold 是否可产」方法学上无解,只能靠外锚绕开而外锚仅覆盖两维。
+
 - **E1 hand-back**:密度数字 + 金标两层结果 + record_tickers 判定,经 hand-back 交回 IDS,
   operator 决定 E2/E3 授权与否。
 
@@ -211,6 +276,24 @@ operator-input 文档 §1)。
 - ~~E2 历史窗先导~~ / ~~E3 forward 确证线~~ —— **不在本 fork**,gate = E1 数字 + operator
   另行授权(密度 gate **per-market**:US 已过 · CN/HK STOP,见 §4-E1 2026-07-19 注记;
   金标两层仍未过,三条件未齐)。
+
+  > **🔴 E2/E3 解锁条件修订(2026-07-27 · forge v2 · HANDBACK-LOG 第 29 条 · [C])**
+  > 原「解锁三条件」中的**条件 ②(两层金标过)拆为两条**,状态分别判定:
+  >
+  > | 条件 | 内容 | 状态(2026-07-27) |
+  > |---|---|---|
+  > | ① 真密度显著 | per-market | **US ✅**(第 25 条终裁)· CN/HK ❌ STOP |
+  > | **②-a 诊断 lane** | 产开发证据(口径校准 / failure 分类 / 变体比较) | **⏸ 待定** —— 候选降级面 groundedness 在 [C] 下**挂起**,须先过效力探针(见 §4-E1 D-7 v2 修订块 (e)) |
+  > | **②-b 回测 lane** | 历史窗回测,需 **correctness 验收过** | **🔴 v0.1 明确 blocked(非「待跑」)** —— 缺 validity 锚,非缺劳动;**不因换主体或调门槛而解锁** |
+  > | ③ operator 显式授权 | — | ❌ |
+  >
+  > **→ E2 不授权。** E2 历史窗回测 / E3 forward 线做进 XenoDev = 越界 = **BLOCK**(不变)。
+  >
+  > **⚠ 反自欺条款**:②-a 过**不得**被记作条件 ② 满足;任何文档把降级验收结果表述为
+  > 「两层金标过」= 口径漂移,须回 hand-back。
+  >
+  > **⚠ Layer-1 未处置**:Layer-1 门槛仍空、同样 blocked-on 真盲标跑,其主体问题**本轮未审**
+  > (forge v2 v0.2 note ③)。不得默认 Layer-1 已解。
 
 ## 7. BLOCK 级硬约束(§8 契约测试须覆盖 · forge v5 verdict 定死)
 
