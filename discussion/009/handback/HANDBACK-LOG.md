@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-23T15:04:24Z
-total_decisions: 27
+last_updated: 2026-07-27T07:46:28Z
+total_decisions: 28
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -808,3 +808,56 @@ build 侧建议「codex 恢复后优先补跑权威确认」。**operator 裁定
 
 **Follow-up commits**: pending(本 LOG 第 27 条决议入库 · 未 push)· build-ship 产物在 XenoDev-009 `feat/009-spec` 工作树(7 改 + 5 新 · 1054 passed · 未 commit/未 push · push 前需 operator 确认)·
 下一活 = operator 真盲标跑 + watchlist 补数(B1)解 E2 解锁条件 ② · codex 补跑本决议已裁定不做(接受 fallback 终态)
+
+## 2026-07-27T07:46:28Z · 009-pM3prime-20260727T065748Z(FU-KG43 · Layer-2 冻结门槛数学不可达 · D-1/D-2/D-3 全采纳 · **operator 领域判断力不足 → D-7「可自任」前提被推翻 · KG-42 重开 · 起 forge v2**)
+
+**Reviewed at**: 2026-07-27T07:46:28Z
+**Related task**: FU-KG43
+**Tags**: drift, prd-revision-trigger
+**Severity**: high
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对 realpath · 一次通过)
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence:` 父键 · 本包零代码改动 · 非 build-ship 包 · 正常)
+
+**IDS 侧独立复核(非转述 build 结论 · 本次 review 实跑)**:
+- `gold_layer2.py:mapping_agreement_rate` 用 `m.get(dim) == h.get(dim)` → machine `null` vs human 有值 = 不命中 ✅ 属实
+- `evaluate_layer2` 合取**确实**仍保留 `rate >= threshold` 作首项,与新 D-7 五项并列 ✅ 属实(refactor 未清干净)
+- `coverage_denominator` = 「非弃权且 gold 有值的计数」→ human 弃权直接压覆盖率 ✅ 属实
+- `blind_annotate.py:50-54` `SLA_COVERAGE_THRESHOLDS` sector/horizon = **0.75** ✅ 逐字属实
+- SLA.md:28 逐字写「第二源资格从**「输出一致率」refactor 为**逐维双错率 + abstain 覆盖率 + 外证据锚 + 盲标隔离」✅ 属实 → 方向 (a) 理据成立
+- **探针实跑 exit=1**,三组理想上界全 `passed=False`;A1 组五维双错率全 0.0 + 覆盖率全达标 + ticker 锚 1.0(D-7 三分离契约满分)仍被粗一致率 0.600 一票否决
+- **算术独立验算**:上界 = (3×41 + 10 + 10)/205 = **143/205 = 0.69756 < 0.70**,矛盾差额恰好 1 个弃权名额。**与 operator 标注质量无关** ✅ 成立
+
+**Operator decisions**:
+- [ ] 修 PRD §"—"(本次不勾选:D-1/D-2/D-3 均为门槛自洽性修复 · 不触及产品决策 · 走直改 XenoDev spec/SLA。⚠ 但下方「主体缺失」条**将**触发 PRD 层重审,由 forge v2 裁)
+- [ ] 修 SHARED-CONTRACT §"—"(不勾选:本包无协议层变更诉求;KG-43 框架缺口走 forge 而非直改协议)
+- [x] **修 XenoDev spec/SLA · D-1 采纳方向 (a)**:新契约路(gold 存在)合取**去掉 `rate >= threshold` 项**,legacy 路(gold 缺)保留旧判据兼容 4 个既有旧测。**不改任何 SLA 冻结门槛 → 不碰 C6**。明确**否决 (c) 下调 threshold**(看到过不了才改数字 = 移动球门 = C6 自欺 = V4 失败模式;且擦边过 0.6976 说明该指标已无区分力)
+- [x] **修 XenoDev · D-2 采纳**:给 `blind_annotate.py` CLI 补 `--dimension-arbitration-json` 入口(库层 `reconcile()` 已有该参数 · C9 仲裁留痕设计存在 · 能力在入口缺)。解「独立第二源的价值恰在于可能不同,而通过条件是零分歧」的方法论自反
+- [x] **修 XenoDev spec §O8 / SLA §Layer-2 · D-3 定义补全**三项:① gold provenance 协议(gold=operator 考据版 / human=operator 盲标版 / machine=`extracted_signals`)② machine 在 sector/horizon **结构性弃权** → 该两维 `double_error_rate` 实测的是 operator 盲标 vs 自身考据的自洽性,**不构成对 machine 映射正确性的验收**(防数字被误读为「机器板块判得准」)③ B5 诚实边界(gold 与 human 同为 operator → 共享盲点;ticker 维靠 watchlist 外锚 + abstain 担独立性;**v0.1 降级验收,非技术保证**)
+- [x] **记 KG-43 框架治理 defer 归 IDS forge**:framework 支持「门槛预注册 · C6 不可回改」(强治理,对),但**无任何一道门要求冻结前验证门槛可达**。建议 spec-writer / task-decomposer SKILL 加 feasibility probe 前置(理想上界合成数据跑存在性证明 · 零成本无 LLM)。受益面 = 所有预注册门槛场景(证伪链 / 金标验收 / SLA gate)
+- [x] **E2 授权判据复核入库(信息式)**:条件 ② 从 LOG 第 27 条的「harness 就位 · 待真跑」**降级**为「门槛组合不自洽 + 无合格验收主体」→ **E2 仍不授权**
+- [ ] 「修完重跑探针证明可达再起盲标」—— **未勾选**(如实记录。IDS 侧建议仍保留,见 Follow-up;但因下方主体缺失,「再起盲标」本身已悬置)
+
+**Operator note**:
+
+**一、D-1/D-2/D-3 决议(门槛层)**——全采纳 build 侧建议,走**直改 XenoDev spec/SLA**,不起 PRD 修订。三项均为「让冻结下来的门槛组合自洽」的修复,不移动球门:方向 (a) 删的是 SLA 自己已声明被 refactor 淘汰的旧指标,五个冻结门槛数值一字不动。
+
+**二、【重磅 · 本次决议的真正重心】operator 补充推翻 D-7 前提 —— KG-42 重开**
+
+operator 在决议中补充:**「operator 不具备标注能力,后续开发要考虑到这点」**,澄清后确认性质为 **「领域判断力不足(全维)」**——对金融新闻的 sector / direction / horizon / timepoint / ticker **五维都没把握**,非「有能力但无时间」,亦非「事实维行解释维不行」。
+
+**这比 D-1 更上游,且方向相反地更坏**:
+- D-1 是「门槛在数学上没人能过」;本条是「**即使门槛修好,也没有合格主体产出输入**」。修完 D-1/D-2 让门自洽了,Layer-2 依旧跑不起来。
+- forge v1 对 KG-42「无验收主体」死结的解法,原文是「第二源 = 错误独立性代理 · **operator 可自任**(靠独立盲标非领域深度)」,LOG 第 27 条据此判 **「KG-42 死结解」**。该前提现被 operator 本人推翻 → **KG-42 并未真解,只是被 D-7 挪了位置**。
+- 连带失效:`[OP-2] 盲标` / `[OP-3] 考据` 两个 judgment gate 无合格主体;**2026-07-25 拍板的 gold 真值协议**(gold=operator 考据版 / human=operator 盲标版)一并失去主体 —— 而该协议本就是 D-7 未闭合的定义缺口(spec/SLA/PRD 三处均未记),现在连主体都没了。
+- ⚠ **诚实标注**:D-7 改写的核心论证是「独立性靠**错误独立性**而非领域深度」,这在方法论上仍可能成立(一个领域外行的错误确实与提取器的错误不相关);但**「不具备领域判断力的人产出的标注,其 gold 侧(考据版)本身可信度存疑」**——错误独立性解决的是「不共享盲点」,不解决「gold 本身是否为真值」。这个区分是 forge v2 必须处理的核心。
+
+**处置**:按 CLAUDE.md 铁律「**重大架构转向 → 必须 `/expert-forge`(防 V4 失败模式)**」,**起 forge 009-pM3prime v2 专场**重审 KG-42 验收主体问题。D-1/D-2/D-3 的 spec/SLA 修订**不等 forge**,独立先行(门槛自洽是净收益,且与主体是谁正交)。
+
+**三、build 侧处置认可**:本 fork **零代码改动**,未改任何冻结门槛、未传 `--*-threshold-json`、未代做三个 operator judgment gate、**未向 operator 展示任何机器答案**(`machine.json` 只验长度与非 null 计数;worksheet 只含 `id/source_id/raw_ref/span_start/span_end`)→ **41 条盲标机会完好未损**。四条红线逐条复核未破。**在 operator 投入劳动前用零成本合成探针抓到死锁**,未烧 token、未消耗不可逆的盲标机会 —— 这是「推演 ≠ 真跑」第五次实证中**代价最低的一次**,build 侧判断正确。
+
+**四、方法论沉淀(与 [[forge-verdict-vs-empirical-ship]] 一致)**:本次 drift **不是** build 实装偏离 spec —— `gold_layer2.py` / `blind_annotate.py` 严格实现了 spec 与 SLA 写下的规则,4 轮 subagent-fallback 对抗审也 approve。drift 在于 **spec/SLA 写下的规则组合本身内部不自洽**,而这个不自洽经 forge v1 推演 + operator 批 plan 签字 + build 四轮对抗审,**全程无人验算**。KG-43 正是对这一类失败的框架级回应。
+
+**Follow-up commits**: pending(本 LOG 第 28 条决议 + hand-back 包入库 · 未 push)
+- **下一活 ①(不等 forge · 可立即起)**= `cd "$XENODEV_ROOT"`(009 线为 `/home/ys/codes/XenoDev-009`)→ `claude -w 009-pM3prime` 落地 D-1(a) + D-2 + D-3。**IDS 侧建议的验收判据**:改完重跑 `scripts/layer2-feasibility-probe.py` 至 **exit 0**(证明存在一组合法输入使 `passed=1`)—— 即把 KG-43 提的那道门先用在它自己的修复上。该项 operator 未勾选,记为建议非决议。
+- **下一活 ②(治理主线)**= 起 `/expert-forge 009`(v2 专场)重审 KG-42:**在 operator 领域判断力不足(全维)的真实约束下,金标 Layer-2 的验收主体是谁 / 是否改非人工验收路(如事后市场真值回标)/ 是否降级为单一事实维 / 或 Layer-2 长期 blocked 并据此重定 E2 解锁条件**。一并带 KG-43(冻结门槛前置可达性验证门)。
+- **残留 defer(非本决议 close)**:① watchlist 补权威数据(B1 · 未变 · 红线:严禁本 fork 现填交易所清单可能引 look-ahead;另注 build 侧提醒 —— 若照 gold ticker 反推 curate,外证据锚会退化为同义反复,该清单须来自 operator 外部权威认知)② blind 隔离技术不可证性(B5 · 未变)③ **operator 真盲标产真数字 —— 本条状态变更:从「待真跑」改为「待 forge v2 定主体后重估」**。
