@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-28T16:14:13Z
-total_decisions: 31
+last_updated: 2026-07-29T08:40:32Z
+total_decisions: 35
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -518,3 +518,112 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **(H) 本包诚实边界(consumer 认可)**:零代码改动 · 未烧 DEEPSEEK key(补跑只用免费 OpenAlex 检索) · 未擅自「修好」那道门(按决策矩阵回 IDS 决,防 V4) · 未追溯改动已 ship task · 诊断全部实测非推断。**评审门来源**:本包零代码改动故未走代码评审门,codex 配额墙仍在。
 
 **Follow-up commits**: pending 本 session(IDS 侧:3 个 hand-back 包 + 第 29/30/31 条 entry 入库 commit,**未 push**)。**下一活 = XenoDev session `claude -w 001-radar-pA` 起 T030/T031/T032 三路并行**(⚠ **起跑前不再重跑 unlock-preflight** —— 本条 A 决议已撤回该指令,改校 journal PASS 记录;各 worktree merge 前保留 `/task-review` 轻量门 + 真 provider 冒烟,T032 额外 mutation)。**待办(时点触发 · 2026-08-02 codex 配额重置)**:① 7 task 跨 task adversarial-review(T021/FU-KG29/FU-KG30/T022/T030/T031/T032);② 起 `/expert-forge 001` 裁判据形态四条(用途分类 / judge 下界 / OQ-A1-1 / 通用前置)—— **阻塞 T040**;forge 完 → T040 → T041。**待办(攒批 · 不阻塞)**:框架级起 `/expert-forge 006`(KG-30 / KG-31 / KG-32 / 镜像无同步机制 / KG 编号对齐 / 存量条目)。**待办(即时)**:回写 KG-33 根因更正给 XenoDev + 同步 `lib/handback-validator/` 镜像。
+
+## 2026-07-29T02:08:08Z · 001-radar-pA-20260729T020808Z
+
+**Reviewed at**: 2026-07-29T08:40:32Z
+**Tags**: feature(T030 journal 留档 + 后验查回 · O5 + O7 decision_delta)
+**Severity**: low
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [x] **收悉 ship · 无需 IDS 决议**(无 spec 矛盾 / 无未授权接口 / C9 · NG-1b 未触碰)
+- [x] **§3.2「FU 接线 evaluate → journal(一处调用)」→ 已被第 35 条撤回**,不据此排期
+- [x] **§3.3 起 FU-A** —— 收口 T004 `journal/schema.py` 的 `splitlines()` + 无保护 `read_text` 两个 bug
+- [x] **§3.4 跨 task finding 回放 → 归 `/expert-forge 006`**(框架级 · 见第 35 条 forge 分派)
+- [x] **§3.5 08-02 后纳入 7-task 跨 task 深审**(沿用第 31 条既定范围)
+
+**Operator note**: **(A) 交付与缺口都认**。守域(只动 `src/radar/journal/**`)是 IDS 定的,producer 如实记「生产 journal 至今 0 行」是对的诚实,不算交付缺陷。⚠ **consumer 端实查印证**:`out/briefing/` **目录根本不存在**、`out/journal/` 只有 `a1-selfcheck.jsonl` —— evaluate 全链真跑 **0 次**、评估 journal **0 行**,与包内自述完全一致。
+**(B) 两条 P1 的性质认定**:① U+2028/2029/0085 被 `splitlines()` 断行,而 fail-closed 是**文件粒度** ⇒ **同文件健康行被一起拖下水**,且报出的行号指向一条 `json.loads` 能正常解析的行(诊断跟着失真);② 多字节截断产 `UnicodeDecodeError`(`ValueError` 子类,既非 `JournalCorruptError` 也非 `OSError`)⇒ **整整一类损坏绕过 fail-closed 契约**。本项目结论/理由/快照全中文(一字 3 字节),**不需要手工编辑就能触发**。两条都只在 **O5 后验那一刻**暴露 —— 即「写得进、读不回」,而 O5 的全部价值就在那一刻。
+**(C) ⭐ 裁 B 之后 FU-A 的优先级上升,不是下降**(consumer 端补充 · 不在包内):第 35 条裁「读法 B · operator 手工 record」后,journal 成为 **operator 自己的决策档案**。**briefing 能重渲染,三个月前的判断不能重放** —— journal 从「工程洁癖」变成**唯一副本**,其读回鲁棒性是 O5「三个月后回看当时判断对不对」的**单点依赖**。故 FU-A 是本轮唯一即刻授权的 FU。
+**(D) 但真跑不必等 FU-A**(两件事并行 · consumer 端核过):T030 交付的 `python -m radar.journal.cli {record,list}` 走 `JsonlJournalStore`,**两个 bug 都已修**;FU-A 管的是 T004 `schema.py` 那个**另一个消费端**。故第 33/35 条授权的真跑与 FU-A 无先后依赖。
+**(E) 「同一对缺陷三处三种处置」认定为活的 KG-29 漂移**:T030 两个都修 / T031 只修了一个(早一轮补了 `UnicodeDecodeError` 包装)/ T004 一个没修 —— 同一个包、同一个 `out/journal/` 目录。这是 KG-29「同一谓词多消费端各自实装 = 无声漂移」在**同一批并行 task 内部**的即时复现,不是历史存量。FU-A 收的就是这条。
+**(F) 评审 provenance 认可**:4 轮 22 findings 全修,**独立子代理 · 非 codex**,producer 已显式声明未产生也未冒充 codex verdict。**连续第 5 个替代路径 task**(T021 / FU-KG29 / FU-KG30 / T022 / 本批三个),配额墙至 2026-08-02 —— 评审债在册,08-02 补。
+**(G) §4 方法论四条照单收**,其中两条 consumer 端认为值得回流 006:①「**测试用错误的代码路径产出了一个正确的事实**」(`raw[:-3]` 砍的是全 ASCII 行尾,走的是既有 JSON 分支;揭发它的不是人眼是覆盖率 99%→95%);②「**断言『诊断存在』不等于断言『诊断正确』**」—— `lineno = 999999` 的 mutation 在一个**专门为抓第①条而写**的测试下**仍然存活**,因为只断言了「有个『行』字」。行号**就是**那段修复的全部价值。
+
+**Follow-up commits**: pending 本 session
+
+## 2026-07-29T02:08:09Z · 001-radar-pA-20260729T020809Z
+
+**Reviewed at**: 2026-07-29T08:40:32Z
+**Tags**: feature(T031 taste 反馈标记留存 + 读回 · O6)
+**Severity**: low
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [x] **收悉 ship · 无需 IDS 决议**(无 spec 矛盾 / 无未授权接口 / C9 · NG-1b 未触碰 / **v0.1「只留存不闭环」边界未越**)
+- [x] **§3.2 FU-B(渲染面消毒上收为共享谓词)→ 缓,不在本轮起**
+- [x] **§3.3「denylist → 类别/allowlist」写进 framework 层通用教训 → 归 `/expert-forge 006`**
+- [x] **§3.4 08-02 后 codex 重跑**(并入 7-task 深审)
+
+**Operator note**: **(A) v0.1 边界守得对**。R1-3 明写闭环自动调参是 v0.2,producer 未越界;`TasteMark` frozen domain 只有 `judgment_claim` + `aligned`,**同 claim 多标 = 多行并存无 latest-wins**,把歧义印给 operator 自己判而不替他挑 —— 这是照 OQ-A1-1「不在 XenoDev 当场定语义」的纪律,**认可**。极性必须显式给(不给任一极当默认,免得「忘了标」静默变成「标了那一极」往 taste 库灌噪声)同理认可。
+**(B) ⭐ 最有价值的一条是方法论 —— 认定为本批最强 finding**:人读面消毒最初写成**六项 denylist**,而那张表是从**存储层**那个 bug 推出来的(`json.dumps` 不转义 ∩ `splitlines()` 会断行);可它要防的是**终端渲染**被伪造 —— **两个集合几乎不相交**。评审用真 VT 模拟器实测:那三个 Unicode 分隔符**终端根本不断行**(等于白中和),而真能骗人的 **VT / FF / ESC / BS / DEL / RLO / ZWSP / BOM 一个都没拦**;其中 **ANSI 光标上移 + 清行比换行注入更坏** —— 换行只是**多印**假行,ANSI 能**擦掉真行**(实测把 CLI 自己印的表头改写成「taste 标记: (empty) 0 tiao」)。
+**(C) 🔴 而本仓早为同一威胁类付过学费 —— 这才是要回流 006 的真正理由**:`reconstruct/reconstructor.py` 的 `_serialize_untrusted_field` docstring 明写「R5 denylist 打地鼠 → R7 allowlist(拒整个补集)」,R8 还因白名单宽了一类吃过 codex high。**而新代码仍然从 denylist 起步。** ⇒ 那条教训**停留在单个文件的 docstring 里,没有变成起跑时就生效的约束** —— 这是 framework 层缺陷(与 KG-B4「门机器化了但『何时必须跑它』退回散文」同构),故归 006 而非 001。
+**(D) 修法认可 · 复用而非重造是对的**:改判据为 Unicode 类别(Cc/Cf/Cs/Zl/Zp + noncharacter),**复用** `evidence/anchors.py` 既有类别表(**不在本层重造 = 正面执行 KG-29 教训**),本层只加 Zl/Zp 并说明为什么(那张表管**标识符合法性**,本层管**渲染面**,正确集合本就不同)。正文(汉字/ASCII/符号/变音符/emoji)一字不动;转义分隔符自身**单射**(穷举 11110 串 · 0 碰撞)。
+**(E) FU-B 缓的理由(不是不做)**:① T031 **自己那一层已经修对了**,这是**整合**不是**活缺陷** —— 与 FU-A 收的「三处三种处置」性质不同;② 它的真价值要和 (C) 那条 **006 框架级约束一起兑现** —— 先上收谓词、后定约束,很可能返工;③ 现状三处分散在册不丢:`evidence/anchors.py`(标识符合法性 Cc/Cf/Cs)、`briefing/renderer.py` `_strip_deceptive_codepoints`(T022 已记同一条建议)、本 task `_one_line`。
+**(F) 两条已知取舍照单收(producer 写成断言防下次被当 bug「修」掉,做法正确)**:① **ZWJ(U+200D)属 `Cf` 会被中和** ⇒ ZWJ emoji 序列显示拆开,有意为之 —— 评审给的硬理由不是「emoji 少见」而是「**消毒只在显示层**:store 读回逐字节相等、`--json` 保留原文,operator 永远取得回原文」(ZWJ 在天城文/阿拉伯连写里承重,这个理由才立得住);② **终端折行**仍可把 claim 文字推到物理行首(40 列下实证),**任何码点规则都关不掉**,要宽度感知截断 —— 但它擦不掉真输出、表头与汇总都在、`--json` 仍权威,弱于已修的那些。
+**(G) §4.1 认定为跨 task 通用教训(与第 32 条 (G) 同族)**:「**守卫的测试可以在守卫被完全关掉的情况下通过 —— 而且在同一个 task 里连发三次**」(round-1 只断言表头 / round-2 截断码点表 / round-3 比较两条**本来就不同**的 claim),**每一次都落在最新加的那道守卫上**。终判据是:把 `_one_line` 换成恒等函数 → 16 条测试红,而那条**专门测它**的测试**照样绿**。⇒ 与第 31 条 (F) 给 T032 加 mutation 门是同一个理由,已验证必要。
+
+**Follow-up commits**: pending 本 session
+
+## 2026-07-29T02:11:37Z · 001-radar-pA-20260729T021137Z
+
+**Reviewed at**: 2026-07-29T08:40:32Z
+**Tags**: feature(T032 C9 run-ephemeral 守卫 · 交付物是边界表非 C9 证明)
+**Severity**: medium
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [x] **收悉 ship · 五门 + 行为门入库**;**②在三 task 合并后如期变红并报出 6 处未声明读点**(merge commit `9ae402d`)—— 那正是它被设计出来要做的事,**认定为守卫真通电的正面证据**
+- [x] **🔴 §3.1 采纳 —— T040 的 BLOCK gate 判据形态并进 `/expert-forge 001`**(第 3 项议题 · 见第 35 条分派)
+- [x] **§3.2.1 FU-C(传递闭包审计)⛔ 本轮明确不起** —— 等 forge 裁完 C9 gate 形态
+- [x] **§3.2.2 残留 FP 记录在案**(`csv.reader(io.StringIO(s))` 被计入 · fail-closed 方向 · 一行 `DECLARED_READ_SITES` 可消)
+- [x] **§3.2.3 08-02 后 codex 重跑**(并入 7-task 深审)
+
+**Operator note**: **(A) ⭐ 采纳 producer + 评审的共同判断:「这不是运气不好,是方法本身的上限」**。四轮评审**每一轮**都跑出一条**普通重构形状**的可用绕过 —— **包括针对紧邻的上一版** —— 四轮共五条,且**第五条的修复本身又引入第六个缺陷**:① 跨次语料池放进**已分类的非评估包**(`journal/`)+ 落**已登记前缀** + 用 `Path.open` → 四门全绿,三次同方向 dry-run 累积到 18 篇;② `sqlite3.connect(...)` 直接放进 `retrieval/`(名字白名单看不见);③ 语料池落在 `out/` **之外**(`.radar-cache/`);④ `a+` **增量扩展** + 走 **reconstruct** 入口;⑤ **bytes 路径让 ⑤ 全盲**(`str(b"/p")` = `"b'/p'"`,记录**看着有、比对时没有**,而 `dbm`/`shelve` 自己就传 bytes)。⇒ **名字键控的 AST 审计器面对 `getattr` / 别名 / C 扩展 / bytes 路径不可能完备;audit hook 也只看得见自己订阅的事件、自己包住的窗口、测试真驱动到的入口。枚举出来的那张边界,就是交付物本身。** 该句已写死进模块 docstring,认可。
+**(B) 🔴 最锋利的一条,IDS 单独记为通用教训**:绕过 #1 当初被判「可接受」的**理由正是「② + ⑤ 双红」**;绕过 #5 打掉了 ⑤ 这半边 ⇒ **那条判断在无人知晓的情况下已经失效**。⇒ **「靠另一道门兜底」是一种需要单独验证的论证:写下「由 X 兜底」时,必须同时验 X 在这条具体路径上真的有效。** 这条与第 31 条 (E) 的「判据用途分类」同属「判据的元性质」族,一并送 forge 001。
+**(C) 三处完全没覆盖的空白(不是残留)已在册**:分类边界**不是 import 边界**(① 对经 import 到达的读**永久失明**)· dry-run 把 retriever 换成 fake(真 `OpenAlexRetriever` 里的缓存**零行为覆盖**)· ⑤ 对「只枚举目录不 open」的读法**无痕**。
+**(D) 🔴 §3.1 的核心裁断(本条 severity=medium 的唯一来源)**:**T040 的 BLOCK gate,PASS 只能表示「没有已知的 C9 漂移形状」,不能表示「C9 成立」。** 若 T040 spec 要求后者 = **判据不可达**,须先裁再焊牙。**认定为判据不可达同族第 4 例**,与在册三例并列:① KG-43(009 Layer-2)**数学**不可达(0.70 > 上界 0.69756);② T022 P2 **结构**不可达(judge prompt 无判断数下界);③ unlock-preflight **可达但不可复现**(活体 top-200 · PASS 是时刻不是状态);④ **本条 方法上限**不可达。前三例教训已入 memory:**判据可达性必须先于判据冻结**;本例是其自然延伸 —— **冻结判据前,先问「这个判据能被什么东西证明?」**
+**(E) ⛔ FU-C 本轮不起的理由(consumer 端主动加严 · 比 producer 建议更保守)**:FU-C 的主题(**C9 gate 能证明什么**)**正是 forge 001 要裁的那一条**。现在建 FU-C = **给未定的规则焊牙** —— 这正是本批自己反复抓出的失败模式:第 31 条 (F) 拿它拦下 T040、第 35 条 §2.4 又拿它拦下 P2 契约测,**再犯就是同一 session 内第三次复现**。且 producer 自己已写明「真修法要给现有跨包复用逐个开例外,**超出本 task**」—— 范围本就不清。已在册的具体路径不丢:`graph/builder.py` 与 `reconstruct/finalize.py` 已 import `credibility.gate`,而 `credibility/audit_channel.py` 有 3 处读上次 run 的 audit 产物 —— **今天没连起来,但门 ① 对这条路径永久失明**。
+**(F) §4 方法论四条全部照单收,两条送 forge 006**:①「**修误报可以换来漏报,而漏报在守卫上贵得多**」—— 修「参数遮蔽被误报」时用了整模块 shadowed 集合,于是**另一个函数**里一句 `connect = None` 就静默关掉整份文件的检测;**FP 让人烦(还看得见),FN 让人以为干净**(改成作用域感知后两头都对);②「**测试会把 bug 固化成契约**」—— 绕过 #4 的一半根因是上一轮的测试**明写** `open(...,'a',...)` 不算读,而 C9 的文字一直写着「读**以及 append 式增量扩展**」,**实装与它自己的 docstring 矛盾了整整一轮,而测试站在错的那边**。③ 另记:「⑤ 是 API 无关的」这句被证伪后在**三个地方**残留,其中函数 docstring **正是 T040 作者会读的那一份** —— 文档措辞是交付物的一部分。
+
+**Follow-up commits**: pending 本 session
+
+## 2026-07-29T08:21:20Z · 001-radar-pA-20260729T082120Z
+
+**Reviewed at**: 2026-07-29T08:40:32Z
+**Tags**: spec-gap(§7-P2 journal 归属双读法 · 撤回并更正第 32 条包 §3.2 的建议)
+**Severity**: medium · **零代码改动包**
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT
+- [x] **⭐ 裁「读法 B」· operator 手工 `record`,`journal list` 是验收读回** —— XenoDev **零代码**,T030 交付即刻可判绿
+- [x] **修 XenoDev spec(跨仓 · 信息式)**:§7-P2 验证命令列补一句消歧
+- [x] **撤回登记受理**:第 32 条包 §3 第 2 条**前半句「一处调用」作废**;后半句「请勿判绿」保留但**理由换成「归属没定」**;该包其余部分(§2 / §2.5 / §4 及 §3 的 1/3/4/5 条)**不受影响仍然有效**
+- [x] **⭐ 授权真跑起 O7 时钟**(与 forge 解耦 · 见 (D))
+- [x] **forge 议题分两仓**:001 带 3 项 / 006 攒 2 项(见 (E))
+- [x] **§3.6 08-02 深审带上本条歧义作独立核查项**
+
+**Operator note**: **(A) ⭐ 裁 B · 三条独立证据同向,读法 A 无任何正面依据**。consumer 端**逐行独立核过 producer 引用的每一处字面**,全部属实,并补一条 producer 没引用的独立佐证:
+① **IDS 侧 PRD `discussion/001/001-radar/001-radar-pA/PRD.md:42`**(producer 未引用 · consumer 端补):「作为 lab lead,**我能把**评估结论(投/观望/不投 + 日期 + 理由)留档进 journal」—— **主语是 operator**,不是系统;
+② **spec §1-O5**(`spec.md:92`)措辞是「**可**留档 journal」,不是「自动留档」;
+③ **`decision_delta` 在类型上机器不可观测** —— spec §6 O7 验收行(`spec.md:267`)逐字「该次评估**实际改变 operator 投/观望/不投**」,这件事发生在人的决策里、不在任何产物上,evaluate **没有任何输入能观测它**;而 O7 被 spec 标为「**最强产品成功信号**」(`spec.md:94`),不是可糊过去的边角字段。
+⇒ 读法 A 的**唯一**依据是「验证命令列没写 `record`」这一处**沉默**,而沉默恰恰被读法 B 更好地解释(record 是人的动作,不在自动链内)。
+**(B) consumer 端对「三填三不填」的加强(不在包内)**:producer 说 `RadarRing` 四环与 `conclusion` 三值「词表差异只是表征」,方向对但仍偏弱。**实查 `domain/__init__.py`:`radar_ring: RadarRing` 挂在 `Judgment` 上(每份 briefing N 条判断各带一个),`JournalEntry.conclusion` 是整次评估一条 —— 两者是层级差,不是词表差。** ⇒ 读法 A 要发明的**不是一张映射表,而是一条聚合语义**(取众数?取最高环?按证据数加权?),而 spec 从未定义 —— 正是 OQ-A1-1 纪律所禁止的「在 XenoDev 当场定语义」。`JournalEntry` 六字段 `model_config = _FROZEN` 亦已核实。
+**(C) 落地位置更正(producer §3.2 写得不准 · consumer 端更正)**:producer 建议「`/scope-inject` 在 §7-P2 补一句」—— **不对**。§7-P2 在 **XenoDev `specs/001-radar-pA/spec.md`**,不在 IDS PRD;M3 后 IDS 不产 specs/(SHARED-CONTRACT §6 v2.0)。⇒ 正确动作是**跨仓改 XenoDev spec 验证命令列**,与 009 第 28 条「直改 XenoDev spec/SLA 不碰 C6」是同一先例。**补的那句**:「`<cli> journal record` 由 operator 读完 briefing 后手工执行,**不在自动链内**;`journal list` 是验收读回」。
+**(D) ⭐⭐ 授权真跑起 O7 时钟 —— 与第 31 条「P2 物证重建暂不授权」不冲突,但必须靠「用途分类」才分得开**(consumer 端主动提出 · 不在任何包内):
+- **实况(consumer 端实查磁盘,非推演)**:`out/briefing/` **目录根本不存在** ⇒ evaluate 全链真跑 **0 次**;`out/journal/` 只有 `a1-selfcheck.jsonl` ⇒ 评估 journal **0 行**;`out/reconstruct/` 有 2 份真跑(07-17 校准 + 07-18 解锁)。
+- **spec §1-O7 是本批唯一带墙钟的验收项**:「**3 个月内**完成 **≥5 次**真实**新方向**评估,其中 ≥1 次实际改变 operator 投入决策」。当前 **0/5**,且 spec **未定义这 3 个月从哪天起算** —— 时钟根本没起,每推一天窗口整体后移一天。
+- **阻塞类型不同**:§1-O2 (c) / C9 gate 判据 / §7-P2 归属都是**决策阻塞**(一场 forge 就解);**O7 是日历 + 计数阻塞,任何 forge 决议都解不开,只有真跑能解**。
+- **⚠ 与第 31 条的关系**:第 31 条「暂不授权」的是**为 P2 验收做的物证重建**,理由「等 forge 裁完与新跑合并,只烧一次 key」—— 该理由在 **P2 用途下仍然成立、继续有效**;但在 **O7 用途下不成立**:O7 本就要 ≥5 次**不同新方向**,根本合并不了,「只烧一次 key」在 O7 语义下无意义。⇒ **同一个「跑一次 evaluate」的动作,在 P2 验收用途下该等 forge,在 O5/O7 累计用途下不能等。这正是第 31 条 (E) 自己提出的「判据的用途分类缺失」根因的又一次应用 —— 这次应用在动作侧而非判据侧。**
+- **决议**:授权**现在跑第 1 次真 evaluate(新方向)** + **定下节奏**(如每周 1 个新方向),而非单次一事一议。**批量补跑会把 O7 从产品信号降成刷计数** —— O7 要的是 5 次**真实**决策,不是 5 行 journal。跑完 operator 读 briefing 后手工 `journal record`,**顺带实证裁 B 的整条链路**。
+- **诚实边界**:① 带 **per-run 自证义务**(PRD v1.5 ①:同一验收事件内同 stem B′+D′ 自证);② 若 forge 改了 §1-O2 (c),这次跑的 briefing 在 **P2 用途**上可能作废,但在 **O5/O7 用途**上**不作废** —— journal 行记的是 operator 决策,不依赖证据链抽样判据;③ 烧 DEEPSEEK key。
+**(E) forge 议题分两仓(per CLAUDE.md 铁律「框架级只走 006」)**:
+- **`/expert-forge 001`(08-02 后 · 阻塞 T040)带 3 项,一个主题「判据冻结前必须先证什么」**:① **T040 C9 BLOCK gate 判据形态**(第 34 条 §3.1 · 方法上限不可达);② **§1-O2 (c)「≥3 条非豁免判断」**(第 31 条既定 · 结构不可达);③ **「唯一可读性」补进可达性族**(本条 §2.5 · 见 (F))。⚠ 第 31 条 (E) 既定的「用途分类 / judge 下界 / OQ-A1-1 / 通用前置」四条**不被本次分派取代,仍在同一场 forge 内**;本次是**追加**第 ①③ 项并明确「必须一次裁完,分开裁 = 只治症状」。另追加第 34 条 (B)「靠另一道门兜底是需要单独验证的论证」入同一族。
+- **`/expert-forge 006`(攒批 · 不阻塞)追加 2 项**:① **跨 task finding 回放机制**(第 32/33 条共同提出:N 个并行 task 共享代码形状时,任一评审的 finding 在 ship 前对其余 task 逐条回放;**补法不是共享评审者** —— 那会重新引入独立评审要打破的 monoculture;一次就能抓到 T030/T031/T004 三个实例);② **「denylist → 类别/allowlist」写成起跑时生效的约束**(第 33 条 (C):本仓已在 `_serialize_untrusted_field` 付过 R5→R7→R8 的学费,而新代码仍从 denylist 起步 —— 教训停在单文件 docstring 里没变成约束,与 KG-B4 同构)。沿用第 31 条既定 006 攒批清单(KG-30/31/32 / 镜像无同步机制 / KG 编号对齐 / 存量条目),**不替代**。
+**(F) 「唯一可读性」= 判据可达性族的第三个半(本条最大的方法论增量)**:在册四例 —— ① KG-43 门槛 0.70 > 上界 0.69756(缺**可达性**);② T022「≥3 条非豁免判断」judge 无下界(缺**结构可达性**);③ unlock-preflight 活体 top-200 尾部 churn(缺**可复现性**);④ **本条 §7-P2 journal 归属双读法(缺唯一可读性)**。⇒ **一条验收行,若其「产物」列与「验证命令」列能推出两种互斥实装,那不是待办事项,是没写完的定义。** 这条**比 ①②③ 更隐蔽,因为两列各自都读得通,只有把它们并起来问「谁来写这一行」才暴露** —— consumer 端认可这个判断。
+**(G) 「为什么现在提而不等 T040」认可**:T040 要给 §7-P2 建契约测,**按哪种读法建,测的东西完全相反**(按 A 建 → 测「evaluate 跑完 journal 自动多一行」→ **现在必红**且逼着改 evaluate;按 B 建 → 测「record 之后 list 读得回」→ **现在已绿**)。**归属未定时建测 = 给一条还没定的规则焊牙**,与 IDS 拦下 T040 的理由完全同构 —— 只是这条上轮没被发现,**因为它藏在两列之间而不是写在一句话里**。
+**(H) 评审债显式在册**:本包**未经 cross-model review**(零代码 · 结论全部可由 spec/domain 字面逐行复核 · 按 SKILL 不触发 review 门 · 不冒充任何 codex verdict)。**consumer 端已独立复核全部引用行,结论属实,不依赖 producer 自述。** 08-02 深审须**把本条歧义作独立核查项**带上 —— 它恰好是「四轮独立评审 × 3 个 task 都没抓到」的那一类:**评审看 diff,而这条不在 diff 里**。
+**(I) §4 方法论第 1 条认定为本批最高价值的一条,送 forge 006**:「**评审看的是 diff,而最贵的错误可能不在 diff 里**」—— T030 走了 4 轮评审、22 findings 全修,没有任何一轮碰到 §3 的建议,因为评审对象是**代码改动**,而「给 IDS 的下一步建议」是**散文**,不在 diff 里也没有测试能红;**它却是那份 hand-back 里唯一会让 IDS 花钱的部分**。⇒ **hand-back §3 的每一条建议,应当和代码一样被要求给出可复核的依据行号。** 本包每条论断都标了 `file:line`,是按这条自我要求写的 —— consumer 端实测**因此才能逐行复核**,机制有效,建议固化进 §6.3 schema。另收 §4.2「**估『接线』工作量前,先把被接的那个类型的每个必填字段逐个问一遍『调用方手上有没有』**」—— 六个字段三个没有,这个检查**一分钟**就能做完,而它推翻了整条建议;§4.4「**撤回要撤得比原文醒目**」—— 单独成包 + 逐字引用 + 明写哪半句撤,做法正确,**一条被安静更正的错误建议和没更正没有区别**。
+
+**Follow-up commits**: pending 本 session
