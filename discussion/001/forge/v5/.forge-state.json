@@ -1,11 +1,12 @@
 {
   "version": "v5",
-  "phase": "3R2",
+  "phase": "done",
   "convergence_mode": "strong-converge",
   "x_hash": "12df995ec5063e98c41082314096a9e7",
   "prefill_used": false,
   "opus_done": true,
-  "codex_done": false,
+  "codex_done": true,
   "created": "2026-08-02T08:20:42Z",
-  "last_updated": "2026-08-02T14:33:59Z"
+  "last_updated": "2026-08-02T15:10:00Z",
+  "stage_doc": "stage-forge-001-v5.md"
 }
