@@ -886,4 +886,4 @@ forge v5 的 **P3R2-GPT 穷尽性检查**发现一处**证据闭环缺口**,Opus
 
 **v6 触发判据(写死可测)**:**warn 候选过 `review_by` 后无证据仍被续期**。
 
-**Follow-up commits**: pending 本 session
+**Follow-up commits**: `9d24b26`(本条裁决入库)
