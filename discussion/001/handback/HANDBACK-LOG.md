@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-07-29T08:40:32Z
-total_decisions: 35
+last_updated: 2026-08-02T01:03:59Z
+total_decisions: 36
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -627,3 +627,60 @@ gate 语义确认(§3-B):维持「FAIL → prd-revision-trigger STOP」铁律;PA
 **(I) §4 方法论第 1 条认定为本批最高价值的一条,送 forge 006**:「**评审看的是 diff,而最贵的错误可能不在 diff 里**」—— T030 走了 4 轮评审、22 findings 全修,没有任何一轮碰到 §3 的建议,因为评审对象是**代码改动**,而「给 IDS 的下一步建议」是**散文**,不在 diff 里也没有测试能红;**它却是那份 hand-back 里唯一会让 IDS 花钱的部分**。⇒ **hand-back §3 的每一条建议,应当和代码一样被要求给出可复核的依据行号。** 本包每条论断都标了 `file:line`,是按这条自我要求写的 —— consumer 端实测**因此才能逐行复核**,机制有效,建议固化进 §6.3 schema。另收 §4.2「**估『接线』工作量前,先把被接的那个类型的每个必填字段逐个问一遍『调用方手上有没有』**」—— 六个字段三个没有,这个检查**一分钟**就能做完,而它推翻了整条建议;§4.4「**撤回要撤得比原文醒目**」—— 单独成包 + 逐字引用 + 明写哪半句撤,做法正确,**一条被安静更正的错误建议和没更正没有区别**。
 
 **Follow-up commits**: pending 本 session
+
+## 2026-07-30T03:44:14Z · 001-radar-pA-20260730T034414Z
+
+**Reviewed at**: 2026-08-02T01:03:59Z
+**Tags**: drift(FU-A jsonl 读回谓词三处收口 · 登记表机器强制)
+**Severity**: medium
+**Validator**: 6 约束 consumer 模式 **PASS**;`ids_verdict_evidence` 父键不存在 → verdict-evidence 语法预检**跳过**(本包非 codex-verdict 包,正常)
+**Operator decisions**:
+- [ ] 修 PRD
+- [ ] 修 SHARED-CONTRACT(**但 XD-41 建议 3 会动 §6.3 schema,随 006 攒批一起裁**)
+- [x] **追认 §2.4 三处越域**(不算越权)· XD-39 / XD-40 归 `/expert-forge 006` 攒批
+- [x] **⭐ 要求 XenoDev 补产 R1–R5 的 hand-back 包**(通道缺口 · 见 (B))
+- [x] **XD-41 / XD-42 / XD-43 全归 006 攒批**,XD-41 / XD-43 标 **high 优先**
+- [x] **⭐ O7 时钟 item b 现在跑**,base 取 **post-R5 HEAD `df5ce24`**(见 (E))
+
+**Operator note**: **(A) ⚠⚠ 本包在决议时已是 stale snapshot —— 这是 consumer 端实查发现的、包本身无从知道的事实,且它比包内任何一条都重要**。本包写于 XenoDev worktree `5399661`+`04f2e79`(2026-07-30 11:43 +08)。**其后 07-31 16:27–17:47 codex 配额提前恢复**(包 §2.5 称重置 08-02),又落 5 个 commit `78e3e8f`→`4743ccd`→`1cf10e9`→`4a4c5f5`→`df5ce24`(codex 补跑 R1–R5)。consumer 端实查 `git log --date=iso-strict` + `dogfood-backlog.md` + `review-log/backfill-e89860e-2026-07-31-round{1..5}.md`,核实:
+- 补跑 scope 取**累积区间**(base `e89860e` = 最后一个真过 codex 的代码 commit),**4 轮共 21 条 finding · 11 条 high**;
+- 测试数 **938 → 1006**(R4 后 998,R5 +8);
+- backlog 新增 **XD-41 / XD-42 / XD-43**(两条 high)⇒ 本包 §3.1「本轮新增 2 条」**已过期**;
+- **R1–R5 从未产 hand-back 包** —— IDS 侧 `discussion/001/handback/` 最新仍是本包(07-30)。
+
+⇒ **本条决议同时覆盖本包与 R1–R5 的既成事实**,并按下面 (B) 要求补通道。**本包 §2/§2.3/§2.6 的交付与三条自我推翻仍然有效**(它们描述的是 FU-A 那次交付本身,不被后续轮次推翻);**失效的只有 §2.5 的可信度自评与 §3.1 的「新增 2 条」计数**。
+
+**(B) ⭐ 要求补产 R1–R5 hand-back 包 —— 理由不是流程洁癖,是三条实质依赖**:
+1. **XD-41 是本轮最贵的一条,而它的一手证据(21 条 finding 的分类与具体内容)只存在于 XenoDev 的 review-log + commit body 里,IDS 侧只有 backlog 散文**。forge 006 要裁「替代路径可信边界」,拿散文裁 = 又一次在没有物证的情况下定判据(与 KG-43 同型)。
+2. **R5 自陈「修法未经 codex 复核」**(operator 定的 5 轮上限用尽),且 **R5 四条 high 里三条是 R4 修法自身的残留绕过** —— 这是一笔**显式在册但没有机器落点的债**,必须进 hand-back 才在 IDS 侧可见。
+3. post-R5 HEAD `df5ce24` 是下面 (E) O7 真跑的 base,**IDS 侧现在没有任何包记载这个 base 的状态**。
+   ⇒ 补包应含:21 条 finding 分类 · post-R5 HEAD 状态(1006 passed / mutation / ruff)· 「R5 未复核」的显式挂债 · 是否值得起第 6 轮的建议。
+
+**(C) XD-41 认定为本批最高价值的一条,且它给「连续第 6 批替代路径」这件事结了账**。本包 §2.5 自称「不得记为 codex 门已过」—— 态度正确,但**当时无从知道欠了多少**。现在知道了:8 个 task-unit(T021 / FU-KG29 / T022 / FU-KG30 / T030 / T031 / T032 / FU-A)连续 6 批走独立子代理路径 merge,codex 一恢复 4 轮抓出 21 条 / 11 条 high,且抓出的是**「产物能说谎」**这一族:
+- 非 dry-run 路径接受注入的 fake ⇒ briefing 表头照写「全链真跑 · PPV P2 终点产物」(**子代理 4 批没看出来**);
+- 公共 renderer 的来源声明是**默认 False 的布尔** ⇒ **什么都不做就等于声称真跑**,连测试自己都在批量铸造这种产物;
+- **`journal record` 只校验「可读 + 非空」⇒ README 能成为 O5/O7 journal 行**;
+- 两个仓级 shell 门(task-preflight / unlock-record-check)**此前零测试覆盖**。
+XD-41 归的三条成因 consumer 端**认可且不打折**:① **子代理与被审代码同源同上下文** —— 它读的是同一批文件与同一套注释,而那些注释正是作者的自述(本轮多条 finding 直接指出**注释与代码不符**);② **子代理不跨 task-unit 看** —— 最贵的几条恰恰是跨批次才可见;③ **「verdict ≠ BLOCK」在替代路径上偏松** —— 6 批全是 needs-attention 照样 merge,**needs-attention 事实上等价于放行**。
+⇒ 这是第 35 条 (H)「评审债显式在册」的**代价实测**,也是**第七次「推演≠真跑」**的变体:这次推演的不是代码行为,是**评审强度**。三条建议(补审债标记 + 累积区间 / 替代路径下判据收紧一档 / hand-back schema 加 `review_path: codex | fallback`)全部随 006 攒批,**第 3 条动 SHARED-CONTRACT §6.3,与第 35 条 (I)「§3 每条建议须给可复核依据行号」同批落**。
+
+**(D) XD-43(high)是 IDS 自己下的单跑成了空转,必须在 006 与 KG-B4 并案**。`scripts/task-preflight.sh` 是 IDS 第 29 条要的机器可读落点(task 起跑前置写进 frontmatter,脚本逐条真跑,任一非 0 → hard-block)。本轮把解析器从 fail-open 收到 fail-closed 用了 **R1/R2/R3 三轮**,而 **codex 每一轮都同时指出:即使解析器完全正确,也没有任何入口强制调用它** —— parallel-builder SKILL 的 preflight 清单里没有这一行 ⇒ **这道门从未被执行过**,它宣称的 hard-block 保证不成立。XenoDev 按铁律不当场改 SKILL(正确),接线归 IDS。
+⇒ 与 **KG-B4「机器道 STOP 必须真 wire 成退出码」是同一条链的前后两段**:KG-B4 讲「门要真 wire」,XD-43 讲「wire 了但没人调用」。**006 上必须并案裁,分开裁 = 只治症状**(与第 35 条 (E) 对 forge 001 三项的要求同型)。另收 XD-43 建议 2:**ship 门也要验一条与当前 task/spec 内容绑定的成功执行记录**(task id + commit + 命令 + 退出码 + 内容摘要),否则「起跑时跑过」与「ship 的是同一份内容」之间仍有缝。
+**XD-42(low)**随批:代码里写死的「已记 KG-34」指向的是另一件事(migration 硬 checklist),**编号撞车后旧引用没回填 ⇒「记了 backlog」这句话本身不可核验**。采纳其建议 2 的形态 —— **代码里不写编号,只写「已记 dogfood-backlog(搜:<关键词>)」**,编号会变标题不会。这是「文档声称跑在代码前面」的**变体:文档声称跑在另一份文档前面**。
+
+**(E) ⭐ O7 时钟 item b 现在跑,base 取 post-R5 HEAD `df5ce24` —— 且 codex 补跑恰好改变了这个决定的性质**。第 35 条 (D) 已裁「O7 是日历 + 计数阻塞,任何 forge 决议都解不开,只有真跑能解」,该理由**继续有效**;本条补一层**新理由**:
+- XD-41 抓出的 **「`journal record` 只校验可读 + 非空 ⇒ README 能成为 O5/O7 journal 行」**,以及 R5-F2 **「真跑横幅未绑定固定槽位 ⇒ 第 3 行明写 DRY_RUN_FAKE、正文夹带真跑横幅的自相矛盾快照照样能成为 O5/O7 的 P2 journal 行」** —— **两条打的都正是 O7 这条链**;
+- ⇒ **若按 07-30 的 base 跑,会造出一条「机器无从证伪」的 O7 行**;按 `df5ce24` 跑,journal 行的来源声明才真的被校验。**codex 补跑把「现在跑」从「不得不跑」升级成了「现在跑更干净」**;
+- **诚实边界(照第 35 条 (D) 原样承继)**:① 带 per-run 自证义务(PRD v1.5 ①);② 若 forge 001 改了 §1-O2 (c),这次 briefing 在 **P2 用途**上可能作废,在 **O5/O7 用途**上**不作废**;③ 烧 DEEPSEEK key;④ 跑完 operator 读 briefing 后**手工 `journal record`**,顺带实证第 35 条裁的「读法 B」整条链路。
+- **⚠ 残留风险如实记**:R5 四条 high 的修法**未经 codex 复核**,而其中 F2(真跑横幅)/ F4(URL canonicalizer 折叠大小写敏感分量,影响 `graph/builder.py` 别名回退锚点)**正落在 briefing 产物可信度面上**。⇒ **本次真跑的 briefing 在 O5/O7 计数用途上有效,但若第 6 轮 codex(若起)推翻 R5 修法,该次 briefing 的 P2 用途需重判**。这是「用途分类」第三次应用(第 31 条判据侧 → 第 35 条动作侧 → 本条**产物侧**)。
+
+**(F) 追认三处越域的理由(与本包 §3.2「不要求裁越域」的自我克制并不冲突,但 IDS 主动裁掉它)**:包 §2.4 标题写「需 operator 裁是否越权」而 §3.2 写「不要求裁越域」—— **同一份包里两处口径不一致**,虽无害但正是本仓反复踩的「两列之间读得出两种意思」形态(第 35 条 (F)「唯一可读性」)。IDS 一次裁死:**追认,不算越权**。判据:三处全为诊断/文档面 · 零判定分支改动 · 不碰 KG-B10 spine 冻结面 · 可单独 revert;且 `cli/unlock_preflight.py` 那处**不接住就等于 FU 目标只兑现一半**(新造的 typed 错在真实路径上仍以 traceback 投递),`journal/cli.py` 那处**不修则本包在 `taste/store.py` 新写的注释是假陈述**。⇒ **「不修会让本包自己的文档变成假陈述」应当作为越域的正当理由之一写进 006 攒批**,它比「范围洁癖」更该被保护。
+**顺带认可包内「不采纳评审建议退 2」的裁断**:「journal 文件坏了」是**输入损坏**,退 1;「a1 谓词判 STOP」是门的**判断**,退 2。混进 2 会让 parallel-builder preflight 把「文件坏了」读成「门判了 STOP」—— 这是**退出码语义的用途分类**,与 (E) 同源。
+
+**(G) 本包 §2.6 三条自我推翻仍然是本批方法论增量,不因 stale 而打折**:① **清空 `JSONL_FACES` → `916 passed, 5 skipped` 且 rc=0 全绿,15 个用例一个没跑** —— 根因是 pytest 把空参数化报 **skipped 而非 failed**,而 ship 门只看 `failed` 与 rc,**覆盖率、ruff、人眼全都放过它**;② **启发式判据放在「完备性」这一环上必然 fail-open**(评审真落地了一个 `journal/method_pool.py` 反例,全量 932 passed);③ **在收口 KG-29 的补丁里又犯了一次 KG-29**(自写 mode 取参把路径字面量当 mode 解析,而 `lifecycle/ephemeral.py` 逐字记过这个坑并已解决)。**三条都只有 mutation / 独立评审抓到,没有一条是自查发现的** —— 这与 (C) 里 XD-41 的结论同向:**自评估的上界由「评估者与被评者的独立性」决定,不由评估的认真程度决定**。
+
+**(H) 通道自证与既有 commit 对齐**:本包 KG-33 第 7 次复现(`gen-handback.sh` 的 `to_source_repo` / `workspace.source_repo` 仍写死 mac 字面量,producer 已手改;6 约束 validator **producer 模式对此不报错** ⇒ 该字段无机器门)—— 归 006 既定攒批,不再重复受理。另记:**第 32/33/34/35 条已落 commit `7e9e9fe`**(其 entry 内 `Follow-up commits: pending` 因 append-only 不回改,在此登记)。
+
+**(I) ⚠ 本次 session 的 worktree 规约 warn(不阻断)**:本次 `/handback-review 001` 在 **`main` 分支**跑,不在 `001` worktree —— 与 CLAUDE.md「Session-per-idea worktree 规约」不匹配,按 P0 **warn 型 preflight** 记录不拦截。同时工作区存在 **009 的未提交改动**(`discussion/009/009-pM3prime/PRD.md` + 009 的两个 hand-back 包 + 009 HANDBACK-LOG)—— **本条决议的 commit 严格只收 001 路径,不夹带 009**,以免复现该规约要治的混线。**这是该规约上线后第 1 次记录到的 mismatch**;升级判据(hook 硬拦)是复发 ≥2 次。
+
+**Follow-up commits**: `5665651`(本条决议 + 本包入库,严格只收 001 路径)· 后续 XenoDev 侧补包 / O7 真跑 commit 待回填
