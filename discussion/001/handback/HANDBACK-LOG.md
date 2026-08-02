@@ -734,7 +734,7 @@ XD-41 归的三条成因 consumer 端**认可且不打折**:① **子代理与�
 
 **(H) KG-33 第 8 次复现收悉,不重复受理**(归 006 既定攒批)。本包补了一个 KG-33 **未覆盖**的口子:`--repo-root .` 会让 `from_build_repo` / `build_repo` / `working_repo` 三个字段全变成字面量 `.`(producer 已手改)。⇒ **同一张模板的第二个口子**,006 上修 KG-33 时一并收,别只修 `to_source_repo` 那两行。**6 约束 validator producer 模式对两者均不报错 ⇒ 这三个字段至今无机器门** —— 这与 (C) 的 `review_path` 是同一件事的两面:**schema 有字段 ≠ 字段可信**。
 
-**Follow-up commits**: pending 本 session
+**Follow-up commits**: `282ea34`(本条决议 + 本包入库,严格只收 001 路径)
 
 ## 2026-08-02T07:39:25Z · 001-radar-pA-20260802T073925Z
 
@@ -790,4 +790,4 @@ consumer 端实读 `specs/001-radar-pA/spec.md` §1-O7 确认:原文只有「3 �
 第 36 条 (I) 记的是「该规约上线后**第 1 次** mismatch;升级判据(hook 硬拦)是复发 **≥2 次**」⇒ **本次是第 2 次,判据已达成**。按 CLAUDE.md「Session-per-idea worktree 规约」v0.2 条款,**warn 型 preflight 应升级为 commit-time hook 硬拦** —— 归 `/expert-forge 006` 落地。
 ⚠ 但一并记一条**反对意见供 forge 权衡**:两次 mismatch **都发生在 `/handback-review` 这一个命令上**,而该命令产出的正是 CLAUDE.md 自己列为「合回 main 的自然候选」的 **accepted governance artifact**。⇒ **在 main 上跑 handback-review 可能本来就是对的**,真正该硬拦的是「**工作区带着别的 idea 的脏改动**」而不是「分支名不匹配」。forge 上别把判据钉在分支名上,**钉在「commit 是否只收单一 idea 路径」更贴近这条规约要治的混线**。
 
-**Follow-up commits**: pending 本 session
+**Follow-up commits**: `282ea34`(本条决议 + 本包入库,严格只收 001 路径)
