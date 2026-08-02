@@ -683,4 +683,4 @@ XD-41 归的三条成因 consumer 端**认可且不打折**:① **子代理与�
 
 **(I) ⚠ 本次 session 的 worktree 规约 warn(不阻断)**:本次 `/handback-review 001` 在 **`main` 分支**跑,不在 `001` worktree —— 与 CLAUDE.md「Session-per-idea worktree 规约」不匹配,按 P0 **warn 型 preflight** 记录不拦截。同时工作区存在 **009 的未提交改动**(`discussion/009/009-pM3prime/PRD.md` + 009 的两个 hand-back 包 + 009 HANDBACK-LOG)—— **本条决议的 commit 严格只收 001 路径,不夹带 009**,以免复现该规约要治的混线。**这是该规约上线后第 1 次记录到的 mismatch**;升级判据(hook 硬拦)是复发 ≥2 次。
 
-**Follow-up commits**: `5665651`(本条决议 + 本包入库,严格只收 001 路径)· 后续 XenoDev 侧补包 / O7 真跑 commit 待回填
+**Follow-up commits**: `543b4df`(本条决议 + 本包入库,严格只收 001 路径)· 后续 XenoDev 侧补包 / O7 真跑 commit 待回填
