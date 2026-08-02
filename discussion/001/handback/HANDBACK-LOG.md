@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-02T08:04:29Z
-total_decisions: 38
+last_updated: 2026-08-02T14:59:40Z
+total_decisions: 39
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -791,3 +791,99 @@ consumer 端实读 `specs/001-radar-pA/spec.md` §1-O7 确认:原文只有「3 �
 ⚠ 但一并记一条**反对意见供 forge 权衡**:两次 mismatch **都发生在 `/handback-review` 这一个命令上**,而该命令产出的正是 CLAUDE.md 自己列为「合回 main 的自然候选」的 **accepted governance artifact**。⇒ **在 main 上跑 handback-review 可能本来就是对的**,真正该硬拦的是「**工作区带着别的 idea 的脏改动**」而不是「分支名不匹配」。forge 上别把判据钉在分支名上,**钉在「commit 是否只收单一 idea 路径」更贴近这条规约要治的混线**。
 
 **Follow-up commits**: `282ea34`(本条决议 + 本包入库,严格只收 001 路径)
+
+## 2026-08-02T14:59:40Z · forge-001-v5-landing · R5 逐条裁决
+
+**Reviewed at**: 2026-08-02T14:59:40Z
+**Type**: ⚠ **非 hand-back 包决议** —— 这是 `/expert-forge 001` **v5 verdict 的落地前置**
+(stage 文档 §Decision list「落地前置(表前 · 不可跳过)」+ Decision menu [A] 第 1 步)。
+按 [A] 的执行顺序要求「写进 HANDBACK-LOG」,故入本 log。
+**Source**: `discussion/001/forge/v5/stage-forge-001-v5.md`(commit `fdbbbdd`)
+**Operator decision**: **[A] 接受 v5 verdict**,交 spec-writer 落 v0.6→v0.7 一次性 amendment
+
+### (0) 为什么需要这条裁决(不是流程洁癖)
+
+forge v5 的 **P3R2-GPT 穷尽性检查**发现一处**证据闭环缺口**,Opus 侧漏了并在 §5 接受:
+**R5 四条 finding 的修法至今未经 codex 复核,IDS 也从未逐条裁决** —— 决议 37 (E) 只裁了
+「**第 6 轮何时跑**」,**没裁 R5 findings 本身**。而 v5 的 12 项施工单里 **item 11 / item 2
+直接建立在 R5 的两条修法之上**。⇒ 不先裁,施工单有若干条**建在未裁决的地基上**。
+
+### (1) 本次裁决的一手证据(consumer 端实跑 · 非采信自述)
+
+| 项 | 实测 | 结果 |
+|---|---|---|
+| 四条修法是否真在代码里 | 逐条读 `task-preflight.sh:151` / `journal/cli.py:172-190` / `ephemeral.py:373-381,385-391` / `gate.py:158-180` | ✅ **四条全在,且与包内描述逐字相符** |
+| 是否有回归测覆盖 | `test_repo_scripts_gates.py` / `test_journal_cli.py` / `contract/test_ephemeral.py` / `test_credibility_gate.py` | ✅ 四条各有落点 |
+| 套件现状 | `python -m pytest -q` 于 `9444e09` **本次真跑** | ✅ **`1006 passed in 4.57s`** |
+
+⚠ **仍然为真的那件事**:以上证明「**修法在、有测、套件绿**」,**不证明「修法对」** ——
+四条**均未经 codex 复核**(operator 定的 5 轮上限用尽),这是**在册未清偿的债**,不因本次裁决消失。
+
+### (2) 逐条裁决 + 映射到 12 项
+
+| R5 # | 级 | 病灶(一句话) | **裁决** | 映射到 v5 施工单 | 承重? |
+|---|---|---|---|---|---|
+| **F1** | high | 注释行不参与缩进结构 ⇒ block 循环在注释处 break,收了 `true` 永不执行后面的 `false`,脚本还返回成功(同一洞的**第五种写法**) | **accepted** | 与 12 项**无直接耦合**;其遗留缺口「preflight 从未被调用」= **XD-43 归 `/expert-forge 006`**,不在本轮 | 否 |
+| **F2** | high | 真跑横幅只要求全文任意位置出现 ⇒ 第 3 行明写 `DRY_RUN_FAKE`、正文夹带真跑横幅的**自相矛盾**快照照样能成 P2 journal 行 | **accepted** | ⭐ **item 11** —— 该项要「**命名 evaluate 自己那条 provenance 链**(RunProvenance + journal `lines[2]`)」,**命名的正是这条修法** | ⭐ **是** |
+| **F3** | high | `_SCOPE_NODES` 只列函数与 lambda ⇒ 下钻进类体/推导式把 Store 名误记成外层绑定,真读盘被跳过 | **accepted** | **item 10**(同文件 `ephemeral.py`,C9 门① 的 `COMPENSATING_CONTROLS` 表要加在这里)· **item 9**(兜底举证规则的实证来源就是 C9 双门) | 间接 |
+| **F4** | high | 通用 URL canonicalizer 把第一个 `/` 前全部文本当 host 整体 lower ⇒ query / userinfo 的大小写敏感分量被折叠 | **accepted** | ⭐ **item 2** —— 该项要求「**抽样时 anchor 必须仍有效**」+「按规范化 claim + direction 去重」,**规范化身份的正确性直接由这条修法决定** | ⭐ **是** |
+
+**无 rejected · 无 deferred。** 四条修法均已落地、有测、套件绿 ⇒ 撤销它们要付更大代价,
+且没有任何证据指向它们错。
+
+### (3) ⭐ 本裁决的真正产出:两条承重关系(这才是 GPT 让先裁的原因)
+
+**F2 与 F4 是承重的** —— v5 的 item 11 与 item 2 **各自建立在其上**:
+
+- **item 11 命名 `lines[2]` 绑定为「evaluate 那条 provenance 链」** ⇒ 若 F2 被第 6 轮推翻,
+  **item 11 命名的是一条坏链**,spec 术语章会把一个错误保证写成规范文本。
+- **item 2 要求「anchor 抽样时仍有效」+ 规范化去重** ⇒ 若 F4 被推翻,**累积池的身份判据本身漂**,
+  同一篇文档可能在池里既算命中又算未命中。
+
+⇒ **裁定(承接决议 37 (E) 并收紧)**:第 6 轮 codex 的触发判据维持
+「**第一次真打算判 P2 PASS 之前**」,**并明确追加**:
+> **item 11 与 item 2 在 spec 里落成规范文本可以现在做,但其保证不得被援引为 P2 PASS 的依据,
+> 直到第 6 轮复核过 R5-F2 / R5-F4。**
+
+**理由**:这两项的 spec 文本本身是**正确的方向**(命名链 / 池身份),被推翻的风险不在**要不要写**,
+而在**写下的那条链当前是否可信**。⇒ 允许落文本、禁止据以判绿 —— 这是**用途分类第五次应用**
+(判据侧 → 动作侧 → 产物侧 → 排期侧 → **本条:文本效力侧**)。
+
+### (4) v5 verdict 接受与执行顺序
+
+**接受 v5 全部 12 项,采 stage 文档 §Decision list 的最终底稿(= P3R2-GPT §1 修订版)。**
+特别确认三条**不得降级**(降任一即 BLOCK):**item 2**(借池防空过)· **item 10**
+(`review_by < expires_on` + **到期机器转红不可省**)· **item 12**(上下文安全展示投影 ·
+**证不出安全则展示版不 ship** · 「不作证据用途」标签不能替代注入防御)。
+
+**剩余执行顺序**(本条完成第 1 步):
+1. ✅ **R5 逐条裁决**(本条)
+2. ⏭ spec-writer 落 **v0.6 → v0.7 一次性 amendment**(12 项 · frontmatter `amended_at_5` +
+   Amendment log + Version bump)→ **走一次 codex review**
+3. ⏭ **T040 起跑**(warn + versioned baseline + 只卡新增 · 须证「存量只 warn / 新增才 block」)
+4. ⏭ PRD v1.6→v1.7 三点修订(O7 时间锚 / 呈现面是 O1 风险 / 判断数量是集合验收采样)
+
+### (5) 本轮 forge 的方法论增量(登记入库)
+
+- ⭐ **本仓「判据可达性族」是 ISO/IEC/IEEE 29148 九特征的重新发明**:结构/数学可达 = **Feasible** ·
+  可判定/可复现 = **Verifiable**(「iff 存在一个过程能证明系统满足它」)· **唯一可读性(决议 35 (F))
+  = Unambiguous**(「allows only one interpretation」)· **OQ-A1-1 悬空 = Complete 违反**
+  (集合级「no TBD, TBS, or TBR clauses」)。⇒ **自造术语让五个事故看起来像五次偶发,
+  采用标准后它们是同一族的同一种违反。**
+- ⭐ **但九特征只是分类不是牙**:自指链终止于「**有资质者评审 + 真跑证据**」= **合法终点非自动解除**
+  (与 test oracle 文献「人是最后的 oracle 来源,合法」同构)。⇒ 本地化表强制四列 +
+  **Feasible 栏不接受推演** = **七次「推演≠真跑」第一次被制度化收口成一条填表硬约束**。
+- ⭐ **跨模型对标的第一价值是纠错不是共识**:Opus P2 记了条负结果「未检索到『gate 上线前先证
+  其可满足』的先例」,**被 GPT 用 W3C / NASA / IEEE 29148 打掉,Opus 独立复核确认**。
+  ⇒ **单模型 forge 会把「未检索到」当成「无先例」** —— 这条比 12 项施工单更耐用。
+- **反自欺条款双向执行且真抓到东西**(本仓方法论资产):GPT 自陈未检索「强制多样本输出有效性」·
+  Opus 自陈**累积规则是 post-hoc 制定**(SPIRIT 明写须 prespecified)⇒ **只对下一次评估生效、不追溯**;
+  GPT 末轮又抓出 Opus 施工单**三处**:`≥5 run` **无来源魔数** / item 3 **给 Unambiguous 写了一条
+  自己不 Verifiable 的判据** / item 12 **用「不作证据用途」标签解释掉注入风险**。三处 Opus 已逐条认领。
+- **协议自指两连**:P1 阶段「800-1500 字」中文歧义致 GPT 用 `sed` 机械压缩、Opus 超标;
+  stage 文档又超 4000 上限 30% 并具名声明。⇒ **本轮要裁的 Unambiguous 缺陷,发生在裁它的这场 forge
+  自己的协议里**。归 `/expert-forge 006`(改 CJK 字符 / Latin words 双口径 + 禁有损机械压缩)。
+
+**v6 触发判据(写死可测)**:**warn 候选过 `review_by` 后无证据仍被续期**。
+
+**Follow-up commits**: pending 本 session
