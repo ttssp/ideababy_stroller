@@ -1065,4 +1065,4 @@ v1.7 是 **forge 主动审查的产物**(判据冻结前置),PRD 侧只承接三
 3. task-decomposer 排 spec-task 同步 task(4 · 排在 v6 之后或接受一次返工)
 4. T040 起跑(forge v5 item 8 · 不被本条阻塞)
 
-**Follow-up commits**: pending
+**Follow-up commits**: `d030c0a`(本条决议 + PRD v1.6→v1.7 落地)
