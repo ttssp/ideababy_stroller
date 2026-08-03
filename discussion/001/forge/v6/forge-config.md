@@ -74,7 +74,8 @@ Codex 沙箱可能 BLOCK 外部 repo → **inbox 任务内附关键摘录兜底,
    + 三处引用**已删的 `OQ-A1-1`**;`:68` ⑤ 测名仍写「非豁免 0/1/2 → 不得判 PASS · 恰 3 → 可 PASS」。
 8. `<W>/specs/001-radar-pA/tasks/T040.md`(外部 repo · 59 行 · **v5 裁「立即起跑」而至今未起**)
    —— `depends_on: [T030,T031,T032]`(三者已 ship)· `file_domain: tests/contract/**`
-   —— ⚠ **实查该目录不存在 ⇒ T040 零进展**。本轮须裁:这是拖延,还是 v5 §underweights 那条 fallback 已生效?
+   —— ⚠ **T040 的 6 个交付文件逐一实查全部缺失 ⇒ T040 零进展**。本轮须裁:这是拖延,还是 v5 §underweights 那条 fallback 已生效?
+   🔴 **证据订正(2026-08-03)**:本条原写「实查该目录不存在」**为误**(从 worktree 根跑相对路径 `ls tests/contract/`,cwd 错)。该目录**存在**且已有 3 个文件(T032 / FU-A / codex 补跑 R1 的产物),**但无一属 T040 交付**。**结论不变,证据改正** —— 详见 stage 文档 §underweight-10。
 9. `<W>/specs/001-radar-pA/tasks/T041.md`(外部 repo · 52 行)—— `file_domain` = `bench/**` + `tests/e2e/**`,
    **不覆盖 CLI/journal** ⇒ v5 item 7 把结果值协议「留 T041」**指向了一个不接的收件人**。
 

@@ -68,7 +68,7 @@ T041 `file_domain` = `bench/**` + `tests/e2e/**`,不覆盖 CLI/journal —— �
 **更硬的一层**:T041 `depends_on: [T040]`,而 T040 至今零进展 ⇒ **该协议被双重阻塞**。
 
 **B-2 · T040 未起跑,但我判断这不构成「v5 fallback 已生效」。**
-实查 `tests/contract/` 不存在 ⇒ T040 零进展。K 理由问「是拖延还是 v5 §underweights 那条 fallback
+实查 T040 的 6 个交付文件全部缺失 ⇒ T040 零进展。〔🔴 **事后订正 2026-08-03**:原文为「实查 `tests/contract/` 不存在」,**该判断有误** —— cwd 错(从 worktree 根跑相对路径)。目录存在且有 3 个文件,但均属 T032/FU-A/codex-R1,无一属 T040。**结论不变**,详见 stage 文档 §underweight-10〕K 理由问「是拖延还是 v5 §underweights 那条 fallback
 生效了」。我的初判:**是拖延,不是 fallback 生效** —— 理由是 v5 item 8 **自带**一条更贴切的 fallback
 (「item 2 累积语义被证不可测 → 该条降 warn-only 断言 + 记 baseline,**不阻断其余 5 文件 ship**」),
 而 §0.1 自检已把 PASS 向定成 warn,**正好落进这条 fallback 的射程**。
