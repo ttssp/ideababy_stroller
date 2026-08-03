@@ -1,6 +1,6 @@
 # PRD · 001-radar-pA · "方向评估官（历史位移内嵌）"
 
-**Version**: 1.6  (human-approved revision)
+**Version**: 1.7  (human-approved revision)
 **Created**: 2026-07-07T02:58:21Z
 **Revised**: 2026-07-11 · v1.0→v1.1:P0.2 盲测门首判 FAIL(handback `001-radar-pA-20260711T135303Z`)决议 + moderator injection(`../L3/moderator-notes.md` @2026-07-10T08:19:13Z)——O4 两层化 + 要件③重 operationalize + 语义切窗/分层阅读原则
 **Revised (v1.2)**: 2026-07-13 · operator 价值重定义(injection @2026-07-13T10:43:29Z):gate 硬门槛收敛为要件①②,要件③降级为使用期校准信号;Candidate B 诉求记 v0.2 展望
@@ -9,6 +9,7 @@
 **Revised (v1.5)**: 2026-07-17 · forge 001 v3 verdict(`discussion/001/forge/v3/stage-forge-001-v3.md` · hand-back `001-radar-pA-20260717T052416Z` 决议链):D′ 真 rerun 证实 a1 机制内存层生效但真跑走不到判定(a1 验证产物被锁在被否 gate 形态后面 = 隐依赖环 · 第四次「推演≠真跑」)——g1(人肉盲测二值签字)永久退役出解锁链;新 gate 形态 = 按 run 类型分流 + 两层 + 信号;评估 run 证据生成时落盘始终可见,T010/T011 解锁全机器自证;校准 run 只密封 answer-key、零解锁语义
 **Revised (v1.6)**: 2026-07-18 · forge 001 v4 verdict(`discussion/001/forge/v4/stage-forge-001-v4.md` · hand-back `001-radar-pA-20260717T092547Z` 决议链):D″ 生效自证真跑正确 fail-closed STOP——v1.5 钦点标的「07-17 真产物」实为 pre-split 校准产物,评估/校准分流禁止评估自证消费它(第五次「推演≠真跑」= 生效条款标的错配)——采 γ · 正式 amendment(非 waiver):生效自证标的改「首个评估 run 产物」(同 stem · 同一验收事件),首个自证 PASS = 条款生效事件;07-17 降校准活动历史样本(exclusion 非豁免);β cut;key 轮换写入 runbook 序列不进机器谓词
 **Effective (O4 生效条件 · 2026-07-18)**: forge v4 §c 条款生效事件达成(hand-back `001-radar-pA-20260718T231642Z` 决议 · HANDBACK-LOG 第 22 条):首个默认评估 run 产物 `diffusion-models-20260718T231343Z` 同一验收事件内 B′+D′ 自证 PASS → 条款状态 `landed-not-yet-effective` → **`landed-and-effective`** · T010/T011 机器解锁前置(unlock-preflight)PASS。条款文本零改动,版本号维持 v1.6
+**Revised (v1.7)**: 2026-08-03 · forge 001 v5 verdict(`discussion/001/forge/v5/stage-forge-001-v5.md` · hand-back `001-radar-pA-20260802T162313Z` 决议链 · HANDBACK-LOG 第 40 条):**零骨架改动**——Scope OUT 不改、O4 生效条款不改(v1.6 已生效,本轮零触碰),只补三点:O1 补 O7 时间锚(longstop 起算算法 · 触发而无 journal 行判 FAIL 非「不可判」)/ 产物呈现面(消毒转义)列为 O1 完成率的实质风险(与差异化风险并列)/ 「≥3 条非豁免判断」定位澄清为集合验收采样口径而非单次产出 KPI
 **Source**: discussion/001/001-radar/L3/stage-L3-scope-001-radar.md · Candidate A
 **Approved by**: human moderator
 **PRD-form**: simple
@@ -64,7 +65,13 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 ## Success — observable outcomes
 
 - **O1** 3 个月内完成 ≥5 次真实新方向评估,其中 ≥1 次实际改变了 operator 的投入决策
+  - **时间锚(v1.7 新增,per forge 001 v5 verdict @2026-08-02 · 对应 XenoDev spec 侧 O7)**:「3 个月」此前无起算点,长期处于「测量窗未开始 ⇒ 永远不可判」的空转态。现定死起算算法——
+    **start = min(首条真实评估 journal 行的 date, spec v0.7 生效日 + 30 日)**;本次代入 ⇒ **start = 2026-08-02,截止 = 2026-11-02**。
+    **longstop 到期而 journal 无行 → O1 判 FAIL(0/5),不判「不可判」**——「没跑」是一个结果,不是一个待定态。
 - **O2** 任一 briefing 的任一判断都能在 3 次点击内到达原文证据
+  - **「≥3 条非豁免判断」的定位澄清(v1.7 新增,per forge 001 v5 verdict @2026-08-02)**:该数量是**集合验收的采样口径**(operator 抽样核验时手上要有足够条目),**不是单次产出的 KPI**。
+    **显式 non-goal**:不得为凑满数量而让 judge 多产判断——那直接违 O4「不做真理机」与 Scope OUT-8;证据不够时的正确行为是如实判「样本不足」,不是把产出量做上去(Goodhart)。
+    (本条只作定位澄清,不改 Scope OUT 列表,不改 O4 生效条款。)
 - **O3** 30 分钟内出初判(评估延迟是产品属性,不是实现细节)
 - **O4** 信任分两层校准(v1.5 修订,per forge 001 v3 verdict @2026-07-17;v1.4「真 briefing rerun 自证 PASS」的二值/人肉读法废止——D′ 真 rerun 证实 a1 机制内存层生效,但 a1 验证产物被锁在被否 gate 形态后面(隐依赖环:D′ 自证→B′ 谓词→audit.json→gate PASS→人肉盲测签字),真跑走不到判定 = 第四次「推演≠真跑」):
   - **初始层 · T010/T011 解锁前置 = 评估 run 全机器自证(人不在判定回路)**:
@@ -109,6 +116,14 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Research 生成的一份带溯源报告,产品
 就没了独占空间。这是产品级/差异化风险,不是技术风险——缓解靠"结构成型度"这个独有判断文体 +
 位移叙事 + 品味校准,而不是靠把检索做得更全。
+
+**第二条并列风险 · 产物呈现面(v1.7 新增,per forge 001 v5 verdict @2026-08-02)**:**消毒转义把叙事
+读坏,是 O1 完成率的实质风险**,与上述差异化风险并列而非从属。理由:O1 要 operator 每周真读一份、
+连做 5 次;PRD O1 又是"信任第一块砖"——读起来费劲的产物,operator 不会连读 5 次,O1 直接空转。
+实样(forge v5 §5.6)显示叙事被转义成 `\*\*结构连接\*\*` 形态。
+⚠ **修法不是"反转义"**,而是**从规范存档生成一份上下文安全的展示投影**:恶意样本在目标上下文必须
+保持 inert,且可回指规范证据。**证不出安全 → 展示版不 ship**,保留规范版并改善非执行式阅读辅助;
+"不作证据用途"的标签**不能**替代注入防御。
 
 ## Open questions for L4 / Operator
 
@@ -171,6 +186,19 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 2. **07-17 降校准活动历史样本 → 采纳**:exclusion 非豁免(污染治理零 grandfather 豁免先例 + 临床 protocol「waivers not permitted」跨域合围);不销毁、不豁免、不作 PASS 证据;answer-key 维持密封。已落 O4。
 3. **β cut · α 非独立选项 → 采纳**:β 是跨域明文反模式(放行须穿三道守卫 = 拆护栏);α 收编为 γ 的立即执行 note(operator 授权 + key 轮换完成后可即刻跑)。已落 O4 runbook 序列。
 4. **XenoDev 落地路径(v4)**:a. **即刻收编** forge v3 worktree 实装 commit(状态命名「机制 landed」,与「条款生效」显式两态);b. `selfcheck-07-17.sh` S 级参数化(direction/ts/briefing · 只复用现有 D″ 入口/守卫 · 禁新判据/旁路/spine;超 S 回落手工模板);c. key 轮换 → 授权 → 首个默认评估 run → 同事件自证。护栏三道守卫 + 14 测 + KG-B10 冻结全 keep 零削弱。
+
+### v1.7 response(forge 001 v5 verdict @2026-08-02 · `../../forge/v5/stage-forge-001-v5.md`)
+
+(回应 hand-back `001-radar-pA-20260802T162313Z`「v0.6→v0.7 amendment 落地」· HANDBACK-LOG 第 40 条决议 · operator 已批准落地。**与 v1.3~v1.6 四次不同:本次不是被真跑推翻后的修补**——v5 是"判据冻结前置"的主动审查,采 ISO/IEC/IEEE 29148 九特征作分类框架,12 项施工单中 9 项已落 XenoDev `spec.md` v0.7,PRD 侧只需承接三点。)
+
+1. **O1 补 O7 时间锚 → 采纳**:起算算法 `start = min(首条真实评估 journal 行 date, spec v0.7 生效日 + 30 日)` ⇒ 本次 2026-08-02 → 2026-11-02;longstop 到而无 journal 行**判 FAIL 不判「不可判」**。已落 Success O1 时间锚条。**这是把"永远测不完所以永远不算失败"这条退路堵死**。
+2. **呈现面列为 O1 实质风险 → 采纳**:与差异化风险**并列**(非从属)——O1 要求连读 5 次,读不动即 O1 空转。修法是**上下文安全的展示投影**而非反转义,证不出安全则展示版不 ship。已落 Biggest product risk 第二条。对应 forge v5 item 12(独立 task,XenoDev 侧本轮未起)。
+3. **判断数量定位澄清 → 采纳**:「≥3 条非豁免判断」是集合验收采样口径,非单次产出 KPI;显式 non-goal = 不得为凑数让 judge 多产判断(违 O4/OUT-8 · Goodhart)。已落 Success O2 注。**Scope OUT 列表零改动**(forge v5 明文「PRD 零骨架改动」)。
+
+**本次未处置 · 已显式路由(HANDBACK-LOG 第 40 条)**:
+
+- **累积池分区键**(池仅按 decision epoch + rubric 分区、不按评估方向分区 ⇒ 理论上可借跨不相干方向的历史判断凑满 ≥3 判 PASS,且拆池不追溯)——codex adversarial-review round 3/4/5 三轮持续判 high。核实为 **forge v5 决策表第 2 行原文逐字决定**,非 spec-writer 起草缺陷;改分区键属"重大架构转向"⇒ 按本仓 CLAUDE.md 决策矩阵**路由 forge v6 裁**,不在单包决议级处置。注:此项是 **v6 的新增触发器**,与 v5 声明的既有 v6 判据(warn 候选过 review_by 后无证据仍被续期)并列。
+- **R5-F2/F4 第 6 轮 codex 复核**——两条修法已落成 spec 规范文本,但其保证被明文挂起(**不得援引为 O2/P2 PASS 依据**)。经判定该挂起是 **fail-closed**(不复核 ⇒ 不得判 PASS)而非 fail-open,且 spec-task 同步缺口使新池化路径的 PASS 本就不可达 ⇒ **不单独跑,挂为 v0.7→v0.8 amendment 的强制随行项**(防遗忘条款见 HANDBACK-LOG 第 40 条)。
 
 ---
 

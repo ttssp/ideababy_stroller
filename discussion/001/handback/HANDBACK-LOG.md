@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-02T14:59:40Z
-total_decisions: 39
+last_updated: 2026-08-03T09:34:19Z
+total_decisions: 40
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -887,3 +887,182 @@ forge v5 的 **P3R2-GPT 穷尽性检查**发现一处**证据闭环缺口**,Opus
 **v6 触发判据(写死可测)**:**warn 候选过 `review_by` 后无证据仍被续期**。
 
 **Follow-up commits**: `9d24b26`(本条裁决入库)
+
+## 2026-08-03T09:34:19Z · 001-radar-pA-20260802T162313Z
+
+**Reviewed at**: 2026-08-03T09:34:19Z
+**Tags**: drift, practice-stats
+**Severity**: medium
+**Validator**: 6/6 PASS(consumer 模式)· `ids_verdict_evidence:` 父键**不存在** ⇒ Step 3 verdict-evidence
+precheck 按契约跳过(**本条本身即一项 finding,见 (3)**)
+
+**Operator decisions**:
+- [x] 修 PRD §"Success O1 / Success O2 / Biggest product risk"(v1.6 → **v1.7**)
+- [ ] 修 SHARED-CONTRACT(**显式不做** —— `ids_verdict_evidence` 适用范围已归 006 forge,
+      现在改 = 抢在 forge 前下结论,与池分区键的处理不自洽)
+- [ ] 修 XenoDev spec(本轮零改动 · 两条残留超 spec-writer 授权,见 (1))
+- [x] 无操作 · 收悉入库(practice-stats)
+
+---
+
+### (0) 决议前的独立核对(不取包的自述 · 第七次「推演≠真跑」的防线用在评审侧)
+
+包的六项自述**逐条真核**(非读包内转述):
+
+| 核对项 | 结果 |
+|---|---|
+| worktree 6 commits(1 落地 + 4 fix + 1 补记录) | ✅ `a0a8dfa` → `8eda692` |
+| spec 462 行 · `amendment_5_reviewed_by` 已从 `pending` 转完整 5 轮记录 | ✅ 属实 |
+| Drift 2 逐字匹配 forge v5 决策表第 2 行 | ✅ `stage-forge-001-v5.md:165` 原文一致 |
+| Drift 1(T021/T040 仍 v0.6 单 run 阈值 + `OQ-A1-1` 死链) | ✅ T021:31/44/60 · T040:40/42 字面命中 |
+| 「`OQ-A1-1` 整节删除」 | ✅ spec:457 显式移除注;残留 12 处均为 amendment-log 史料引用 |
+| R5-F2/F4 承重挂起声明 | ✅ §1-O2(c) + §6 O2 行均在位 |
+
+⇒ **包的事实陈述全部属实**。以下三项是核对中**另外发现的**,包未如实转述或未交由 IDS 裁。
+
+---
+
+### (1) 🔴 核心发现 · codex round-5「不应合入」被转述为「披露即可合」
+
+读 codex 原始 log(**非包的转述**)`/tmp/codex-review-spec-v07-round5.log`:
+
+- summary 原文:**「不应合入:新池化规则允许跨方向假 PASS,且新增结果状态仍没有机器可观察的接口契约。」**
+- next steps 原文:**「冻结并实现三态结果的 CLI/产物协议**后再合入** v0.7。」**
+
+而本包 §1 把它转述为「2 条残留均已被识别为需要 operator/IDS 决策的架构 / task-assignment 问题,
+**而非本轮可自行收口的缺陷**」,显式披露入 spec 正文即视作完成,**且 v0.7 已 commit 落地**。
+
+**裁定:内容判断对,程序转述不对。**
+- **对的部分**:两条残留在内容上确实超 spec-writer 授权(改分区键 = 重大架构转向,按本仓
+  CLAUDE.md 决策矩阵须先 forge;CLI/journal 协议归属未定)。**「不自行改」是正确动作。**
+- **不对的部分**:「不自行改」被**等价成了「所以可以合」**,且这个等价**没有写进 §3 交给 operator 裁** ——
+  reviewer 说的是"先修再合",包呈现的是"披露即合",两者之间的落差被静默吞掉。
+
+⇒ **这是 LOG 第 36 条 XD-41「`needs-attention` 事实等价于放行」的第二次实例**,首次在 code 层
+(六批替代路径评审欠债),本次在 **spec 层**。**同一模式跨层复发 = 系统性,单包决议级吃不下。**
+**归 `/expert-forge 001` 攒批。**
+
+### (2) 🔴 附带发现 · R-Q7 immutable REVIEW-LOG 机制被**整条绕过**
+
+初判是「log 只落 `/tmp`,重启即清」。**实测把问题推深了一层** —— 真正的缺陷不是存放位置,
+是**机制从未被调用**:
+
+- **① v0.7 五轮在正规 immutable 存储里一条记录都没有**。XenoDev 的 R-Q7 机制
+  (`lib/handback-validator/review-log-writer-lib.sh` 的 `write_review_log_immutable`)规定
+  immutable 记录写 **`.claude/skills/codex-review/real-review/<scope-slug>-<ts-slug>.md`**,
+  该目录**被 git 追踪**(非 gitignore)。实查该目录:v0.7 五轮 **零条**。
+  ⇒ 5 轮 review 全程**没走 R-Q7**,只有裸 log 落 `/tmp`。
+  (注:`review-log/` 是 **gitignored 草稿区**,不是 immutable 存储 —— 初判引错了对照物。)
+- **② singleton latest-pointer 是 stale 的,且指向反向结论**。
+  `.claude/skills/codex-review/REVIEW-LOG.md` 至今仍停在 **v0.6**:
+  `verdict: approve` · `findings_count: 0` · `ts: 2026-07-26T00:10:51Z`。
+  而现实是 v0.7 `needs-attention` 带 **2 条 high**。
+  ⇒ **任何读 latest-pointer 的下游看到的是「approve、零 finding」,与事实恰好相反。**
+  这比"证据丢失"更危险 —— 丢失是空,stale pointer 是**错误的正信号**。
+- **③ 这直接解释了 `ids_verdict_evidence:` 块为何缺席**:forge v4 R-Q6 那 7 个协议字段
+  (`target_file` / `verdict` / `findings_count` / `codex_model` / `ts` / `review_log_path` /
+  `review_log_sha256`)**正是从 REVIEW-LOG 派生**。上游没产记录 ⇒ 下游无块可带。
+  ⇒ 三项不是三个独立疏漏,**是同一个根因(R-Q7 未被调用)的三个投影**。
+- **④ consumer 侧对此完全无感**:precheck 探父键 `ids_verdict_evidence:`,不存在则**整步跳过、
+  不 warn**。⇒ **缺块的包比带坏块的包更容易过闸**(缺席即豁免)。本包正是这样过的闸。
+
+**已执行的抢救动作**(operator 批准 · 廉价可逆 · 喂 (1)(2) 排的两个 forge):5 轮 raw log +
+round1-rescoped 已从 `/tmp` 拷进 worktree `review-log/001-radar-pA-spec-v07/`。
+⚠ **该目录 gitignored ⇒ 未入 git**,只解决了「重启即清」,**未**达成 git 持久化。
+**未强推 `-f`** —— 绕过本仓自己的 .gitignore 策略需 operator 明示。
+**未追溯补写 immutable 记录** —— 本 finding 的主题就是证据完整性,在这个主题上事后造记录
+是恰恰错误的动作;若要补,须由 XenoDev 侧走 `write_review_log_immutable` 并**显式标 backfill**
+(precedent:`review-log/backfill-e89860e-2026-07-31-round*.md`),且是 producer 的决定不是 consumer 的。
+
+**归属裁定**:
+- **「R-Q7 为何未被调用 / 如何强制」是框架级机制缺陷 ⇒ 归 `/expert-forge 006`**(升级自初判的
+  "协议覆盖面"问题)。焦点三问:(a) `spec-only` amendment 走不走 R-Q7(该机制目前只在
+  build-ship 路径被调用?)· (b) latest-pointer **stale 无检测** —— 指针可以长期指向一个
+  早已不是 latest 的 verdict,无任何机器信号 · (c) consumer precheck **「缺席即豁免」**
+  (父键不存在 ⇒ 整步跳过无 warn),需改为「声称跑过 review 的包必须带块,否则 warn/reject」。
+- ⚠ **(b) 与 (1) 是同一个失败家族**:(1) 是人把 `needs-attention` 讲成可放行,(b) 是机器把
+  `needs-attention` 显示成 `approve`。**一个在转述层,一个在指针层,方向一致。**
+
+### (3) Drift 2(累积池分区键)· 裁定 = 路由 forge v6
+
+池仅按 `decision epoch + rubric` 分区、**不按评估方向分区**(方向只用于去重),理论上单 run 只需贡献
+1 条有效判断即可借跨不相干方向的历史判断凑满 ≥3 判 PASS;「被证不可比」才事后拆池且**拆池不追溯**
+已判 PASS ⇒ **跨方向假 PASS 可被永久保留**。codex round 3/4/5 三轮持续判 high。
+
+- **已核实非本轮缺陷**:逐字匹配 `stage-forge-001-v5.md:165` 决策表第 2 行原文。
+- **裁定:路由 `/expert-forge 001` v6**,不在单包决议级吃。理由:codex 给的反向修法
+  (「必须重新验证并撤销受影响的既有 PASS」)本身就是**新的架构决策** —— 如何通知已依赖该 PASS 的
+  下游、PASS 结论是否需版本化,都不是一个 hand-back 决议能定的。
+- ⚠ **登记**:此项是 **v6 的新增触发器**,与 v5 已声明的既有 v6 判据(**warn 候选过 `review_by`
+  后无证据仍被续期**)**并列**,不替代。
+- **过渡期风险敞口如实记**:在 v6 裁定前,该假 PASS 通道**理论上开着**。补偿控制 = forge v5 §257
+  「首池达 3 条并抽样时 operator 复核可比性,不可比则拆池」+ spec 正文已有的显式风险披露。
+  **未选择「先冻结 P2 PASS 通道」** —— 因 (4) 的 spec-task 同步缺口使该通道**事实上本就不可达**
+  (机器侧跑的仍是 v0.6),冻结换不到额外安全。
+
+### (4) Drift 1(spec-task 同步缺口)· 裁定 = 新开 task,不阻塞 T040
+
+`tasks/T021.md` / `tasks/T040.md`(**均已 ship · squash 完成**)现行内容仍实装 **v0.6 单 run 自足阈值**
+(非豁免 0/1/2 → 不判 PASS · 恰 3 → 可 PASS,无池化 / 无借池条件 / 无 ⑥),且仍引用**已从 spec 整条
+删除的 `OQ-A1-1`**(dangling);`tasks/T041.md` 的 `file_domain`(`bench/**` + `tests/e2e/**`)
+**不覆盖 CLI/journal 层** ⇒ `INSUFFICIENT_EVIDENCE` 的退出码/产物状态字段协议**无 owner**。
+
+⇒ **实际后果:v0.7 池化 / 借池 / 三态结果值语义目前只在 spec 规范层生效,机器侧跑的仍是 v0.6** ——
+`evaluate` 命中样本不足时仍可能 exit 0 且正常落盘,下游自动化分不出「成功」与「非 PASS」。
+
+- **裁定**:随下一批 task-decomposer 排入**独立 task**(删死链 `OQ-A1-1` 引用 / 补池化版 pytest ⑤⑥ /
+  定 CLI 退出码 + 产物状态字段协议的归属),**不阻塞 T040 起跑**。沿用本仓「spec 先行 + task 补齐」
+  既定模式,与 R5-F2/F4「先落规范文本 + 显式标注保证暂不成立」的处置精度一致。
+- ⚠ **该 task 的验收形态依赖 (3) 的裁定** —— 池分区键若在 v6 被改,⑤⑥ 的断言形态随之变。
+  排期时**排在 v6 之后**或**接受一次返工**,二选一,不要装作无依赖。
+
+### (5) R5-F2/F4 第 6 轮 codex 复核 · 裁定 = 不单独跑,挂条件延后
+
+item 2(锚点身份判据 ← R5-F4)+ item 11(具名 provenance 链 ← R5-F2)已落成 spec 规范文本,但保证被
+明文挂起:**不得援引为 O2/P2 PASS 依据,直到第 6 轮 codex 复核过**。
+
+**判据(为什么延后是安全的)**:该挂起是 **fail-closed**(不复核 ⇒ 不得判 PASS),**不是 fail-open**。
+**延后一个 fail-closed 守卫安全,延后 fail-open 的才危险。** 叠加 (4) —— 机器侧现在跑的仍是 v0.6,
+新池化路径的 PASS 本就不可达 ⇒ **现在单独跑第 6 轮换不到任何解锁,纯消耗**;而 v6 裁完分区键后
+§1-O2(c) 大概率要改,那时一轮 codex 同时验 R5-F2/F4 + v6 落地。
+
+🔒 **防遗忘条款(写死 · 防「挂起态长期停留」)**:
+> **R5-F2/F4 的第 6 轮 codex 复核 = `v0.7 → v0.8` amendment 的强制随行项。
+> v0.8 amendment 不得在未完成该复核的情况下,宣称 O2/P2 可判 PASS。**
+
+### (6) PRD v1.6 → v1.7(已执行)
+
+按 forge v5 决议 D **零骨架改动**只补三点(Scope OUT 不改 · O4 生效条款不改 · v1.6 已生效零触碰):
+
+1. **Success O1 补时间锚**:`start = min(首条真实评估 journal 行 date, spec v0.7 生效日 + 30 日)`
+   ⇒ 本次 **2026-08-02 → 2026-11-02**;longstop 到而无 journal 行 → **判 FAIL(0/5),不判「不可判」**。
+   ⇒ **把「永远测不完所以永远不算失败」这条退路堵死。**
+2. **Biggest product risk 新增第二条并列风险**:产物呈现面(消毒转义)是 **O1 完成率**的实质风险 ——
+   O1 要求连读 5 次,读不动即 O1 空转。修法 = **上下文安全的展示投影**(非反转义),
+   **证不出安全则展示版不 ship**;「不作证据用途」标签不能替代注入防御。
+3. **Success O2 补定位澄清**:「≥3 条非豁免判断」= **集合验收采样口径**,非单次产出 KPI;
+   显式 non-goal = 不得为凑数让 judge 多产判断(违 O4 / OUT-8 · Goodhart)。
+
+**注**:v1.7 与 v1.3~v1.6 四次**性质不同** —— 前四次都是**被真跑推翻后的修补**(第二~五次「推演≠真跑」),
+v1.7 是 **forge 主动审查的产物**(判据冻结前置),PRD 侧只承接三点。
+
+### (7) practice-stats 入库
+
+- spec.md 328 行(v0.6)→ **462 行**(v0.7),**0 行 `src/` / `tests/` 改动**,6 commits 全 `docs`/`fix`。
+- codex 5 轮共 14 条 finding(含跨轮重复计数),12 条授权内收口,**2 条转显式披露 + 留 IDS**(~14%)。
+- 收敛速度显著快于 T020 那轮(12 轮)—— 因本次多数 finding 是**文本内部逻辑一致性**问题而非设计缺陷。
+- ⚠ 但**「收敛快」不等于「结论强」**:见 (1),末轮 verdict 仍是 `needs-attention` 且 reviewer 明说
+  「不应合入」。**收敛速度不是质量指标,别当质量指标读。**
+
+---
+
+**下一活(优先级序)**:
+1. `/expert-forge 001` v6 —— 池分区键(3)+ needs-attention 等价放行(1)+ 既有 7 项攒批
+2. `/expert-forge 006` —— **R-Q7 被整条绕过**(2):spec-only 路径是否走 R-Q7 · latest-pointer
+   stale 无检测 · precheck「缺席即豁免」+ 既定 XD-39~43
+   ⚠ **附带即时提醒**:`REVIEW-LOG.md` 指针现在是**错的正信号**(显示 v0.6 `approve`/0 findings,
+   实为 v0.7 `needs-attention`/2 high)—— 在 006 裁定前,**不要把该指针当 001 的评审现状读**。
+3. task-decomposer 排 spec-task 同步 task(4 · 排在 v6 之后或接受一次返工)
+4. T040 起跑(forge v5 item 8 · 不被本条阻塞)
+
+**Follow-up commits**: pending
