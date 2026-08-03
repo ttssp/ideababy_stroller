@@ -1,0 +1,11 @@
+{
+  "version": "v6",
+  "phase": "1",
+  "convergence_mode": "strong-converge",
+  "x_hash": "5fece3ba9297e123860c376c4489b8e3",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": false,
+  "created": "2026-08-03T09:52:00Z",
+  "last_updated": "2026-08-03T09:56:00Z"
+}
