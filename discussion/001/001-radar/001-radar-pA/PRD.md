@@ -65,9 +65,11 @@ v0.1 是一把**每次用完即完整的工具**(评估官),不是持续运转�
 ## Success — observable outcomes
 
 - **O1** 3 个月内完成 ≥5 次真实新方向评估,其中 ≥1 次实际改变了 operator 的投入决策
-  - **时间锚(v1.7 新增,per forge 001 v5 verdict @2026-08-02 · 对应 XenoDev spec 侧 O7)**:「3 个月」此前无起算点,长期处于「测量窗未开始 ⇒ 永远不可判」的空转态。现定死起算算法——
-    **start = min(首条真实评估 journal 行的 date, spec v0.7 生效日 + 30 日)**;本次代入 ⇒ **start = 2026-08-02,截止 = 2026-11-02**。
-    **longstop 到期而 journal 无行 → O1 判 FAIL(0/5),不判「不可判」**——「没跑」是一个结果,不是一个待定态。
+  - **时间锚(v1.7 新增,per forge 001 v5 verdict @2026-08-02 · 对应 XenoDev spec 侧 O7)**:「3 个月」此前无起算点,长期处于「测量窗未开始 ⇒ 永远不可判」的空转态。现定死起算规则——**分两支,不是单一连续公式**(与 XenoDev `spec.md` §1-O7 逐条同构;forge v5 verdict 原稿的 `start = min(...)` 单公式 + 独立 fallback 写法**已被 codex adversarial-review round-4 判 high 并废止**,因其数学上同时容纳「day30 无行仍顺延 3 个月」与「day30 无行当场 FAIL」两种互斥读法):
+    - **① 生效日 + 30 日内已发生 ≥1 条真实评估 journal 行** → `start` = 该首条真实 journal 行的 date,**O1 截止 = start + 3 个月**,按「≥5 次 + ≥1 次改变投入决策」标准判定。
+      **本次即此支**:首条真实评估发生于 2026-08-02(早于生效日 + 30 日窗口)⇒ **start = 2026-08-02,截止 = 2026-11-02**。
+    - **② 生效日 + 30 日内一条真实评估都未发生** → **不进入 3 个月观察窗**,O1 **当场直接判 FAIL(0/5)**;不判「不可判」,也不再等满 3 个月二次确认。**30 天内零真实使用本身就是明确的失败信号——这是设计意图不是缺陷。**
+    **不存在中间态**:命中 ① 才有 3 个月窗,命中 ② 直接终局。⇒ **把「永远测不完所以永远不算失败」这条退路堵死。**
 - **O2** 任一 briefing 的任一判断都能在 3 次点击内到达原文证据
   - **「≥3 条非豁免判断」的定位澄清(v1.7 新增,per forge 001 v5 verdict @2026-08-02)**:该数量是**集合验收的采样口径**(operator 抽样核验时手上要有足够条目),**不是单次产出的 KPI**。
     **显式 non-goal**:不得为凑满数量而让 judge 多产判断——那直接违 O4「不做真理机」与 Scope OUT-8;证据不够时的正确行为是如实判「样本不足」,不是把产出量做上去(Goodhart)。
@@ -191,7 +193,9 @@ taste 校准**三样的交集上。如果 briefing 读起来像 Gemini Deep Rese
 
 (回应 hand-back `001-radar-pA-20260802T162313Z`「v0.6→v0.7 amendment 落地」· HANDBACK-LOG 第 40 条决议 · operator 已批准落地。**与 v1.3~v1.6 四次不同:本次不是被真跑推翻后的修补**——v5 是"判据冻结前置"的主动审查,采 ISO/IEC/IEEE 29148 九特征作分类框架,12 项施工单中 9 项已落 XenoDev `spec.md` v0.7,PRD 侧只需承接三点。)
 
-1. **O1 补 O7 时间锚 → 采纳**:起算算法 `start = min(首条真实评估 journal 行 date, spec v0.7 生效日 + 30 日)` ⇒ 本次 2026-08-02 → 2026-11-02;longstop 到而无 journal 行**判 FAIL 不判「不可判」**。已落 Success O1 时间锚条。**这是把"永远测不完所以永远不算失败"这条退路堵死**。
+1. **O1 补 O7 时间锚 → 采纳**:本次 start = 2026-08-02 → 截止 2026-11-02;30 日 longstop 内零真实评估则**当场判 FAIL 不判「不可判」**。已落 Success O1 时间锚条。**这是把"永远测不完所以永远不算失败"这条退路堵死**。
+   ⚠ **落地形态与 forge v5 verdict 原稿不同(有意为之)**:v5 §"Next-version PRD draft" 写的是 `start = min(首条 journal date, 生效日+30d)` 单公式 + 独立 fallback 措辞,该写法**已在 v0.7 amendment 的 codex round-4 被判 high 并改写为显式二分支**(单公式同时容纳「day30 无行仍顺延 3 个月」与「day30 无行当场 FAIL」两种互斥读法 = Unambiguous 违反)。PRD 采**改写后**的二分支形态,与 XenoDev `spec.md` §1-O7 逐条同构。
+   ⇒ **暴露一条通道级问题**:forge stage doc 的 §"Next-version PRD draft" 是 PRD 修订的施工单,但它**冻结在 forge 结束那一刻**,而 amendment 期间的 codex 复核会继续改动同一条款 —— 施工单与最终 spec 之间**无同步机制**,照抄施工单会把已被推翻的写法搬进 PRD。本次经复核拦下。**已带入 forge v6 X 标的。**
 2. **呈现面列为 O1 实质风险 → 采纳**:与差异化风险**并列**(非从属)——O1 要求连读 5 次,读不动即 O1 空转。修法是**上下文安全的展示投影**而非反转义,证不出安全则展示版不 ship。已落 Biggest product risk 第二条。对应 forge v5 item 12(独立 task,XenoDev 侧本轮未起)。
 3. **判断数量定位澄清 → 采纳**:「≥3 条非豁免判断」是集合验收采样口径,非单次产出 KPI;显式 non-goal = 不得为凑数让 judge 多产判断(违 O4/OUT-8 · Goodhart)。已落 Success O2 注。**Scope OUT 列表零改动**(forge v5 明文「PRD 零骨架改动」)。
 
