@@ -1,6 +1,6 @@
 {
   "version": "v6",
-  "phase": "1",
+  "phase": "2",
   "convergence_mode": "strong-converge",
   "x_hash": "5fece3ba9297e123860c376c4489b8e3",
   "prefill_used": false,
@@ -11,8 +11,10 @@
     "contaminated_round_archived": "_contaminated-p1/",
     "superseded_inbox": "20260803T095600-001-forge-v6-p1.md",
     "clean_inbox": "20260803T104240-001-forge-v6-p1.md",
-    "operator_decision": "重跑 P1 · 洁净 inbox @2026-08-03"
+    "operator_decision": "重跑 P1 · 洁净 inbox @2026-08-03",
+    "clean_p1_received": "2026-08-03T10:49Z · non-BLOCK · 9/9 标的原文直读"
   },
   "created": "2026-08-03T09:52:00Z",
-  "last_updated": "2026-08-03T10:42:40Z"
+  "last_updated": "2026-08-03T11:05:00Z",
+  "z_note": "WebSearch 后端故障(400 effort xhigh not supported · 3 次同错)⇒ Opus 侧 P2 改用定向 WebFetch,不产出任何『未检索到⇒无先例』型负结果;CVE REJECTED/DISPUTED 语义未取到(记未取到,非不存在)"
 }
