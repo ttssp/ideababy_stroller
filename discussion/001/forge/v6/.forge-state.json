@@ -6,6 +6,13 @@
   "prefill_used": false,
   "opus_done": true,
   "codex_done": false,
+  "p1_rerun": {
+    "reason": "P1 独立性污染 —— 首次下发的 inbox 把 Opus P1 的结论当作『建议关注面』写入,破坏了协议中唯一一轮双向独立",
+    "contaminated_round_archived": "_contaminated-p1/",
+    "superseded_inbox": "20260803T095600-001-forge-v6-p1.md",
+    "clean_inbox": "20260803T104240-001-forge-v6-p1.md",
+    "operator_decision": "重跑 P1 · 洁净 inbox @2026-08-03"
+  },
   "created": "2026-08-03T09:52:00Z",
-  "last_updated": "2026-08-03T09:56:00Z"
+  "last_updated": "2026-08-03T10:42:40Z"
 }

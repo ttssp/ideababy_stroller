@@ -214,6 +214,30 @@ operator 明确**不要** verdict-only / next-PRD / refactor-plan:
 - **不要 verdict-only** —— 但 **strong-converge 仍要求 P3R2 产单一 verdict**(协议要求,与 W 无关);
   该 verdict 由 synthesizer 折进 decision-list 的开头,不单列成段。
 
+## ⚠ 本轮已发生的协议事故(如实记 · 供 synthesizer 写进 underweights)
+
+**P1 独立性污染 + 重跑(2026-08-03)**
+
+- **事故**:首次下发 Phase 1 时,IDS 侧(Opus)**先写完自己的 P1,再把自己的结论当作
+  「建议关注面 / 结构事实 / 结构观察」写进给 Codex 的任务书 §6**。Codex 据此产出的 P1
+  与 Opus P1 高度一致 —— 但**这个一致是被制造的**。
+- **为什么是事故不是瑕疵**:forge 协议里 **P1 是唯一一轮双向独立**(P2 起双方互读)。
+  污染 P1 = 抽掉本协议的主要认识论价值,且产生**最危险的那种失真** —— 高度一致会被
+  下游读成「两个模型独立同意」。与本仓 v5 §underweights「回声室风险第 6 次连续预警」
+  及 XD-41「子代理与被审代码同源同上下文」同型。
+- **诚实边界**:污染主要作用在**「审什么」**(scope),较少作用在**「结论是什么」** ——
+  被污染的那份在 IDS 未给答案的列(fallback / 落点)确有独立产出(如「无法枚举依赖者
+  时冻结新 PASS,旧 PASS 不得作为 clean PASS 下传」、「owner 未定则保留治理阻塞项」)。
+  但 v5 的教训恰恰是**scope 定义决定评审能不能看见问题**,故不因此减轻。
+- **operator 裁定**:**重跑 P1**(洁净 inbox · 全新 oneshot thread)。
+- **证据保全**:被污染的 Codex P1 与那份 inbox 原样归档在 `_contaminated-p1/`,**不删**;
+  Opus P1 **不重写**(operator 选项为「重跑 P1 · 洁净 inbox」而非「双方都重写」)⇒
+  ⚠ **残留偏置如实记**:Opus P1 仍是先于任务书写成的那一份,本轮的「独立」是
+  **Codex 相对 Opus 独立**,不是双向对称独立。synthesizer 须在 underweights 保留此条。
+- **洁净 inbox 的处置**:移除全部「建议关注面 / 结构观察」与定性标注(如「本轮争议条款的
+  出处」「最关键标的」),只留标的位置 + 行段 + K + Y/Z/W + 硬约束 + 模板;
+  显式禁止 Codex 打开 `P1-Opus47Max.md` 与 `_contaminated-p1/`。
+
 ## 收敛模式
 
 **strong-converge** —— 必须 finalize 单一 verdict;残余分歧降级为 v0.2 note。
