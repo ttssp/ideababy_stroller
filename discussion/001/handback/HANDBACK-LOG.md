@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-03T09:34:19Z
-total_decisions: 40
+last_updated: 2026-08-03T13:10:00Z
+total_decisions: 41
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -1066,3 +1066,86 @@ v1.7 是 **forge 主动审查的产物**(判据冻结前置),PRD 侧只承接三
 4. T040 起跑(forge v5 item 8 · 不被本条阻塞)
 
 **Follow-up commits**: `d030c0a`(本条决议 + PRD v1.6→v1.7 落地)
+
+## 2026-08-03T13:10:00Z · forge-001-v6-landing · chair 追认 + 逐条裁决
+
+**Reviewed at**: 2026-08-03T13:10:00Z
+**Type**: forge verdict 落地 · **chair record**(非 hand-back 包决议)
+**Source**: `discussion/001/forge/v6/stage-forge-001-v6.md` · Decision menu **[A]** · operator 选 [1]
+
+> ⚠ **本条的性质与前 40 条不同**:它不是对某个 hand-back 包的决议,而是 **forge v6 verdict #6
+> 「chair 条款」要求的那份 chair 留痕本身**。per RFC 7282:rough consensus 要求 issue 被
+> **addressed**(实质考量 + 给反对者 reasoned explanation)而非 **merely noted**,且**由 chair 认定**。
+> forge v6 裁定 **chair = operator**,`/handback-review` 是**闸点与留痕**、不是 chair 本身,
+> **spec-writer 不得自任**。⇒ **本条即该条款的第一次执行。**
+
+---
+
+### (1) ★1 已完成 · 零受影响 PASS 核查(forge v6 #5)
+
+**产物**:`discussion/001/audit/20260803-pass-migration-audit.md`(具名 · 可复现 · 含证伪条件)
+**结论**:**迁移表 = 零项**。零真实 O2/P2 `PASS` 结论存在,亦无任何下游消费面。
+
+**这是第二次独立核查**(第一次 = GPT-5.5 于 forge v6 P2 §2 仓内实查)。本次**未采信**第一次结论,
+命令与范围自行确定。**三条增量**:
+- ① 明确覆盖 **XenoDev main checkout**(其 `out/briefing/` **空**,无 `evaluations.jsonl`);
+- ② ⭐ **结构性论证(枚举法之外的独立路径)**:`rg 'pool|epoch|rubric|comparability' src/` 全树
+  **仅 2 处命中**,且均在 `lifecycle/ephemeral.py` **注释**里指 **`corpus pool`(检索语料复用)**
+  —— **O2 判断池在 `src/` 中从未实装,无任何持久化落点** ⇒ **任何 PASS 都不可能"借旧池"得来,池根本不存在**;
+- ③ 逐字引出唯一那份真 evaluate 产物**自我否认 PASS** 的三处原文
+  (`:22` 计数 1<3 · `:25`「不得据以判 O2/§7-P2 PASS」· `:43-46`「命令成功 ≠ P2 PASS…不宣称 P2 整体已绿」)。
+
+⚠ **诚实边界**:两次核查**均由 AI agent 执行,未经第三方人工复核**。
+⏳ **`operator_signoff: PENDING`** —— 该记录是 v0.8 amendment 的**必带附件**,**缺签收不予验收**。
+
+### (2) ★2 · chair 逐条裁决(5 条 finding · 全部给出 addressed 说明)
+
+> **裁决口径**:`accepted` = 反对成立;`addressed` 栏写明**该 concern 如何被实质处理**
+> —— 按 RFC 7282,这一栏不填 = merely noted = **不构成 consensus**,不得据以放行。
+
+| # | finding | 严重度 | **裁决** | **addressed 说明(chair 填)** |
+|---|---|---|---|---|
+| R5-F1 | 池未按方向分区 ⇒ 跨方向假 PASS 可永久保留 | high | **accepted** | 由 **forge v6 #1 + #3 + #4** 实质处理:池键改 `decision_epoch + rubric + comparability_class` 且 **epoch 开启时冻结不可变**;**block-PASS 出口即刻关闭**降探索/warn;追溯采二态。⇒ reviewer 要求的「预声明可比较类 + 使既有 PASS 失效/重评」**两项均被采纳**,非仅披露 |
+| R5-F2 | 三态结果无机器可观察接口契约 · 无 owner | high | **accepted** | 由 **forge v6 #8** 实质处理:三态 CLI 退出码/产物状态字段协议 **与消费点 verifier 合为一个具名新 task**(分开则「接口只是标签、消费点无输入」);**明确不塞 T041**(T041 是 phase-4 测量工具 · `depends_on:[T040]` 会造成双重阻塞) |
+| **R1-F1** | **dry-run + 注入 fake 仍可产出与真评估同形、无 provenance 标记的解锁证据** | **critical** | **accepted · 开独立修复项** | 🔴 **本条是 forge v6 全程漏审项**(v6 §underweight-7 自曝)。**实测仍活**:`cli/reconstruct.py:113` 仍**只判 `calibration` 不判 `dry_run`** ⇒ `dry_run=True` + fake retriever/llm 照走 `_emit_eval_run`。**裁定随 #8 新 task 同批排入一个独立修复项**:① `dry_run` **禁进** `_emit_eval_run`;② 产物写**隔离位置** + 带**不可移除 provenance**;③ **所有解锁入口显式拒绝**。⚠ **理由(chair)**:T010/T011 虽已于 07-18 用真产物解锁,但 **PRD v1.5 ① 的 per-run 自证义务**使后续换方向/换窗的评估 run **仍走这条链** ⇒ 敞口是**前向的**,不因既有解锁已完成而消失 |
+| R1-F2 | 解锁自证只绑可变路径,产物覆盖后旧 PASS 仍有效 | high | **accepted-deferred** | **追认现有归属**。实测:`audit_digest` **已计算并入库**,但 `rerun_selfcheck.py:68` 明写「**只入 record 作留痕,不改任何解锁判定分支**」,`verify_selfcheck_journal:159` 仍只比对两个路径字符串。⇒ 该延后**有具名归属(KG-B10 spine 冻结面)且写在代码里**,按 RFC 7282 属 **addressed 而非 merely noted**,维持冻结 |
+| R1-F3 | JSONL 短写回滚可截断并发 writer 已成功追加的记录 | medium | **accepted-deferred** | **追认现有归属**。实测 `journal/store.py:81` 明写「真并发下 `ftruncate` 可能砍掉别人刚 append 的记录。**并发安全 = 存储层重设计,已记 backlog**」⇒ 同上,属 addressed;且本机单 operator 场景并发面实际不触发,维持 backlog |
+
+⚠ **R1 三条的 scope 提示**:`round1-codex-raw.log` 的 review base 是 **`main`**,与 round2-5 的
+`9444e09` **不同** ⇒ 它审的是**另一批东西**(解锁链与持久化),这正是它被四轮 forge 集体漏掉的结构原因
+——**双方都在盯 `9444e09` 那条 diff 线**。记为**漏审的成因**,归 `/expert-forge 006`
+(与「评审 scope 定义决定能看见什么」= XD-41 同族)。
+
+### (3) v0.7 地位追认
+
+**已 commit 的 spec v0.7 追认为 `provisional`**(**不撤 commit**):其 **O2/P2 权威性自 2026-08-02
+落地起即处于悬置**,至**本 chair 记录入库时解除悬置**(本条已逐条补齐 addressed 说明)。
+
+⇒ **forge v6 #6 的 fallback「无 chair 记录不得声称 clean PASS」在本条之前一直成立,自本条起满足。**
+⚠ 但**这不等于 O2/P2 现在可判 PASS** —— PASS 出口按 #3 **仍然关闭**,重开前置是 #1 + #2 + note-2。
+
+### (4) 本条本身即「chair 条款」的第一次执行 —— 三点自证
+
+1. **认定者 ≠ 被反对方**:裁决由 **operator** 作出,不由 spec-writer / 落地 agent 自批。
+2. **逐条 addressed 说明齐全**:5 条 finding **无一为空**;空白 = merely noted = 不构成 consensus。
+3. **书面回执面的诚实缺口**:RFC 7282 要求 reasoned explanation **回给提出者**,
+   而 codex 五轮**各自独立无回路**,本记录**事实上无法回递给 reviewer**。
+   ⇒ **本仓的 chair 条款只做到了「留痕」,没做到「回执」**。记为**已知局限**,
+   归 `/expert-forge 006`(与 `review_path` schema 同批:hand-back 缺「包→包」关联,
+   同样缺「决议→reviewer」回路)。
+
+### (5) 后续动作(forge v6 [A] 执行顺序 · ★1★2 已完成)
+
+| 步 | 动作 | 归属 | 状态 |
+|---|---|---|---|
+| ★1 | 零受影响核查记录 | IDS | ✅ 本条 (1);⏳ operator 签收 pending |
+| ★2 | chair 追认 + 逐条裁决 | IDS | ✅ 本条 (2)(3) |
+| 3 | spec v0.7 → **v0.8** amendment(#1/#2/#3/#4 条文 + #6 条款文本)→ 走一次 codex review | **XenoDev** | ⏭ 待起 · ⚠ **强制随行 R5-F2/F4 第 6 轮复核**(决议 40 (5) 防遗忘条款) |
+| 4 | **T040 起跑**(#7):5 非 O2 文件 block 测 + (c) 条 warn-only/baseline | **XenoDev** | ⏭ 可与 3 并行;(c) 条依赖 3 的最终措辞 ⇒ 「接受一次返工」或「(c) 排 3 之后」二选一 |
+| 5 | task-decomposer 排新 task(#8)+ **R1-F1 独立修复项**;同批收 T021 的 v0.6 残留与 dangling `OQ-A1-1` | **XenoDev** | ⏭ 待排 |
+| 6 | **PRD 本轮不改** | IDS | ✅ 无动作(v1.7 O2 定位澄清已覆盖) |
+
+⚠ **#1 / #3 / #4 语义互锁**,任一被降级为「实施注记」则联合 verdict 失效。
+⚠ **最坏的局部接受组合 = 只采 #1 不采 #3**(换个更严的键继续放行),v6 [C] 已明令。
+
+**Follow-up commits**: pending
