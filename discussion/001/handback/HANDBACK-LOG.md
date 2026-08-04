@@ -1294,4 +1294,4 @@ forge 006 须给的是**机制**而非又一条建议,焦点三问(承接决议 
 CLAUDE.md「Session-per-idea worktree 规约」不符。按该规约 P0 为 **warn 型不拦截**,据实记录一次
 ——**本条即该 warn 的第一次留痕**,供日后判断是否达到「mismatch 混线复发 ≥2 次」的 hook block 升级判据。
 
-**Follow-up commits**: pending
+**Follow-up commits**: `bcdaf80`(本条决议 + hand-back 包入库 · 回填同第 41 条先例 `4534e93`)
