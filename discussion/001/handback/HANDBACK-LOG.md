@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-03T13:10:00Z
-total_decisions: 41
+last_updated: 2026-08-04T00:18:06Z
+total_decisions: 42
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -1149,3 +1149,149 @@ v1.7 是 **forge 主动审查的产物**(判据冻结前置),PRD 侧只承接三
 ⚠ **最坏的局部接受组合 = 只采 #1 不采 #3**(换个更严的键继续放行),v6 [C] 已明令。
 
 **Follow-up commits**: `4a89d18`(★1 核查记录 + ★2 chair 裁决入库)
+
+---
+
+## 2026-08-04T00:18:06Z · 001-radar-pA-20260803T171809Z
+
+**Reviewed at**: 2026-08-04T00:18:06Z
+**Tags**: feature, spec-gap-fix, practice-stats
+**Severity**: medium
+**Validator**: 6/6 PASS(consumer 模式)· `ids_verdict_evidence:` 父键**仍不存在** ⇒ Step 3 verdict-evidence
+precheck 按契约跳过(**连续第 2 个包如此过闸,见 (B)**)
+
+**Operator decisions**:
+- [ ] 修 PRD(**显式不做** —— v1.7 的 O2 定位澄清已覆盖;本轮 diff 实测零 PRD 改动,与包 §3(5) 自述一致)
+- [ ] 修 SHARED-CONTRACT(**显式不做** —— `ids_verdict_evidence` 适用范围归 forge 006,现在改 = 抢在 forge 前下结论,与决议 40 的同项处理保持自洽)
+- [ ] 修 XenoDev spec(本轮零改动)
+- [x] **chair 裁定:追认 11 轮 hard-stop · v0.8 生效**(见 (1))
+- [x] **(B) 升级为 `/expert-forge 006` 阻断级议题**(见 (B))
+- [x] **授权起跑**:T042 / FU-R1F1 / FU-R5F4 三 task + T040 的 4 个无依赖契约测(见 (2))
+- [x] 无操作 · 收悉入库(practice-stats · 含 (A) 的勘误)
+
+---
+
+### (0) 决议前的独立核对(不取包的自述 · 含一次真跑)
+
+包的技术自述**逐条真核**:
+
+| 核对项 | 结果 |
+|---|---|
+| forge v6 #1 池键加 `comparability_class` + epoch 开启时冻结 | ✅ `spec.md:93` / `:220-221`,含 round-2 「无隐式默认类」收口 |
+| #2 `direction` 退出去重键、进 `comparability_class` 分区键 | ✅ `spec.md:94`;stable claim identity 算法**仍未定义**已 declare 为持续 warn(非隐瞒) |
+| #3 block-PASS 出口关闭 + 转正四条件**合取化** | ✅ `spec.md:95`,第④项(`T042` 消费点 verifier fail-closed 接入)在位 |
+| #4 追溯二态 fail-closed 落**消费点**(不落通知/标注) | ✅ `spec.md:96` / `:235`,含 retraction 实证论证 + 「本轮适用范围为零 · 前瞻性不追溯」边界 |
+| #6 chair 条款入正文 | ✅ `spec.md:30-31`,`amendment_6_reviewed_by` 明写「不代表 chair 已裁定到此为止可以」 |
+| **全量 1010 passed** | ✅ **真跑复现**(非读包转述):`1010 passed in 4.70s` |
+| 三份新 task doc + T040 第 1 个契约测 + 零 `src/` 改动 | ✅ T042 576 行 / FU-R1F1 204 / FU-R5F4 86 / 契约测 107 行;`diff --stat` 无任何 `src/` 条目 |
+| 两份 v0.8 raw log 的终局 verdict | ✅ 均为 `needs-attention`(文件内另 2 处 `"verdict":"approve"` 系 codex 开场 plan 消息产物,**不构成矛盾** —— 已核,不误报) |
+
+⇒ **技术内容与测试数字全部属实,且关键数字经真跑复现**。以下两项是核对中**另外发现的**。
+
+### (A) 🟡 practice-stats 错报 commit 数:自述 6 · 实际 15
+
+包 §1「commit 共 6 个」与 §2「本轮 6 个 commit(1 落地 amendment + **2 轮 codex fix** + 1 T040 +
+1 披露 + 1 dogfood)」。实测 `8eda692..HEAD`:
+
+```
+  11 fix(radar)      ← round-1 … round-11,每轮一个
+   1 test(radar)
+   3 docs(...)
+  ── 15 total
+```
+
+**与包自身 §1/§2 叙述直接矛盾**(同一份文档里说了 11 轮、round 1-11 全部当轮收口)。错报的数字形状
+(6 = 1+2+1+1+1)恰好复刻 v0.7 那轮的真实 6 commits(1 落地 + 4 fix + 1 补记录,决议 40 已核实)
+⇒ 判为 **practice-stats 段照抄上一份的形状而未重算**,非有意瞒报。
+
+**为何仍要记**:practice-stats 是**入库当统计证据**用的。低估 9 个 fix commit ⇒ 系统性低估「11 轮
+复核有多贵」,而 **XD-44(SKILL 轮次上限该不该调)恰恰要拿这个成本数去 forge 判**。错的输入会喂出
+错的 forge 结论。
+
+**operator 裁定:不派生回退动作** —— 本条 (0)+(A) 的核对表**即勘误记录本身**,HANDBACK-LOG 是
+append-only 权威档,后续 forge 引用成本数时以本条为准、不以包 §2 为准。⚠ 已知残留:XenoDev 侧
+`dogfood-backlog.md` XD-44 正文若引了「6 个 commit」,**未同步更正**(本轮未授权跨仓改)。
+
+### (B) 🔴 R-Q7 第二次连续未被调用 · latest-pointer stale 跨度由 5 轮扩到 16 轮
+
+**决议 40 (2) 已把「R-Q7 从未被调用」路由 `/expert-forge 006`。下一个包原样复发。** 实测:
+
+- **① immutable 存储对 v0.8 十一轮零条记录**。`.claude/skills/codex-review/real-review/` 最新文件
+  仍是 `working-tree-spec-v0.6-o2-low-confidence-exemption--2026-07-26T001051Z.md`
+  ⇒ **v0.7 五轮 + v0.8 十一轮 = 16 轮 review,immutable 存储里一条都没有**。
+- **② latest-pointer 仍停在 v0.6 且指向反向结论**。`.claude/skills/codex-review/REVIEW-LOG.md`:
+  `verdict: approve` · `findings_count: 0` · `ts: 2026-07-26T00:10:51Z`。
+  现实是 v0.8 `needs-attention` 带 2 条**未经 round-12 复核**的 high。
+  ⇒ 决议 40 点名的「**错误的正信号**(比证据丢失更危险)」不仅未修,**stale 跨度从 5 轮扩到 16 轮**。
+- **③ raw log 只存 2/11 轮,且仍在 git 之外**。`review-log/001-radar-pA-spec-v08/` 仅
+  `round1` / `round5` 两份;`review-log/` 命中 `.gitignore:72`,`git ls-files` 该二目录 **0 条**。
+  (⚠ 决议 40 记的「已从 /tmp 拷进 worktree」对 v0.7 六份同样仍未入 git —— 抢救动作**只解决了重启即清,
+  未达成 git 持久化**,该已知缺口延续至今。)
+- **④ spec 的自我披露本身也没跟磁盘核对**。`spec.md:100` 称「未逐轮存档为独立文件…仅 round-9/10/11
+  保留在会话记录中」,而磁盘上实际存在 round1/round5 两份文件 —— **方向相反的不准确**(自述比现实更悲观)。
+  记为**披露未经真核**的又一实例:诚实的意图 ≠ 核过的事实。
+- **⑤ consumer 侧再次全程无感**:precheck 探父键 `ids_verdict_evidence:`,不存在 ⇒ 整步跳过、**不 warn**。
+  本包正是这样过的闸 —— **连续第 2 个**。「缺席即豁免」使**缺块的包比带坏块的包更容易过闸**。
+
+**裁定:升级为 `/expert-forge 006` 阻断级议题**(自决议 40 的「攒批」升级)。**升级依据 = 复发计数**:
+决议 40 的路由**已下达但零落地**,下一个包原样复发 ⇒ 证明**单靠 forge 路由而无 enforcement,该缺陷会稳定复发**。
+forge 006 须给的是**机制**而非又一条建议,焦点三问(承接决议 40,措辞收紧):
+- **(a)** `spec-only` amendment 走不走 R-Q7 —— 该机制目前是否只在 build-ship 路径被调用?
+- **(b)** latest-pointer **stale 无检测** —— 指针可长期指向早已不是 latest 的 verdict,零机器信号;
+  需 staleness 判据(如 pointer.ts 落后 HEAD 上最近一次 review commit 即报)。
+- **(c)** consumer precheck **「缺席即豁免」** 必须反转为:**声称跑过 review 的包缺 `ids_verdict_evidence`
+  块 ⇒ warn/reject**,不再静默跳过。
+
+⚠ **本轮未授权的动作(据实记敞口)**:operator **未**选「现在就修 latest-pointer」
+⇒ **`REVIEW-LOG.md` 至今仍对下游显示 `approve` / `findings_count: 0`,该错误正信号在 forge 006
+落地前持续存在**。补写 immutable 记录同样未授权 —— 且按决议 40 的原则,在「证据完整性」这个主题上
+事后造记录本身是错误动作,若要补须由 **producer 侧**走 `write_review_log_immutable` 并**显式标 backfill**。
+
+### (1) chair 裁定 · 追认 11 轮 hard-stop · v0.8 生效
+
+包 §3(1)(b) 把「11 轮是否到此为止」**主动交给 chair**,未自任 —— 这是 **forge v6 #6 + 决议 41
+「spec-writer 不得自任 chair」条款的第一次被 producer 侧主动遵守**,与决议 40 (1) 记的 XD-41
+「`needs-attention` 被转述成可放行」形成对照:**同一位置,这次程序走对了**。据此裁定:
+
+**追认 hard-stop,v0.8 生效**(非 provisional)。addressed 说明(per RFC 7282,不得空白):
+- 11 轮已达 codex-review SKILL §4.2 四轮上限的 **2.75 倍**,亦超本 spec v0.7 五轮延长先例;
+- round-11 两条 high 的修法**全部落在 doc 层**,无生产代码敞口(本轮零 `src/` 改动已核实);
+- 真正的关卡在 T042/FU-R1F1/FU-R5F4 **各自 ship 时的 build-time review**(三者 `risk_level: high`,
+  按 codex-review SKILL §2.1 强制独立复核),**不因本轮 11 次文档级复核而跳过或降级** —— 该兜底
+  已由包 `spec.md:100` 明文写死,构成本次追认的承重前提;
+- ⚠ **诚实边界**:round-11 后未经 round-12,「继续重跑不能排除又发现新缺口」这一判断**成立且未被消解**
+  —— 本追认是**在承认该残余风险的前提下**基于成本/兜底作出的裁定,不是宣称 v0.8 已无缺陷。
+
+⇒ **v0.8 的 O2/P2 权威性不悬置**;但 **PASS 出口按 forge v6 #3 仍然关闭**,重开前置仍是四条件合取
+(#1 契约 ∧ #2 算法 ∧ R5-F2/F4 第 6 轮复核〔本轮 round-3 已满足〕∧ `T042` 消费点 verifier 落地并接入)。
+
+### (2) 起跑授权 · 三 task + T040 的 4 个无依赖契约测
+
+授权 **T042 / FU-R1F1-dry-run-provenance / FU-R5F4-gate-canonicalizer-hardening** 三 task 起跑
+(task doc 已成熟:DAG 已接线、`depends_on`/`blocks` 双向一致,本轮 diff 已含 `T042 --> T041` 边),
+并授权 **T040 剩余 6 个交付契约测中不依赖 T042 的 4 个**((a)(b) 层 + 结构测)并行起跑。
+
+- **`test_o2_exemption_contract.py` 的 (c) 条(池化 PASS 半支)压到 `T042` 之后** —— 其断言形态
+  (warn-only + versioned baseline,**不得断言「恰 3 → 可 PASS」**)取决于 T042 落地后的最终措辞。
+- ⚠ **三 task 均 `risk_level: high`** ⇒ build 完成后各走**独立** codex adversarial-review,
+  **不因本轮 11 轮 doc 级复核而降级或跳过**(同 (1) 的承重前提)。
+- ⚠ 本轮授权的是**起跑**,不预判验收。
+
+### (3) 未采纳项 / 本轮不做(据实记)
+
+| 项 | 处置 |
+|---|---|
+| 补 round-12 codex 复核 | **未采** —— 理由见 (1);残余风险已明记 |
+| 要求 XenoDev 回勘误更正 commit 数 | **未采** —— (A) 以本条核对表为准即可;XD-44 正文若引旧数未同步 |
+| 现在就修 `REVIEW-LOG.md` latest-pointer | **未采** —— 敞口持续,见 (B) 末段 |
+| 改 SHARED-CONTRACT `ids_verdict_evidence` 适用范围 | **显式不做** —— 归 forge 006 (c),现在改 = 抢在 forge 前下结论 |
+| 改 PRD | **不做** —— 本轮 diff 实测零 PRD 改动;v1.7 已覆盖 |
+| XD-44(SKILL 4 轮上限系统性偏低) | 纳入下一批 forge;⚠ 引用成本数**须用本条 (A) 的 15,不用包 §2 的 6** |
+
+### (4) preflight warn(不阻断 · 据实报一次)
+
+本次 `/handback-review 001` 的 IDS session 跑在 **`main` 分支**、非 `001` 独立 worktree,与
+CLAUDE.md「Session-per-idea worktree 规约」不符。按该规约 P0 为 **warn 型不拦截**,据实记录一次
+——**本条即该 warn 的第一次留痕**,供日后判断是否达到「mismatch 混线复发 ≥2 次」的 hook block 升级判据。
+
+**Follow-up commits**: pending
