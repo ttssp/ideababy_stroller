@@ -129,10 +129,12 @@ mode: **对标 SOTA**,建议面三条(累积证据池的分区/分层 · 「评�
 | 5 | ⭐ **落一份具名「零受影响 PASS 核查记录」**:实测 `out/` 仅 `coding-llms-20260802T022608Z.md` + `evaluations.jsonl` 一行,两者均明写不得据以判 PASS;`a1-selfcheck.jsonl` 的 `predicate_passed` 属 T010/T011 解锁自证 ⇒ **迁移表 = 零项**。**零受影响是核查结果,不是默认值** | 双方 P1 §3 **各自独立**提出该事实问题(Opus §3-2 / GPT §3-3),GPT P2 §2 **仓内实查证实**(worktree + 主副本 `out/` 全查)。这是本轮唯一「独立提出 + 实查证实」的结论 | **谁**:执行核查的 agent(记名)+ operator 签收。**何时**:**v0.8 amendment 提交前** —— 核查记录是 amendment 的**必带附件**,缺则 amendment 不予验收。**证不出**(核查发现**非零**旧 PASS)⇒ 立刻按 #4 二态处置(全部先入 `disputed-like`),并把迁移表写进 v0.8 **且触发 v7**(见 §underweights)。**已放行结论**:本行本身就是「触发前」的清点动作,无遗留 | 新增核查文件(建议 `<W>/review-log/001-radar-pA-spec-v08/pass-migration-audit.md`)+ HANDBACK-LOG 新决议条目引用 | **`independent`** ⭐ 本轮最强行 |
 | 6 | **chair 条款**:`needs-attention` **不是 veto**;override 合法,但只能由 **operator-chair** 作出并**逐条写明 reviewer concern 如何被 addressed**;`/handback-review` 是闸点与留痕、**不是 chair 本身**;**spec-writer 不得自任**;**无 chair 记录不得声称 clean PASS** | SOTA:RFC 7282 —— rough consensus 要求 issue 被 addressed 而不必被 accommodated,须给反对者 reasoned explanation,**由 chair 认定**;addressed(实质考量)vs merely noted(承认但忽略),后者不构成 consensus。**历史证据**:round-5 原文 summary「不应合入」;v0.7 的可否 ship 由 spec-writer 自批,reasoned explanation 从未回给 codex(五轮各自独立无回路) | **谁**:operator。**何时**:每次 hand-back 入库时 `/handback-review` 决议**落笔那一刻**(逐条 override 或不 override,二选一,不得留白)。**证不出**(chair 记录缺席)⇒ 该 amendment 只保留为 **provisional spec**,可作下一版输入,**不得援引为 O2/P2 PASS 权威**。**已放行结论**:**已 commit 的 v0.7 追认为 provisional**(不撤 commit),其 O2/P2 权威性即刻悬置,直到 chair 逐条记录补齐 | v0.8 amendment frontmatter / Amendment log;HANDBACK-LOG 新决议条目。⚠ 该规则的**一般化形态**(全仓所有 idea 的 reviewer verdict 约束力)属 framework 层 ⇒ **归 `/expert-forge 006`**,本轮只在 001 落地 | **`SOTA-corrected`** |
 | 7 | **T040 立即局部起跑**:6 个交付测文件中,**除 `test_o2_exemption_contract.py` 外的 5 个照常建 block 测**;`test_o2_exemption_contract.py` **只有 (c) 条**建 **warn-only 断言 + versioned baseline**(该文件的 (a)(b) 层与 T021 task-level 层**不受本轮争议影响,照常 block**);**不得把 O2 PASS 面做成 block** | §0.1 自检已把 O2 PASS 向定成事实 warn ⇒ **隔离条件由 spec 给出,不需另证**(双方 R1/R2 确认)。**Feasible**:`depends_on:[T030,T031,T032]` 三者已 ship;**T040 的 6 个交付文件逐一实查全部缺失** ⇒ 零进展是拖延不是 fallback 生效,且 v5 item 8 自带 fallback 正好覆盖本形态。⚠ **证据订正(2026-08-03 · 见 §underweight-10)**:本行原写「实查 `tests/contract/` 不存在」**为误** —— 该目录**存在**且已有 3 个文件(`test_ephemeral.py`=T032 / `test_jsonl_records.py`=FU-A / `test_repo_scripts_gates.py`=codex 补跑 R1),**但无一属 T040 的 6 个交付**;T040 任务书 Inputs 亦明写「`test_ephemeral.py`(C9)**已在 T032**,本 task 补齐其余」⇒ **结论不变,证据改正** | **谁**:T040 builder(XenoDev 侧)+ operator 验收。**何时**:起跑后**首次 `pytest tests/contract/ -q` 全绿并提交 baseline** 时(可观察 = worktree 上出现该 baseline 文件)。**证不出**((c) 条连 warn-only 断言都无落点,如池无持久化对象可断言)⇒ (c) 条**只记 baseline 不建断言**,其余 5 文件照常 ship,**不阻断**。**已放行结论**:无(T040 零进展,无既有放行) | `<W>/specs/001-radar-pA/tasks/T040.md` + `tests/contract/`。⚠ **(c) 条断言形态依赖 #1/#2 的 v0.8 最终措辞** ⇒ 排期上「接受一次返工」或「(c) 排在 v0.8 之后」二选一,**别装无依赖**(同决议 40 (4) 的处置) | `independent` ⚠ 见 underweight-2 |
-| 8 | **新起具名 task(不塞 T041),合并两件事**:① 三态(`PASS` / `INSUFFICIENT_EVIDENCE` / `FAIL`)的 CLI 退出码 + 产物状态字段协议;② 消费点 verifier(读 briefing + journal + pool manifest,产 O2/P2 verdict artifact,并规定 clean / `rejected-like` / `disputed-like` / insufficient / fail 的消费语义)。**必须同 task** | GPT P2 §2 实查「当前没有合格消费点」。T041 `file_domain` = `bench/**` + `tests/e2e/**` 不覆盖 CLI/journal(codex round-1/2/3/5 四次点名);P1-Opus §1-B1:T041 是 phase-4 测量工具、交付物非运行时契约 ⇒ 扩 `file_domain` 也是错配,且 `depends_on:[T040]` 造成双重阻塞。合一理由:分开则「接口只是标签、消费点无输入」 | **谁**:task-decomposer 排期 + operator 授权。**何时**:**下一批 task-decomposer 排期、写下 task 编号那一刻**(决议 40 (4) 已定「随下一批排入独立 task」;可观察 = `specs/001-radar-pA/tasks/T0xx.md` 落盘)。**证不出**(该 task 迟迟无 owner)⇒ `evaluate` 的 exit 0 + 正常落盘产物**一律不得作为 PASS 证据**,O2/P2 保持 `INSUFFICIENT_EVIDENCE`。**已放行结论**:零(实测);若非零按 #4 二态处置 | 新 task(`<W>/specs/001-radar-pA/tasks/T0xx.md`)· `src/radar/cli/evaluate.py` · `journal/cli.py` · **不改 T041**;同批收 `T021.md` 的 v0.6 残留 + dangling `OQ-A1-1`;收口 HANDBACK-LOG 决议 40 (4) | **`independent`** |
+| 8 | **新起具名 task(不塞 T041),合并两件事**:① 三态(`PASS` / `INSUFFICIENT_EVIDENCE` / `FAIL`)的 CLI 退出码 + 产物状态字段协议;② 消费点 verifier(读 briefing + journal + pool manifest,产 O2/P2 verdict artifact,并规定 clean / `rejected-like` / `disputed-like` / insufficient / fail 的消费语义)。**必须同 task** | GPT P2 §2 实查「当前没有合格消费点」。T041 `file_domain` = `bench/**` + `tests/e2e/**` 不覆盖 CLI/journal(codex round-1/2/3/5 四次点名);P1-Opus §1-B1:T041 是 phase-4 测量工具、交付物非运行时契约 ⇒ 扩 `file_domain` 也是错配,且 `depends_on:[T040]` 造成双重阻塞。合一理由:分开则「接口只是标签、消费点无输入」 | **谁**:task-decomposer 排期 + operator 授权。**何时**:**下一批 task-decomposer 排期、写下 task 编号那一刻**(决议 40 (4) 已定「随下一批排入独立 task」;可观察 = `specs/001-radar-pA/tasks/T0xx.md` 落盘)。**证不出**(该 task 迟迟无 owner)⇒ `evaluate` 的 exit 0 + 正常落盘产物**一律不得作为 PASS 证据**,O2/P2 保持 `INSUFFICIENT_EVIDENCE`。**已放行结论**:零(实测);若非零按 #4 二态处置 | 新 task(`<W>/specs/001-radar-pA/tasks/T0xx.md`)· `src/radar/cli/evaluate.py` · `journal/cli.py` · **不改 T041**;同批收 `T021.md` 的 v0.6 残留 + dangling `OQ-A1-1`;收口 HANDBACK-LOG 决议 40 (4) | **`post-hoc-accepted`** ⚠ **2026-08-09 订正**(原标 `independent`),见 §underweight-11 |
 
-**`evidence_grade` 分布**:`independent` ×4(#1 / #5 / #7 / #8)· `SOTA-corrected` ×3(#3 / #4 / #6)·
-`post-hoc-accepted` ×1(#2)。⇒ **8 行里只有 4 行够得上 independent**,详见 §underweights。
+**`evidence_grade` 分布**(⚠ **2026-08-09 订正后**):`independent` ×3(#1 / #5 / #7)·
+`SOTA-corrected` ×3(#3 / #4 / #6)· `post-hoc-accepted` ×2(#2 / #8)。
+⇒ **8 行里只有 3 行够得上 independent**,详见 §underweights。
+*(订正前记录:`independent` ×4 含 #8 · `post-hoc-accepted` ×1。订正理由见 §underweight-11。)*
 
 ### 耦合关系(哪些必须同批落)
 - **语义互锁不可拆**:#1 + #3 + #4(只改池键不关 PASS 出口 = 用新键继续放行;只关出口不定二态 = 重开时无追溯语义)。
@@ -190,7 +192,7 @@ disabled`),Z 退化为**对已知权威源的定向 `WebFetch`,不是检索**。
 第 4 行(CVE 二态)只有一个检索来源方,**没有跨模型交叉验证**。
 
 **underweight-4 · 回声室在 P1 被隔离后,于 P2 以「事后同意」形式回归**
-8 行里只有 4 行是 `independent`。Opus P2 逐条 `grep` 实测:它 P1 的四条主张(§0.1 责任人自批 /
+8 行里只有 3 行是 `independent`(⚠ 2026-08-09 订正:原写 4 行,#8 已降级,见 §underweight-11)。Opus P2 逐条 `grep` 实测:它 P1 的四条主张(§0.1 责任人自批 /
 T041 范畴错误 / direction 抬高计数 / 三重不追溯单调性)在 GPT 洁净 P1 中**零命中**;GPT P2 的表态是
 「没想到 / 未想到 / 未命名但认同」—— **四条全是被告知后同意,无一独立复现**。GPT P3R1 补了对称约束:
 Opus 接受的 v5 探索出口 / CVE 二态 / chair 映射**同样不是 P1 独立复现**,Opus P3R2 承认「我原来的提法
@@ -227,6 +229,30 @@ forge-config X-6 明令「是否已被处置、由谁处置,本轮须核」—�
 ② 与本仓在册的 **validator 相对路径 gotcha** 同族(命令模板字面相对路径致 check-5 误判 corruption,
 传 `realpath` 后 PASS)⇒ **「相对路径 + 未固定 cwd 的实查」是本仓已复发第二次的假事实来源**,
 建议归 `/expert-forge 006` 与该条并案。
+
+**underweight-11 · 🔴 事后订正:第 8 行 `evidence_grade` 由 `independent` 降为 `post-hoc-accepted`**
+**来源**:2026-08-09T21:24 一次 `cdx-run 001` **误重放**(001 队列 HEAD 自 08-03 未前进)产生的 P3R2
+**重采样**,归档在 `_resample/P3R2-GPT-20260809-resample.md`。该重采样的 verdict 与四条分歧收敛结果
+与正式版**完全一致**,唯一分歧在打分:它把第 1 行降为 `post-hoc-accepted(X-seeded)`、第 8 行降为
+`post-hoc-accepted`。
+**operator 裁决(2026-08-09)**:
+- **第 1 行不改** —— 该限缩 §underweight-1 已原样载明(「源出 X 原文、两侧各自到达但 P1 非双向对称独立、
+  禁止读作双盲独立发现」),重采样没带来新信息,只是把它从散文挪到列上;改列反而丢掉 underweight-1
+  的完整读法。
+- **第 8 行改** —— **本表这一列评的是「裁决」不是「发现」**(表头即写「裁决」)。第 8 行的**发现**
+  (T041 范畴错配、当前无合格消费点)确是双方各自到达 + GPT P2 仓内实查;但该行的**裁决**是
+  「**合一为同一个 task**」,而 D-4 原文是 **GPT 提出、Opus 本轮让步**(P3R2 任务书 §2 明写
+  「D-4 采你的合一方案,理由被 Opus 判为决定性」)。按本轮自定的对称规则,**一方提出、另一方交叉轮
+  让步 = `post-hoc-accepted`**,原标 `independent` 是**评级偏向了自己那一侧** —— 而这正是
+  `evidence_grade` 这一列设立时要防的东西(见 §underweight-4)。
+**这条订正自身的证据边界(必须记)**:重采样**不是**第二次独立复核 —— `cdx-run` 每次新起 session,
+而该任务书写的是 `reuse-session` + 「已读勿重读」,冷 session 下等价于「根本不读」⇒ 它是一次
+**上下文更少**的跑。采纳第 8 行不是因为「另一个模型独立同意」,而是因为**它给的论据在任务书正文里
+就能自证**(D-4 的提出方与让步方白纸黑字),与上下文是否到位无关。
+⇒ **方法论教训(与 underweight-10 同族)**:`evidence_grade` 这一列**本身也会被自利地打**,
+且**同一提示重跑会给出不同分布** —— 这一列的打分稳定性从未被验过。
+**机制侧缺陷**(HEAD 不前进致静默重放覆盖 / `reuse-session` 被 `cdx-run` 静默降级为冷 session)
+已另立 **KG-B13 / KG-B14** 攒批,见 `discussion/006/FORGE-006-v10-PENDING.md`。
 
 **underweight-8 · convergence_mode 副作用**
 strong-converge 下,双方都同意但**最可能被真跑打掉**的是:① **`comparability_class` 的可判定性** ——

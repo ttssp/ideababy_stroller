@@ -1295,3 +1295,73 @@ CLAUDE.md「Session-per-idea worktree 规约」不符。按该规约 P0 为 **wa
 ——**本条即该 warn 的第一次留痕**,供日后判断是否达到「mismatch 混线复发 ≥2 次」的 hook block 升级判据。
 
 **Follow-up commits**: `bcdaf80`(本条决议 + hand-back 包入库 · 回填同第 41 条先例 `4534e93`)
+
+---
+
+## 2026-08-09T13:45:00Z · forge-001-v6-resample · 第 8 行 evidence_grade 事后订正
+
+**第 43 条**。**类型**:非 hand-back 条目(同第 42 条前的 `forge-001-v6-landing` 先例) ——
+一次**误重放**暴露的 forge 产物订正 + 两条机制缺陷登记。
+
+### (0) 事件 · `cdx-run 001` 重放了已封轮次并覆盖产物
+
+2026-08-09T21:24(+08:00)执行 `cdx-run 001`。001 队列的 `HEAD` 自 08-03 起一直停在
+`20260803T113500-001-forge-v6-p3r2.md` **未前进**,而 forge v6 早在 08-03 22:35 已 finalize 并落地
+(`stage-forge-001-v6.md` + commits `4a89d18` / `ec72847` / `bcdaf80` / `b8098ff`)。
+⇒ 本次跑 = **对已关闭轮次的重采样**,产物**直接覆盖**了
+`discussion/001/forge/v6/P3R2-GPT55xHigh.md` 与 `.codex-outbox/queues/001/<同名>.md`,
+**无警告、无备份、无留痕**。两文件已从 git 恢复原文;重采样归档在
+`discussion/001/forge/v6/_resample/P3R2-GPT-20260809-resample.md`(带完整归档说明头)。
+
+### (1) 重采样与正式版的实质差异 = 只在 `evidence_grade`
+
+verdict、四条分歧(D-1..D-4)的收敛结果、`无 unresolved` 的判定**与正式版完全一致**。
+唯一分歧在打分:重采样把 **#1** 降为 `post-hoc-accepted(X-seeded)`、**#8** 降为 `post-hoc-accepted`
+(分布 `independent`×2 / `SOTA-corrected`×3 / `post-hoc-accepted`×3)。
+
+### (2) chair 裁决 · #1 不改 / #8 改
+
+| 行 | 裁决 | 理由 |
+|---|---|---|
+| **#1**(池键 + epoch 冻结) | **不改**,维持 `independent` | 该限缩 §underweight-1 已原样载明(「源出 X 原文、两侧各自到达但 P1 非双向对称独立、禁止读作双盲独立发现」)⇒ 重采样**零新信息**,只是把散文挪到列上;改列反而丢掉 underweight-1 的完整读法 |
+| **#8**(三态接口 + 消费点合一 task) | **改**,`independent` → **`post-hoc-accepted`** | 该列表头评的是**「裁决」不是「发现」**。#8 的**发现**(T041 范畴错配 / 无合格消费点)确是双方各自到达 + GPT P2 实查;但**裁决**是「**合一为同一 task**」,而 D-4 原文是 **GPT 提出、Opus 让步**(P3R2 任务书 §2 白纸黑字)。按本轮自定的对称规则即 `post-hoc-accepted`;原标 `independent` **评级偏向了自己那一侧**,正是 `evidence_grade` 设立要防的东西(§underweight-4) |
+
+**已执行**:`stage-forge-001-v6.md` 第 8 行评级 + 分布行 + §underweight-4 的「4 行」计数已订正,
+新增 **§underweight-11** 记录来源、裁决与证据边界。**verdict 与 [A] 执行顺序不变**,
+已落地的 v0.8 / ★1 ★2 **不受影响**(本次只改方法论标注,未改任何裁决内容)。
+
+### (3) 🔴 本次订正自身的证据边界(不得读作「第二个模型独立同意」)
+
+`cdx-run` 的实现是 `codex "read <task> and execute…"` = **每次新起 session**
+(`codex resume` 是独立子命令、未被使用;bus README §"两种 kickoff 形态" 明写 reuse-session
+须由人在已开终端粘贴)。而该任务书 frontmatter 写的是 **`Kickoff form: reuse-session`** +
+「**已读(勿重读)**:双方 P1/P2/P3R1 + X 的 9 件标的」⇒ 冷 session 下该指令等价于「**根本不读**」。
+**本次重采样是一次上下文更少的跑。**
+⇒ 采纳 #8 的降级**不是**因为「另一个模型独立同意」,而是因为**它的论据在任务书正文里就能自证**
+(D-4 的提出方与让步方有原文),与上下文是否到位无关。**这一区分必须保留** ——
+否则本条就成了「用一次退化的跑给自己背书」,与第七次「推演≠真跑」同型。
+
+### (4) 两条机制缺陷登记 · 攒批不进 v9 冻结的 X
+
+- **KG-B13** · `cdx-run` 静默重放:`HEAD` 完成后既不前进也不标记,重复 `cdx-run <q>` 会**静默重跑
+  已完成轮次并覆盖产物**(本条即第一次真实发生)。
+- **KG-B14** · `reuse-session` 形态被 `cdx-run` **静默降级**为冷 session:两形态在 README 有定义,
+  但**执行面零强制零留痕**,产物看不出上下文是否到位。
+
+**归属裁决**:**记 backlog 攒批,不补进 forge 006 v9 的 X**。理由:v9 的 `x_hash`
+(`7ad1bb97a7760addddb7cd371eca3b71`)已冻结且 **Opus P1 已写完**,此刻补 X 会重演 v6 的
+「**P1 独立性污染 / 非对称**」事故(见 v6 §underweight-1)—— 代价高于收益。
+落点:新建 `discussion/006/FORGE-006-v10-PENDING.md`(承 `FORGE-006-v7-PENDING.md` 先例)。
+⚠ 两条与 v9 正在审的「**证据完整性家族**」(缺席即豁免 / 机制已装但从未被调用 / 评审强度)**高度同题**,
+v10 起批时应与 XD-43(preflight 从未被调用)、KG-B4 并案考虑。
+
+### (5) 🟡 preflight warn 第 **2** 次 —— 升级判据已达成(据实报,不在本条处置)
+
+本次 session 同样跑在 **`main` 分支**、非 `001` / `006` 独立 worktree,与 CLAUDE.md
+「Session-per-idea worktree 规约」不符,且本条的改动**同时触及 001 与 006 两个 idea**(典型混线形态)。
+第 42 条 (4) 是**第 1 次**留痕,**本条为第 2 次** ⇒ CLAUDE.md 写明的升级判据
+「warn 上线后 mismatch 混线**仍复发 ≥2 次**」**已达成**,hook block(commit-time 硬拦 · v0.2)
+**具备起动条件**。**本条不自行升级** —— 该规约属框架层,按铁律走 `/expert-forge 006`,
+一并记入 `FORGE-006-v10-PENDING.md`。
+
+**Follow-up commits**: (待回填)
