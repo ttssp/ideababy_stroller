@@ -1364,4 +1364,5 @@ v10 起批时应与 XD-43(preflight 从未被调用)、KG-B4 并案考虑。
 **具备起动条件**。**本条不自行升级** —— 该规约属框架层,按铁律走 `/expert-forge 006`,
 一并记入 `FORGE-006-v10-PENDING.md`。
 
-**Follow-up commits**: (待回填)
+**Follow-up commits**: `1b4ff0d`(本条决议 + stage doc 订正 + 重采样归档)·
+`21e7d03`((4) 的落点 · `discussion/006/FORGE-006-v10-PENDING.md` · KG-B13/B14/B15)
