@@ -172,6 +172,15 @@ Phase 4 · synthesizer (single)    ← 主进程 Task 调 forge-synthesizer
 
 ### Phase 0 · Intake
 
+> 🔴 **前置 · obligation gate(消费点 · fail-closed)** —— 自 forge 006 v9 [B] 起生效。
+> intake **开始前**必须先查 `framework/obligations/ledger.jsonl`:
+> `state == pending` ∧ `consumer_wired == true` ∧ `due_gate == forge:<id>:phase0` 的条目
+> **一律阻断 intake**,须逐条取得权威终态(**过表 → `satisfied` 带内容身份** /
+> **签 skip → `signature` 为 `operator-chair` 或 `policy:<id>` + 具名 `reason`**)才能继续。
+> **producer 不得自批**;ledger 缺失或不可读**同样阻断**(fail-closed 优于假绿)。
+> 依据:forge 006 v9 verdict —— forge 决议与授权条目**本身没有消费点**,已独立蒸发 3 次。
+> 执行面见 `.claude/commands/expert-forge.md` **Step 0.6**;schema 见 `framework/obligations/README.md`。
+
 由 `/expert-forge` 命令编排:
 1. **X** 自由文本粘贴(用户在终端贴路径列表 / URL / 文本块)
 2. **K** 自由文本粘贴(用户写"我最在乎什么")
@@ -232,6 +241,19 @@ Phase 4 · synthesizer (single)    ← 主进程 Task 调 forge-synthesizer
 主进程通过 `Task` 工具调 `forge-synthesizer` subagent。subagent 读 forge-config + 8 个 round file,按 W 路由章节,产 `stage-forge-<id>-v<N>.md`。
 
 详见 `.claude/agents/forge-synthesizer.md`。
+
+> 🔴 **后置 · 登记 obligations(产生点)** —— 自 forge 006 v9 [B] 起生效。
+> stage 文档定稿后**必须**把本轮裁决产生的义务登记进 `framework/obligations/ledger.jsonl`:
+> 抽取源 = **decision matrix 的 `obligation path` 列**(产生 gate → 消费 gate;
+> `N/A(rejected)` 行不产生义务)+ **每条 v0.2 note 的「具名主体 + 触发时点」**。
+> **不自动 append** —— 候选清单须先给 operator 逐条确认(markdown 机器抽取不可靠,
+> forge 001 v6 §underweight-10 已实证假事实能照单流过四轮)。
+> 消费点未接线的条目 ⇒ `consumer_wired: false` **且 `exposure` 必填**(敞口要可见,不能沉默)。
+> 执行面见 `.claude/commands/expert-forge.md` **Step 6.5**。
+>
+> ⚠ **W 含 `decision-list` 时,矩阵建议带两列方法论字段**:
+> `evidence_grade`(`independent` / `SOTA-corrected` / `post-hoc-accepted` · 立于 forge 001 v6 ——
+> 记录回声室,不消除它)与 `obligation path`(立于 006 v9 —— **指不出产生/消费路径的裁决不成立**)。
 
 ## forge-config.md output format
 

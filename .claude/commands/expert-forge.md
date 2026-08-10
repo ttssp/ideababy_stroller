@@ -71,7 +71,7 @@ ls -1 $DISCUSSION_PATH/forge/ 2>/dev/null | grep -E '^v[0-9]+$' | sort -V
 
 | 检测条件 | 当前状态 | 跳转 Step |
 |---|---|---|
-| `forge-config.md` 不存在 | Phase 0 未完成 | Step 1(intake)+ Step 2(Phase 1 Opus) |
+| `forge-config.md` 不存在 | Phase 0 未完成 | **Step 0.6(obligation gate · fail-closed)** → Step 1(intake)+ Step 2(Phase 1 Opus) |
 | `P1-Opus47Max.md` 存在 ∧ outbox `<TS>-<id>-forge-v<N>-p1.md` 不存在 | Phase 1 等 Codex | Step 7(打印 cdx-run 指引,**不推进**) |
 | outbox p1 含 `Verdict: BLOCK` | Codex 报错 | Step 8(error path) |
 | outbox p1 齐全 ∧ `P2-Opus47Max.md` 不存在 | Phase 1→2 过渡 | Step 3(Phase 2 Opus)|
@@ -356,6 +356,78 @@ Reply Enter / Edit + 内容 / Append + 内容。
 
 fallback 时 forge-config.md frontmatter 的 `prefill_source` 字段填 `manual`,
 `.forge-state.json` 的 `prefill_used` 填 `false`。
+
+## Step 0.6 — obligation gate(消费点 · **fail-closed**)
+
+> **来源**:forge 006 v9 verdict(`discussion/006/forge/v9/stage-forge-006-v9.md`)· operator 选 [B]。
+> **机制说明与 schema**:`framework/obligations/README.md`。
+> **为什么在这里**:v9 实证 —— forge 决议 + 授权条目下发**本身没有消费点**,已独立蒸发 3 次
+> (`SHARED-CONTRACT:993` 挂 65 天 · `:1239` 的 preflight 授权条目 28 天 ·
+> `hook-allowlist-governance:82` 的白名单回审被 v9 自己漏掉)。本 gate 就是那个缺失的消费点。
+
+**只在 fresh run / 起新 v<N+1> 时触发**(即 Step 0.3 判定要走 Step 1 的那些分支)。
+续跑已有 phase 时**跳过本步**。
+
+### 0.6.1 查未清偿义务
+
+```bash
+python3 - "$TARGET" <<'EOF'
+import json, sys, os
+target = sys.argv[1]
+path = 'framework/obligations/ledger.jsonl'
+if not os.path.exists(path):
+    print('LEDGER_MISSING'); raise SystemExit(0)
+rows = [json.loads(l) for l in open(path) if l.strip()]
+latest = {}
+for r in rows:                      # append-only:同 id 取最后一行
+    latest[r['id']] = r
+gate = f'forge:{target}:phase0'
+blocking = [r for r in latest.values()
+            if r['state'] == 'pending' and r.get('consumer_wired') and r['due_gate'] == gate]
+for r in blocking:
+    print('BLOCKING', r['id'], '|', r['title'], '|', r['source'])
+print('COUNT', len(blocking))
+EOF
+```
+
+- **`LEDGER_MISSING` 或读取失败 ⇒ 阻断,不静默通过。**
+  fail-closed 优于假绿(README §局限 4);恢复路径 = `git checkout framework/obligations/ledger.jsonl`。
+- `COUNT 0` ⇒ **静默通过**,直接进 Step 1,不打扰用户。
+
+### 0.6.2 命中则硬阻断,逐条要求终态
+
+打印:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 obligation gate · forge:<id>:phase0 · 有 <N> 条未清偿义务
+
+<逐条:id · title · source(裁决出处)>
+
+这些是**上一轮 forge 裁定后登记、约定在本次 intake 清偿**的义务。
+按 forge 006 v9 verdict,未取得权威终态**不得开始本轮 intake**。
+
+每条二选一:
+  [过表]  现在处置(通常 = 并入本轮 X 的标的清单)→ 记 satisfied
+  [签 skip] operator-chair 签署 + 具名理由      → 记 skipped
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+用 **AskUserQuestion** 逐条(或批量)收 operator 的处置。**不得代签**:
+- `skipped` 的 `signature` **只能**是 `operator-chair` 或 `policy:<id>`;
+  **本命令(producer)不得自批**,也不得默认跳过。
+- `reason` **不得留白**(承 RFC 7282:addressed ≠ merely noted)。
+
+### 0.6.3 追加终态行(append-only)
+
+对每条处置后的义务,**追加**一行到 `framework/obligations/ledger.jsonl`(**不改已有行**):
+
+- **过表 ⇒ `satisfied`**,必带
+  `content_identity: {commit, path, sha256}` + `evidence`(证据指针)。
+  典型:`path` = 本轮 `forge-config.md`,`evidence` = 「该条已并入本轮 X 第 n 项」。
+- **签 skip ⇒ `skipped`**,必带 `signature` + `reason` + `closed_at` + `closed_by`。
+
+全部取得终态后才继续 **Step 1**。
 
 ## Step 1 — Phase 0 intake(仅 fresh run)
 
@@ -834,7 +906,32 @@ synthesizer 会返回:
 { "phase": "done", "stage_doc": "stage-forge-<id>-v<N>.md", ... }
 ```
 
-### 6.5 跳 Step 7(done 菜单)
+### 6.5 登记 obligations(**产生点**)
+
+> **来源**:forge 006 v9 verdict · [B]。schema 见 `framework/obligations/README.md`。
+> **为什么在这里**:stage doc 里写下的裁决,如果没有一条**带消费点的义务**跟着产生,
+> 它只在文档里存在 —— v9 已实证这会蒸发(3 次)。
+
+**从 stage doc 抽候选**:
+- **decision matrix 的第 6 列 `obligation path`(产生 gate → 消费 gate)** —— 这一列就是为本步设的;
+  `N/A(rejected)` / `N/A(diagnosis replaced)` 的行**不产生义务**
+- **每条 v0.2 note** —— note 的「具名主体 + 触发时点」直接映射为 `due_gate`
+
+🔴 **不自动 append**。先把候选清单**逐条列给 operator 确认**(AskUserQuestion 或清单确认):
+从 markdown 机器抽取不可靠,且本仓已实证「cwd 错致的假事实」能照单流过四轮 forge
+(forge 001 v6 §underweight-10)。
+
+确认后 append 到 `framework/obligations/ledger.jsonl`,每条必须:
+- 有 `due_gate`
+- 若该消费点**尚未接线** ⇒ `consumer_wired: false` **且 `exposure` 必填**
+  (写明「这条在接线前不会被谁消费」)—— **敞口要可见,不能沉默**
+- `created_by_gate` = `forge:<id>:v<N>:phase4`,`source` 指向 stage doc 的具体行/节
+
+⚠ **当前已接线的消费 gate 只有 `forge:<id>:phase0`**(见 README §接线状态)。
+其余(`xenodev:handoff-intake` / `xenodev:task-review` / `xenodev:ship-gate`)**均未接线**,
+产出的条目一律 `consumer_wired: false`。
+
+### 6.6 跳 Step 7(done 菜单)
 
 ## Step 7 — print next-step menu
 
