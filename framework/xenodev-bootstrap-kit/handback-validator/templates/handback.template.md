@@ -21,6 +21,9 @@ operator_score: null
 operator_score_at: null
 operator_score_rationale: null
 related_task: {{TASK_ID}}
+current_idea: {{CURRENT_IDEA}}
+worktree: {{WORKTREE}}
+baseline: {{BASELINE}}
 ---
 
 # Hand-back · {{FEATURE}} · {{TASK_ID}}

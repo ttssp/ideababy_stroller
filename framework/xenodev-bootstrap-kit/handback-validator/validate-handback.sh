@@ -75,6 +75,7 @@ PRD_FORK_ID="$(extract_yaml_field "$HANDBACK_FILE" prd_fork_id '')"
 HANDBACK_ID="$(extract_yaml_field "$HANDBACK_FILE" handback_id '')"
 SOURCE_REPO_FM="$(extract_yaml_field "$HANDBACK_FILE" source_repo '  ')"
 HANDBACK_TARGET="$(extract_yaml_field "$HANDBACK_FILE" handback_target '  ')"
+WORKING_REPO="$(extract_yaml_field "$HANDBACK_FILE" working_repo '  ')"
 EXPECTED_REMOTE="$(extract_yaml_field "$HANDBACK_FILE" expected_remote_url '  ')"
 REPO_MARKER="$(extract_yaml_field "$HANDBACK_FILE" repo_marker '  ')"
 GIT_HASH="$(extract_yaml_field "$HANDBACK_FILE" git_common_dir_hash '  ')"
@@ -147,6 +148,12 @@ if ! bash "$SCRIPT_DIR/check-6-id-charset-and-final-path.sh" "$DISCUSSION_ID" "$
     echo "→ hand-back ID: $HANDBACK_ID" >&2
     exit 1
 fi
+
+# Check 7: §6.3.1 拓扑自证三字段(current_idea / worktree / baseline)
+# **warn 型 · 永不阻断**(见 §6.3.1「校验强度」段 + check-7 脚本头注释);
+# `|| true` 是冗余保险 —— check-7 自身恒 exit 0,但 validate-handback.sh 跑在 `set -e` 下,
+# 若将来 check-7 升 hard-fail,必须同时改这里 + §6.2.1 约束表,不能靠这行静默生效。
+bash "$SCRIPT_DIR/check-7-topology-selfattest.sh" "$HANDBACK_FILE" "$PRD_FORK_ID" "$WORKING_REPO" || true
 
 # === All checks PASS ===
 if [[ "$MODE" == "producer" ]]; then

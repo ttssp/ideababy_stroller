@@ -1,9 +1,9 @@
 ---
 doc_type: framework-shared-contract
-contract_version: 2.4
-status: v2.4
+contract_version: 2.5
+status: v2.5
 generated: 2026-05-08
-last_updated: 2026-07-13
+last_updated: 2026-08-10
 upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2) + discussion/006/forge/v3/stage-forge-006-v3.md (v3 · v0.2 11 项 backlog) + discussion/006/forge/v4/stage-forge-006-v4.md (v4 · post-v0.2 协议稳态化 → v2.3)
 ssot_owner: ideababy_stroller
 ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
@@ -787,12 +787,37 @@ severity: low | medium | high            # high = 阻断 build / medium = 可继
 created: <ISO>
 related_task: <task id, optional>        # eg "T013"
 related_spec_section: <spec section anchor, optional>
+current_idea: <idea/fork id>             # §6.3.1 拓扑自证三字段(forge 006 v8)· eg "001-radar-pA"
+worktree: <absolute path>                # 本 task 真实跑在哪个 worktree · 必须 == workspace.working_repo
+baseline: <git sha>                      # 本 task 起跑时的 base commit · eg "505eaac"
 ---
 ```
 
 > **producer 写入 frontmatter 前**,必须按 §6.2.1 六条约束(canonical-path containment / symlink reject / repo identity check / id consistency / id 字符集 + final-path containment / hard-fail)校验路径与 id;校验失败 hard-fail,不产 hand-back 包。
 >
 > **`source_repo_identity` 来源**:由 forward HANDOFF.md(IDS `/plan-start` v3.0 产)透传 — XenoDev producer 不自行计算,直接 cp HANDOFF.md frontmatter 同名块写入。这样 reverse trip 自带身份证明,与 forward 包解耦(forward 包写后可被改),同时与 §6.2 workspace 块"每个跨仓包自带"原则对齐。
+
+#### §6.3.1 · 拓扑自证三字段(`current_idea` / `worktree` / `baseline`)
+
+> **结论先**:forge 006 v8 簇②(分支拓扑成为框架对象)要求"hand-back / outbox 包 frontmatter 加 `current_idea` / `worktree` / `baseline` 三字段(跨仓通道自带拓扑自证)"。本节把该决议落进 IDS 权威 schema —— **此前该决议只在 XenoDev 单侧实装,IDS SSOT(本文件 §6.3 schema + `handback-validator/templates/handback.template.md` + validator)三处全空**,`worktree` 字段因此从未被任何机制校验过。
+
+**语义**:
+
+| 字段 | 语义 | 判据 |
+|---|---|---|
+| `current_idea` | 本 session working on 的 idea / fork id | SHOULD == `prd_fork_id`(不等 = 混线嫌疑,警告) |
+| `worktree` | 本 task **真实**跑在哪个 worktree 的绝对路径 | MUST == `workspace.working_repo`(不等 = 自证字段本身失真) |
+| `baseline` | 本 task 起跑时的 base commit sha | `^[0-9a-f]{7,40}$` |
+
+**为何 `worktree` 必须等于 `working_repo` 而不是"随便填个 idea 目录"**:该字段存在的**唯一**意义,是让 hand-back 在跨仓落地后仍能自证"这份产物出自哪根分支拓扑"。若 producer 把它填成 idea 主 worktree 的常量,则在**分支真的分叉了的场景**(per-task 专用 worktree)恰好失真 —— 也就是它唯一有价值的场景。这不是理论风险:2026-08-10 `/handback-review 001` 实证,4 包中恰好那 2 个跑在专用 worktree 的包(`...-FU-R5F4` / `...-T042`)`worktree` 值均错填为 `.../001-radar-pA`,而因 IDS 侧三处全空,**没有任何机制发现**。
+
+**校验强度 · warn 型起步(不阻断)**:`check-7-topology-selfattest.sh` 对三字段缺失 / `worktree` 不匹配 / `current_idea` 不匹配 / `baseline` 形状错**只 warn 不 reject**,理由两条:
+1. 与 CLAUDE.md「Session-per-idea worktree 规约」P0 的 warn 型起步同构(该规约本身就是 forge v8 簇② 的另一半);
+2. 本文件 §6.3 三字段是 2026-08-10 才补的,IDS `discussion/*/handback/` 存量 40+ 包全部无此三字段,硬 reject 会把整个既有语料判 corruption。
+
+**升级为 hard-fail 的判据**(与 forge v8 warn→block 判据同构):warn 上线后 `worktree` mismatch **仍复发 ≥2 次**,或出现一次因拓扑自证失真导致的误决议。届时 check-7 升 §6.2.1 第 7 约束(需 bump contract_version + 全量 producer 同步)。
+
+**Backward-compatibility**:三字段是**加法**,老包(无三字段)在 warn 型下继续 PASS;producer 不要求 backfill 历史包(与 v2.2 §6.3 body 4 节 RECOMMENDED 的 "0 backfill · forward apply" 先例一致)。
 
 **body 章节**(Markdown,**3 节 normative + 4 节 RECOMMENDED** · 共 ≤ 7 节):
 
@@ -1269,6 +1294,8 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 ---
 
 ## Changelog
+
+- **2026-08-10 v2.5 (handback-review 001 · forge v8 簇② 补 IDS 权威侧 · 拓扑自证三字段)**:§6.3 frontmatter schema 加 `current_idea` / `worktree` / `baseline` 三字段 + 新增 **§6.3.1 · 拓扑自证三字段**语义节;`handback.template.md` 加三个 placeholder;新增 `check-7-topology-selfattest.sh`(**warn 型 · 恒 exit 0**)并接进 `validate-handback.sh`。**根因**:forge v8 簇② 决议明写"hand-back / outbox 包 frontmatter 加三字段(跨仓通道自带拓扑自证)",但**只在 XenoDev 单侧实装,IDS SSOT 三处全空**(本文件 schema / template / validator)—— 与本文件 `ssot_owner: ideababy_stroller` 声明反向。**实证代价**:2026-08-10 `/handback-review 001` 4 包中,恰好那 2 个跑在 per-task 专用 worktree 的包(`...-FU-R5F4` / `...-T042`)`worktree` 值均错填为 idea 主 worktree,**自证字段在它唯一有价值的场景失真**,且因 IDS 侧无校验而无任何机制发现。check-7 落地后对这 2 包精确 warn、对另 2 包 PASS、对 2026-08-10 前无三字段的老包 skip。**warn 型而非 hard-fail 的理由**:(a) 与 CLAUDE.md「Session-per-idea worktree 规约」P0 warn 型同构;(b) 存量 40+ 包全无三字段,硬 reject 会把既有语料判 corruption。**升级判据**:warn 上线后 `worktree` mismatch 仍复发 ≥2 次,或出现一次因拓扑自证失真导致的误决议 → 升 §6.2.1 第 7 约束。**非 BREAKING**(纯加法 · 老包继续 PASS · producer 0 backfill 要求)。**consumer**:XenoDev 侧 `gen-handback.sh` 需从 mirror 同步本改动并把三字段接真值(`worktree` 取真实 `working_repo` 而非常量)= 授权条目。Evidence:`discussion/001/handback/HANDBACK-LOG.md` 第 44 条决议 + 本波 IDS commit。
 
 - **2026-07-13 v2.4 (forge v8 · 簇③ · LlmClient messages-style v2 契约)**:§5 加 **Interface 5 · LlmClient messages-style 契约(v2)**,把 LLM 调用入口的 role 分离收到契约层。**根因 KG-B5**:`complete(prompt: str)` 单字符串结构上无法表达「数据非指令」,codex **九轮** review string-sanitize 不收敛(单字符 lookalike → 变体标签 → ASCII 转义自败 → Unicode 角括号 → letter-class → 多字符编码 · 残留未知编码面)= 证据链完整,唯一结构性解是 role 分离(system=指令/user=数据 · 对齐 OpenAI Model Spec + OWASP LLM01)。**Schema**:messages-style(`messages: list[{role, content}]`)为 **v2 正典**;`complete(prompt)` 降 **legacy adapter**(v1 包装 v2 · 单向依赖 · 新代码禁用);allowlist 序列化降 **defense-in-depth 保留不删**(role 分离亦非 proof · 纵深防御)。**迁移路径**(动冻结契约给路径 · K 硬约束):契约定 v2 → 新 task 强制 v2 → 旧消费面(001 reconstructor/gate/CLI/fake ≥4 处)下一个自然接触点收编不专开 task → 兼容测试 v1/v2 同语料双跑。**consumer**:XenoDev LlmClient v2 + adapter 实装 = 授权条目(本轮不当场改 · K5 · 见 AUTHORIZATION-BRIEF-v8 簇③)。**⚠ 迁移爆炸半径**:bootstrap-kit 是否内嵌 `complete(prompt)` 形状未定 · 实装前 grep 消费面。**v0.2 note**:v1 直接消费面三个月后仍残留 → 裁是否专开收编 task。Evidence:`discussion/006/forge/v8/stage-forge-006-v8.md`(operator [A] 全落 · 簇③)+ IDS commit(本波)。
 - **2026-07-13 v2.4 (forge v8 · 簇① · gate 执行语义 SSOT)**:新增 **§8 · gate 执行语义 SSOT**(排 §7 fork-id 邻位),把 gate 的**执行语义**收到契约层作 SSOT — 定四条不变量:(a) gate task 语义(`gate: true` frontmatter · depends_on 消费 PASS artifact 非「已 merge」git 事实);(b) PASS artifact 存在性机器查验(fail-closed · 不读 markdown 声明);(c) 已判 run 登记一次性消费(ACME nonce 语义 · 防 replay);(d) 新 run 作废 stale 签字(GitHub stale approvals 语义)。**根因**:KG-B4(gate PASS 无机器强制 · code-reviewer 佐证 nothing gates action on evaluate_gate return)+ KG-B7(codex R12-14 三轮同族假 PASS · replay/run_id 泄露/FAIL-reason 泄露)两条硬证据合簇(B4+B7 不拆两个半吊子)。**判定逻辑本身不动**(evaluate_gate PASS/FAIL 计算 + 盲测三要件不碰)· Safety Floor fail-closed / codex primary 地位不动。**consumer**:XenoDev preflight 登记表 + evaluate_gate 接下游 = 授权条目(本轮不当场改 · K5 硬约束 · 见 AUTHORIZATION-BRIEF-v8)。**非 BREAKING**(纯新增执行语义章 · 判定契约 0 修改 · 既有已 ship gate 不 break)。**v0.2 note**:登记表并发语义(多 session 竞态)v0.1 单 operator 不触发 · 留观察。Evidence:`discussion/006/forge/v8/stage-forge-006-v8.md`(operator [A] 全落)+ IDS commit(本波)。
