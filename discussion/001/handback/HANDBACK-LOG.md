@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-04T00:18:06Z
-total_decisions: 42
+last_updated: 2026-08-10T12:30:00Z
+total_decisions: 44
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -1366,3 +1366,152 @@ v10 起批时应与 XD-43(preflight 从未被调用)、KG-B4 并案考虑。
 
 **Follow-up commits**: `1b4ff0d`(本条决议 + stage doc 订正 + 重采样归档)·
 `21e7d03`((4) 的落点 · `discussion/006/FORGE-006-v10-PENDING.md` · KG-B13/B14/B15)
+
+## 2026-08-10T12:30:00Z · 001-radar-pA · 本批 4 包合并决议(FU-R5F4 / T040 / FU-R1F1 / T042)
+
+**第 44 条**。**类型**:hand-back 决议(4 包合并处理 —— 4 包同属 001-radar-pA 同一 build 波次,
+且 3 条真正需要裁决的项是**横切**的,拆 4 条会把横切证据切碎)。
+
+**Reviewed at**: 2026-08-10T12:30:00Z
+**Handback packages**(按 ts 序 · 6 约束 validator 全 PASS · 均无 `ids_verdict_evidence:` 父键 ⇒ 按 R-Q6 跳过语法预检):
+
+| # | handback_id | task | severity | §3 自述待裁项 |
+|---|---|---|---|---|
+| ① | `001-radar-pA-20260809T143351Z` | `FU-R5F4-gate-canonicalizer-hardening` | medium | 无(请求攒批带 2 条 dogfood) |
+| ② | `001-radar-pA-20260810T034651Z` | `T040` 契约测集 | medium | 无(3 条 round-6 `[P2]` 转 follow-up) |
+| ③ | `001-radar-pA-20260810T041724Z` | `FU-R1F1-dry-run-provenance` | **high** | **2 项**(XD-46 / XD-45) |
+| ④ | `001-radar-pA-20260810T121304Z` | `T042` 三态结果接口 | **high** | 无(自述"本轮已决议",纯披露) |
+
+**Operator decisions**:
+- [x] 修 SHARED-CONTRACT §6.3 + 新增 §6.3.1(拓扑自证三字段)· contract_version 2.4 → **2.5**
+- [x] 修 handback-validator(template placeholder + 新增 `check-7-topology-selfattest.sh`)
+- [x] 起新 forge → 条目入 `discussion/006/FORGE-006-v10-PENDING.md`
+- [ ] 修 PRD(本批不改 PRD)
+- [x] 修 XenoDev spec(跨仓 · KG-50 排进 spec 后续 task)
+
+---
+
+### (1) 包 ①②④ 的 build 结论:收悉,无待裁项
+
+- **①** `FU-R5F4`:`gate.py::_canonicalize_doc_ref` 补控制字符预检(`import` 复用 `anchors.py::_has_forbidden_codepoint`
+  而非二次实现)。此前 `urlsplit` 静默删 TAB/CR/LF ⇒ 畸形 ref 与真语料 ref 折成同一 canonical key,
+  可绕过 P0.2 gate 要件③。TDD 两层测试(单元级碰撞 + `evaluate_gate` 端到端证攻击链**可执行**)先红后绿,
+  1014 passed,codex round-1 approve **0 finding**。**"评估复用可行性"结论(不做更大范围提取)论证充分**:
+  `resolvable_doc_key`(结构验证+拒绝)与 `_canonicalize_doc_ref`(变体折叠+兜底)契约本质不同,
+  强行提取会让两侧调用方对返回值假设冲突 —— 这是**正确的越权自觉**,予以确认。
+- **②** `T040`:44 条契约测 + 22 处 mutation 证牙,1061 passed,`tests/contract/` 148 passed。
+- **④** `T042`:三态 `ResultStatus` + 独立命名空间退出码(3/4/5/0,旧 1/2 原义不动)+ `VerdictArtifact` +
+  消费点三函数 + `journal/cli.py::_cmd_record` 真接线。1134 passed(基线 1075,**0 回归**),coverage 93%。
+  **18 处 mutation 逐条真跑,其中 2 处首跑存活 → 补测后转红,1 处预期存活如实不盖(`_fsync_dir` 掉电持久性,
+  明写"没有不靠真掉电就能测它的办法,不编假测去盖住它")** —— 这是本批最值得表扬的一处:
+  **把"测不到"如实报成测不到,而不是补一个假绿**。与第 40 条 R5 的相反先例形成对照。
+
+### (2) 包 ③ §3(1) · XD-46 → **纳入 KG-B10 forge 优先输入 + 连带评估窄修法**
+
+codex round-3/4 独立发现:`journal` 记录匹配**只按路径字符串**,不要求匹配记录出自"当前磁盘上这份具体内容"。
+⇒ run A 真实自证 PASS 入 journal 后,run B(**同样真实、同样 `REAL_FULL_CHAIN`、只是内容不同**)
+对同一路径再跑一次,`verify_run_provenance_binding` 只验 run B 自身内容自洽(PASS),随后按路径命中 run A 的旧记录
+⇒ **run B 从未被独立核验却被静默解锁**。
+
+**裁决**:该子场景把 KG-B10 从「理论上攻击者可能……」降到「**无需任何伪造,正常使用即触发**」,
+门槛发生**质变**,作为 KG-B10 forge 议程的**优先输入**。round-4 codex 提的
+「利用已有 `audit_digest` passthrough 字段做窄修」**连带由 forge 评估**,不在此裁。
+
+**⭐ 同时确认一条正面实证**:build 侧曾按 round-4 建议开始实装(把 `audit_digest` 接进解锁判定),
+**权限系统正确拦下**并标记为"在未获新授权的情况下逆转刚记录的治理决定",改动已撤销。
+这是 **KG-B10 冻结机制(forge v3 D″ + 更早 B′/D′)真跑生效的第一次正面实证** —— 此前的冻结条款
+都只有"没人去动"这种消极证据。build 侧自述「三处独立冻结声明构成足够强的不得动信号,但最终解释权在
+IDS/governance」的定位也是对的:**被拦的一方不该自裁是否该解冻**。
+
+### (3) 包 ③ §3(2) · XD-45 → 归 forge 006 v10
+
+`file_domain` 冻结前"零回归"论证方法论:「消费点收紧」(allow-list ⇒ 影响**所有**历史构造过该产物形状的
+既有测试)与「生产点收紧」(拒绝注入 ⇒ 只影响**直接调用且传特定参数组合**的既有测试)应否用不同强度的
+核实要求。本次实证代价:12 个 `file_domain` 外既有测试(7 文件 + 1 仓级 shell 脚本)从通变红,
+原 task doc 的"零回归"论证只做了**单一 grep 关键词存在性核对**。已入 `FORGE-006-v10-PENDING.md`。
+
+### (4) 🔴 横切 · consumer 侧独立发现,**不在任何一包的 §3 里** —— 起 forge 006 专场
+
+**(a) XD-47:假审与真审在解析层逐字节同形。** 包④ round-1,codex 只读执行器 `bwrap` 起不来,
+**一个字节 diff 都没看过**,却产出 `Verdict: needs-attention` + `findings: 0`,与"真审了、审出 0 条"
+按 SKILL §4.1 契约**无法区分**,并吃掉 4 轮预算里的一轮。⇒ **review gate 的输出不携带「gate 是否真的运行过」
+这一位信息,且降级方向是 fail-open**(没审 ⇒ 0 finding ⇒ 看起来更干净)。与第 36 条 **XD-41** 同根:
+XD-41 是**语义**上没真审(子代理与被审代码同源),XD-47 是**物理**上没真审。
+
+**(b) XD-44′:「撞 4 轮上限 → 轮次外直接修 → 确认轮又出 high → 记 backlog ship」已连续 3 次。**
+T040 round-6(3×`[P2]`)· FU-R1F1 round-4(`[high]`)· T042 round-5(**KG-50 `[high]`** + KG-51)。
+**三次没有任何一次是靠 codex 判 `approve` 结束的**,全部由 operator 叫停;三次的**最后一轮都还在出新 finding**。
+单看每次的裁决都合理,连成序列看,**缺的不是轮数(XD-44 已记)而是终止条件本身** ——
+现行协议只有「轮数上限」一个终止边,没有「收敛」这个终止边,于是**唯一的实际终止条件是 operator 疲劳**。
+这也给出了 XD-41「`needs-attention` 事实等价于放行」成立的**机制**:撞顶后两种 verdict 导向同一出口。
+
+⇒ **两条并案,起 `/expert-forge 006` 专场审 review gate 终止条件**(operator 决议)。已入 v10 pending。
+
+### (5) 🔴 横切 · forge v8 三字段自证在真跑中失效 + IDS 权威侧从未落地 → **本次已止血**
+
+`current_idea` / `worktree` / `baseline` 三字段**本批首次出现**(0802/0803 三包均无)。核查发现:
+XenoDev producer 已填,而 IDS 权威侧**三处全空** —— `SHARED-CONTRACT` §6.3 schema 无定义 /
+`handback.template.md` 无 placeholder / validator 不校验。与本文件 `ssot_owner: ideababy_stroller` **反向**。
+
+**实证代价**(这是要点):4 包中**恰好那 2 个跑在 per-task 专用 worktree 的包** `worktree` 值均错填:
+
+| 包 | `workspace.working_repo` | `worktree` 字段 | |
+|---|---|---|---|
+| ① FU-R5F4 | `.../001-radar-pA-FU-R5F4` | `.../001-radar-pA` | ❌ |
+| ② T040 | `.../001-radar-pA` | 同 | ✅ |
+| ③ FU-R1F1 | `.../001-radar-pA` | 同 | ✅ |
+| ④ T042 | `.../001-radar-pA-T042` | `.../001-radar-pA` | ❌ |
+
+⇒ **自证字段恰好在它唯一有价值的场景(分支真的分叉了)失真**,且因 IDS 侧三处全空而无任何机制发现。
+
+**已落地(operator 选"本次就补 IDS 权威侧")· contract_version 2.4 → 2.5**:
+- `framework/SHARED-CONTRACT.md` §6.3 frontmatter schema 补三字段 + 新增 **§6.3.1 拓扑自证三字段**语义节
+  (含 `worktree` MUST == `workspace.working_repo` 的判据与理由)+ Changelog v2.5 条目
+- `handback-validator/templates/handback.template.md` 补 3 个 placeholder
+- 新增 `handback-validator/check-7-topology-selfattest.sh`(**warn 型 · 恒 exit 0**),接进 `validate-handback.sh`
+- **落地验证(真跑)**:对 ①④ 精确 warn、对 ②③ PASS、对无三字段的老包(`20260803T171809Z`)skip;
+  5 个真包全部仍 `✓ all 6 constraints PASS`(**行为零变更**)
+
+**为何 warn 而非 hard-fail**:(a) 与 CLAUDE.md「Session-per-idea worktree 规约」P0 warn 型同构;
+(b) 存量 40+ 包全无三字段,硬 reject 会把既有语料判 corruption。**升级判据**已写进 §6.3.1。
+**未止血的部分**(留 forge · 已入 v10 pending 作 **KG-B16**):v8「已落地」的判据是什么 ——
+本例中**XenoDev 侧实装了就被当作落地,SSOT 侧空缺无人发现**;以及 XenoDev `gen-handback.sh` 需同步 mirror
+并把 `worktree` 接**真值**(授权项)。
+
+**(附)KG-B17 · 落 check-7 时顺带实测发现**:`handback-validator/test-fixtures/` 下 **valid 与 invalid 全部 6 个
+fixture 在 Ubuntu 上均 `exit 1`**,且 valid fixture 挂在 **check-1**(`handback_target` 硬编码
+`/Users/admin/...`)。⇒ **该 fixture 语料自 mac→Ubuntu 迁移后就没有被真正执行过** ——
+validator 是 hand-back 通道唯一的自动化防线,而它自己的测试语料是死的。与包① §3(2) 报的
+`handback.template.md` 硬编码 macOS 路径**同一根因、不同受害面**,应并案。已入 v10 pending。
+
+### (6) 🟡 preflight warn 第 **3** 次 —— 判据达成后仍复发(据实报,不在本条处置)
+
+本次 session 同样跑在 **`main` 分支**,且本次改动**同时触及 001(本文件)、006(v10 pending)、
+framework(SHARED-CONTRACT + validator)** —— 混线形态比第 43 条 (5) 的第 2 次更宽。
+第 42 条 (4) = 第 1 次,第 43 条 (5) = 第 2 次,**本条 = 第 3 次**。
+
+⚠ **第 3 次的额外信息(比计数本身重要)**:升级判据在**第 2 次就已达成**,达成后**仍然复发**。
+这说明「把升级判据写下来」本身不构成任何行为约束 —— 与本条 (4)(b) 的 XD-44′
+「唯一实际终止条件是 operator 疲劳」是**同一形状**:**写下的规则若没有执行边,只是又一份声明**。
+**本条不自行升级**(规约属框架层,按铁律只走 forge),已连同该观察记入 `FORGE-006-v10-PENDING.md` KG-B15。
+
+### (7) 包 ②④ 功能性欠债的排期裁决
+
+- [x] **KG-50 排进 XenoDev spec 后续 task**(operator 决议)。理由:codex 判 `[high]`,且 build 侧已确认
+  原注释"生产路径不可达"是**错的** —— 经 `journal record --snapshot-file` **可达**;`status=FAIL` 的产物
+  没有 briefing 摘要可比,同方向下伪造快照仍能挂到一条 FAIL verdict 上。属中等工作量新功能(需新增
+  FAIL 专用摘要文本合成 + 落盘 + 校验),**需要正式排期而非留在 backlog**。
+- [ ] **池化基础设施 + `comparability_class`**(spec §1-O2(c) 转正条件①②)· 本批**不做 PRD 层排期**。
+  现状:`compute_write_time_verdict` 生产路径只产 `FAIL`/`INSUFFICIENT_EVIDENCE`,**PASS 结构性不可达**
+  且这是**设计约束**(`pool_implemented` 恒 `False`,消费点拿本 build 的 runtime 能力核对产物自报值 ——
+  "产物不得自己证明自己的前置条件"这条设计是对的)。⚠ 但**不能永久如此**:留待 T041 及后续 build 反馈后统一决定。
+- [ ] **T040 3 条 round-6 `[P2]` + KG-51**:保持 backlog,不升级到 spec/PRD 层。
+  (T040 三条为测试严谨度边际改进;KG-51 孤儿 verdict 经确认是 **fail-safe 非 fail-open**。)
+
+---
+
+**Follow-up commits**:
+- `41fde0f` · (5) 的落地 · `framework/SHARED-CONTRACT.md` v2.4→**v2.5**(§6.3 schema 三字段 + §6.3.1 语义节 + Changelog)
+  + `check-7-topology-selfattest.sh`(新增 · warn 型)+ `handback.template.md` placeholder + `validate-handback.sh` 接线
+- `477b81d` · (3)(4)(5)(6) 的攒批落点 · `discussion/006/FORGE-006-v10-PENDING.md`(XD-47 / XD-44′ / XD-45 / KG-49 / KG-B16 / KG-B17 + KG-B15 计数第 3 次 + X 分支建议)
+- 本条决议自身 + 4 个 hand-back 包入库 · 见本 commit(同第 41/43 条「决议与包同 commit」先例)
