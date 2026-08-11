@@ -110,8 +110,23 @@ proposal on main                          # 新 idea 起于 main(/propose 写 pr
 - **合回前 main 不得反向污染**:idea 分支上只累积**本 idea** 的内容,不夹带其它 idea。
 
 **warn 型起步(不阻断)**:本规约 P0 只做 **warn 型 preflight**——session 的
-worktree/分支名与 working idea 不匹配时**提示不拦截**。hook block(commit-time 硬拦)留 v0.2,
-升级判据 = warn 上线后 mismatch 混线**仍复发 ≥2 次**(判据数据来自真跑,对齐 v7「真跑校准」先例)。
+worktree/分支名与 working idea 不匹配时**提示不拦截**。hook block(commit-time 硬拦)留 v0.2。
+
+**warn 分型(forge 006 v10 · 2026-08-11)**:`warn_class` = **`temporary`** ·
+registry `framework/warn-registry/registry.jsonl` → `WARN-worktree-preflight` ·
+owner = IDS forge-protocol owner · `due_event` = `forge:006:phase0`(已接线)。
+
+> 🔴 **原判据「mismatch 混线仍复发 ≥2 次即升 hook block」已被 v10 作废。**
+> 它是本仓「判据不产生行为」的**最强实证**:该判据**在第 2 次就达成,达成后仍复发到第 4 次**。
+> 「复发 ≥N 次」不是升级机制 —— 无计数者、无消费点、无执行者。
+> 取而代之:到 `due_event` 时**必须三态裁决**(convert / revert / defer,defer 须具名签署 +
+> 理由 + 新 due_event)。**被遗忘的 defer 不是 defer,是缺席。**
+>
+> ⚠ **顺序硬约束(v10 ★3)**:**先消规约歧义,再谈 hook block**。第 4 次(2026-08-11)是
+> operator 被明确告知后**显式裁决**「就在 main 上写」—— 暴露的不是纪律失效,而是
+> **规约本身有歧义**:本规约把「`handback-review` 决议后」列为合回 main 的 checkpoint,
+> 而 checkpoint 产物本身就是 main 的合法内容。**歧义未消先硬拦,会拦掉合法的 checkpoint 写入。**
+> 该消歧义任务 = `OB-006-v10-06`,本 warn 的裁决被它前置阻塞(`blocked_on`)。
 
 **生效范围**:本规约对 forge v8 落地后**新开的 session** 生效;**存量混线分支**
 (如当前 `forge/009-blueprint` 已有的 001/006/009 交织历史)**不追溯拆分**——强拆已 push 前

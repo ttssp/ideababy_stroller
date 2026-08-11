@@ -427,7 +427,48 @@ EOF
   典型:`path` = 本轮 `forge-config.md`,`evidence` = 「该条已并入本轮 X 第 n 项」。
 - **签 skip ⇒ `skipped`**,必带 `signature` + `reason` + `closed_at` + `closed_by`。
 
-全部取得终态后才继续 **Step 1**。
+全部取得终态后才继续 **Step 0.7**。
+
+## Step 0.7 — warn 三态裁决 gate(消费点 · **fail-closed**)
+
+> **来源**:forge 006 **v10** verdict(`discussion/006/forge/v10/stage-forge-006-v10.md`)· operator 选 [B]。
+> **机制说明与 schema**:`framework/warn-registry/README.md`。
+> **为什么在这里**:v10 实证 —— 本仓面对「该不该硬拦」的默认动作是「先 warn + 附一条
+> 『复发 ≥N 次再说』」,而**该判据不产生任何行为**:`CLAUDE.md` 的 worktree 规约判据
+> **在第 2 次就达成,达成后仍复发到第 4 次**。SOTA(RFC 1589)的形状是
+> **固定节奏复审 gate + 每条一个具名条目 + 到期三态裁决**;本步就是那个复审 gate。
+
+**只在 fresh run / 起新 v<N+1> 时触发**(同 Step 0.6)。续跑已有 phase 时**跳过本步**。
+
+### 0.7.1 查到期的 temporary warn
+
+```bash
+bash framework/warn-registry/validate-warn-class.sh --due-at "forge:$TARGET:phase0"
+# exit 0 → 无到期项,静默通过,直接进 Step 1
+# exit 1 → 有到期项(或 registry schema 违规),打印清单 → 走 0.7.2
+# exit 2 → registry 不可读 ⇒ **fail-closed 阻断**,不静默通过
+```
+
+### 0.7.2 命中则硬阻断,逐条要求三态裁决
+
+用 **AskUserQuestion** 逐条收 operator 的裁决,**三选一,`defer` 合法但必须被签出来**:
+
+```
+convert  → 升为 hard-fail;把该 warn 从 registry 移除(机制已不再是 warn)
+revert   → 撤销该 warn(机制本身移除)
+defer    → 具名签署 + 写明理由 + **给出新的 due_event**
+           或改判 soft advisory(须补 no_upgrade_plan: true + rationale)
+```
+
+🔴 **不得代签,不得默认跳过。** `defer` 没有新的 `due_event` = 不算裁决。
+⚠ 带 `blocked_on` 的条目:先确认该 obligation 是否已终态;未终态时 `defer` 是唯一合法结局,
+但**仍须签署与新 due_event**(承 v10 ★3:歧义未消先硬拦会拦掉合法写入)。
+
+### 0.7.3 就地更新 registry(**当前态 · 非 append-only**)
+
+改 `framework/warn-registry/registry.jsonl` 对应行(git 历史即审计),然后**重跑 0.7.1 确认清空**。
+
+全部裁决完成后才继续 **Step 1**。
 
 ## Step 1 — Phase 0 intake(仅 fresh run)
 
@@ -930,6 +971,31 @@ synthesizer 会返回:
 ⚠ **当前已接线的消费 gate 只有 `forge:<id>:phase0`**(见 README §接线状态)。
 其余(`xenodev:handoff-intake` / `xenodev:task-review` / `xenodev:ship-gate`)**均未接线**,
 产出的条目一律 `consumer_wired: false`。
+
+### 6.5.1 warn 分型 admission gate(**hard-reject** · forge 006 v10)
+
+> **来源**:forge 006 **v10** verdict · operator 选 [B]。schema 见 `framework/warn-registry/README.md`。
+> 🔴 **这是 hard gate,不是第四个 warn** —— 这一句是本机制与它废掉的三条
+> 「复发 ≥N 次」判据之间的**全部区别**。
+
+**触发条件**:本轮 stage doc 的 decision matrix / refactor plan / v0.2 note 中,
+**任何一行新增或保留了一个 warn 型机制**(即「只提示不阻断」的检查、preflight、lint 级提醒)。
+
+**hard-reject 规则**:
+- 该 warn **必须**在 `framework/warn-registry/registry.jsonl` 有对应条目,且声明 `warn_class`;
+- `soft advisory` ⇒ 必须 `no_upgrade_plan: true` + `rationale`(**显式承认无升级计划**,承 PEP 387);
+- `temporary` ⇒ 必须 `owner` + `due_event` + `consumer_gate` + `consumer_wired`
+  (+ 未接线时 `exposure`);
+- 🔴 **`due_event` 不得是次数**。「复发 ≥N 次」型判据 v10 已全部作废 ——
+  无计数者、无消费点、无执行者。
+
+```bash
+# 登记 obligation 之前先跑;exit ≠ 0 ⇒ **不得 append,不得标 Phase 4 done**
+bash framework/warn-registry/validate-warn-class.sh
+```
+
+**未通过的处置**:补齐 registry 条目后重跑。**不允许**以「本轮先记着、下轮再分型」放行 ——
+那正是 v10 在审的病(声明存在而机制不存在)。
 
 ### 6.6 跳 Step 7(done 菜单)
 

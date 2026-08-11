@@ -13,8 +13,23 @@
 # **本 check 永远 exit 0** —— warn 型起步,理由见 §6.3.1「校验强度」段:
 #   (a) 与 CLAUDE.md「Session-per-idea worktree 规约」P0 warn 型同构;
 #   (b) 三字段 2026-08-10 才补进 schema,存量 40+ 包全无,硬 reject 会把既有语料判 corruption。
-# 升级为 hard-fail 的判据(§6.3.1):warn 上线后 worktree mismatch 仍复发 ≥2 次,
-# 或出现一次因拓扑自证失真导致的误决议。
+# === warn 分型(forge 006 v10 · 2026-08-11)===
+#   warn_class: **temporary**
+#   registry:   framework/warn-registry/registry.jsonl → `WARN-check7-topology-selfattest`
+#   owner:      IDS handback-validator owner
+#   due_event:  forge:006:phase0(已接线 · 见 .claude/commands/expert-forge.md Step 0.7)
+#
+# 🔴 **原判据「worktree mismatch 复发 ≥2 次即升 hard-fail」已被 v10 作废** ——
+# 「复发 ≥N 次」不是升级机制:无计数者、无消费点、无执行者。实证:CLAUDE.md 的同形判据
+# 在第 2 次就达成,达成后仍复发到第 4 次。
+#
+# 取而代之:到 due_event 时**必须三态裁决**(承 RFC 1589)——
+#   convert(升 §6.2.1 第 7 约束)/ revert(移除机制)/ defer(具名签署 + 理由 + 新 due_event)
+#   或改判 soft advisory(须补 no_upgrade_plan + rationale)。
+# **被遗忘的 defer 不是 defer,是缺席。**
+#
+# ⚠ 裁决时须一并处理存量 40+ 无三字段老包的追溯性执法边界,
+#   按 v10「存量与新增分域」条款(forward 硬拦 / 历史只读不追溯)处理。
 
 set -euo pipefail
 

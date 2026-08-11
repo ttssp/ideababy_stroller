@@ -23,8 +23,21 @@
 # **本 check 永远 exit 0** —— warn 型起步,与 check-7 同构,理由:
 #   (a) 存量语料里 20/41 个 001 包带 mac 旧路径,硬 reject 会把既有语料整体判 corruption;
 #   (b) 该字段此前从未被校验过,producer 侧无任何机会被提示,直接硬拦属追溯性执法。
-# 升级为 hard-fail 的判据:本 warn 上线后声明不自洽仍复发 ≥2 次,
-# 或出现一次因 source_repo 声明失真导致的跨仓误写/误决议。
+# === warn 分型(forge 006 v10 · 2026-08-11)===
+#   warn_class: **temporary**
+#   registry:   framework/warn-registry/registry.jsonl → `WARN-check8-declared-source-repo`
+#   owner:      IDS handback-validator owner
+#   due_event:  forge:006:phase0(已接线 · 见 .claude/commands/expert-forge.md Step 0.7)
+#
+# 🔴 **原判据「声明不自洽复发 ≥2 次即升 hard-fail」已被 v10 作废**(同 check-7 的理由)。
+# 到 due_event 时必须三态裁决:convert / revert / defer(具名签署 + 理由 + 新 due_event)。
+#
+# 🔴 **裁决时必须先看 KG-B18 的动作是 `cut`**:v10 判定
+#   **producer 观察值 ≠ consumer 权威值** —— `source_repo` 是 consumer 侧持有权威值的字段,
+#   让 producer 声明它零信息增益、纯增可失真面。新包应由 **consumer 派生**,历史字段只读兼容。
+#   ⇒ 若该分域落地,**本 check 的正确终局很可能是 `revert`(机制本身移除)而不是 `convert`**。
+#
+# ⚠ 存量 47/100 包声明失真,硬拦属追溯性执法,须走 v10「存量与新增分域」条款。
 
 set -euo pipefail
 

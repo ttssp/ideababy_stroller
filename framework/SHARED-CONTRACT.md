@@ -1,9 +1,9 @@
 ---
 doc_type: framework-shared-contract
-contract_version: 2.5
-status: v2.5
+contract_version: 2.6
+status: v2.6
 generated: 2026-05-08
-last_updated: 2026-08-10
+last_updated: 2026-08-11
 upstream: discussion/006/forge/v1/stage-forge-006-v1.md (v1) + discussion/006/forge/v2/stage-forge-006-v2.md (v2) + discussion/006/forge/v3/stage-forge-006-v3.md (v3 · v0.2 11 项 backlog) + discussion/006/forge/v4/stage-forge-006-v4.md (v4 · post-v0.2 协议稳态化 → v2.3)
 ssot_owner: ideababy_stroller
 ssot_consumer: XenoDev (v2.0+, replaces autodev_pipe per M2 cutover)
@@ -815,7 +815,10 @@ baseline: <git sha>                      # 本 task 起跑时的 base commit · 
 1. 与 CLAUDE.md「Session-per-idea worktree 规约」P0 的 warn 型起步同构(该规约本身就是 forge v8 簇② 的另一半);
 2. 本文件 §6.3 三字段是 2026-08-10 才补的,IDS `discussion/*/handback/` 存量 40+ 包全部无此三字段,硬 reject 会把整个既有语料判 corruption。
 
-**升级为 hard-fail 的判据**(与 forge v8 warn→block 判据同构):warn 上线后 `worktree` mismatch **仍复发 ≥2 次**,或出现一次因拓扑自证失真导致的误决议。届时 check-7 升 §6.2.1 第 7 约束(需 bump contract_version + 全量 producer 同步)。
+**warn 分型(v2.6 · forge 006 v10)**:`warn_class` = **`temporary`** · registry `framework/warn-registry/registry.jsonl` → `WARN-check7-topology-selfattest` · owner = IDS handback-validator owner · `due_event` = `forge:006:phase0`(已接线)。详见 **§9**。
+
+> 🔴 **原「升级为 hard-fail 的判据 = 仍复发 ≥2 次」已被 v10 作废。**「复发 ≥N 次」不是升级机制 —— **无计数者、无消费点、无执行者**。最强实证:`CLAUDE.md` worktree 规约的同形判据**在第 2 次就达成,达成后仍复发到第 4 次**。
+> 取而代之:到 `due_event` 时**必须三态裁决** —— `convert`(升 §6.2.1 第 7 约束,需 bump contract_version + 全量 producer 同步)/ `revert`(移除机制)/ `defer`(**具名签署 + 理由 + 新 `due_event`**),或改判 `soft advisory`(须补 `no_upgrade_plan: true` + `rationale`)。**被遗忘的 defer 不是 defer,是缺席。**
 
 **Backward-compatibility**:三字段是**加法**,老包(无三字段)在 warn 型下继续 PASS;producer 不要求 backfill 历史包(与 v2.2 §6.3 body 4 节 RECOMMENDED 的 "0 backfill · forward apply" 先例一致)。
 
@@ -1270,6 +1273,71 @@ gate 有判定逻辑,**没有执行语义**——「判定为 PASS」与「下�
 
 ---
 
+## §9 · warn 生命周期契约 SSOT(v2.6 · 2026-08-11 加 · forge 006 v10 verdict · [B] 止血核心)
+
+> **权威裁决**:`discussion/006/forge/v10/stage-forge-006-v10.md`
+> **机制实现**:`framework/warn-registry/`(README + `registry.jsonl` + `validate-warn-class.sh`)
+> **本节是 schema SSOT;registry 数据不在本文件,在上述目录。**
+
+### §9.1 · 契约
+
+**任何 `warn` 在进入系统时必须声明 `warn_class`**,二选一:
+
+| `warn_class` | 语义 | 必带字段 |
+|---|---|---|
+| **`soft advisory`** | **永久 defer 合法** —— 但必须**显式承认无升级计划**(承 PEP 387 soft deprecation) | `no_upgrade_plan: true` + `rationale`(不得留白) |
+| **`temporary`** | 临时态,预期终将升级或撤销 | `owner` + `due_event` + `consumer_gate` + `consumer_wired`(+ 未接线时 `exposure`) |
+
+**未声明分型者由 canonical admission gate `fail-closed` 拒绝。**
+🔴 **该拒绝是 hard 的,不是第四个 warn** —— 这是本契约与它废掉的判据之间的**全部区别**。
+
+### §9.2 · `due_event` 的硬约束
+
+**`due_event` 必须是 gate 事件,不得是次数,不得是日期。**
+
+> 🔴 **「复发 ≥N 次」型判据本仓已全部作废**(v10):`check-7` / `check-8` / `CLAUDE.md` worktree 规约三条。
+> 理由不是它们太宽松,而是**它们不产生任何行为** —— **无计数者、无消费点、无执行者**。
+> 实证:worktree 规约的判据**在第 2 次就达成,达成后仍复发到第 4 次**。
+
+### §9.3 · 三态裁决(承 RFC 1589 · 双侧独立取得)
+
+`temporary` 的 warn 到 `due_event` 时,**必须**三选一:
+
+```
+convert → 升 hard-fail(该 warn 退出 registry)
+revert  → 撤销该机制
+defer   → 合法!但必须 ① 具名签署 ② 写明理由 ③ 给出新的 due_event
+          或改判 soft advisory(须补 no_upgrade_plan + rationale)
+```
+
+**被遗忘的 defer 不是 defer,是缺席。** 关键区分**不是「自动 vs 手动」**,
+而是「**被裁决出来的 defer**」vs「**被遗忘的 defer**」。
+
+### §9.4 · 与 obligation ledger 的分层(**不得混成一层**)
+
+| | `framework/obligations/ledger.jsonl` | `framework/warn-registry/registry.jsonl` |
+|---|---|---|
+| 承载 | **裁决结果**(该做什么、到哪个 gate 清偿) | **规则语义**(某条 warn 是哪一类) |
+| 形态 | **append-only 事件流** | **当前态**(就地编辑,git 即审计) |
+
+🔴 `skipped` **只能关闭「升级义务」,表达不了 advisory 本身的持续语义** ——
+一个永久 soft advisory 不是「一次被签掉的义务」,而是一条持续有效的规则属性。
+
+### §9.5 · 接线状态(v0.1 · **只落了 IDS 侧两个 gate**)
+
+| gate | 角色 | 状态 |
+|---|---|---|
+| `forge:<id>:phase4` | admission(拒绝缺 `warn_class` 的治理行) | ✅ 已接线 · `expert-forge.md` Step 6.5.1 |
+| `forge:<id>:phase0` | consumption(`due_event` 到期三态裁决) | ✅ 已接线 · 同文件 Step 0.7 · fail-closed |
+| `xenodev:task-review` / `ship-gate` / `handoff-intake` | admission(build/跨仓侧) | ❌ **未接线** |
+
+🔴 **v10 verdict 正文的限定仍然生效,必须被复述**:
+**「此契约只有 M1 schema 与 M2 三处 hard-reject 均落地后才是机制;此前不得宣称 build/mirror 已受保护。」**
+⇒ 分类执法当前 **`2/5` 生效**(IDS 侧 2 个 gate)· build/跨仓侧 **3 个全部未接线**。
+`OB-006-v10-02` 保持 `pending`,会在下一次 `forge:006:phase0` **持续阻断**,直到 build 侧接线或 operator-chair 具名签 skip。
+
+---
+
 ## 验证
 
 ```bash
@@ -1294,6 +1362,8 @@ grep -c '^#### 阶段 [123]' framework/SHARED-CONTRACT.md  # 应返回 3
 ---
 
 ## Changelog
+
+- **2026-08-11 v2.6 (forge 006 v10 verdict · [B] 止血核心 · warn 生命周期契约)**:新增 **§9 · warn 生命周期契约 SSOT**(分型 `soft advisory` / `temporary` · `due_event` 不得是次数 · 三态裁决 · 与 ledger 的两层分工 · 接线状态);改写 §6.3.1 的「升级为 hard-fail 的判据」段为 warn 分型声明。**根因**:v10 审「治理条款的可执行性 + 声明存在但机制不存在」两簇八条,发现本仓面对「该不该硬拦」的默认动作是「先 warn + 附一条『复发 ≥N 次再说』」,而**该判据不产生任何行为** —— 无计数者、无消费点、无执行者。**最强实证**:`CLAUDE.md` worktree 规约的判据**在第 2 次就达成,达成后仍复发到第 4 次**。**SOTA 依据**:RFC 1589(**双侧独立取得** —— Opus 定向 WebFetch / Codex 独立检索且内容对其封存)给出「固定节奏复审 gate + 每条一个具名条目 + 三态裁决」;PEP 387(Codex 单侧)补出「**并非所有 warn 都要升级**,永久 defer 合法但须显式承认无移除计划」⇒ 真缺陷不是「warn 没到期」而是**「warn 从未被分型」**。**落地范围(v10 operator 选 [B])**:新增 `framework/warn-registry/`(README + registry.jsonl 3 条 + validate-warn-class.sh · **hard gate,反例 9/9 实测拒到**);`expert-forge.md` 接 **Step 0.7**(consumption · fail-closed)+ **Step 6.5.1**(admission · hard-reject);三条现存判据(`check-7` / `check-8` / `CLAUDE.md`)就地改写为分型声明。🔴 **本次只落 IDS 侧 2 个 gate**;`xenodev:task-review` / `ship-gate` / `handoff-intake` **三个 admission gate 未接线** ⇒ **不得宣称 build/mirror 已受保护**(`OB-006-v10-02` 保持 pending,持续阻断下次 forge intake)。**非 BREAKING**(纯加法)。**consumer**:XenoDev 侧需从 mirror 同步 §9 + 三个 build 侧 gate 接线 = `OB-006-v10-02` 的内容。⚠ **实测已知漂移**:`check-7` / `check-8` **在 XenoDev mirror 中完全不存在**(脚本与接线均无)⇒ producer 侧从未跑过这两个 check —— 该漂移记入 `OB-006-v10-07`(KG-B16 跨仓完整性收据)。Evidence:`discussion/006/forge/v10/stage-forge-006-v10.md` + 本波 IDS commit。
 
 - **2026-08-10 v2.5 (handback-review 001 · forge v8 簇② 补 IDS 权威侧 · 拓扑自证三字段)**:§6.3 frontmatter schema 加 `current_idea` / `worktree` / `baseline` 三字段 + 新增 **§6.3.1 · 拓扑自证三字段**语义节;`handback.template.md` 加三个 placeholder;新增 `check-7-topology-selfattest.sh`(**warn 型 · 恒 exit 0**)并接进 `validate-handback.sh`。**根因**:forge v8 簇② 决议明写"hand-back / outbox 包 frontmatter 加三字段(跨仓通道自带拓扑自证)",但**只在 XenoDev 单侧实装,IDS SSOT 三处全空**(本文件 schema / template / validator)—— 与本文件 `ssot_owner: ideababy_stroller` 声明反向。**实证代价**:2026-08-10 `/handback-review 001` 4 包中,恰好那 2 个跑在 per-task 专用 worktree 的包(`...-FU-R5F4` / `...-T042`)`worktree` 值均错填为 idea 主 worktree,**自证字段在它唯一有价值的场景失真**,且因 IDS 侧无校验而无任何机制发现。check-7 落地后对这 2 包精确 warn、对另 2 包 PASS、对 2026-08-10 前无三字段的老包 skip。**warn 型而非 hard-fail 的理由**:(a) 与 CLAUDE.md「Session-per-idea worktree 规约」P0 warn 型同构;(b) 存量 40+ 包全无三字段,硬 reject 会把既有语料判 corruption。**升级判据**:warn 上线后 `worktree` mismatch 仍复发 ≥2 次,或出现一次因拓扑自证失真导致的误决议 → 升 §6.2.1 第 7 约束。**非 BREAKING**(纯加法 · 老包继续 PASS · producer 0 backfill 要求)。**consumer**:XenoDev 侧 `gen-handback.sh` 需从 mirror 同步本改动并把三字段接真值(`worktree` 取真实 `working_repo` 而非常量)= 授权条目。Evidence:`discussion/001/handback/HANDBACK-LOG.md` 第 44 条决议 + 本波 IDS commit。
 
