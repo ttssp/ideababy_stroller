@@ -1,5 +1,20 @@
 # Forge 006 · v10 待跑批次(攒批处 · append-only)
 
+> ## ✅ 本文件的簇 A + 簇 B 已于 2026-08-11 由 forge v10 裁决完毕
+>
+> **verdict**:`discussion/006/forge/v10/stage-forge-006-v10.md`(converged · unresolved: NO)
+> —— warn 生命周期契约 + hard admission gate;三条「复发 ≥N 次」判据作废。
+> **已裁 8 条**:XD-44′(含 XD-52)· XD-47 · KG-B15 · KG-B16 · KG-B17 · KG-B18 · KG-B19。
+> **已登记 10 条 obligation**(`OB-006-v10-01..10`),其中 `-01`(M1 schema)与 `-02`(M2 接线)
+> 挂 `forge:006:phase0` ⇒ **下次 `/expert-forge 006` 未落地即 fail-closed 阻断 intake**。
+>
+> **⏳ 本文件剩余待审 = 簇 C + 簇 D,滚入 v11**:
+> `KG-B13`(cdx-run 静默重放覆盖产物)· `KG-B14`(reuse-session 被静默降级)·
+> `XD-45`(file_domain 零回归论证方法论)· `KG-49`(REVIEW-LOG 越 file_domain)。
+> ⚠ **v10 的 `underweight-8③` 是一条欠债**:「簇 C/D 是否被 v10 的一般条款自然覆盖」
+> **双方 P3R2 都没回答**(快照 Part 5.5 已点名要求「若覆盖请明说」,四轮里被静默掠过)。
+> ⇒ **起 v11 时第一件事就是回答这个问题**,而不是默认它们是独立议题。
+
 > **这是什么**:forge 006 v9(2026-08-04 起跑 · X = 证据完整性家族 KG-B11 / XD-41 / XD-43 / XD-44
 > + IDS HANDBACK-LOG 第 40/42 条实测证据)**冻结之后**新撞到的框架级问题攒在这里,作为下一轮
 > `/expert-forge 006` 的 X 标的预填。承 `FORGE-006-v7-PENDING.md` 先例。
@@ -250,6 +265,41 @@
   ③ 存量 47 包是否回填、回填算不算改既有语料(与 append-only 语义的关系);
   ④ 跨仓陈旧指令文档的清理由谁执行(XenoDev 侧文档改属框架级还是仓内事务)。
 
+### KG-B19 · hook 白名单「只减不增」健康度指标**没有工具可执行**,且与 worktree-per-idea 规约结构冲突
+
+> **来源**:forge 006 **v10 Phase 0 的 obligation gate 阻断**(OB-006-v9-01)后被迫执行的白名单全表回审 ·
+> 2026-08-11。**这是 obligation 机制第一次真的拦下东西,并且拦对了** —— 被拦的正是 v9 自己标为
+> 「最强 v10 触发判据」的那条,74 天没做的回审在 gate 上当场做完并产出本条。
+
+- **回审实测结果**(XenoDev `.scan-credentials-ignore` · 24 条精确路径逐条真跑):
+  21 条有效,**3 条失效已删**(`review-log/T102-round3/4/5.md` —— 从未进过 git、磁盘上也不存在;
+  同 commit `0837e92` 里 round1/2 是真 tracked 的 ⇒ 这 3 条是**对不存在文件的豁免承诺**,
+  按不变量 2「承诺无指称对象」+ 不变量 3「不成立的删」处置)。条数 24 → 21,
+  XenoDev commit `5442afd`。**这是健康度指标「只减不增」有史以来的第二个数据点** ——
+  该文件自 2026-05-29 创建后 **74 天零修改**,回审动作此前一次都没发生过。
+
+- **🔴 结构问题 1 · 「只减不增」没有工具可执行**:不变量 3 要求精确路径「上升」为模式类识别以减少条数,
+  但 v8 定的三个模式类(heredoc-commit-message / mktemp 私有 dir / 变量拼路径)**至今 ⏳ 未实装**
+  (`framework/hook-allowlist-governance.md` §4)。⇒ **唯一能让条数下降的机制根本不存在**,
+  于是"只减不增"只能靠删失效条目达成,而失效条目是有限的。这与 **KG-B18**(自证字段存在但校验不存在)、
+  **KG-B17**(防线存在但从未被执行)是**同一形状**:*指标/防线/字段写在文档里,实现它的东西没建*。
+
+- **🔴 结构问题 2 · 与 forge v8 簇② worktree-per-idea 规约结构冲突(新)**:
+  白名单是 **repo-root 相对的精确路径**(`AGENTS.md` / `framework/SHARED-CONTRACT.md` / …),
+  而 v8 规约要求**每个 idea 一个独立 worktree**,仓内 worktree 落在 `.claude/worktrees/<idea>/` 下 ——
+  同一份文件在 worktree 里的路径前缀不同,**全部不被白名单覆盖**。
+  - **实测**:XenoDev 现有**一个**仓内 worktree(`.claude/worktrees/001-radar-pA`),
+    `scan-credentials.sh` 总命中 22 条 = **2 条 by-design**(`secrets/prod/` 已 gitignored、
+    从未进过 git,件 1 路径硬拦按设计触发且明文不受白名单放行)+ **20 条 worktree 副本假阳性**。
+  - **为什么不能按精确路径修**:每多一个 worktree 就多 ~20 条,条数随 worktree 数**线性膨胀**,
+    必然同时违反不变量 1「按模式类收敛,不按撞一次加一条」与不变量 3 的健康度指标。
+    ⇒ 两条框架规约(v8 worktree 规约 × T102 精确路径白名单治理)**互不兼容**,
+    而这一点在白名单 74 天无人回审期间从未被发现 —— **冲突本身就是"没有回审"的产物**。
+- **待判(forge)**:① 模式类识别的实装归属与时点(v8 授权条目已挂 29 天);
+  ② 白名单路径语义是否应改为 **worktree-aware**(如相对 git common dir / 或按 `git rev-parse --show-toplevel` 归一);
+  ③ 与 KG-B17 的 fixture 硬编码、KG-B18 的指令文档陈旧**三条并案**,给出
+  「路径类声明在多 worktree / 多主机下如何保持有效」的统一处置。
+
 ## 与 v9 的关系(起 v10 时必读)
 
 全部条目都与 v9 正在审的**证据完整性家族**同题,**建议并案而不是另起家族**:
@@ -264,6 +314,7 @@
 | **KG-B16**(v8 三字段 IDS SSOT 空缺) | v8 落地验收本身 | 「已落地」的判据是什么 · 单侧实装即算数 |
 | **KG-B17**(fixture 语料整体不可跑) | XD-43(机制已装从未被调用) | 防线**存在**但从未被执行,状态靠假设 |
 | **KG-B18**(声明 source_repo 从未被验 · **47/100 包失真**) | XD-41 / B-4-IDS | **自证字段存在但不被验 = 自证等于零** |
+| **KG-B19**(白名单「只减不增」无工具 + worktree 冲突) | XD-43 / KG-B17 | 指标写在文档里,**实现它的东西没建**;且两条规约互不兼容 |
 | KG-B15(warn 型规约的升级判据 · **已复发 4 次**) | v8 簇② 的 warn 起步设计本身 | warn→block 的升级由谁、在哪触发,至今无 owner |
 
 ⚠ **起 v10 前先读 v9 的 verdict** —— 若 v9 已给出「声明/执行两层校验」的一般条款,
