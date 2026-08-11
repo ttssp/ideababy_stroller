@@ -1320,4 +1320,5 @@ FAILED   EXIT=1
 - 本次 review session 在 `main` 分支而非 `009-pM3prime` worktree —— worktree-per-idea 规约 warn。按 CLAUDE.md v10 注,`handback-review` 决议本就是规约列出的合回 main 的合法 checkpoint,且该 warn 的裁决被 `OB-006-v10-06`(规约消歧义)前置阻塞
 - hand-back 侧 check-7 WARN(`worktree` 字段填散文句)—— 建议 XenoDev 下次填可机器比对的值(分支名或 `none`),散文句让拓扑自证降级成人工阅读
 
-**Follow-up commits**: pending
+**Follow-up commits**: `d281d55`(2026-08-11 · 本条决议 + hand-back 包入库 · **未 push**)。
+**尚未入库(去向已定)**:发现 1 的 FU(DB 迁移 + `reconcile()` 入口 `alembic_version` 前置校验 + 拆封 runbook + R6-R8)→ **XenoDev 侧**(`/home/ys/codes/XenoDev-009` · `feat/009-spec`)· KG-49 + **KG-50** → forge 006 攒批(`dogfood-backlog.md`)· 001-radar 线止血备份 `REVIEW-LOG.md.pre-KG49-backup-20260811` 在 `/home/ys/codes/XenoDev` 仓**未提交**(untracked),归 001 线自行处置。
