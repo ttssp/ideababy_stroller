@@ -1098,7 +1098,7 @@ True/False 在 41→35→30→27 之间**来回翻** = 整数临界计数相对�
 
 → **E2 仍不授权。** E2 历史窗回测 / E3 forward 线做进 XenoDev = 越界 = BLOCK(不变)。
 
-**Follow-up commits**: pending(本 LOG 第 30 条 + hand-back 包入库 · 纯 009 不夹带 001 · 未 push)
+**Follow-up commits**: `c35cf2f`(2026-08-11 · 本 LOG 第 30+31 条 + PRD v0.7→v0.8 + 2 hand-back 包同一 commit · 纯 009 不夹带 001 · **未 push**)。⚠ 本条「两维外锚 lane」分支已被第 31 条撤销(前提 §134 事实错误),该 commit 同时承载撤销记录
 - **阶段 0 下一活**(可并行)= `cd /home/ys/codes/XenoDev-009` → `claude -w 009-pM3prime`:① 跑**两维外锚可行性探针**(含 `published_at` 外锚独立性核查)② **B1 权威 watchlist** 补数据(红线:严禁照 gold ticker 反推 curate)
 - **阶段 1** = **Layer-1 立案**:答「Layer-1 要不要这 41 条盲标机会」——**该问题未答前不得拆封**
 - **阶段 2** = F3 ③(machine 从 DB 规范化加载);①② 待阶段 0-1 结果
@@ -1208,4 +1208,6 @@ AST(非 rg)枚举全仓 **32 个 `evaluate_layer2` 调用点**逐个分类 → *
 **F · PRD 修订触发(tags: prd-revision-trigger)**
 - PRD v0.7 需改三处:① §208/§250 转述 forge v2「外锚覆盖 ticker 与 timepoint 两维」= **已证伪**,须加订正块 ② 5 处 `gold_layer2.py:81`/`:203` 失效行号 → 改**无行号锚**(文件+函数名+常量名+回归测名)③ Layer-1 段须记入「41 条 = precision 框非 recall 框」与「α/pred_spans 契约缺角未解」
 
-**Follow-up commits**: pending(本条决议 + 3 hand-back 包 + 评审结论待 commit;未 push)
+**Follow-up commits**: `c35cf2f`(2026-08-11 · 本条决议 + 第 30 条 + **PRD v0.7→v0.8 三处修订全部落地**(订正块 / 5 处行号锚清零 / Layer-1 段)+ 2 hand-back 包 · 评审结论已内含于本 entry · **未 push**)。
+⚠ 订正:本条原写「3 hand-back 包」实为 **2 包** —— 第三个 `20260727T065748Z` 早在 `f4802f9`(第 28 条)已入库,非遗漏。
+**尚未入库(去向已定)**:KG-46/47/48 → forge 006 攒批(`dogfood-backlog.md`)· F3 ③ 的 R1+R5 → XenoDev 侧(拆封 41 条前置)· KG-45 在 PRD 外仍余 **33 处失效行号 / 12 文件**,但均为 append-only 治理记录(hand-back 包 / forge round 文件)**不回改**,处置面是把「行号锚禁令」写进 SHARED-CONTRACT。
