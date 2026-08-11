@@ -1865,4 +1865,4 @@ journal `--snapshot-file`,改动破坏审计链)。但 consumer 侧实测另有�
 
 ---
 
-**Follow-up commits**:本条决议 + 2 个 hand-back 包入库 · 见本 commit(同第 41/43/44/45/46 条先例)
+**Follow-up commits**:`41c6a89`(本条决议 + 2 个 hand-back 包入库)
