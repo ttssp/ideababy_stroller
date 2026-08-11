@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-11T03:43:47Z
-total_decisions: 45
+last_updated: 2026-08-11T09:50:34Z
+total_decisions: 46
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -1644,3 +1644,94 @@ O7 `decision_delta`)**仍是 operator 手动真跑**(C8:凭据不进 agent conte
 - 本条决议 + `check-8-declared-source-repo.sh`(新增)+ `validate-handback.sh` 接线
   + `discussion/006/FORGE-006-v10-PENDING.md`(KG-B18 新增 · XD-44′ 3→4 + XD-52 并案 · KG-B15 3→4 + 关系表)
   + T041 hand-back 包入库 · 见本 commit(同第 41/43/44 条「决议与包同 commit」先例)
+
+## 2026-08-11T09:50:34Z · 001-radar-pA-20260811T093217Z(P4.1 首次真跑)
+
+**第 46 条**。**类型**:operator 真跑反馈型 hand-back(**非 task ship 型**)。
+
+**Reviewed at**: 2026-08-11T09:50:34Z
+**Severity**: high · **Tags**: feature · **Validator**: 6 约束 + check-7 + check-8 全 PASS
+
+> 🔴 **独立性缺陷,必须先记**:本包由**本 IDS session 亲自撰写**,又由同一 session 主持决议 ——
+> **producer 与 consumer 同源**。正常流程是 XenoDev 产包、IDS 独立审;本次没有那道独立性,
+> 与 **XD-41**「子代理与被审代码同源」是同一形状。裁决权全部由 operator 行使,
+> 但**本条的"consumer 侧独立复核"这一层事实上缺席**,下游不得按常规 hand-back 的可信度读它。
+
+**Operator decisions**:
+- [x] 修 PRD —— 缺陷 3 + 缺陷 6 **两条都改**
+- [x] 修 XenoDev spec(跨仓)—— 缺陷 2,**并列为 P4.1 继续的前置条件**
+- [x] **暂停 P4.1 剩余三次真跑**,等缺陷 2 + 6 修完
+- [ ] 修 SHARED-CONTRACT(缺陷 4/5 已由既有 obligation 承接,不新开条目)
+
+---
+
+### (1) 真跑事实:工程侧全绿,产品侧不可用
+
+| 方向 | exit | 壁钟 | 预算内 |
+|---|---|---|---|
+| `on-policy distillation` | 4 `INSUFFICIENT_EVIDENCE` | 34.2s | ✅ |
+| `coding LLMs` | 4 `INSUFFICIENT_EVIDENCE` | 37.1s | ✅ |
+
+编排 / 计时 / 三态退出码 / verdict 产物 / 批跑报告 / `journal record` 建议命令生成 —— **全部按 T041/T042 设计工作**;
+1172 pytest 全过,`radar.bench` coverage 99%。
+
+**但 operator 无法据以作出任何方向判断。** 一手证据(**in-product · 可审计 · 非口头转述**):
+两条 journal 记录 `rationale` 逐字相同 ——
+> 「没法判断,报告的格式、组织语言太随意,混杂太多符号、编号,编程语言等,人类无法理解」
+
+绑 `run_id`(`c208444e…` / `e37c92d7…`)+ 绑快照 + 经 `record` 预写入门校验。
+
+⭐ **一处正面实证**:journal 机制在**首次真用**中正确履行了职能 —— 把「工具当时不可用」变成了可审计记录。
+operator 在留档前曾反复质疑该步骤的必要性(「这是测试用是吧」「我可以随便写个 fake 理由吗」),
+本次即为其价值的第一个实例。**该机制无需修改。**
+
+### (2) 缺陷 2 → 跨仓改 XenoDev spec · **列为 P4.1 前置**(operator 决议)
+
+全链只有 4 类产物落地(`out/briefing` / `out/reconstruct` / `out/verdict` / `out/bench`),
+**方法关系图与检索到的 200 篇语料均不落盘**,跑完即弃。
+
+而 briefing 核心段落通篇在描述这个图(`<graph_relations>` · `slice-1`/`slice-3` ·
+「11 个 `extends` 节点围绕 `OPD` 形成辐条式拓扑」)。⇒ operator 拿到的是:
+**200 篇语料看不到是哪 200 篇 · 图的 11 条关系看不到图 · 1 条判断配 1 个 DOI 链接**。
+
+⇒ **只能选择信或不信,没有第三条路,因为没有东西可核。** operator 原话「更像自说自话」是准确诊断。
+
+**裁决**:图 + 检索语料**必须落盘**;briefing 的每条结构性断言须可回溯到落盘产物。
+**定为 P4.1 继续的前置条件** —— 修完之前不跑剩余真跑。
+⚠ 落盘形态(机器可读 JSON / 人可读 markdown / 两者)与保留策略由 XenoDev spec 侧定。
+
+### (3) 缺陷 3 + 6 → 两条都改 PRD(operator 决议)
+
+- **缺陷 3 · 验收标准无「产物可读 / 断言可核」维**:本次所有自动化 gate 全绿而产物人类读不了。
+  **没有任何 gate 检查「人能不能读」。** 不补这一维,缺陷 1 修完后换个 LLM 输出格式还会再犯。
+- **缺陷 6 · 🔴 结论词表 `("投","观望","不投")` 无「无法判断」**
+  (`src/radar/journal/cli.py:65`)。operator 真实状态是「读不懂,判断不了」,只能填 `观望`
+  ⇒ **`观望`(已形成判断)与「无法判断」(未形成判断)被折成同一个值**;
+  O5 后验无法区分二者;**且 P4.1 门槛「≥5 次真实评估」可被虚假满足** ——
+  5 次全是「读不懂→观望」时计数显示 **5/5 达标而真评估零次**。
+  ⚠ **与 forge 006 v10 在审的失败族同形**(比较 XD-41「缺席同时充当不适用与违规」):
+  *两个不同状态折成一个值,系统总选看起来正常的那个解释*。
+
+### (4) 缺陷 4 + 5 → 不新开条目,挂既有 obligation
+
+- **缺陷 4**:`gen-handback.sh:424` 的 `IDS_ROOT:-/Users/admin/...` 默认值**只被 `handback_target` 消费**;
+  `to_source_repo` 与 `workspace.source_repo` **即使 `IDS_ROOT` 已设、HANDOFF.md 已写对,仍产 mac 路径**。
+  ⇒ **forge 006 v10 `KG-B18`(全语料 47/100 包声明失真)的根因在代码层坐实** ——
+  此前是从语料反推,今日为直接复现。**挂 `OB-006-v10-09`**。
+- **缺陷 5**:`gen-handback.sh` 至今不产 §6.3.1 三字段(v2.5 授权条目未落地),本包三字段为手工补填。
+  **挂 `OB-006-v10-07`(KG-B16)**。
+
+### (5) P4.1 暂停(operator 决议)
+
+**现状 2/5 方向 · 0/1 `decision_delta`。** 但按缺陷 6,这个「2」**不是真评估**。
+
+**暂停理由**:缺陷 2 使 operator 读不了报告;缺陷 6 使「读不了」在计数里与「评估过了」不可区分。
+两者叠加 ⇒ **再跑三次即可凑满 5/5,而一次真评估都没发生**,P4.1 将显示达标却什么也没验证。
+**这正是本仓反复栽的「看起来是绿的」形态。**
+
+今天这 2 条 journal **保留**(它们是缺陷证据,不是评估样本);是否从验收计数中排除,
+留待缺陷 6 的词表改定后按新语义重判。
+
+---
+
+**Follow-up commits**:本条决议 + hand-back 包入库 · 见本 commit(同第 41/43/44/45 条先例)
