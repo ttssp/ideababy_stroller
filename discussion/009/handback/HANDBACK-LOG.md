@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-28T16:04:41Z
-total_decisions: 31
+last_updated: 2026-08-11T15:42:50Z
+total_decisions: 32
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -1211,3 +1211,113 @@ AST(非 rg)枚举全仓 **32 个 `evaluate_layer2` 调用点**逐个分类 → *
 **Follow-up commits**: `c35cf2f`(2026-08-11 · 本条决议 + 第 30 条 + **PRD v0.7→v0.8 三处修订全部落地**(订正块 / 5 处行号锚清零 / Layer-1 段)+ 2 hand-back 包 · 评审结论已内含于本 entry · **未 push**)。
 ⚠ 订正:本条原写「3 hand-back 包」实为 **2 包** —— 第三个 `20260727T065748Z` 早在 `f4802f9`(第 28 条)已入库,非遗漏。
 **尚未入库(去向已定)**:KG-46/47/48 → forge 006 攒批(`dogfood-backlog.md`)· F3 ③ 的 R1+R5 → XenoDev 侧(拆封 41 条前置)· KG-45 在 PRD 外仍余 **33 处失效行号 / 12 文件**,但均为 append-only 治理记录(hand-back 包 / forge round 文件)**不回改**,处置面是把「行号锚禁令」写进 SHARED-CONTRACT。
+
+---
+
+## 2026-08-11T15:42:50Z · 009-pM3prime-20260811T140531Z(F3 ③ CONCERNS 收口 R1-R5 · **五条逐条 mutation 实跑复证有齿** · 🔴 **R5 landed 但生产路径未生效:真盘 DB 停在 alembic 0019,取证表不存在,实跑 OperationalError** · KG-49 mirror 方向经更正后照铁律归 forge 006 · 新增 KG-50)
+
+**Reviewed at**: 2026-08-11T15:42:50Z
+**Related task**: FU-F3-3-concerns-fix
+**Tags**: build-complete
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对 realpath)· check-8 PASS · ⚠ **check-7 WARN**(不阻断):`worktree` 字段填成散文句 `none(直接在 feat/009-spec 分支 commit · 未起 worktree · 同本 fork 既有 FU 惯例)`,与 `workspace.working_repo = /home/ys/codes/XenoDev-009` 不一致 —— 该字段用途是拓扑自证,填散文句让机器校验只能 WARN
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence:` 父键 —— 非 build-ship 包形态)
+
+### IDS 侧独立复核(本次 review 实跑 · 非转述 build 结论)
+
+**属实项(逐条实跑复证 · 无一不符)**:
+
+- **测试基线属实**:IDS 侧独立复跑 **`1198 passed, 7 skipped, 6 deselected, 1 xfailed`**(140.90s)—— 与 hand-back 声称**逐字一致**。⚠ 第 30 条那种「hand-back 文本 vs commit 数字打架」本次未复发
+- **R1 mutation 验齿(实跑)**:抽掉 `reconcile()` 里的 `_assert_source_ids_match_canonical_order` 调用 → `test_should_reject_when_reconcile_source_ids_diverge_from_canonical_order` 报 **`DID NOT RAISE`** 变红 ✅。调用点位置属实:在既有多重集 / 身份 / 清单锚检查**之后**、`evaluate_layer2` 消费 machine **之前**
+- **R5 mutation 验齿(实跑)**:抽掉 `gold_layer2_item` INSERT 循环 → `test_should_persist_signal_id_per_item_when_reconcile_runs` 报 **`assert 0 == 3`**、`test_should_persist_items_even_when_criteria_not_met` 同红 ✅。migration 0021 逐条核对属实:只 `CREATE` 无 `ALTER`、跨表无 FK、`item_index >= 0` CHECK 在、`source_id`/`signal_id` nullable、downgrade raise(forward-only)
+- **R5「无论 criteria_met/passed 真假都写」属实**:落库循环在 `criteria_met`/`passed` 计算与逐维写入**之后**、`return` **之前**,中间零 early-return
+- **R3 mutation 验齿(实跑)**:neuter `Sequence` 形状守卫 → `test_should_raise_when_machine_payload_is_a_dict_not_a_list` 变红 ✅(另两条负例由第二道 `Mapping` + 至少一个可核对字段的守卫挡,分工清楚,非同一守卫)
+- **R2 语义回答属实(实证)**:`census.py::run_census` 的 `now` 确在进入逐条循环**之前**只取一次(`SELECT strftime(...,'now')`),该批全部信号共享同一时间戳、条目间零区分度;全仓生产 SELECT 扫描确认**无一处读 `extracted_signals.created_at`**(grep 命中的三处分别是 `decision_drafts` / `strategy_signals` / `conflict_reports` 的同名列,不是本列)⇒ **不可用作提取时点独立锚成立**,「不加绑定代码、只在契约里明写时序关是自报的」是正确处置
+- **R4 属实**:`_assert_source_id_alignment` 的「三方身份绑定」与 `_assert_matches_registered_sample_manifest` 的「三份 JSON」两处失真措辞均已订正;`test_should_reject_when_machine_order_shuffled` 的 docstring 已如实改写(承认它实际被多重集校验挡下而非乱序检测),并新增 `test_should_reject_machine_payload_when_source_id_order_swapped` 真守 F3 ③ 后那条关
+- **红线 7 条全绿(实查)**:`extraction/gate.py` **零改动**(不在 `e0a08c5..HEAD` diffstat)· `_CORRECTNESS_GATE_AUTHORIZED_V0_1 = False` 未动 · `second_source_kind != _HUMAN_SOURCE_KIND → raise` 仍是 `evaluate_layer2` 首个 guard · C6 冻结常量未动 · `blind/` 与 `out/` **零改动** · **本次 diff 新增行零 `.py:行号` 锚**(KG-45 遵守属实)· KG-49 记 `dogfood-backlog.md` 未当场改 lib
+- **41 条盲标机会确未拆封(真盘 DB 实查)**:`extracted_signals` **41 行**,`gold_layer2_result` / `gold_layer2_dimension` / `gold_layer1_result` **全 0 行**
+- **确未 push**:`git branch -r --contains 849c30d` 为空;三条 commit(`849c30d` / `16c53ea` / `4820539`)均在 `feat/009-spec`
+- **诚实边界属实**:「R1 挡不住同一 `source_id` 字符串重复时的内部换位、彻底闭合需 F3 ①」与第 31 条评审 C 原判一致,未夸大成「已闭合」
+
+### 🔴 IDS 侧新发现(build 未列)
+
+**发现 1 · R5 landed 但在生产路径上未生效 —— 实跑证,不是推演**
+
+真盘 `projects/004-pB/out/e1-census-20260718.sqlite` 的 `alembic_version = **0019**`:不只缺 0021 的 `gold_layer2_item`,连 0020 的 `watchlist_snapshot` 也缺。`reconcile()` / `evaluate_layer2` **不自动跑迁移**,`docs/` 与 `scripts/` 全仓零处提 0021 或迁移步骤。
+
+IDS 在真盘 DB 的**副本**上把所有 fail-closed 关逐个满足后跑完整生产路径(anchor 门槛必填 / 盲标隔离 / ticker 外锚三关依次挡下,均按设计 raise,证明这些关本身有齿),最终:
+
+```
+RAISED: OperationalError | no such table: gold_layer2_item
+  崩溃前(未 commit)  gold_layer2_result=1 · gold_layer2_dimension=5
+  关闭后(回滚检验)  0 · 0          ← 异常路径不 commit → 回滚 → 无半写、无 DB 损坏
+```
+
+四点:
+
+1. **R5 的取证表在真正要取证的那个库里不存在**。R5 的立论是「错配发生后连事后取证材料都没有」—— as-shipped 在生产路径上**仍然没有**。这是 001-radar forge v4 已命名的 **landed ≠ 生效** 两态在 009 侧的同型实例
+2. build §4「过程中的一次自查纠错」第 1 条**正是这个失败向量**(三个测试 fixture 缺迁移链 → `no such table`),但**只修了测试 fixture,没回头查真盘 DB**。同一根因,测试面修了、生产面没查
+3. 真盘 DB mtime = 2026-07-27 ⇒ 0019 缺口**上一条(第 31 条)ship 时就存在**、一直没被发现;`watchlist_snapshot` 还是 E2「补数后零代码解锁」的前置表,也不在
+4. **严重度校准(不夸大)**:41 条标注数据在 blind 包文件里、不在 DB,补迁移后重跑 `reconcile` **不损失标注劳动**;代价是一次中断,不是一次性资源报废。fail-closed 行为本身是对的
+
+**发现 2 · KG-49 的 mirror 方向 —— IDS 复核先判错、已自我更正(留痕)**
+
+IDS 初判「缺陷 lib 的 SSOT 在 IDS」⇒ **判错**。`framework/xenodev-bootstrap-kit/tests/integration/test-verdict-evidence-mirror-sha.sh:14` 原文:「source(**XenoDev SSOT**)→ target(**IDS bootstrap-kit**)」。即该 lib 的 SSOT 在 XenoDev,IDS 那份是 mirror(与 SHARED-CONTRACT 的方向相反)。三份 copy 字节一致(`43f13a60…`)。
+
+后果:**改 IDS 那份 = 改 mirror,下次同步就被覆盖回去 = landed 但不生效**,恰是发现 1 的同一失败模式;而直接改 XenoDev SSOT 又踩铁律「框架级变更只走 forge,XenoDev 不当场改」。⇒ **build 把 KG-49 记 backlog 攒批 forge 006 是符合协议的**,IDS 初判「不宜继续躺 006 攒批」的理由不成立,**撤回**。
+
+**发现 3(新条目 · KG-50)· mirror 完整性守卫当前完全失效**
+
+`test-verdict-evidence-mirror-sha.sh` 硬编码 `/Users/admin/codes/XenoDev` 与 `/Users/admin/codes/ideababy_stroller`(mac→Ubuntu 迁移遗留)。IDS 实跑:
+
+```
+FAIL[src-missing] /Users/admin/codes/XenoDev/lib/handback-validator/verdict-evidence-lib.sh   (×3 件)
+FAILED   EXIT=1
+```
+
+⇒ 三件 mirror(`verdict-evidence-lib` / `validate-verdict-evidence` / `review-log-writer-lib`)的字节一致性**现在没有任何守卫在跑**,任何一边漂移都不会被发现。而 KG-49 的整个处置面正好依赖 mirror 方向可信 —— 守卫失效时「哪边是 SSOT」只能靠读注释,不能靠测试。
+
+**发现 4(轻)· hand-back 措辞不精确一处**
+
+§4 与 KG-49 均写 fix commit `16c53ea`「diff 证 0 行删除」,实际 `git show 16c53ea` = **`987 insertions(+), 3 deletions(-)`**。IDS 做子集检验:`e0a08c5` 版 954 行**逐行 0 行缺失** ⇒ **历史实质零丢失,结论属实**;那 3 行删的是 `849c30d` 自己刚引入的 singleton pointer 行。属措辞不精确(应写「vs `HEAD~2` 老历史 0 行丢失」),**非事实错误**。记此因「hand-back 文本 vs commit 数字打架」是第 30 条踩过的坑。
+
+### Operator 决议(6 问 · 全选推荐项)
+
+- [x] **① 发现 1 → 起 FU**:把 0020+0021 迁移到真盘 DB + 在 `reconcile()` 入口加 `alembic_version` 前置校验(缺迁移即 fail-closed 明确报「拆封前置未齐」而非裸 `OperationalError`)+ `docs/` 写拆封 runbook。据:R5 的整个立论是取证材料必须在场,现在它不在场;且 build 已在 fixture 面修过同一根因却没查生产面,**靠 checklist 不靠代码就是重演**
+- [x] **② 本包验收 → 接受 R1-R5 收口,CONCERNS 视为已闭;但拆封 41 条仍 blocked**。前置未齐:发现 1 未解 + F3 ① 残留缺口(同 source 内换位仍不可侦测)仍在。与第 31 条「R1+R5 是必要不充分」原判一致
+- [x] **③ R6-R8 三条 LOW + 措辞订正 → 并入 ① 的 FU 一起做**。据:R6(`--source-ids` 无脚本无 runbook · 「顺手那条 SQL」走覆盖索引给非 id 序)本就是 R1 挡的那类漂移的投递向量,与「写拆封 runbook」是同一件事
+- [x] **④ KG-49 → 止血到此为止 + 照铁律归 forge 006**。lib 本体不改:改 IDS mirror 不生效、改 XenoDev SSOT 踩铁律,两条路都不该在 handback-review 里当场做
+- [x] **⑤ KG-50(mirror 守卫失效)→ 记新条目归 forge 006 攒批**,与 KG-49 同场处置(同一块框架面)
+- [ ] 修 PRD(本次不动 —— 本包未产生 PRD 级冲突)
+- [ ] 修 SHARED-CONTRACT(本次不动)
+
+### 已执行(本次 review 当场做的唯一动作)
+
+- **001-radar 线止血备份**:`/home/ys/codes/XenoDev/.claude/skills/codex-review/REVIEW-LOG.md` → `REVIEW-LOG.md.pre-KG49-backup-20260811`(**296 行 / 12 个 frontmatter 分隔符 ≈ 6 条累积历史**)。据:001 线正活跃(T040),下次按 SKILL §3.6.2 调用 `write_review_log_immutable` 就会把这 6 条砍成 1 条。此动作纯增量、不改任何框架件、与 SSOT 方向无关
+
+### 决议后果与待办
+
+**A · XenoDev 侧 FU(授权范围,合并 ①+③)**
+- 真盘 DB 跑 `alembic upgrade` 到 **0021**(补 0020 `watchlist_snapshot` + 0021 `gold_layer2_item`)
+- `reconcile()` 入口加 `alembic_version` 前置校验 —— **fail-closed 且报「拆封前置未齐:DB schema 为 <x>,需 ≥0021」**,不是裸 `OperationalError`
+- `docs/` 写 41 条拆封 runbook:含迁移前置、`--source-ids` 产生方式(**必须 `ORDER BY id`,不得用会走覆盖索引的裸扫描** = R6)
+- R7(库层只按 `caliber_version` 过滤、不含 `extractor_variant`)· R8(非 `Mapping` 元素抛 `AttributeError` 而非 `BlindIsolationError`)顺手带
+- hand-back 措辞规范:「0 行删除」类断言须写清对比基准(vs `HEAD~2` / vs 哪个 commit),避免与 `git show` 的 stat 打架
+
+**B · 仍 blocked / 未变(逐条延续,本次未触碰)**
+- **拆封 41 条 = blocked**(前置未齐 · 见 ②)
+- **F3 ①②**(身份键换 `extracted_signals.id` + 改三份 payload 格式)—— 未做,是 R1 无法闭合「同 source 内换位」的根因;连锁成本(`blind/machine.json` 重生成 + 重跑提取器)只在确定拆封时才值得付
+- **两维外锚 lane**(第 31 条已 STOP)· **Layer-1 主体问题**(41 条 = precision 框非 recall 框 · α/`pred_spans` 契约缺角未解 · `span_prf` exact-match 形态是根因)· **金标 Layer-2 correctness gate blocked** —— 三条状态全不变
+- **E2 仍不授权**
+
+**C · 归 forge 006 攒批(本次不起 forge)**
+- **KG-49**(`review-log-writer-lib.sh` 的「singleton 可覆盖」设计假设 vs 本仓 REVIEW-LOG 的追加式历史日志实际用法 —— 已真实发生一次 954→17 行数据丢失,靠 `git diff` 自查 + 未推送才挽回)
+- **新增 KG-50**(`test-verdict-evidence-mirror-sha.sh` 因 `/Users/admin` 硬编码在 Ubuntu 上 100% `FAIL[src-missing]` ⇒ 三件 mirror 字节一致性**现无守卫**;而 KG-49 的处置面恰恰依赖 mirror 方向可信)
+- 既有攒批不变:KG-43 三道门 · KG-44 · KG-45(行号锚禁令写进 SHARED-CONTRACT)· KG-46/47/48 · KG-41 · 元层条 · §3-1b 解锁制品设计
+- ⚠ **forge 时的元层观察(本条自产)**:发现 1 与 IDS 自己在发现 2 的判错**同型** —— 都是「在一个面上验证过了,就默认另一个面也成立」(build:fixture 面修了默认生产面也修了;IDS:读到 IDS 有这份文件就默认 IDS 是 SSOT)。KG-45 / KG-49 / KG-50 也都长这样。**建议 forge 006 把这条当独立门族看,而不是三条互不相干的卫生问题**
+
+**D · warn 型 preflight(不阻断 · 留痕)**
+- 本次 review session 在 `main` 分支而非 `009-pM3prime` worktree —— worktree-per-idea 规约 warn。按 CLAUDE.md v10 注,`handback-review` 决议本就是规约列出的合回 main 的合法 checkpoint,且该 warn 的裁决被 `OB-006-v10-06`(规约消歧义)前置阻塞
+- hand-back 侧 check-7 WARN(`worktree` 字段填散文句)—— 建议 XenoDev 下次填可机器比对的值(分支名或 `none`),散文句让拓扑自证降级成人工阅读
+
+**Follow-up commits**: pending
