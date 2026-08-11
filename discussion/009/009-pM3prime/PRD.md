@@ -1,19 +1,30 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.7(2026-07-27 回写 handback `009-pM3prime-20260727T065748Z`[FU-KG43] 决议 · forge
+**Version**: v0.8(2026-07-28 回写 handback `009-pM3prime-20260728T035015Z`[阶段 0+1+2] 决议 ·
+HANDBACK-LOG 第 31 条:**🔴 撤销「两维外锚 lane」分支** —— forge v2 §134 称 timepoint 有
+`published_at` 外锚系**事实错误**(frozen `SLA.md` 该行写的是「无」),该字段是**管线恒等**
+(census 从 `records.published_at` 原样回填 · LLM 被结构性禁产 · 真盘 41/41 逐字节相同),
+「两维」实为**一维**;且剩下那一维只核 ticker 的**合法性**不核**归属**(逐条张冠李戴到 watchlist 内
+别人的 ticker → 判据 100% 通过)⇒ **lane STOP · 第 30 条据 §134 立的分支作废** ·
+**Layer-1 结论收窄**:41 条盲标机会**不得用作 recall 框**(`gold ⊆ pred ⇒ span_recall ≡ 1.0`)、
+**不得走 `evaluate_layer1`**,但**是目前唯一已物化的 span precision 框**(precision 无对偶退化)·
+**`span_prf` 的 exact-match 形态才是 Layer-1 根因 —— 换抽样框治不了**(KG-43「数字 vs 形态」同族)·
+全文红线行号锚改为**无行号锚**(KG-45:IDS 语料曾有 39 处失效行号)· 红线本体与 E1 US 密度结论不动;
+见 §4-E1 **两维 lane 撤销块** + §7 + HANDBACK-LOG 第 31 条。
+v0.7 2026-07-27 回写 handback `009-pM3prime-20260727T065748Z`[FU-KG43] 决议 · forge
 009-pM3prime **v2** verdict · operator 选 **[C] 局部接受** · HANDBACK-LOG 第 29 条:
 **🔴 撤销 v1「operator 可自任 Layer-2 第二源」推论**(范畴替换 —— 比较器领域中立 ≠ 标注劳动领域中立;
 三解释维无外锚)· **KG-42 死结未真解 · 第 27 条「死结解」判定作废** · **撤销 07-25 gold 协议的 validity
 地位**(同一人两版 = Krippendorff stability ≠ validity)· **全量五维 correctness gate 在 v0.1 不成立且
 不因换主体/调门槛而成立** · **E2 解锁条件 ② 拆两条,②-b 回测 lane 明确 blocked** · 候选降级面
 groundedness **[C] 下挂起**,待零成本效力探针证明 n≈41 具区分力后另议 · 门槛形态修正判据(数字 vs 形态)采纳 ·
-红线 `gold_layer2.py:203` 与 E1 US 密度结论不动;见 §4-E1 **D-7 v2 修订块** + §7 + HANDBACK-LOG 第 29 条 +
+红线(`gold_layer2.evaluate_layer2` 首个 guard)与 E1 US 密度结论不动;见 §4-E1 **D-7 v2 修订块** + §7 + HANDBACK-LOG 第 29 条 +
 `forge/v2/stage-forge-009-pM3prime-v2.md`。
 v0.6 2026-07-23 回写 handback `009-pM3prime-20260723T082127Z`[FU-KG42] 决议 · forge
 009-pM3prime **v1** verdict:**§4-E1 Layer-2 金标 D-7 改写** —— 第二源资格从「领域独立真人」refactor
 为「错误独立性代理(外证据锚定 + 逐维双错率证成 · 不靠品牌/领域深度)」· **frozen §2×D-7 收窄为验收级
 暂不可满足 · operator 配证据协议可自任独立第二源无须外求真人** · 跨 vendor 强模型不得当 Layer-2 终审
-(SOTA 无背书)· 红线 `gold_layer2.py:81` 保留 · 降级口径(Layer-1 交付 + Layer-2 known-limitation);
+(SOTA 无背书)· 红线(`gold_layer2.evaluate_layer2` 首个 guard)保留 · 降级口径(Layer-1 交付 + Layer-2 known-limitation);
 见 §4-E1 D-7 改写块 + §7-4 + HANDBACK-LOG 第 26 条 + `forge/v1/stage-forge-009-pM3prime-v1.md`。
 v0.5 2026-07-19 回写 handback `009-pM3prime-20260718T143324Z` 决议:**E1 真普查
 完成**(102 records · 0 truncation = KG-40 根治实证)· strong 密度 {US: 40, CN: 1, HK: 0} ·
@@ -184,8 +195,9 @@ operator-input 文档 §1)。
   > - **operator 可自任独立第二源 · 无须前置外求真人**;外部真人**不是 v0.1 前置门槛**,当 operator 尾部
   >   校准不过线 / abstain 覆盖不足 / 同类歧义持续复发时,再评估升级引入领域标注者(可选加强)。
   >
-  > **④ 红线保留(不动)**:第二 LLM 直接当 Layer-2 终审 = V4 失败模式;`gold_layer2.py:81`
-  > (`second_source_kind != 'human' → raise`)**保留**。新增「外证据锚定辅助」仅作用 **Layer-1**(窄义 (a))。
+  > **④ 红线保留(不动)**:第二 LLM 直接当 Layer-2 终审 = V4 失败模式;
+  > **锚(无行号 · KG-45)**:`gold_layer2.evaluate_layer2` 的**首个 guard** · 常量 `_HUMAN_SOURCE_KIND` ·
+  > 回归测 `test_should_reject_when_second_source_not_human`(`second_source_kind != 'human' → raise`)**保留**。新增「外证据锚定辅助」仅作用 **Layer-1**(窄义 (a))。
   > 以后若任务内数据证明某种证据锚定模型达到**预注册的逐维独立性门槛**,可重审其 Layer-2 资格,但
   > **不得按 provider 品牌直接放行**。
   >
@@ -205,7 +217,8 @@ operator-input 文档 §1)。
   >
   > **(a) 撤销 v1「operator 可自任 Layer-2 第二源」推论**。断裂点是一次**范畴替换**:v1 由
   > 「`mapping_agreement_rate()` 不含金融逻辑」推出「标注不需领域深度」—— 但该函数是**比较器**(只做 `==`),
-  > 标注劳动在于**五元组怎么产生**;且 v1 用以支撑的「事实维可外证据核验」**只覆盖 ticker 与 timepoint 两维**,
+  > 标注劳动在于**五元组怎么产生**;且 v1 用以支撑的「事实维可外证据核验」**只覆盖 ticker 与 timepoint 两维**
+  > 〔**⚠ 2026-07-28 订正:这句本身是错的 —— 实为一维。见下方「两维 lane 撤销块」**〕,
   > sector / direction / horizon 三维无任何外锚。**错误独立性解决「两方不共享盲点」,不产生真值。**
   > → **KG-42「无验收主体」死结并未真解,只是被 D-7 挪了位置**;HANDBACK-LOG 第 27 条「KG-42 死结解」判定**作废**。
   >
@@ -241,13 +254,83 @@ operator-input 文档 §1)。
   > retroactively 解锁旧 gate。** 具体:Layer-2 固定逐维 coverage 阈是方法学上过时形态
   > (标准形态为 risk-coverage 曲线 / AURC)—— 但**本次不改数字**,形态重注册待 (e) 决议后一并做。
   >
-  > **(g) 红线保留(不动)**:`gold_layer2.py:203` 第二 LLM / 跨 vendor 未校准模型当 Layer-2 终审 → raise。
+  > **(g) 红线保留(不动)**:第二 LLM / 跨 vendor 未校准模型当 Layer-2 终审 → raise
+  > (锚:`gold_layer2.evaluate_layer2` 首个 guard · 常量 `_HUMAN_SOURCE_KIND` · **无行号** · KG-45)。
   > gate fail-closed 骨架不动。E1 US 密度结论(第 25 条)不动。
   >
   > **(h) 未处置项(v0.2 note · 见 forge v2 stage §v0.2 notes)**:① Dorner & Hardt 变体比较路径
   > (v0.2+ · **带前置验证义务**:须先证 operator 标注噪声与真值**正相关**,该假设在三解释维未经检验且可能为假)
   > · ② partial identification 界宽在 n≈41 未验 · ③ **Layer-1 主体问题全程未处置**(门槛仍空 · 同样 blocked-on 真盲标)
-  > · ④ 「operator 慢考据 gold 是否可产」方法学上无解,只能靠外锚绕开而外锚仅覆盖两维。
+  > · ④ 「operator 慢考据 gold 是否可产」方法学上无解,只能靠外锚绕开而外锚仅覆盖两维
+  > 〔**⚠ 2026-07-28 订正:「两维」实为一维,且该一维对主要错误模式无齿。见下方撤销块**〕。
+
+  > **🔴 两维外锚 lane 撤销块(2026-07-28 · handback `009-pM3prime-20260728T035015Z` · HANDBACK-LOG 第 31 条)**
+  > **Source**: build 侧零成本合成探针 `two-dim-anchor-probe.py`(exit 0)+ **IDS 侧独立复跑与闭式验算**。
+  > **本块优先于上方 (a)/(h)④ 中关于「外锚覆盖两维」的一切表述**;原文保留仅供追溯。
+  >
+  > **(i) 「两维外锚 lane」撤销 —— 前提是事实错误。** HANDBACK-LOG 第 30 条曾据 forge v2 §134
+  > (「事实维可外证据核验只覆盖 ticker(watchlist 外锚)与 timepoint(`published_at`)两维」)立过一条
+  > **两维 gate lane** 分支。该前提**不成立**,两条独立理由各自足以否掉它:
+  > - **① `published_at` 不是外锚,是管线恒等。** 项目自己的 frozen `SLA.md` Layer-2 逐维门槛表
+  >   **timepoint 行「外证据锚」列写的就是「无」** —— forge v2 与其相矛盾。链条:`published_at` 读自
+  >   collection.db `records` → census 原样传入 → LLM 被 `_V2_FORBIDDEN_FIELDS` **结构性禁产**
+  >   (即便带 `null` 也算 schema drift)→ 引文制强制 `content_pub = published_at` 显式忽略 LLM 值 →
+  >   回填进 `extracted_signals.published_at`。**IDS 侧跨库 join 真 collection.db(9,081 条)实证:
+  >   41/41 逐字节相同 · 不同 0 · 缺失 0。** 拿它核 machine 的 timepoint 是 `X == X`,**不可能失败,
+  >   因此不可能发现任何提取错误**。⇒ 「两维」实为**一维**。
+  > - **② 剩下那一维对主要错误模式无齿。** ticker 外锚核的是「这是不是一个合法上市符号」,**不是**
+  >   「这是不是这篇文章的符号」。探针 C 组:machine 把每条 ticker 都换成 watchlist 内**别人的** ticker
+  >   (相对 gold 逐条 100% 错)→ 两维判据**仍 100% 通过**(IDS 独立复跑复现)。而「张冠李戴到另一个
+  >   真实标的」正是 **silent-wrong-number**,后果最重的那一类。
+  >
+  > **(j) 形态天花板(KG-44)** —— 即便退一步只用 ticker 一维:区间/置信下界形态 `1/(1+z²/n)` 下,
+  > n=41 天花板 `0.93810` ⇒ **τ ≥ 0.94 数学不可达**;按真盘簇结构做 Kish 修正
+  > (`m_A = Σm²/Σm = 189/41 = 4.6098` → `n_eff = 8.894`)天花板降至 **`0.76676`** ⇒ **连已冻结的
+  > 0.90 都不可达**。点估计形态下 τ=0.90 也只容 **4 条 miss**,而单个 ticker 最大簇 = 10/41 = 24.4%
+  > —— **一个 ticker 在窗内退市就能吃光全部容错预算**。(IDS 闭式独立验算全部吻合。)
+  > ⚠ **本块不提任何门槛数字**;门槛预注册仍属 C6 范畴。
+  >
+  > **(k) 锚方向不掉转。** 现行 `_compute_ticker_anchor` 核的是 **gold** 的 ticker。`gold → machine`
+  > **不是纯加严**(gold miss 而 machine 命中时覆盖率反升),且撞 frozen spec §O8 D-3 注块 ⑥ 与 SLA
+  > 里「只核 gold 的 ticker」这句**实质论断** ⇒ **非 build 可自决**。若日后要保留该能力,形态应为
+  > **`gold ∧ machine`**(纯加严 · 与 lane 是否采纳解耦)。
+  >
+  > **(l) ⚠ 明确不暗示 E2 可解锁。** 两维 lane 即便成立也**不验 direction**(交易信号最核心维);
+  > 本轮结果**比该预期更差**。**桌上仍然没有任何一条路能解开 E2**;②-b 回测 lane 维持 **blocked**。
+  >
+  > **(m) Layer-1 结论收窄(与 build 建议不同 · 不整体采纳)。**
+  > - **41 条盲标机会不得用作 recall 抽样框、不得走 `evaluate_layer1`。** 理由是**抽样框结构性错误**
+  >   而非样本量:41 条 = machine **已接受**的输出,以其为 gold 框 ⇒ `gold ⊆ pred` ⇒
+  >   `span_recall = |gold∩pred|/|gold| ≡ 1.0` **恒真**,与提取器漏了多少完全无关 —— 而 O7 要测的正是
+  >   recall。**这与 KG-43/KG-44 同族:一个数学上不可能给出坏消息的判据。**
+  > - **危害集中在「走 `evaluate_layer1`」**:该函数把 P 与 R 和**同一个** `prf_threshold` 做 AND,
+  >   而 gate 只读 `passed` ⇒ recall≡1.0 那半边假数会写进审计表并让 gate 以为两项都过。
+  >   ⚠ **Layer-2 有代码级硬闸(授权常量恒 False),Layer-1 没有对应硬闸 —— 它是两道门里软的那道。**
+  > - **但保留其 precision 框地位**:precision **无对偶退化**(实测 `gold ⊊ pred` 时
+  >   0.25/0.5/0.75/1.0 完全可证伪),且**恰恰是杀死 recall 的那个读法让 precision 成立** ——
+  >   gold = 判为真的那些 machine span,逐字节同源 ⇒ exact-match 天然满足 ⇒ `precision = |真|/41`
+  >   **就是接受集的假阳性率**。故 build「Layer-1 不需要那 41 条」**过宽,不采纳**;
+  >   **41 条是目前唯一已物化的 span precision 框。**
+  > - **build「必须重跑提取器烧 key」的成本论断不成立**:存在**零 LLM 成本的正确 recall 框** ——
+  >   在**已普查的 102 条记录**上抽样标 gold,pred = **已物化的 41 个 accepted span**;14 源之外
+  >   每条记录贡献 0 个 pred span,在 accepted-span 定义下这是**正确**不是缺失 ⇒ `recall ∈ (0,1)` 可证伪。
+  > - 🔴 **但换框治不了根因**:`span_prf` 是 **exact-match** 口径(差 1 字符即 0 分),独立标注的 gold
+  >   偏移几乎不可能逐字符命中 ⇒ recall 波动来自**边界抖动**而非漏检。**根因是判据形态,不是语料** ——
+  >   须先决定放宽匹配(overlap / IoU)或改**句子级单元**。**这是 KG-43「数字 vs 形态」在 Layer-1 的同族实例。**
+  >
+  > **(n) Layer-1 契约缺角(冻结门槛前必解 · 治理层)**:① α 的 **unit 与 label 空间**从未定义
+  > ② **`pred_spans` 的定义**从未写下(算「已接受信号的 span」还是含「已定位但被口径拒的 span」?
+  >   —— 后者的偏移在 census 阶段被主动丢弃,`extraction_rejections` 无 span 列)
+  > ③ `evaluate_layer1` / `krippendorff_alpha` **无任何生产调用方**(全仓仅测试触及 · `gold_layer1_result` 0 行)
+  > ④ **无 frame-type 守卫**(没有任何东西阻止把一个恒真框喂进去)。
+  > **在这四项写清楚之前不得冻结 Layer-1 门槛**,否则重蹈 KG-43「冻结了一个没定义清楚的门」。
+  >
+  > **(o) 盲标资源与泄露面(须知悉)**:41 条盲标机会**全程未拆封**。但 `blind/worksheet.txt`
+  > **含 `span_start`/`span_end` 且被 git 追踪**,而 `.gitignore` 的豁免注释断言它「不含任何答案」——
+  > **Layer-1 的金标就是 span**,该豁免只考虑了 Layer-2 的五元组 ⇒ **Layer-1 的 span 独立性设计上已破**
+  > (KG-47)。缓解事实:该 commit **未 push 到任何 remote**,暴露面**只限本地**。
+  > ⚠ 另:`blind/machine.json` **不含 span 偏移**(只有五维)⇒ 那 41 条作为已封装制品
+  > **是 Layer-2 映射资源,不是 Layer-1 span 资源**。
 
 - **E1 hand-back**:密度数字 + 金标两层结果 + record_tickers 判定,经 hand-back 交回 IDS,
   operator 决定 E2/E3 授权与否。
@@ -294,6 +377,13 @@ operator-input 文档 §1)。
   >
   > **⚠ Layer-1 未处置**:Layer-1 门槛仍空、同样 blocked-on 真盲标跑,其主体问题**本轮未审**
   > (forge v2 v0.2 note ③)。不得默认 Layer-1 已解。
+  >
+  > **⚠ 2026-07-28 增补(第 31 条)**:Layer-1 现已**部分立案但仍未解**,状态见 §4-E1
+  > **两维 lane 撤销块 (m)/(n)**。要点:41 条**不得用作 recall 框、不得走 `evaluate_layer1`**
+  > (`gold ⊆ pred ⇒ recall ≡ 1.0` 恒真),但**是唯一已物化的 precision 框**;
+  > **根因是 `span_prf` 的 exact-match 形态,换抽样框治不了**;
+  > **α 的 unit/label 空间、`pred_spans` 定义、frame-type 守卫四项缺角未补前不得冻结 Layer-1 门槛**。
+  > **Layer-1 无代码级硬闸(不同于 Layer-2 的授权常量)—— 它是两道门里软的那道。**
 
 ## 7. BLOCK 级硬约束(§8 契约测试须覆盖 · forge v5 verdict 定死)
 
@@ -305,8 +395,10 @@ operator-input 文档 §1)。
    同文本同版本必须同输出(一致性测试)。
 4. **金标 gate**:未过两层金标,`extracted_signals` 不得流向任何回测消费方(mutation-killer:
    移除 gate 断言应致测试失败)。**Layer-2 第二源资格红线(2026-07-23 · forge v1 · 见 §4-E1 D-7 改写 ④)**:
-   第二 LLM 直接当 Layer-2 终审 = V4 = BLOCK;`gold_layer2.py:81`(`second_source_kind != 'human' → raise`)
-   保留;外证据锚定的模型辅助仅可作用 Layer-1,越界进 Layer-2 终审 = BLOCK。
+   第二 LLM 直接当 Layer-2 终审 = V4 = BLOCK;`second_source_kind != 'human' → raise` 保留
+   (**锚:`gold_layer2.evaluate_layer2` 首个 guard · 常量 `_HUMAN_SOURCE_KIND` · 回归测
+   `test_should_reject_when_second_source_not_human` · 不写行号 · KG-45**);
+   外证据锚定的模型辅助仅可作用 Layer-1,越界进 Layer-2 终审 = BLOCK。
 5. **预注册不可回改**:密度阈值在普查开始后修改 = BLOCK(记录在案的口径/阈值变更须走
    hand-back 决议)。
 

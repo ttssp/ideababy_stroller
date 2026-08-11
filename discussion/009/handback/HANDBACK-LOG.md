@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-07-27T10:05:38Z
-total_decisions: 29
+last_updated: 2026-07-28T16:04:41Z
+total_decisions: 31
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -941,3 +941,271 @@ stage doc] + codex 总线 inbox/outbox p1-p3r2 + HEAD · 纯 009 不夹带 001 �
   ③ **operator 真盲标产真数字 —— 本条状态再降级**:correctness 盲标在 v0.1 已判不成立,
   41 条盲标机会**保持未使用**(全程未泄露机器答案),是否改作 groundedness 用途待 (e) 决议
   ④ **Layer-1 主体问题全程未处置**(门槛仍空 · 不得默认已解)。
+
+## 2026-07-28T02:44:53Z · 009-pM3prime-20260727T130103Z(FU-KG43-fix · 方案 B 追认 · **(e) 重算推翻 indeterminate 框架** · **两维外锚 lane = forge v2 漏评分支** · 不可逆资源排序原则入库)
+
+**Reviewed at**: 2026-07-28T02:44:53Z
+**Related task**: FU-KG43-fix
+**Tags**: drift, prd-revision-trigger
+**Severity**: high
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对 realpath · 一次通过)
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence:` 父键 —— 本包非 build-ship 包形态)
+
+### IDS 侧独立复核(本次 review 实跑 · 非转述 build 结论)
+
+**属实项(逐条实跑复证)**:
+- `_CORRECTNESS_GATE_AUTHORIZED_V0_1 = False`(`gold_layer2.py:43`)· `passed = criteria_met and 常量`(`:473`)· 确非入参 ✅
+- `gate.py:89` **代码常量优先**,False 即 `return False` 不查库 → DB 三列自签被挡 ✅
+- migration 0019 已应用于 `out/e1-census-20260718.sqlite`:两新列在 · `gold_layer2_result`/`_dimension` **均 0 行** · `extracted_signals` 41 条 → 「无旧 pass 语义被 retroactively 解锁」✅
+- **41 条信号 / 14 distinct source** 实测属实 ✅(正是翻转探针主结论的那个事实)
+- 两支探针实跑 **exit 0**,复现 `indeterminate` ✅
+- Wilson 天花板独立闭式验算 `1/(1+1.645²/41) = 0.93809` ✅ → τ=0.95 区间形态在 n=41 **数学不可达**属实,**与 KG-43 同型**
+- `0.95⁴¹ = 0.1221` 独立验算 ✅ → 形态 B·τ=0.90 假毙率 87.8% 属实
+- 红线 `second_source_kind != 'human' → raise` 存在且未动 ✅(实质属实)
+- `blind/machine.json` mtime `2026-07-26 07:55`(早于本次 session)→ 与「41 条盲标机会未损」一致 ✅
+
+**三处不符(build 侧未列 · 本次 IDS 新发现)**:
+1. 🔴 **KG-45 在报告 KG-45 的这份 hand-back 里当场复发**:红线实际在 `gold_layer2.py:350`,hand-back §4 写 `:300`;且**代码内注释**仍写「红线(`:203` 不动)」。同一条红线现留下 `:81`/`:203`/`:300` **三个都已失效的行号** → **KG-45 severity 由 medium 上调 high**
+2. ⚠️ **ticker 锚 fail-open 只在入口修好**:`blind_annotate.reconcile` 默认 None→0.90 且偏离即 raise ✅,但**库层 `gold_layer2.evaluate_layer2` 默认仍是 `0.0`**(`:302`)—— 绕过 reconcile 直调库仍拿「锚关闭」默认。hand-back 措辞准确(只声称修了 reconcile/CLI),但该残留面未进 §5 defer
+3. ⚠️ **基线自相矛盾**:hand-back §1/§4 写 `1130 passed`,同 commit message 写 `1131`。**IDS 实跑 = `1131 passed, 7 skipped, 6 deselected, 1 xfailed`(130.72s)** → commit 对,hand-back 文本错
+
+### 🔴 IDS 侧重算:(e) 的 `indeterminate` 框架不成立(推翻 build 主结论的框架,非其数字)
+
+**发现 1 · `n_eff=14` 不是保守下界,真下界是 8.9**
+41 条在 14 个 source 上**极不均匀**:簇大小 `[8,7,4,4,4,3,3,2,1,1,1,1,1,1]`。
+build 取 `n_eff = 簇数 = 14` 是**等簇**假设。不等簇须用 Kish 有效簇大小
+`m_A = Σm²/Σm = 4.6098`(非算术均值 2.9286)→ `DEFF(ρ=1) = 4.61` → **`n_eff = 8.89`**。
+→ **build 声称的「保守端」本身是乐观的。**
+
+**发现 2 · 二元「有/无区分力」判据在格点上抖动,不是稳定性质**
+用 build 自己的 `gate_power.discriminates` + 同一套预注册参数(好 0.95 / 中 0.85 / 差 0.70)扫 ρ∈[0,1]:
+
+| n_eff | 对应 ρ | 好 vs 中(**验收门**) | 好 vs 差(**粗筛**) |
+|---|---|---|---|
+| 41 | 0.00 | J=0.7347 · **True** | J=0.9776 · True |
+| 35 | 0.05 | J=0.6954 · **False** | J=0.9659 · True |
+| 30 | 0.10 | J=0.6608 · **True** | J=0.9542 · True |
+| 27 | 0.14 | J=0.6421 · **False** | J=0.9361 · True |
+| 21 | 0.28 | J=0.5619 · False | J=0.8955 · True |
+| 14 | 0.55 | J=0.4903 · False | J=0.8091 · True |
+| **8.9** | **1.00** | J≈0.39 · False | J≈0.69 · **False(临界)** |
+
+True/False 在 41→35→30→27 之间**来回翻** = 整数临界计数相对两个概率门(0.80/0.20)的**格点落位**,非样本量的真实性质。
+→ hand-back 报的「n=41 有 / n_eff=14 无 → 取决于同源相关性」**有相当部分是格点假象**。
+
+**发现 3 · 换连续量看,结论不是 indeterminate,而是两个用途各有明确答案**
+- **验收门用途**:ρ≳0.14 即失效,且 ρ<0.14 区间内仍在闪。同源文本(同一场直播/同一篇文章,引文风格与截断模式一致)ICC 通常 0.2–0.5 → **要求 ρ≲0.14 不现实** → 实质是**否**,非「不确定」
+- **粗筛用途**:J 从 0.98 到 0.69,`discriminates=True` **一直撑到 ρ=1**(n_eff=8.9 才临界)→ 实质是**稳**,全 ρ 区间成立
+
+**两个答案恰好落在 PRD v0.7 已有的 lane 切分上**:②-b 需 correctness 验收门 → groundedness 给不了(与 frozen (c)/(d) 一致);②-a 需粗筛/诊断 → groundedness 给得了,且 ρ=1 最坏情形仍成立。
+
+**发现 4 · build 建议的「先补聚类相关性实测」多余且不可行**
+- **多余**:粗筛在 ρ=1 都成立,验收门在 ρ=0.14 就死 —— **两个结论都不依赖 ρ 的精确值**
+- **不可行**:groundedness 误差 ICC 需 **groundedness 标注结果**才能算,而那正是尚未产生的东西。build 写「本仓有 41 条的 source 归属,可直接算」—— 可直接算的是**簇结构**,**不是误差相关性**,两者被混为一谈
+
+> ⚠️ **诚实边界**:以上建立在 build 预注册质量档(0.95/0.85/0.70)与 `discriminates` 判据(P(pass|好)≥0.80 ∧ P(pass|差)≤0.20)之上,档位设错则结论移动。Kish DEFF 是标准近似非精确。ρ 本身仍未知 —— 论证是「不需要知道」,不是「知道了」。**本重算是推演不是真跑。**
+
+### 🔴 IDS 侧发现:第 28 条交 forge v2 的两个备选出路,一个已答、一个**漏评**
+
+第 28 条下一活 ② 明确让 forge v2 审:验收主体是谁 / **是否改非人工验收路(事后市场真值回标)** / **是否降级为单一事实维** / 或长期 blocked。
+
+- **① 事后市场真值回标 —— forge v2 答了,且否定。** Evidence map 载:「事后市场回标验 alpha 与市场反应,不验原文→五元组映射 · P2-GPT(StockNet 等)· "outcome 不能证明映射 gold 正确" · 无反对证据」。理由成立(市场结果混淆「抽取保真」与「信号有无 alpha」)→ **本条路正式关闭**
+- **② 降级为单一/少数事实维 —— forge v2 未作为选项评估。** 它只以对 v1 的批评形式出现:§134「v1『事实维可外证据核验』**只覆盖 ticker(watchlist 外锚)与 timepoint(`published_at`)两维**」· §295 v0.2 note 4「该问题在方法学上无解,**只能靠外锚绕开,而外锚只覆盖两维**」。**forge v2 写下了「唯一出路是外锚」,却没去评估那个出路**,verdict 直接转向 groundedness;Decision menu 无两维 lane。
+  - **关键读法**:PRD v0.7 (c) 冻结原文限定「**全量五维** Layer-2 作为 correctness gate 在 v0.1 不成立」→ **两维 gate 未被 frozen PRD 排除**
+  - **该路绕开了杀死 D-7 的约束**:ticker 对权威 watchlist、timepoint 对 `published_at` **都是查表不是判断** → 不需 operator 领域判断力、不消耗 41 条盲标机会、可全自动
+  - **弱点须同时记明**:两维不验 **direction**(交易信号最核心维)→ **大概率仍不足以解锁 ②-b**;卡 B1 权威 watchlist;现行 ticker 锚只核 **gold 的** ticker 不核 **machine 的**,当 correctness gate 用须掉转锚方向
+
+**Operator decisions**:
+- [ ] 修 PRD §"—"(不勾选:本轮无产品决策变更;(e) 拆用途采纳落在 PRD v0.7 已有的 ②-a/②-b 切分内,不需改 PRD)
+- [ ] 修 SHARED-CONTRACT §"—"(不勾选:本包无协议层变更诉求)
+- [x] **追认方案 B**(判据层 `criteria_met` / gate 层 `passed` 分离 + 授权单一真相 = 代码常量恒 False)· **并显式记账两项代价**(见 Operator note 一)
+- [x] **§3-1b 解锁制品设计归 forge 006 攒批**(治理层语义 · build 不自决 · spec §O8 注块 ⑥ 已写死「翻常量不是合格解锁设计」)
+- [x] **(e) 决议 · 拆成两半**:① **分析结论现在定死**——groundedness 作 ②-a **粗筛/诊断用途采纳**(ρ=1 仍稳)· 作 correctness **验收门用途否决**(需 ρ≲0.14 且格点抖动)· **不补 ρ 实测**(不必要且标注前不可行)② **资源动用(拆封 41 条)拆出,挂三道前置**(见 Operator note 三)
+- [x] **两维外锚 lane · 授权零成本可行性探针**(合成数据 · 不消耗盲标机会 · 出数再决采纳;须一并回答 `published_at` 外锚独立性问题)
+- [x] **B1 权威 watchlist 由长期 defer 提为当前任务**(查资料非判断 · 在 operator 能力范围内 · 两维 lane 卡它;红线不变:严禁照 gold ticker 反推 curate)
+- [x] **F3 采纳 ②-a 降级**(契约升级前不产出被下游消费的 `criteria_met` · 旧 ②-a 结果行不得追认)+ **F3 拆做**:③ 先做,①② 视阶段 0-1 结果再定
+- [x] **追认第 28/29 条冲突读法**(gold 协议照写入 spec §O8 作操作性定义,同写死只测 stability 不得当 validity 用 —— 唯一不自相矛盾读法)
+- [x] **Layer-1 主体问题正式立案**(不再默认 defer · 只需回答一个问题:**它要不要用这 41 条盲标机会**)
+- [x] **KG 分流入库**(不全塞 forge 006 议程 · 见 Operator note 五)
+- [x] **记 IDS 复核发现**(三处属实项 + 三处不符 + 本次重算四项发现)
+- [x] **E2 授权判据状态更新(信息式)**:**E2 仍不授权**
+
+**Operator note**:
+
+**一、方案 B 追认 —— 附两项代价记账**
+
+追认。理据成立:它把 frozen PRD v0.7 (c)/(d) 从**文档条款**变成**代码不变量** —— 此前 ②-b blocked 实际依赖「Layer-1 恰好为空」这一**暂态**(是运气不是保证),现在无论标得多好、无论谁写库,gate 都不开。方向严格加严无放松面;C6 五个冻结值 IDS 实测未动;gold 表 0 行无追溯解锁面(合 forge v2 (f))。且它是 forge v2 (c) 文献论证的**代码层独立实证**,两条零重叠路径收敛 —— 本轮可信度最高的一条结论。否决会更糟(让 `passed=1` 可达 = 直接违 frozen PRD)。
+
+**但两项代价显式记账,不默认吞下**:
+1. 🔴 **这是 build 侧在 review 压力下当场做的决议**,而铁律写「重大架构转向 → 必须 `/expert-forge`」。追认 = 事后授权一次绕过 forge,**立了「build 自判某改动属于『实现已冻结条款』→ 可当场做」的先例**。本次判断对,但该自判边界模糊,**下次可能被用在更松的地方**。归 forge 006 一并议(与 §3-1b 同批)。
+2. 第 28 条 IDS 原话「证明 `passed=1` 可达」被重述为「证明 `criteria_met=1` 可达」—— **验收判据被 build 单方面换了对象**。新对象是对的,但换这件事本身留痕。
+
+**二、本轮决策的主导原则 —— 不可逆资源排序(可复用)**
+
+把全部待办按**能否反悔**分类:可反悔的(改代码 / 跑探针 / 修防伪造 / 补 watchlist / 写文档)vs **不可逆的(41 条封存盲标考卷 —— 全局唯一一项)**。
+
+> **原则:所有廉价、可反悔的信息先拿到手;不可逆的一步放到最后,等它成为唯一剩下的问题时再动。**
+
+这是**期权思维**:41 条是一个期权,不该在决定其价值的廉价信息到齐前行权。而本轮恰有一个**可能彻底改变其价值**的廉价信息 —— **两维外锚探针**:若两维 lane 可行,即拿到一个不需判断力、不需拆考卷的验收锚,groundedness 从「唯一的路」降为「锦上添花」,**而 41 条仍未拆封**。
+
+→ **故两维探针必须跑在拆封之前。**
+
+**三、(e) 为何拆成两半**
+
+「41 条够不够用」是**事实判断**(不会变,现在定死);「现在要不要花掉它们」是**资源决定**(会变,等信息到齐)。原决议把两者搅在一起。
+
+**拆封 groundedness 标注的三道前置**(全部满足方可动手):
+1. 两维外锚探针出数 ✓
+2. Layer-1 立案并确认**不需要**这 41 条 ✓
+3. F3 防伪造修好 ✓
+
+**该前置零额外成本** —— F3 本来就必须先做(且顺序是硬约束:F3 必须严格先于 ②-a 实跑,否则标完再改格式,身份绑定得重做),那段时间窗天然存在。
+
+**⚠️ 拆封的真实代价须记明**:groundedness 标注**必须看到 machine 答案** → 看过之后这 41 条**永远**不能再做独立盲标。而 Layer-1 门槛仍空、从未被任何一轮正面处置 —— **在未确认 Layer-1 需求的情况下拆封 = 在未知需求上做不可逆消耗**。这是本轮最需警惕的一点,也是 Layer-1 立案的直接动因。
+
+**四、执行排序**
+
+- **🟢 阶段 0(现在 · 零成本零消耗 · 可并行)**:追认方案 B + 记账 · **跑两维外锚探针** · **B1 提为当前任务** · 追认 28/29 读法 · 记 IDS 复核发现
+- **🟡 阶段 1(必须在拆封前)**:Layer-1 立案 —— 只答「要不要这 41 条」
+- **🟠 阶段 2(可反悔 · 必须先于标注)**:F3 ③ 先做(验收程序从 DB 规范化加载 machine,不再信任外部 JSON —— 纯收益:减一个不该有的信任面 + 板块/周期两维恒 null 由 DB 天然保证);F3 ①② 改格式**视阶段 0-1 结果再定**(①② 会导致 `blind/machine.json` 须**重新生成**→ 需重跑提取器,该连锁成本 hand-back 未标价,只在确定要拆封时才值得付)
+- **🔴 阶段 3(三道前置齐全后)**:groundedness 标注(拆封 41 条)
+
+**五、KG 分流(防 forge 006 攒批消化不良)**
+
+006 攒批已含 KG-5/B11/B12/38/41/43,再无差别加塞会变成大杂烩。按**需不需要 forge 级讨论**分流:
+
+| 归 forge 006 议程(**需讨论**) | 直接进检查清单(**照做即可 · 不占议程**) |
+|---|---|
+| KG-43 三道冻结前置门(存在性/真值/形态) | **KG-45** · 别用行号锚定代码红线,改用文件+稳定标识符/测试名(severity **上调 high** · 本次当场复发,三个失效行号) |
+| **KG-44** · 区间/置信下界形态在小样本上的天花板陷阱(**前瞻性最高** —— 能拦住 forge v2 自己的改点 4 重蹈 KG-43) | **新** · 不等簇场景**别拿簇数当有效样本量**,须用 Kish `m_A = Σm²/Σm`(本次 build 因此把保守端 8.9 误报为 14) |
+| **新 · 元层** · **forge 写下了自己的出路却没去评估它**(v2 §295 自陈「只能靠外锚绕开」→ 未评两维 lane;与第 29 条「证据在场却被解释掉」同族,属独立于「证据缺失」的失败模式) | **新** · 二元「有/无区分力」判据在格点上会抖(True/False 在 n=41/35/30/27 间来回翻),**不可直接当结论**,须看连续量(Youden J) |
+
+**六、诚实预期(防「以为解开了、其实只是挪了位置」)**
+
+**会得到**:可信的诊断能力(分辨好机器 vs 烂机器)· 可能一个局部的、不需判断力的验收锚(两维)· 一份权威 watchlist(对后续都有用)· 代码层焊死不会被误开的门。
+
+**不会得到**:❌ **E2 回测仍解不开。桌上现在没有任何一条路能解开它** —— 两维 lane 即便成立也验不了 **direction**(最要紧的维)。
+
+**本方案的诚实定位 = 把地基做扎实、把不可逆的牌留在手上,不是解锁 E2。若目标是「尽快开始回测」,按现有约束没有诚实的快路。**
+
+**七、E2 授权判据状态(信息式)**
+
+- ① 真密度显著:**US ✅**(决议 25)· CN/HK ❌ STOP
+- **②-a 诊断 lane**:**分析结论已定**(groundedness 粗筛可用)· **实跑挂三道前置**(见 Operator note 三)· ⚠ 反自欺条款不变:②-a 过**不得**记作条件 ② 满足
+- **②-b 回测 lane**:🔴 **blocked**(不变)· 现为**代码不变量**,不再依赖「Layer-1 恰好为空」暂态
+- ③ operator 授权:❌
+- **④ Layer-1**:🆕 **正式立案**(门槛仍空 · 不得默认已解)
+
+→ **E2 仍不授权。** E2 历史窗回测 / E3 forward 线做进 XenoDev = 越界 = BLOCK(不变)。
+
+**Follow-up commits**: pending(本 LOG 第 30 条 + hand-back 包入库 · 纯 009 不夹带 001 · 未 push)
+- **阶段 0 下一活**(可并行)= `cd /home/ys/codes/XenoDev-009` → `claude -w 009-pM3prime`:① 跑**两维外锚可行性探针**(含 `published_at` 外锚独立性核查)② **B1 权威 watchlist** 补数据(红线:严禁照 gold ticker 反推 curate)
+- **阶段 1** = **Layer-1 立案**:答「Layer-1 要不要这 41 条盲标机会」——**该问题未答前不得拆封**
+- **阶段 2** = F3 ③(machine 从 DB 规范化加载);①② 待阶段 0-1 结果
+- **阶段 3** = groundedness 标注(三道前置齐全后方可动手)
+- **归 forge 006 攒批**:KG-43 三道门 · KG-44 · **新增元层条**(forge 漏评自身写下的出路)· **§3-1b 解锁制品设计** · **build 当场决议自判边界**(本条第一项代价)
+- **进检查清单(不占 forge 议程)**:KG-45(上调 high)· Kish 有效簇大小 · 二元区分力判据格点抖动
+- **残留 defer**:① blind 隔离技术不可证性(B5 · 未变)② `blind/machine.json` 旧格式须按新契约重新生成(不代为回填 ID)③ **`evaluate_layer2` 库层 `ticker_anchor_coverage_threshold` 默认仍 0.0 的残留 fail-open 面**(本次 IDS 新发现 · build 未列)
+
+## 2026-07-28T16:04:41Z · 009-pM3prime-20260728T035015Z(阶段 0+1+2 · **两维 lane STOP 并撤销第 30 条该分支** · **Layer-1 结论收窄:41 条不是 recall 框、而是唯一已物化 precision 框** · **F3 ③ 评审 CONCERNS:自称「纯收益」实含一条新 fail-open** · KG-45 在 IDS 语料 39 处失效)
+
+**Reviewed at**: 2026-07-28T16:04:41Z
+**Related task**: stage-0-1-2
+**Tags**: drift, prd-revision-trigger
+**Severity**: high
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对 realpath · 一次通过)
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence:` 父键 —— 非 build-ship 包形态)
+
+### IDS 侧独立复核(本次 review 实跑 · 非转述 build 结论)
+
+**属实项(逐条实跑复证 · 无一不符)**:
+- **forge v2 §134 事实错误属实**:v2 第 134 行原文「只覆盖 ticker(watchlist 外锚)与 timepoint(`published_at`)两维」;而 frozen `SLA.md` Layer-2 逐维门槛表 timepoint 行「外证据锚」列写的是 **「无(published_at 客观)」** ✅
+- **Q4 管线恒等**:IDS 侧**自行跨库 join 真 `collection.db`(9,081 条)** → `extracted_signals.published_at` vs `records.published_at` **逐字节相同 41 · 不同 0 · 无匹配 0** ✅。代码链亦证:`_V2_FORBIDDEN_FIELDS` 含 `content_published_at`(即便带 null 也算 schema drift),`extractor.py` 引文制强制 `content_pub = published_at` 显式忽略 LLM 值
+- **C 组张冠李戴**:IDS **独立跑探针**(exit 0)→ C 组 `criteria_2d_met = True`,两维覆盖率均 `1.0000` ✅ —— 逐条换成 watchlist 内别人的 ticker(相对 gold 100% 错)判据仍全过
+- **KG-44 天花板**:IDS **闭式独立验算**全部吻合 —— n=41→`0.93810`;Kish `m_A = Σm²/Σm = 189/41 = 4.6098` → `n_eff = 8.894` → `0.76676`;ticker 簇 `m_A = 171/41` → `n_eff = 9.830` → `0.78418`。临界计数手算 Wilson 下界逐个复现:τ=0.85→k≥39 · τ=0.90→**41/41 零容错** · τ=0.95→**永不通过** ✅
+- **真盘簇结构精确一致**:source `[8,7,4,4,4,3,3,2,1×6]` · ticker `[10,5,3,3,2,2,2,2,1×12]` · 41 信号/14 source/20 ticker · `gold_layer2_result`/`_dimension` 均 0 行 ✅
+- **Layer-1 worksheet 泄露证实**:`.gitignore:91` 注释「不含任何答案(只有 id/source_id/raw_ref/**span**)」括号自曝;worksheet.txt **确被 git 追踪**,43 行 = 2 表头 + 41,列含 `span_start`/`span_end`;`machine.json` 则正确被 ignore ✅
+- **recall 恒真数学内核成立**:`span_prf` 中 `recall = |gold∩pred|/|gold|`,`gold ⊆ pred ⇒ 恒 1.0` ✅
+- **Layer-1 无生产调用方**:`evaluate_layer1`/`krippendorff_alpha`/`span_prf`/`pred_spans` 全仓仅测试触及;census 库 `gold_layer1_result` **0 行**(从未真跑)✅
+- **红线 7 条全绿**:`gate.py` **不在 diffstat**(零改动)· `_CORRECTNESS_GATE_AUTHORIZED_V0_1 = False` 未动 · human 硬约束 raise 原样 · C6 五个冻结值一字未动 · 探针四组 `gate_passed` 全 False ✅
+- **库层 fail-open 收口**(第 30 条残留 defer ③):默认 `0.0 → None`,缺参即 raise ✅
+- **基线**:IDS 实跑 **`1184 passed, 7 skipped, 6 deselected, 1 xfailed`**(131.70s)· 评审侧再独立复现两次(122.75s / 124s)= **三次一致** ✅。⚠ 第 30 条那种「hand-back 文本 vs commit 数字打架」**本次未复发**
+- **测试数 9/6/12/20 全对**(20 经 parametrize 展开)· migration 0020 **0 处 ALTER** 只 CREATE · `resolve_ticker_market` 确与 004 UI 的 `replace_watchlist` **同一张 `watchlist` 表**(双重用途冲突属实)· 004 `parse_watchlist_csv` `_HARD_LIMIT = 100` 属实 ✅
+- **框架级未当场改** ✅:KG-46/47/48 记入 `dogfood-backlog.md` 攒批回 IDS
+
+**IDS 侧新发现(build 未列)**:
+1. 🔴 **KG-45 在 IDS 治理语料里比 build 报的严重一个量级**。build 只数了 `:81`/`:203`/`:300` 三个失效行号、且只修了 XenoDev 那一处代码注释。IDS 全仓扫 `discussion/`:**39 处**用 `gold_layer2.py:81` 或 `:203` 指这条红线,散在 **17 个治理文件**,其中 **PRD.md 占 5 处**(3×`:81` / 2×`:203`)。**真实位置是 `gold_layer2.py:358`,这 39 处无一有效。** ⇒ 行号漂移的**重灾区在 IDS 不在 build**,而 PRD 是 L3 后的 source of truth,是未来读者真正会跟的指针
+2. 🟢 **Layer-1 泄露面比 build 描述的窄一档**(唯一的好消息):`.gitignore` 那条豁免的立论前提是「operator 在 git diff / **远端页面**就会看到答案」;实查 worksheet.txt 入库 commit `2579736` **未 push 到任何 remote**(`git branch -r --contains` 为空)⇒ span 从未上过 GitHub,暴露面**只限本地**。不改变裁定(recall 恒真那条理由与泄露无关),但缩小善后范围
+3. ⚠ **IDS 曾提「28 源零 key 框」并被评审推翻(记此以留痕)**:数字全属实(120 抽样 → 102 真过提取器 → 14 有信号 / 28 只产 typed rejection / **60 完全静默**),但**推论错**:那 28 源里 116/126 是 `sector_only` = **句子被找到了只是口径判不合格**,把 pred 定义成「仅 accepted」会把正确的口径拒绝记成漏检 = 41 条框的**镜像退化**;`pred=∅` 的框上 `recall ≡ 0.0` 恒真 ⇒ **完美提取器必然 STOP**。**把「恒 1.0」换成「恒 0.0」不叫让 recall 可测**
+
+### Operator 决议(4 问 · 全选推荐项)
+
+- [x] **① 两维外锚 lane → STOP · 并撤销第 30 条该分支**。据:forge v2 §134 把 `published_at` 当外锚是事实错误(frozen SLA 写「无」)⇒ 第 30 条据 §134 立的两维分支**前提不成立** → 作废,与第 29 条撤销 v1 推论同处理法
+- [x] **② Layer-1 不要那 41 条 · 但先查零 key 路**。不接受 build「必须烧 key」的成本结论,前置 = 先把 `pred_spans` 定义写下来
+- [x] **③ 补 subagent fallback 评审后再落地**(codex 配额墙至 2026-08-02,不等)
+- [x] **④ 框架级先入库 · 攒批不起 forge**。据:009 主线(Layer-1 契约 + 抽样框)未定,现在起 forge 会重演「在事实未齐时开会」
+- [ ] 修 SHARED-CONTRACT(本次不动)
+
+### 🔴 cross-model fallback 评审结果(3 路并行 · 决议 ③ 的执行)
+
+**评审 A · 库层 anchor 门槛必填 → PASS**(build 声称成立)
+AST(非 rg)枚举全仓 **32 个 `evaluate_layer2` 调用点**逐个分类 → **零遗漏调用方**;含 `**kwargs` 间接路(17 个 `_evaluate` 调用)与动态派发均查过。guard 不可绕:`gold is not None` 后到 `:458` 之间**零 `return`**;raise 早于 DB 写入(`:504`)**无半写**。**跑了 mutation 验齿**:默认值注回 `0.0` → 回归测 `DID NOT RAISE` 变红,门有齿。
+⚠ **揪出 hand-back 一处措辞误导**:§4-2(a)「显式传 `0.0`(关锚)仍然合法」**只在库层成立** —— 经 `reconcile`(生产入口)传 `0.0` 是**被拒的**(`blind_annotate.py:422-431`)。两句不点明分层即打架。
+两条 LOW:anchor guard 与两个同族 guard 隔 76 行未并置(未来插 early-return 会静默恢复本次关掉的 fail-open,且现有回归测抓不到);探针 `two-dim-anchor-probe.py:136` 自带一份 criteria 副本,不继承未来加严。
+
+**评审 B · recall 恒真论证 → SOUND-BUT-CONDITIONAL(build 结论过宽)**
+- 数学内核成立,唯一反例 = 空 gold(`gold=[] ⇒ recall=0.0`),方向 fail-closed 良性
+- **隐藏前提**:`gold ⊆ pred` 只在「**逐条核验那 41 个 machine span**」读法下成立。改读那 14 个源记录独立标 span 则不成立 —— 但**换个方式坏掉**:exact-match 下差 1 字符即 0 分,recall 波动来自**边界抖动**而非漏检,同样测不到 O7
+- 🔴 **precision 没有对偶问题,build 整个漏了**。实测 `gold ⊊ pred` 时 precision = 0.25/0.5/0.75/1.0 **完全可证伪**。且对称:**恰恰是杀死 recall 的那个读法让 precision 完美成立** —— gold = 判为真的那些 machine span,逐字节同源 ⇒ exact-match 天然满足 ⇒ `precision = |真|/41` **就是接受集的假阳性率**
+- ⇒ **结论须收窄**:41 条**不可用作 recall 框 / 不得走 `evaluate_layer1`**;但它是**目前唯一已物化的 span precision 框**。build 写成「Layer-1 不需要那 41 条」过宽
+- 🔴 **真正的危害在「走 `evaluate_layer1`」**:`gold_layer1.py:133-137` 把 P 与 R 和**同一个** `prf_threshold` 做 AND、`gate.py:109` 只读 `passed` ⇒ recall≡1.0 那半边假数会写进审计表并让 gate 以为两项都过。**Layer-2 有代码硬闸(授权常量恒 False),Layer-1 没有对应硬闸 —— 它是两道门里软的那道**
+- **build 成本论断被实证推翻**(与 IDS 那条错推论殊途同归):存在**零 LLM 成本的正确 recall 框** —— 在**已普查的 102 条记录**上抽样标 gold,pred = **已物化的 41 个 accepted span**;14 源外每条记录贡献 0 个 pred span,在 accepted-span 定义下这是**正确**不是缺失 ⇒ `recall ∈ (0,1)` 真可证伪。build 提的「另抽 9081 里没碰过的 + 重跑提取器」是不必要开销
+- ⚠ **两条路撞同一堵墙 = exact-match**。`span_prf` 不提供 overlap/IoU 也不提供句子级单元 ⇒ **换抽样框治不了,根因是判据形态**。与 KG-43「数字 vs 形态」同族;build 提的「正确抽样框」会继承同一抖动污染
+- 回归测 `test_should_always_return_perfect_recall_...` 名含 "always" 却只跑 4 个前缀实例,且 `range(1, len(pred)+1)` **恰好排除 k=0** = 全称命题唯一反例
+- `blind/machine.json` **不含 span 偏移**(只有五维 keys)⇒ 那 41 条**作为已封装制品是 Layer-2 映射资源,不是 Layer-1 span 资源**;build 理由 (b) 方向对但没锚到这个制品级事实
+- 三条 build §4-4 未列的遗留:① `evaluate_layer1` 缺 frame-type 守卫 ② 空 gold → recall=0.0 → **完美提取器必 STOP** ③ 41 条中 **34/41(83%) 弱锚**,即便当 precision 框 pred 自身引文质量亦待抽查
+
+**评审 C · F3 ③ 位置约定 → 🔴 CONCERNS(72/100 · 需修订后再合)**
+**推翻 build「纯收益」的自我定性。** 净收益仍为正(封死「陈旧/篡改 payload 被静默采信」+「sector/horizon 靠调用方自觉」两个真实面;且顺带让现行缺 `source_id` 的 `machine.json` 重新可用 = **解阻**,build 自己没说透),但**不是 strictly a tightening**:
+- **R1(HIGH)· 同 source 内错配今天已无任何检测器**,比 build 自述的「仍不能证明」更差。四道关逐条失效:`_assert_source_id_alignment` 同 source 字符串相同 → 换位全过;双错率因 gold≡human(同一 operator)恒 0;覆盖率/ticker 外锚置换不变;`_has_unresolved_conflict` 只看 `direction`/`timepoint` 两维,而 **`timepoint ≡ published_at`、同 source 全相同 ⇒ 结构性失明**,只剩 direction 一维且一条维度级仲裁留痕即清空。**合成实证**:同 source 换位 + 一条仲裁 → `criteria_met=True`(agreement 0.3333)。**暴露面 35/41 个位置(85%)落在多信号桶内**,单桶最大 8 条。今天**不是坏的**(已实证 worksheet 行首整数序列 == `ORDER BY id` 序列),属 latent
+- **R2(HIGH)· F3 ③ 亲手引入的新 fail-open**:被评分的 machine 答案从**冻结文件**变成 **reconcile 时刻的可变 DB 表**,而证明隔离时序的 `machine_extracted_at` 仍是**调用方自报字符串**,与实际加载的行**零绑定**(`extracted_signals.created_at` 存在却从未被 SELECT)。**实证**:把全部 `created_at` 改成机器早于盲标,自报串照旧 → `criteria_met=True`,时序关毫无察觉
+- **R3(MEDIUM)· `assert_machine_payload_matches_db` 对 payload 形状不 fail-closed**:键名大小写不同 / payload 写成 dict 而非 list / 41 个空对象 —— **三种都 ACCEPTED 且零字段被核对**。无数值后果(最终恒用 DB 值),但**语义有害**:一份键名写错的陈旧文件拿到绿灯,operator 会读成「已被核验」= D-1(a)「留一个必填却无效的 flag」同型缩微版
+- **R4(MEDIUM)· 三方绑定实为两方 + 一个恒真式**,且两处 docstring 现在为假(「三方身份绑定」/「三份 JSON 的 ID 全部来自调用方」);`test_should_reject_when_machine_order_shuffled` 仍绿但守的已不是它自称的那道关
+- **R5(MEDIUM)· `signal_id` 算了但从不落库** ⇒ 真跑 41 条后无字段能回答「位置 k 上被评分的是 DB 哪一行」,**错配一旦发生连事后取证材料都不存在**,而这是一次性资源
+- R6-R8(LOW):产 `--source-ids` 无脚本无 runbook 且「顺手那条 SQL」因走覆盖索引给出**非 id 序**(R1 的投递向量);只按 `caliber_version` 过滤不含 `extractor_variant`;库层非 Mapping 元素抛 `AttributeError` 而非 `BlindIsolationError`
+- **排除项(确认做对)**:`ORDER BY id` 在场且必要(实证裸扫描会走索引给非 id 序)· 0 行 → raise 不静默造空 · 多重集(非集合)对账对 14/41 形态是对的选择 · payload 多给 `sector` 被挡 · 相关契约测 45 passed
+
+**评审过程副作用(已处置)**:评审 C 探测时 SQLite 在 `projects/004-pB/data/` 下新建 0 字节 `e1-census-20260718.sqlite`(真 DB 在 `out/`),**IDS 侧已 `rm`**;真 DB 完好(450560 字节 · mtime 未变)。仓内无代码引用 `data/e1-census-*`,无功能影响。
+
+### 决议后果与待办
+
+**A · 两维 lane(已裁 STOP)**
+- 第 30 条「两维外锚 lane = forge v2 漏评分支」一条**作废**(前提 §134 事实错误)。⚠ 第 30 条其余内容不动(append-only:本条以新增 entry 记录撤销,不改原 entry)
+- **明确不暗示 E2 可解锁**:桌上仍无任何一条路能解开 E2(两维即便成立也验不了 direction)
+- Q3 锚方向:**不落地**。若日后要保留该能力,推荐 `gold ∧ machine` 形态(纯加严);现状 `gold → machine` **非纯加严**(gold miss 而 machine 命中时覆盖率反升),且撞 frozen spec §O8 D-3 注块 ⑥ 与 SLA,**非 build 可自决**
+
+**B · Layer-1(裁定收窄 · 与 build 建议不同)**
+- **41 条不得用作 recall 框、不得走 `evaluate_layer1`**(recall 恒真 + P/R 与单一门槛 AND 会污染审计表)
+- **但保留其 precision 框地位** —— build「Layer-1 不需要那 41 条」过宽,不整体采纳
+- **零 key 路已找到**:102 条已普查记录 + 已物化 41 accepted span ⇒ `recall ∈ (0,1)` 可证伪、零 LLM 成本。**build 的「必须烧 key」成本论断不成立**
+- 🔴 **但换框治不了根因**:`span_prf` 的 **exact-match 形态**才是根因,须先决定放宽匹配(overlap/IoU)或改句子级单元 —— 这是 **KG-43「数字 vs 形态」的 Layer-1 同族实例**
+- **Layer-1 α 契约缺角仍未解**:unit/label 空间从未定义 + `pred_spans` 定义未写 + 无生产调用方 + **无代码硬闸**。**冻结 Layer-1 门槛前必须先定义**,否则重蹈 KG-43「冻结了一个没定义清楚的门」
+
+**C · F3 ③(CONCERNS · 修订后再视为验收)**
+- **R1 止血**(强制 `source_ids` 序列 == `ORDER BY id` 序列)+ **R5**(`signal_id` 落库)= **拆封 41 条的前置**。理由:R5 意味着错配发生后连取证材料都没有,而这是一次性资源
+- **R2** 建议同批修(1-2h · 不碰 payload 格式);⚠ 须先确认 `extracted_signals.created_at` 语义是否可用作提取时点锚(它是**普查时刻**不是提取时刻)—— 若不可用,正解改为**在契约里明写「时序关是自报的」**而非加代码
+- R3/R4 文档与形状校验一并修;R6-R8 可后置
+
+**D · 知悉项(3 条 build 提 + 1 条 IDS 补)**
+- forge v2 §134 事实错误(已据以撤销 A)· `watchlist` 双重用途冲突(**operator 在 004 UI 增删关注股会静默改变金标验收结果**;彻底解需分表 → 会破坏「补数后零代码解锁」,**交后续定**)· `.gitignore` 「什么算答案」须按层重新界定(**Layer-2 的答案 ≠ Layer-1 的答案**)
+- **IDS 补**:泄露仅限本地(未 push),善后范围小于预期
+
+**E · 归 forge 006 攒批(本次不起 forge)**
+- **新增 KG-46**(「外证据锚」缺独立性验证门 —— 一个由同一条管线回填的字段被当外部证据用了三轮)· **KG-47**(「答案」定义按当前关注的那层写死 → 盲标隔离对另一层静默失效)· **KG-48**(验收指标的抽样框可让指标恒真 = KG-43 门族第四道)
+- **KG-45 再升级实证**:IDS 语料 **39 处失效行号 / 17 文件 / PRD 占 5 处**。⇒ 该条已从「注释卫生」升为**治理语料 SSOT 指针失效**,建议 forge 时把「行号锚禁令」写进 SHARED-CONTRACT 而不只是检查清单
+- 既有攒批不变:KG-43 三道门 · KG-44 · KG-41 · 元层条(forge 漏评自身写下的出路)· §3-1b 解锁制品设计 · build 当场决议自判边界
+
+**F · PRD 修订触发(tags: prd-revision-trigger)**
+- PRD v0.7 需改三处:① §208/§250 转述 forge v2「外锚覆盖 ticker 与 timepoint 两维」= **已证伪**,须加订正块 ② 5 处 `gold_layer2.py:81`/`:203` 失效行号 → 改**无行号锚**(文件+函数名+常量名+回归测名)③ Layer-1 段须记入「41 条 = precision 框非 recall 框」与「α/pred_spans 契约缺角未解」
+
+**Follow-up commits**: pending(本条决议 + 3 hand-back 包 + 评审结论待 commit;未 push)
