@@ -155,6 +155,12 @@ fi
 # 若将来 check-7 升 hard-fail,必须同时改这里 + §6.2.1 约束表,不能靠这行静默生效。
 bash "$SCRIPT_DIR/check-7-topology-selfattest.sh" "$HANDBACK_FILE" "$PRD_FORK_ID" "$WORKING_REPO" || true
 
+# Check 8: §6.2.1 约束 1 的**声明侧**投影(workspace.source_repo 自洽性)
+# **warn 型 · 永不阻断**(见 check-8 脚本头注释 + HANDBACK-LOG 第 45 条)。
+# 在此之前 SOURCE_REPO_FM 是个抽出来就没人用的死变量 —— 约束 1 的公式只作用在运行时
+# 传入的 source_repo 上(恒自洽),包里声明的那个从未被验过。`|| true` 同 check-7 的冗余保险语义。
+bash "$SCRIPT_DIR/check-8-declared-source-repo.sh" "$SOURCE_REPO_FM" "$HANDBACK_TARGET" "$DISCUSSION_ID" "$SOURCE_REPO" || true
+
 # === All checks PASS ===
 if [[ "$MODE" == "producer" ]]; then
     echo "✓ producer-mode checks PASS for $HANDBACK_ID(check-5 已跳;consumer 端读取后会再跑)" >&2

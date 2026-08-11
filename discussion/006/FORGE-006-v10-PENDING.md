@@ -51,7 +51,7 @@
 - **同题**:与 v9 的「**缺席即豁免**」(SHARED-CONTRACT §6 B-4-IDS:协议写「任一字段缺 = REJECT」,
   实装却「父键不存在 ⇒ 整步跳过不 warn」)是**同一形状** —— 声明与执行两层之间**没有校验**。
 
-### KG-B15 · Session-per-idea worktree 规约:warn 已复发 **2** 次,hook block 升级判据达成
+### KG-B15 · Session-per-idea worktree 规约:warn 已复发 **4** 次,hook block 升级判据达成
 
 - **现场**:`CLAUDE.md`「Session-per-idea worktree 规约(forge 006 v8 · 簇② · 2026-07-13)」定
   **warn 型 preflight 起步**,并明写 hook block(commit-time 硬拦)留 v0.2、
@@ -63,6 +63,13 @@
   3. **第 3 次** · 2026-08-10 · `/handback-review 001` 跑在 `main` 分支,且本次改动**同时触及 001
      (HANDBACK-LOG)、006(本文件)、framework(SHARED-CONTRACT + validator)** —— 混线形态比第 2 次更宽。
      HANDBACK-LOG 第 44 条 (6) 留痕。
+  4. **第 4 次** · 2026-08-11 · `/handback-review 001` 跑在 `main` 分支,改动同时触及 001(HANDBACK-LOG)、
+     006(本文件)、framework(check-8 + validator)—— 与第 3 次同形。HANDBACK-LOG 第 45 条留痕。
+     ⚠ **本次 operator 是在被明确告知 mismatch 后显式裁决"就在 main 上写"** —— 与前 3 次(未察觉/事后留痕)
+     性质不同,**不是纪律失效而是规约本身有歧义**:规约把「handback-review 决议后」列为合回 main 的
+     checkpoint,隐含"决议在 idea 分支做、之后合回",但 checkpoint 产物本身就是 main 的合法内容。
+     ⇒ **升级 hook block 之前必须先消掉这个歧义**,否则硬拦会把合法的 checkpoint 写入一并拦掉
+     (这正是本条「待判」第二项)。
 - ⇒ **判据已达成**,v0.2(commit-time hook block)具备起动条件。**未自行升级** ——
   规约属框架层,按铁律只走 forge。
 - ⚠ **第 3 次的额外信息**:judgment 判据已在第 2 次达成,**达成后仍复发**。这说明
@@ -88,15 +95,42 @@
   对不上判 **gate 失败**而非 0 finding)· 或 verdict enum 增加第三态 `not-run` 与 `approve`/`needs-attention` 并列 ·
   或把「本轮读到什么」写进 REVIEW-LOG 必填字段使其可事后审计(与 KG-B14 的「产物自报实际上下文」同解)。
 
-### XD-44′ · 「撞 4 轮上限 → 轮次外直接修 → 确认轮又出 high → 记 backlog ship」已连续 **3** 次(收敛判据缺失)
+### XD-44′ · 「撞 4 轮上限 → 轮次外直接修 → 确认轮又出 high → 记 backlog ship」已连续 **4** 次(收敛判据缺失)
 
 > **来源**:HANDBACK-LOG 第 44 条 · 三个 hand-back 的横切观察。**operator 决议**:同 XD-47 并案起 forge 专场。
+> **2026-08-11 更新**(HANDBACK-LOG 第 45 条 · T041):计数 3 → **4**,并新增一条**定量反证**(见下「⭐ 第 4 次」段)。
 
 - **计数(据实 · 均在 001-radar-pA)**:
   1. **T040** round-6 · 3×`[P2]` · operator 判「测试严谨度边际改进」→ 停止迭代 ship。
   2. **FU-R1F1** round-4 · 1×`[high]` · operator 判「架构边界归属分歧而非已验证活漏洞」→ ship,转 IDS 决议。
   3. **T042** round-5(确认轮)· 1×`[high]`(KG-50)+ 1×`[medium]`(KG-51)· operator 判「中等工作量新功能
      超出本轮授权」→ 记 backlog ship。
+  4. **T041** round-6 · 2×`[P2]` · operator **两次**显式介入(round-5 后「修完这轮就先打住」· 随后「繼續,只跑 1 輪review」)
+     → 收口 ship。
+
+- **⭐ 第 4 次(T041)带来前 3 次没有的两条硬证据**:
+  - **(a) finding 序列非单调 —— 直接否证「多跑几轮就会收敛」**:6 轮 finding 数
+    **4 → 2 → 1 → 3 → 3 → 2**,`needs-attention` ×6,**一次 `approve` 都没有**。round-3 已降到 1
+    又**反弹**到 3。这是本家族第一次有**定量**证据说明:轮次增加与 finding 收敛之间**没有**单调关系。
+  - **(b) 「提高轮数上限」这条修法方向已被预先证伪**:T041 是四次里**唯一一次 operator 显式授权加轮**
+    (round-6)的案例,加了轮**仍以 `needs-attention` + 2 条新 finding 结束**。⇒ v10 专场**不能只调
+    XD-44 的上限值**;若只调上限,本案例证明结果仍是"上限撞顶 + operator 叫停"。
+  - **(c) 一条 scope 侧的候选真因(新 · 供 forge 判)**:T041 被审对象是 `tests/e2e/batch_runner.py`
+    + `src/radar/bench/`(operator 自用的批跑脚手架),15 条 finding 里多条是 path traversal / 命令注入
+    形状;而同批次 `FU-R5F4` 审的是 `gate.py` 真门禁逻辑,**1 轮 0 finding 结束**。
+    ⇒ **review gate 对被审模块的「关键性分级」无感,评审强度全线均一**。这可能同时解释了非收敛:
+    低风险面上对抗式评审**永远能再找出一条 `[P2]`**。⚠ 本条是 IDS consumer 侧推论,**未经 producer 确认**,
+    forge 应当作假说而非事实检验。
+
+- **同族新条目 XD-52(producer 自记 · 本次并案)**:`codex-review` SKILL §4.2 的 4 轮上限
+  **靠 agent 在对话上下文里自己数轮次,没有机器可查的计数器**。T041 round-4 是上限最后一轮,
+  本该 hard-stop,执行时判断有误又跑了 round-5(会话此前经历过一次 context compaction,
+  压缩摘要对轮次是叙述性文字而非结构化字段)。**无产物因此被错误放行** —— round-5/6 都是真跑真修,
+  代价只是流程多绕一步 + operator 两次介入。
+  - **与 XD-44 / XD-44′ 的分工**:XD-44 = 上限**值**该多少;XD-44′ = 该不该只有「上限」这一个终止边;
+    **XD-52 = 上限怎么**执行**(轮次真相住在对话记忆里而非文件系统里)**。三条是同一处协议改动的三个面。
+  - **producer 建议的修法方向(供参考)**:§4.2 每轮起跑前机械核对 `ls review-log/<TID>-round*.md | wc -l`,
+    ≥4 时不问 agent 自数第几轮,直接 fail-closed 转 hard-stop / operator 决策关卡。
 - **结构问题(不是"轮数不够"）**:**三次没有任何一次是靠 codex 判 `approve` 结束的**,全部由 operator 叫停;
   三次的**最后一轮都还在出新 finding**(其中两次是 `[high]`)。既有 **XD-44** 记的是「4 轮上限对协议设计类任务
   系统性偏低」= 轮数问题;本条指出真正缺的是**终止条件本身** —— 现行协议只有「轮数上限」这一个终止边,
@@ -168,6 +202,54 @@
   历史文件别改源码」。本条**不与之冲突** —— *测试 fixture 与 by-design 兜底是两回事*:兜底路径不通只是不生效,
   fixture 不通则是**测试本身失效**。forge 需明确区分这两类硬编码的处置策略。
 
+### KG-B18 · `workspace.source_repo` 声明**从未被任何 check 校验** —— 全语料 **47/100** 包声明失真(已止血,留 forge 追认)
+
+> **来源**:HANDBACK-LOG 第 45 条 · consumer 侧独立发现(**不在任何一包的 §3 里**)。
+> **operator 决议**:现在止血修 validator + 记本条由 forge 追认。
+
+- **现场**:hand-back `001-radar-pA-20260811T024101Z`(T041)声明
+  `to_source_repo` / `workspace.source_repo` = `/Users/admin/codes/ideababy_stroller`(mac 旧路径,
+  Ubuntu 上**不存在**),而 `workspace.handback_target` = `/home/ys/.../discussion/001/handback/`。
+  这两个字段按 **§6.2.1 约束 1 自身的公式**(`handback_target` ⊂ `source_repo` + `/discussion/<id>/handback/`)
+  **互相矛盾**,却 7 个 check **全 PASS**。
+- **实证根因(已 grep 确认 · 非推演)**:`validate-handback.sh:76` 抽出的 `SOURCE_REPO_FM`
+  **全文件再未被使用** —— 是个死变量。check-1 把约束 1 的公式作用在**运行时 CLI 传入的**
+  `source_repo`(consumer 的 `realpath .`)上,那个值**恒自洽**;包里**声明的**那个从未进过任何判据。
+  ⇒ **自证字段存在但不被验 = 自证等于零**。
+- **📊 全语料实测(落 check-8 后逐包跑,PASS / WARN / 无字段)**:
+  | 语料 | PASS | **WARN(声明失真)** | 无 `source_repo` 字段 |
+  |---|---|---|---|
+  | `discussion/001` | 22 | **19** | 0 |
+  | `discussion/006` | 29 | **0** | 0 |
+  | `discussion/009` | 2 | **28** | 0 |
+  | **合计** | 53 | **47 / 100** | 0 |
+  ⇒ 这**不是**单包回归,是**近半个 hand-back 语料**的声明拓扑失真;它之所以从未被发现,
+  正是因为该字段从未被验过。009 语料几乎全线失真(28/30),006 全清(29/29)。
+- **且本包是一次回归**:8-09 / 8-10 连续 4 包都填对了 `/home/ys`,本包退回 mac 路径 ——
+  说明 producer 侧取值**不稳定**(时对时错),不是一次性的历史遗留。
+- **根因候选(跨仓 · 未处置,留 forge 判)**:XenoDev live `CLAUDE.md` 三处仍把 IDS 仓路径写成
+  `/Users/admin/codes/ideababy_stroller`(`:38` workflow 步骤 2 · `:55` 跨仓引用 · `:90` validator dry-run 示例);
+  `:55` 虽补了「新机 `$IDS_ROOT`」但**陈旧值排在前面**,`:38`/`:90` 是**无限定的陈旧命令**。
+  IDS 侧 mirror `framework/xenodev-bootstrap-kit/CLAUDE.md` 同样 4 处(`:38` `:51` `:52` `:66`)。
+  ⇒ **每个 XenoDev session 读到的宪法都在告诉它 IDS 在 mac 路径上**。
+  - ⚠ **与 memory `migration-mac-to-ubuntu-status` 的张力(同 KG-B17 的处置分歧)**:那条记
+    「`/Users/admin` 硬编码多是 by-design 兜底或历史文件别改源码」。本条**不与之冲突** ——
+    *活的指令文档与代码兜底是两回事*:兜底路径不通只是不生效,**指令文档陈旧则是持续向 agent 灌错值**。
+    KG-B17 已就「fixture 硬编码」提出同一区分诉求;**本条与 KG-B17 应并案**,让 forge 一次性给出
+    三类 `/Users/admin` 硬编码(代码兜底 / 测试 fixture / 指令文档)的分类处置策略。
+- **✅ 本次已止血(warn 型 · 与 check-7 同构)**:新增
+  `framework/xenodev-bootstrap-kit/handback-validator/check-8-declared-source-repo.sh`,
+  把约束 1 的公式**作用在声明值上**(纯词法比较,不碰文件系统 —— 声明的是**产源主机**路径,
+  在 consumer 主机上做 realpath 无意义),并比对声明 vs 运行时。已接进 `validate-handback.sh`。
+  - **为何 warn 而非 hard-fail**:(a) 47/100 存量包会被整体判 corruption;
+    (b) 该字段此前从未被校验,producer 侧无任何机会被提示,直接硬拦属**追溯性执法**。
+  - **升级 hard-fail 判据**(留 forge 定):warn 上线后声明不自洽仍复发 ≥2 次,
+    或出现一次因 `source_repo` 声明失真导致的跨仓误写 / 误决议。
+- **待判(forge)**:① 追认 check-8 及其 warn 型强度;② 是否把 `source_repo` 改为**禁止 producer 声明**
+  (由 consumer 运行时单方权威 —— 声明一个 consumer 有权威值的字段,本身就是在制造可失真面);
+  ③ 存量 47 包是否回填、回填算不算改既有语料(与 append-only 语义的关系);
+  ④ 跨仓陈旧指令文档的清理由谁执行(XenoDev 侧文档改属框架级还是仓内事务)。
+
 ## 与 v9 的关系(起 v10 时必读)
 
 全部条目都与 v9 正在审的**证据完整性家族**同题,**建议并案而不是另起家族**:
@@ -178,10 +260,11 @@
 | KG-49(SKILL 要求与 file_domain 结构冲突) | R-Q7(REVIEW-LOG 被整条绕过) | 同上 · 且本条给出**绕过的结构性理由** |
 | KG-B13(完成状态从不被写下) | XD-43(preflight 已实装但从未被调用) | 机制存在但**没有强制边**,靠副作用推断状态 |
 | **XD-47**(假审与真审解析层同形) | **XD-41**(needs-attention 等价于放行) | gate 输出**不携带 gate 是否真跑过**这一位 |
-| **XD-44′**(收敛判据缺失 · 连续 3 次) | XD-41 + XD-44 | 撞上限后 needs-attention 与 approve **同一出口** |
+| **XD-44′**(收敛判据缺失 · 连续 **4** 次 + XD-52) | XD-41 + XD-44 | 撞上限后 needs-attention 与 approve **同一出口** |
 | **KG-B16**(v8 三字段 IDS SSOT 空缺) | v8 落地验收本身 | 「已落地」的判据是什么 · 单侧实装即算数 |
 | **KG-B17**(fixture 语料整体不可跑) | XD-43(机制已装从未被调用) | 防线**存在**但从未被执行,状态靠假设 |
-| KG-B15(warn 型规约的升级判据 · **已复发 3 次**) | v8 簇② 的 warn 起步设计本身 | warn→block 的升级由谁、在哪触发,至今无 owner |
+| **KG-B18**(声明 source_repo 从未被验 · **47/100 包失真**) | XD-41 / B-4-IDS | **自证字段存在但不被验 = 自证等于零** |
+| KG-B15(warn 型规约的升级判据 · **已复发 4 次**) | v8 簇② 的 warn 起步设计本身 | warn→block 的升级由谁、在哪触发,至今无 owner |
 
 ⚠ **起 v10 前先读 v9 的 verdict** —— 若 v9 已给出「声明/执行两层校验」的一般条款,
 这些条目可能变成**该条款的实例**而非独立议题,X 应据此重写。

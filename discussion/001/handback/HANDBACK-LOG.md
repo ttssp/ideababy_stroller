@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-10T12:30:00Z
-total_decisions: 44
+last_updated: 2026-08-11T03:43:47Z
+total_decisions: 45
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -1515,3 +1515,132 @@ framework(SHARED-CONTRACT + validator)** —— 混线形态比第 43 条 (5) �
   + `check-7-topology-selfattest.sh`(新增 · warn 型)+ `handback.template.md` placeholder + `validate-handback.sh` 接线
 - `477b81d` · (3)(4)(5)(6) 的攒批落点 · `discussion/006/FORGE-006-v10-PENDING.md`(XD-47 / XD-44′ / XD-45 / KG-49 / KG-B16 / KG-B17 + KG-B15 计数第 3 次 + X 分支建议)
 - 本条决议自身 + 4 个 hand-back 包入库 · 见本 commit(同第 41/43 条「决议与包同 commit」先例)
+
+## 2026-08-11T03:43:47Z · 001-radar-pA-20260811T024101Z(T041)
+
+**第 45 条**。**类型**:hand-back 决议(单包)+ **2 条 consumer 侧横切发现**(其中 1 条不在包的 §3 里)。
+
+**Reviewed at**: 2026-08-11T03:43:47Z
+**Handback package**:
+
+| handback_id | task | severity | tags | §3 自述待裁项 |
+|---|---|---|---|---|
+| `001-radar-pA-20260811T024101Z` | `T041`(O3 延迟计时 harness + Phase 4 P4.1 批跑脚手架) | medium | feature | **无**(纯披露 + 1 条新 dogfood XD-52) |
+
+**Validator**:6 约束 + check-7 全 PASS · 无 `ids_verdict_evidence:` 父键 ⇒ 按 R-Q6 跳过语法预检。
+⚠ 本次决议过程中**新增 check-8 后重跑,本包 check-8 WARN**(见 (3))。
+
+**Operator decisions**:
+- [x] 修 handback-validator(新增 `check-8-declared-source-repo.sh` · warn 型 · 已接线)—— 止血
+- [x] 起新 forge → 条目入 `discussion/006/FORGE-006-v10-PENDING.md`(KG-B18 新增 · XD-44′ 计数 3→4 + XD-52 并案 · KG-B15 计数 3→4)
+- [ ] 修 PRD(本条不改 PRD)
+- [ ] 修 SHARED-CONTRACT(check-8 是既有约束 1 的**实装补全**,非新约束 ⇒ 不 bump contract_version;由 forge 追认)
+- [ ] 修 XenoDev spec(本条无跨仓 spec 改动;陈旧指令文档清理**留 forge 判 owner**,见 (3))
+
+---
+
+### (1) build 结论:收悉,无待裁项
+
+T041 交付三件:`src/radar/bench/time_eval.py`(壁钟包裹 `run_evaluate`,退出码**原样透传** T042 三态协议,
+超预算只在 stderr 额外标一次 known-gap 提示、**不改判任何结果码** —— SLA-1 的 30 分钟是产品属性不是正确性门,
+这个区分是对的)· `tests/e2e/batch_runner.py`(批跑脚手架,任一方向退出码都不中断整批;分类**按三态退出码
+并核对对应 `VerdictArtifact`**,不盲信退出码)· `src/radar/lifecycle/ephemeral.py` 补两行 C9 静态门登记。
+
+**三条交叉核验通过**(consumer 侧实核,非照抄自述):
+- **测试基线可核验**:1134(T042 基线)→ 1149(TDD 初版)→ 1172(6 轮回归测),0 回归。其中 **1134 与本 LOG
+  第 44 条自己记的 T042 数字对得上** —— 基线声明经得起 IDS 侧独立比对。
+- **`baseline: b035cd5` 在 XenoDev 真实存在**(2026-08-10 23:59 `docs(001-radar-pA): 建 FU-KG50 task doc`),
+  与本包 `created: 2026-08-11T02:41:01Z` 时序合理。
+- **延续了第 44 条表扬的那条纪律**:PASS 结构性不可达时**不伪造可达性** —— 不造 `pool_implemented`、
+  不绕运行时探针制造假 PASS(明写延续 T042 round-2 codex 抓的那个坑的同一条纪律)。
+
+**下游**:`T041.blocks = []`,不解锁任何下游 task,DAG 无需更新。
+
+### (2) XD-52 + XD-44′ 第 4 次 → 归 forge 006 v10(与既有 XD-44′ 并案)
+
+**producer 自记 XD-52**:`codex-review` SKILL §4.2 的 4 轮上限**靠 agent 在对话上下文里自己数轮次**,
+没有机器可查的计数器。round-4 是上限最后一轮本该 hard-stop,执行时判断有误又跑了 round-5
+(会话此前经历过一次 context compaction,压缩摘要对轮次是**叙述性文字而非结构化字段**)。
+**无任何产物因此被错误放行** —— round-5/6 都是真跑真发现真修复,代价只是流程多绕一步 + operator 两次介入。
+⭐ **偏差是 producer 自曝的,不是 consumer 抓出来的**,予以确认。
+
+**consumer 侧的实质补充 —— 本次是 XD-44′ 的第 4 次,且带来前 3 次没有的定量反证**:
+
+| 轮 | 1 | 2 | 3 | 4(上限) | 5(偏差) | 6(operator 授权) |
+|---|---|---|---|---|---|---|
+| findings | 4 | 2 | **1** | 3 | 3 | 2 |
+| verdict | 全部 `needs-attention` · **一次 `approve` 都没有** |
+
+- **(a) finding 序列非单调 ⇒ 直接否证「多跑几轮就会收敛」**:round-3 已降到 1 又**反弹**到 3。
+  这是本家族第一次有**定量**证据说明轮次与收敛之间没有单调关系。
+- **(b) 「提高轮数上限」这条修法已被本案例预先证伪**:T041 是四次里**唯一一次 operator 显式授权加轮**的,
+  加了轮**仍以 `needs-attention` + 2 条新 finding 结束**。⇒ v10 专场**不能只调 XD-44 的上限值**。
+- **(c) 一条 scope 侧候选真因(新 · 标注为假说)**:T041 被审对象是 operator 自用的批跑脚手架
+  (`tests/e2e/batch_runner.py` + `src/radar/bench/`),15 条 finding 多为 path traversal / 命令注入形状;
+  而同批次 `FU-R5F4` 审的是 `gate.py` 真门禁逻辑,**1 轮 0 finding 结束**。⇒ **review gate 对被审模块的
+  「关键性分级」无感,评审强度全线均一**;这可能同时解释非收敛 —— 低风险面上对抗式评审永远能再找出一条 `[P2]`。
+  ⚠ 该条**未经 producer 确认**,已在 v10 pending 里明标为假说而非事实。
+
+### (3) 🔴 横切 · consumer 侧独立发现,**不在包的 §3 里** —— KG-B18:`workspace.source_repo` 从未被校验
+
+本包声明 `to_source_repo` / `workspace.source_repo` = `/Users/admin/codes/ideababy_stroller`
+(mac 旧路径,Ubuntu 上**不存在**),而 `workspace.handback_target` = `/home/ys/.../discussion/001/handback/`。
+两者按 **§6.2.1 约束 1 自身的公式**互相矛盾,却 **7 个 check 全 PASS**。
+
+**实证根因(grep 确认 · 非推演)**:`validate-handback.sh:76` 抽出的 `SOURCE_REPO_FM` **全文件再未被使用**
+—— 死变量。check-1 把约束 1 的公式作用在**运行时 CLI 传入的** `source_repo`(consumer 的 `realpath .`)上,
+那个值**恒自洽**;包里**声明的**那个从未进过任何判据。⇒ **自证字段存在但不被验 = 自证等于零**
+(与 XD-47「输出不携带 gate 是否真跑过」、KG-B16「三字段单侧实装」同族)。
+
+**📊 落 check-8 后全语料实测**(逐包跑 · 非抽样):
+
+| 语料 | PASS | **WARN(声明失真)** | 无 `source_repo` 字段 |
+|---|---|---|---|
+| `discussion/001` | 22 | **19** | 0 |
+| `discussion/006` | 29 | **0** | 0 |
+| `discussion/009` | 2 | **28** | 0 |
+| **合计** | 53 | **47 / 100** | 0 |
+
+⇒ **不是单包回归,是近半个 hand-back 语料的声明拓扑失真**;之所以从未被发现,正因该字段从未被验过。
+且本包是**回归**:8-09/8-10 连续 4 包都填对 `/home/ys`,本包退回 mac 路径 ⇒ producer 取值**不稳定**,
+不是一次性历史遗留。
+
+**根因候选(跨仓 · 本次未处置)**:XenoDev live `CLAUDE.md` 三处仍把 IDS 仓路径写成 mac 路径
+(`:38` workflow 步骤 2 · `:55` 跨仓引用 · `:90` validator dry-run 示例);`:55` 虽补了「新机 `$IDS_ROOT`」
+但**陈旧值排在前面**,`:38`/`:90` 是**无限定的陈旧命令**。IDS 侧 mirror 同样 4 处。
+⇒ **每个 XenoDev session 读到的宪法都在告诉它 IDS 在 mac 路径上**。
+⚠ 与 memory `migration-mac-to-ubuntu-status`「`/Users/admin` 硬编码多是 by-design 兜底别改」**不冲突** ——
+*活的指令文档与代码兜底是两回事*:兜底不通只是不生效,**指令文档陈旧则是持续向 agent 灌错值**。
+与 KG-B17(fixture 硬编码)**并案**,由 forge 一次性给出三类硬编码(代码兜底 / 测试 fixture / 指令文档)
+的分类处置策略。**本次不自行改 XenoDev CLAUDE.md** —— owner 归属留 forge 判。
+
+**✅ 已止血**(operator 裁决「现在止血修 validator + 记 v10」):新增
+`check-8-declared-source-repo.sh`(warn 型 · 与 check-7 同构),把约束 1 的公式**作用在声明值上**
+(**纯词法比较不碰文件系统** —— 声明的是产源主机路径,在 consumer 主机上做 realpath 无意义),
+并比对声明 vs 运行时;已接进 `validate-handback.sh`。
+**warn 而非 hard-fail 的理由**:(a) 47/100 存量包会被整体判 corruption;(b) 该字段此前从未被校验,
+producer 无任何机会被提示,直接硬拦属**追溯性执法**。升级判据(留 forge 定):warn 上线后仍复发 ≥2 次,
+或出现一次因 `source_repo` 失真导致的跨仓误写/误决议。
+
+### (4) ⚠ KG-B15 第 4 次 warn 复发 —— 但**性质与前 3 次不同**
+
+本次 `/handback-review 001` 仍跑在 `main` 分支,改动同时触及 001 / 006 / framework 三处,与第 3 次同形。
+**但本次 operator 是在被明确告知 mismatch 后显式裁决「就在 main 上写」** ⇒ **不是纪律失效,是规约本身有歧义**:
+规约把「handback-review 决议后」列为合回 main 的 checkpoint,隐含"决议在 idea 分支做、之后合回",
+但 checkpoint 产物本身就是 main 的合法内容。⇒ **升级 hook block 之前必须先消掉这个歧义**,
+否则硬拦会把合法的 checkpoint 写入一并拦掉。已写进 v10 pending 的 KG-B15「待判」。
+
+### (5) 状态推进:Phase 4 的瓶颈从 build 侧移到 operator 侧
+
+T041 交付的是**脚手架**,P4.1 的真验收(≥5 次真实新方向评估 · O1 盲测样本 · O5 journal 后验 ·
+O7 `decision_delta`)**仍是 operator 手动真跑**(C8:凭据不进 agent context)。
+入口已就位:`tests/e2e/batch_runner.py --directions "<方向1>,<方向2>,..."`(需 `export DEEPSEEK_API_KEY`),
+批跑会为每个核验通过的方向打印可直接复制的 `journal record` 建议命令。
+⇒ 与既有待办「O7 第 2 跑」合流,**现在 001 的前沿是 operator 真跑,不是 build**。
+
+---
+
+**Follow-up commits**:
+- 本条决议 + `check-8-declared-source-repo.sh`(新增)+ `validate-handback.sh` 接线
+  + `discussion/006/FORGE-006-v10-PENDING.md`(KG-B18 新增 · XD-44′ 3→4 + XD-52 并案 · KG-B15 3→4 + 关系表)
+  + T041 hand-back 包入库 · 见本 commit(同第 41/43/44 条「决议与包同 commit」先例)
