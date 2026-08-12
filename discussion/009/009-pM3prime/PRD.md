@@ -50,7 +50,16 @@ v0.2 同日:密度口径 per-market + 阈值 30/stratum 签 advisory 语义;见 
 **Approved by**: human operator(2026-07-16,forge v5 Decision menu [A] · **只授权 E0+E1**)
 **PRD-form**: phased
 **Phases**: [E0, E1]
-**Phase-current**: E0
+**Phase-current**: **E1 · 代码全 ship,但 E1 验收未达成 —— 按 §6 停止条件「停」**(2026-08-12 回填 ——
+此前一直 stale 停在 `E0`,从未随进度更新)。
+⚠ **「代码 ship 完」≠「phase 通过」,本字段刻意不写成 complete**:E0 + E1 两 phase 的
+task(T001-T013)**全部 build-ship**(1209 passed · 无待做 task),E1 三件交付物里
+**密度普查数字 ✅**(US 40 条 strong 超 advisory 阈 30 → 分市场终裁 US go / CN·HK STOP · 第 25 条)、
+**`record_tickers` 判定 ✅**、但 **金标两层 ❌** —— **Layer-2 在 v0.1 CLOSED**(三前提全塌 · 见 §4-E1 块 (p) ·
+HANDBACK-LOG 第 33 条)、**Layer-1 从未处置**(门槛仍空 + 四项契约缺角未补 · 见 §4-E1 块 (n))。
+§6 对 E1 的停止条件原文是「**金标任一层不过 → 停,不谈回测**」⇒ 本 fork 处于**诚实停止**状态,
+**E2/E3 解锁三条件在 v0.1 不会齐**。这是 forge v5「最小证伪链」预期的合法结局之一
+(§6 E0 停止条件原话:「证伪链的用途就是允许诚实停止」),不是烂尾、也不是待续。
 
 > **本 PRD 的血缘与定位**:009 集合体经 forge v1-v4 收敛并 ship M1(PIT 价格层)+ M2(alpha
 > 评估机器,由 fork 009-pForge 交付,743 passed)。2026-07-16 operator 亲述事实修正:该分析师

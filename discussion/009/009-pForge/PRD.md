@@ -6,7 +6,10 @@
 **Approved by**: human operator(2026-07-01,forge v1+v2 Decision menu [C] 局部接受 → 推 M1+M2 进 L4)
 **PRD-form**: phased
 **Phases**: [M1, M2]
-**Phase-current**: M1
+**Phase-current**: **M2 · fork 已交付完成**(2026-08-12 回填 —— 此前一直 stale 停在 `M1`,从未随进度更新)。
+M1(T001-T008 · PIT 价格层)+ M2(T010-T017 · alpha 头 · 含 T016b 生产接线 + T017 契约测试 gate)
+**全部 build-ship 并经 hand-back 决议**,`M-fork-complete` 见 HANDBACK-LOG 第 21 条(743 passed ·
+PPV 双终点真路径无 mock)。本 fork 无待做 task。
 
 > **本 PRD 的血缘与定位**:009 是集合体 idea(008 采集 + 回测验证 + 004 纪律 + 四条新想法),
 > 经 forge v1(该不该建 / 怎么建)+ v2(目标态蓝图 / 分期路线)双轮收敛。本 fork = **进 L4 落地
