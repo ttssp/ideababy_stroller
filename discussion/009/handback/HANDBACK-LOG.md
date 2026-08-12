@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-08-11T15:42:50Z
-total_decisions: 32
+last_updated: 2026-08-12T02:26:53Z
+total_decisions: 33
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -1322,3 +1322,98 @@ FAILED   EXIT=1
 
 **Follow-up commits**: `d281d55`(2026-08-11 · 本条决议 + hand-back 包入库 · **未 push**)。
 **尚未入库(去向已定)**:发现 1 的 FU(DB 迁移 + `reconcile()` 入口 `alembic_version` 前置校验 + 拆封 runbook + R6-R8)→ **XenoDev 侧**(`/home/ys/codes/XenoDev-009` · `feat/009-spec`)· KG-49 + **KG-50** → forge 006 攒批(`dogfood-backlog.md`)· 001-radar 线止血备份 `REVIEW-LOG.md.pre-KG49-backup-20260811` 在 `/home/ys/codes/XenoDev` 仓**未提交**(untracked),归 001 线自行处置。
+
+## 2026-08-12T02:26:53Z · 009-pM3prime-20260811T171735Z(FU-HB32 拆封前置补齐 · T1-T4 四项全绿且 IDS 逐条实跑复证属实 · 🔴 **41 条盲标路 v0.1 CLOSED** —— build 报的时序阻塞属实但是较弱的那个;IDS 侧实证 **19/41 机器答案已由治理文档通道泄漏**,叠加 KG-42 未解 + v0.7 已冻结 gate 不成立 ⇒ 三前提全塌且终点本就不可达 · 新增 KG-52)
+
+**Reviewed at**: 2026-08-12T02:26:53Z
+**Related task**: FU-HB32(接续第 32 条决议 ①「发现 1 → 起 FU」+ ③「R6-R8 并入同批」)
+**Tags**: build-complete, prd-revision-trigger
+**Severity**: high
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对 realpath)· check-8 PASS · ⚠ **check-7 WARN**(不阻断 · 与第 32 条同型未改善):`worktree: feat/009-spec` 与 `workspace.working_repo: /home/ys/codes/XenoDev-009` 不一致 —— 前者填分支名、后者是路径,机器无法比对
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence:` 父键)
+
+### IDS 侧独立复核(本次 review 实跑 · 非转述 build 结论)
+
+**属实项(9 项逐条实跑 · 无一不符 · 本包是迄今自报精度最高的一次)**:
+
+- **测试基线属实**:IDS 侧独立重跑 **`1209 passed, 7 skipped, 6 deselected, 1 xfailed`**(127.26s)—— 与 hand-back 声称**逐字一致**(前基线 1198 → +11)
+- **T1 真盘迁移属实**:直查 `projects/004-pB/out/e1-census-20260718.sqlite` → `alembic_version=0021` · `extracted_signals` **41 行 / id 1-41** · 全行 checksum `00e69d77…` 与 hand-back 声称**逐字节相同** · `gold_layer1_result`/`gold_layer2_result`/`gold_layer2_dimension`/`gold_layer2_item`/`watchlist_snapshot` **全 0 行** · 备份 `.pre-FU-HB32-backup` 在
+- **T2 schema 守卫有齿(mutation 实跑)**:抽掉 `reconcile()` 里的 `_assert_schema_migrated(conn)` 调用 → `test_should_reject_when_db_stuck_at_0019` / `_at_0020` / `_when_alembic_version_table_missing` **3 条全红**,且红的形态正是第 32 条发现 1 那条裸 `OperationalError`(`no such table: watchlist`)✅ 恢复后全绿
+- **T4/R7 变体安全守卫有齿(mutation 实跑)**:抽掉 `_assert_variant_scoped_verdict_is_safe(...)` 调用 → `test_should_raise_when_reconcile_scoped_to_variant_but_other_variant_signals_coexist` 报 **`DID NOT RAISE`** ✅
+- **红线 7 条全绿(实查)**:`extraction/gate.py` / `blind/` / `out/` **三处均不在 `4820539..HEAD` diffstat**(零改动)· 全 diff 新增行 **0 处 `.py:行号` 锚**(KG-45 遵守属实)· 框架级问题记 `dogfood-backlog.md` 未当场改脚本
+- **REVIEW-LOG 数字属实**:`git diff --stat 4820539 HEAD` = **`57 insertions(+), 0 deletions(-)`**,现 **1058 行** —— 与自报 `1001→1058 · 纯 +57 · 0 deletions` **精确一致**。⚠ 这是 KG-49 教训被真正吸收的实证:上一条(第 32 条发现 4)那种「hand-back 数字 vs `git show` stat 打架」本次**未复发**
+- **KG-51 属实**:`lib/handback-validator/gen-handback.sh` 全文 grep,`to_source_repo` **命中 0 处**、`workspace.source_repo` **命中 0 处**(仅有的 `source_repo` 命中全属 `source_repo_identity` 三字段,是另一个字段)⇒ 「渲染结果恒为模板字面量」成立
+- **确未 push**:`git branch -r --contains 59d0ed2` 为空;7 条 commit 均在 `feat/009-spec`
+- **诚实边界属实**:build 明写「codex review 超 SKILL §4.2 名义 4 轮上限」并给出理由(持续收敛非卡死),未粉饰;round 1 用错 `--base main` 产出 3 条无关 finding 的事故也如实自曝并说明未计入
+
+**轻微不符(1 处)**:hand-back §4 commit 清单列 6 条(`e93273a`…`59d0ed2`),实际分支上还有第 7 条 **`ca4f61c`**(`docs(dogfood-backlog): 记 KG-51`)—— §4 交付物里写了「dogfood:`dogfood-backlog.md` 新记 KG-51」却漏列其 commit。属清单不全,非事实错误。
+
+### 🔴 IDS 侧新发现:build 报的时序阻塞是**较弱的那个**阻塞
+
+build 的 §1/§3 #1 时序阻塞**属实且已验证**:`_blind_annotated_strictly_before_machine` 是 `criteria_met` 的 **AND 分量**(不是 raise,是把 `criteria_met` 拉成 False),41 条提取于 2026-07-18 而 D-7 盲标协议 2026-07-27 才实装 ⇒ 诚实填 `--machine-extracted-at` 必挡。build 把它交回 IDS 决议而不自行改判据形态,是**正确处置**。
+
+**但本次 review 另查出两条 build 没查、此前也无人查过的 —— 它们比时序关更根本:**
+
+**发现 1 · 盲标前提对 ≈19/41 条已实质失效 —— 泄漏通道是治理文档本身(实证,非推演)**
+
+HANDBACK-LOG **第 25 条**(2026-07-19 · E1 真普查终裁 · **operator 读过并据此裁定 US go**)里,IDS 侧弱锚抽查把机器答案按 worksheet 的**同一套标识**写进了正文。本次逐条比对 `blind/machine.json`(41 条答案键,与 `blind/worksheet.txt` 41 行严格同序)核实:
+
+| 第 25 条原文 | 对应 worksheet 行 | `machine.json` 实际答案 | 判定 |
+|---|---|---|---|
+| 「src=60232 ETF 权重枚举簇 ×5(KO/PG/PM/PEP/MO)」 | id 35–39(`source_id=60232`) | PG / KO / PM / PEP / MO | **集合精确命中** |
+| 「id=5「美存储大涨」→MU」 | id 5 | MU | **精确命中(连 id 都给了)** |
+| 「跨句指代(him=Walmart)→WMT」 | id 40 / 41 | WMT / WMT | 命中 |
+| 老黄·达子→NVDA · 美光→MU · 谷子→GOOGL · coke→KO ·「新一生」→300502 | 按原文 span 可回溯 | 均命中 | 近似还原 |
+| 5 条分析师小写 ticker(mu/amd/mrvl/hood/rddt) | — | 字面即答案 | 平凡还原 |
+
+合计 **≈19/41(46%)** 的机器答案可直接或近似还原。泄漏面已扩散到 **6 份 IDS 文档**:`HANDBACK-LOG.md` · `20260718T143324Z` hand-back 包 · `PRD.md` · `forge/v1/P1-Opus47Max.md` · `forge/v1/P2-GPT55xHigh.md` · `forge/v1/stage-forge-009-pM3prime-v1.md`。
+
+**⚠ 通道分析(这条比数字本身重要)**:既有红线检查——`extracted_signals` checksum / 四张 gold 表 0 行 / `blind/` 零改动 / `git branch -r --contains` ——**全部只守 DB 与文件通道**,对**散文通道零覆盖**。所以泄漏跨 **3.5 周、8 条决议**无人察觉,而其间每一条 hand-back 报「41 条全程未拆封」**在它自己的口径内都成立**——**口径本身漏了一个通道**。这正是第 32 条那条元层观察(「在一个面上验证过了,就默认另一个面也成立」)的又一实例,且更尖锐:这次连**观察者自己**都在泄漏通道上。归 **KG-52**。
+
+**发现 2 · 即使三前提全部补齐,拆封在 v0.1 也产不出可用结论**
+
+frozen PRD **v0.7 (c)** 已裁定「全量五维 Layer-2 作为 correctness gate 在 v0.1 判定不成立,**且不因换主体、不因调门槛而成立**」,代码落成 `_CORRECTNESS_GATE_AUTHORIZED_V0_1 = False` **恒假** ⇒ `passed = criteria_met and _CORRECTNESS_GATE_AUTHORIZED_V0_1` 恒 False。**跑通的最好结果只是一行 `gold_layer2_item` 取证记录,解锁不了任何东西。**
+
+⇒ **合并结论**:41 条这条路的三个独立前提 ——① 合格第二源(KG-42,forge v2 撤销「operator 可自任」后至今未解)② 盲标隔离(发现 1)③ 时序不变量(build 所报)—— **现在全塌**,而终点本就被冻结为不成立。**继续为它补前置 = 为一个已冻结为不可达的终点投工**;本 FU 已是第二次(第一次是第 32 条的发现 1 FU)。
+
+### Operator 决议(4 问)
+
+- [x] **① 本包验收 → 接受 · 四项全绿**。据:IDS 独立复核 9 项逐条属实、两处 mutation 实跑证守卫有齿、红线 7 条全绿、REVIEW-LOG 数字精确一致。codex 超 SKILL §4.2 名义 4 轮上限属**持续收敛**(round 1-4 各修一个真问题)非卡死重复,可接受。仅需回填漏列的 `ca4f61c`
+- [x] **② 🔴 41 条盲标路 → 在 v0.1 明确 CLOSED(不是 blocked-待前置,是 closed)**。据:三前提全塌 + v0.7 已冻结终点不成立。**这是关闭不是移位** —— 与前三次(KG-42 → D-7 → forge v2 撤销)的区别在于**显式宣告终止**而非另寻绕道。重开须同时满足三条:KG-42 有真解(具名合格第二源,不是代理指标)+ 走**全新批次且先盲标后提取** + v1.0 显式授权 correctness gate
+- [x] **③ KG-51 → 归 forge 006 攒批**(build 按铁律记 backlog 未当场改脚本,处置符合协议)
+- [x] **④ 新记 KG-52 → 归 forge 006 攒批**,与 KG-49/KG-50 同场(同一门族)
+- [x] **修 PRD** → v0.8→**v0.9**,写入 41 条路径状态(见下)
+- [ ] 修 SHARED-CONTRACT(本次不动 —— KG-52 若要写成协议级约束,须走 forge,不在 handback-review 当场改)
+
+### 已执行(本次 review 当场做的唯一动作)
+
+**PRD v0.8 → v0.9**(`discussion/009/009-pM3prime/PRD.md`),三处改动:
+
+1. **frontmatter 加 v0.9 条目** —— 记 41 条路 CLOSED 的裁决与三前提
+2. **§4-E1 新增块 (p)**「41 条 Layer-2 金标路 = v0.1 CLOSED」—— 三前提状态表 + 逐条核过的泄漏账 + 通道分析 + 「为什么是 CLOSED 而不是 blocked」+ 三条重开条件 + **不受影响项逐条声明**(防过度收缩:E1 US 密度终裁不动 · ②-a 挂起状态不动 · Layer-1 精度框结论不动**且 Layer-1 用法不需盲标故不受本块影响** · `gate.py` 骨架与 FU-HB32 的迁移/守卫**保留**,它们修的是「landed≠生效」与拆封无关)
+3. **§6 E2/E3 解锁条件表加 2026-08-12 增补** —— ②-b 的**结论不变(仍 blocked),性质变了**:从「等一件没做的事」变成「等一件 v0.1 内做不成的事」;并明写**任何文档不得把「补齐拆封前置」表述为 ②-b 的解阻路径**
+
+块 (p) 显式撤销块 (o) 的隐含前提(块 (o) 判 Layer-1 span 独立性已破但 Layer-2 五元组资源尚存 —— 后半句现被推翻)。
+
+### 决议后果与待办
+
+**A · 本次不起新 FU**(与前 32 条不同 —— 本条的产出是**关闭**,不是新工作)
+
+**B · 状态变更(逐条)**
+- **41 条盲标机会** = **v0.1 CLOSED**(原「blocked-待前置齐」)· 重开三条件见 PRD 块 (p)
+- **②-b 回测 lane** = 仍 blocked,**性质**从「待 correctness 验收」改为「v0.1 内无路径产生该验收」
+- **F3 ①②**(身份键换 `extracted_signals.id` + 改三份 payload 格式)= **随本路关闭一并停止投工**(其存在理由是闭合拆封时的顺序漂移缺口;拆封关闭后该缺口在 v0.1 无消费点)。⚠ 若 v1.0 重开须重新评估,不视为已解
+- **`docs/41-signals-unsealing-runbook.md`** = 保留但**须加状态头**指向本条决议(其内容仍是重开时的正确操作序;但当前不得被读成「照做即可跑」)—— 归 XenoDev 侧顺手改,不单起 FU
+- **不变**:E1 US 密度终裁 · ②-a 诊断 lane 挂起 · Layer-1 主体问题未处置 · E2 仍不授权 · `_CORRECTNESS_GATE_AUTHORIZED_V0_1 = False`
+
+**C · 归 forge 006 攒批(本次不起 forge)**
+- **KG-51**(`gen-handback.sh` 从不替换 `to_source_repo` / `workspace.source_repo`,渲染恒为模板里的旧 mac 路径字面量;已手改多次无人归因根因)
+- **新增 KG-52 · 一次性资源的泄漏通道无守卫**:红线检查只覆盖 DB / 文件通道,**治理散文(HANDBACK-LOG / PRD / forge 件)是未受监控的泄漏通道**;已实际泄漏 19/41 且跨 3.5 周 8 条决议无人察觉,而其间每条「未拆封」断言在自己口径内都成立。⚠ **与 KG-49 / KG-50 / KG-45 同门族**(第 32 条元层观察已命名:「在一个面上验证过了,就默认另一个面也成立」)—— 本条是该门族第 4 个实例,且首次出现**观察者自身在泄漏通道上**。建议 forge 006 按门族整体处置,不当孤立卫生问题
+- 既有攒批不变:KG-49 · KG-50 · KG-43 三道门 · KG-44 · KG-45 · KG-46/47/48 · KG-41 · 元层条 · §3-1b 解锁制品设计
+
+**D · warn 型 preflight(不阻断 · 留痕)**
+- 本次 review session 在 `main` 分支而非 `009-pM3prime` worktree —— worktree-per-idea 规约 warn(第 5 次)。按 CLAUDE.md v10 注,`handback-review` 决议本就是规约列出的合回 main 的合法 checkpoint,且该 warn 的裁决被 `OB-006-v10-06`(规约消歧义)前置阻塞。⚠ 计数已达 5,消歧义任务仍未做
+- hand-back 侧 check-7 WARN 与第 32 条**同型未改善**(上次建议「填分支名或 `none`」,本次填了分支名 `feat/009-spec` 但 `workspace.working_repo` 是路径,两者仍无法机器比对)⇒ 建议归 KG 面:该字段的**比对对象**没定义清楚,不是 producer 填法问题
+
+**Follow-up commits**: pending(本 LOG 第 33 条 + PRD v0.9 + hand-back 包入库 · 同一 IDS commit · **未 push**)。
+**尚未入库(去向已定)**:KG-51 + **KG-52** → forge 006 攒批 · runbook 状态头 → XenoDev 侧(`/home/ys/codes/XenoDev-009` · `feat/009-spec`)顺手改 · 漏列 commit `ca4f61c` 已在本条 §复核记录。

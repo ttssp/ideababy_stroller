@@ -1,6 +1,15 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.8(2026-07-28 回写 handback `009-pM3prime-20260728T035015Z`[阶段 0+1+2] 决议 ·
+**Version**: v0.9(2026-08-12 回写 handback `009-pM3prime-20260811T171735Z`[FU-HB32] 决议 ·
+HANDBACK-LOG 第 33 条:**🔴 41 条盲标机会的 Layer-2 金标路在 v0.1 明确关闭(不是 blocked-待前置,
+是 closed)** —— 三个独立前提同时不成立:① **合格第二源**(KG-42,forge v2 撤销「operator 可自任」后
+至今未解)② **盲标隔离**(IDS 侧实证:约 **19/41** 条的机器答案已经由治理文档通道泄漏,详见
+§4-E1 **块 (p)**)③ **时序不变量**(`blind_annotated_at` 须早于 `machine_extracted_at`,对 2026-07-18
+的历史批次结构性不可满足);且终点本就被 v0.7 冻结为「correctness gate 在 v0.1 不成立」⇒
+`passed = criteria_met and _CORRECTNESS_GATE_AUTHORIZED_V0_1` 恒 False,**拆封在 v0.1 产不出可用结论**。
+重开条件写在块 (p)。E1 US 密度结论、红线本体、Layer-1 结论收窄一律不动;见 §4-E1 块 (p) + §6 表 +
+HANDBACK-LOG 第 33 条。
+v0.8 2026-07-28 回写 handback `009-pM3prime-20260728T035015Z`[阶段 0+1+2] 决议 ·
 HANDBACK-LOG 第 31 条:**🔴 撤销「两维外锚 lane」分支** —— forge v2 §134 称 timepoint 有
 `published_at` 外锚系**事实错误**(frozen `SLA.md` 该行写的是「无」),该字段是**管线恒等**
 (census 从 `records.published_at` 原样回填 · LLM 被结构性禁产 · 真盘 41/41 逐字节相同),
@@ -331,6 +340,43 @@ operator-input 文档 §1)。
   > (KG-47)。缓解事实:该 commit **未 push 到任何 remote**,暴露面**只限本地**。
   > ⚠ 另:`blind/machine.json` **不含 span 偏移**(只有五维)⇒ 那 41 条作为已封装制品
   > **是 Layer-2 映射资源,不是 Layer-1 span 资源**。
+  >
+  > **(p) 🔴 41 条 Layer-2 金标路 = v0.1 CLOSED(2026-08-12 · HANDBACK-LOG 第 33 条 · 撤销块 (o)
+  > 「Layer-2 映射资源完好」的隐含前提)**:块 (o) 判 Layer-1 span 独立性已破、Layer-2 五元组资源尚存。
+  > **后半句现已被 IDS 侧实证推翻。** 三个独立前提同时不成立,任何一条都足以关闭该路:
+  >
+  > | # | 前提 | 状态 | 据 |
+  > |---|---|---|---|
+  > | ① | **合格第二源** | ❌ 未解 | KG-42。forge v1 的「operator 可自任」已被 forge v2 撤销(范畴替换),此后无替代主体 |
+  > | ② | **盲标隔离** | ❌ **已实质失效** | 见下方泄漏账 |
+  > | ③ | **时序不变量** | ❌ 结构性不可满足 | `_blind_annotated_strictly_before_machine` 是 `criteria_met` 的 AND 分量;41 条提取于 2026-07-18,D-7 协议 2026-07-27 才实装 ⇒ 诚实填 `--machine-extracted-at` 必挡。谎报即「看到数字后移动球门」 |
+  >
+  > **泄漏账(逐条核过 `blind/machine.json` 答案键,非推演)**:HANDBACK-LOG **第 25 条**
+  > (2026-07-19 · IDS 侧弱锚抽查 · operator 读过并据此终裁 US go)把机器答案按 worksheet 的
+  > **同一套标识**写进了正文——「src=60232 簇 ×5(KO/PG/PM/PEP/MO)」= worksheet id 35–39 答案集合
+  > **精确命中**;「id=5 → MU」= worksheet id 5 **精确命中**;「him=Walmart → WMT」= id 40/41 命中;
+  > 另有 6 条具名映射(老黄/达子→NVDA · 美光→MU · 谷子→GOOGL · coke→KO · 新一生→300502)按原文 span
+  > 可回溯,5 条小写 ticker(mu/amd/mrvl/hood/rddt)字面即答案。合计 **≈19/41(46%)** 可直接或近似还原,
+  > 泄漏面已扩散到 **6 份 IDS 文档**(含本 PRD 与 forge v1 三件)。
+  >
+  > **⚠ 泄漏通道 = 治理散文,不是 DB / 文件。** 既有红线检查(`extracted_signals` checksum · 四张 gold 表 0 行 ·
+  > `blind/` 零改动)**全部只守 DB 与文件通道**,对散文通道零覆盖 —— 故泄漏在 3.5 周、跨 8 条决议里无人察觉,
+  > 且每条决议都在如实报告「41 条全程未拆封」(该断言在它自己的口径内成立,口径本身漏了一个通道)。
+  > 框架面归 **KG-52**(forge 006 攒批)。
+  >
+  > **为什么是 CLOSED 而不是 blocked**:即使三前提全部补齐,v0.7 (c) 已冻结「全量五维 Layer-2 作为
+  > correctness gate 在 v0.1 判定不成立,且不因换主体、不因调门槛而成立」,代码落成
+  > `_CORRECTNESS_GATE_AUTHORIZED_V0_1 = False` 恒假 ⇒ `passed = criteria_met and False`。
+  > **拆封的最好结果只是一行取证记录,解锁不了任何东西。** 继续为它补前置 = 为已冻结为不成立的终点投工。
+  >
+  > **重开条件(三条 AND · 缺一不得重开)**:① KG-42 有真解(具名的合格第二源,不是代理指标)
+  > ② 走**全新批次**且**先盲标后提取**(唯一能诚实满足时序关的顺序;当前 41 条不可复用)
+  > ③ v1.0 显式授权 correctness gate(即 `_CORRECTNESS_GATE_AUTHORIZED_V0_1` 翻真的前置论证成立)。
+  >
+  > **不受影响(逐条声明,防过度收缩)**:E1 US 密度终裁(第 25 条)不动 —— 它是 advisory 人工终裁,
+  > 不依赖金标;②-a 诊断 lane 的挂起状态不动;Layer-1 结论收窄(41 条 = 唯一已物化 precision 框)
+  > 不动 —— 但注意 Layer-1 用法**不需要盲标**,不受本块关闭影响;`gate.py` fail-closed 骨架与
+  > FU-HB32 的 DB 迁移 / schema 前置守卫**保留**(它们修的是「landed≠生效」,与拆封与否无关)。
 
 - **E1 hand-back**:密度数字 + 金标两层结果 + record_tickers 判定,经 hand-back 交回 IDS,
   operator 决定 E2/E3 授权与否。
@@ -369,6 +415,12 @@ operator-input 文档 §1)。
   > | **②-a 诊断 lane** | 产开发证据(口径校准 / failure 分类 / 变体比较) | **⏸ 待定** —— 候选降级面 groundedness 在 [C] 下**挂起**,须先过效力探针(见 §4-E1 D-7 v2 修订块 (e)) |
   > | **②-b 回测 lane** | 历史窗回测,需 **correctness 验收过** | **🔴 v0.1 明确 blocked(非「待跑」)** —— 缺 validity 锚,非缺劳动;**不因换主体或调门槛而解锁** |
   > | ③ operator 显式授权 | — | ❌ |
+  >
+  > **⚠ 2026-08-12 增补(第 33 条)**:②-b 所依赖的 correctness 验收,其**唯一已物化载体**
+  > (41 条盲标机会)现已判 **v0.1 CLOSED**(三前提全塌 · 见 §4-E1 **块 (p)**)。即 ②-b 的状态
+  > 从「blocked-待 correctness 验收」实际变为「**v0.1 内无路径可产生该验收**」。
+  > **这不改变 ②-b 的结论(仍 blocked),改变的是它的性质** —— 从「等一件没做的事」变成
+  > 「等一件 v0.1 内做不成的事」。**任何文档不得把「补齐拆封前置」表述为 ②-b 的解阻路径。**
   >
   > **→ E2 不授权。** E2 历史窗回测 / E3 forward 线做进 XenoDev = 越界 = **BLOCK**(不变)。
   >
