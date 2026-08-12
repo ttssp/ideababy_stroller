@@ -1415,5 +1415,5 @@ frozen PRD **v0.7 (c)** 已裁定「全量五维 Layer-2 作为 correctness gate
 - 本次 review session 在 `main` 分支而非 `009-pM3prime` worktree —— worktree-per-idea 规约 warn(第 5 次)。按 CLAUDE.md v10 注,`handback-review` 决议本就是规约列出的合回 main 的合法 checkpoint,且该 warn 的裁决被 `OB-006-v10-06`(规约消歧义)前置阻塞。⚠ 计数已达 5,消歧义任务仍未做
 - hand-back 侧 check-7 WARN 与第 32 条**同型未改善**(上次建议「填分支名或 `none`」,本次填了分支名 `feat/009-spec` 但 `workspace.working_repo` 是路径,两者仍无法机器比对)⇒ 建议归 KG 面:该字段的**比对对象**没定义清楚,不是 producer 填法问题
 
-**Follow-up commits**: pending(本 LOG 第 33 条 + PRD v0.9 + hand-back 包入库 · 同一 IDS commit · **未 push**)。
+**Follow-up commits**: `0ab6fb5`(2026-08-12 · 本条决议 + PRD v0.9 + hand-back 包入库 · **未 push**)。
 **尚未入库(去向已定)**:KG-51 + **KG-52** → forge 006 攒批 · runbook 状态头 → XenoDev 侧(`/home/ys/codes/XenoDev-009` · `feat/009-spec`)顺手改 · 漏列 commit `ca4f61c` 已在本条 §复核记录。
