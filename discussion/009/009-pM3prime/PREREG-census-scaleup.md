@@ -1,7 +1,8 @@
 # 预注册 · E1 普查扩样 + 收益检验规格(草稿 · 待 operator 签署)
 
-**Status**: 🟡 **DRAFT — 未签署 · 未授权任何执行**
-**Drafted**: 2026-08-12
+**Status**: 🟢 **§3 提取范围已冻结(operator 2026-08-12 选定方案 B)· §4 检验规格待确认**
+**Drafted**: 2026-08-12 · **§3 冻结**: 2026-08-12(计时试验实测数据到位后)
+**执行状态**: 见 §10 执行记录
 **Drafted by**: IDS session(`/handback-review 009` 决议第 33 条之后的延伸讨论)
 **Fork**: 009-pM3prime
 **关联**: PRD v0.9 · HANDBACK-LOG 第 33 条 · forge v5「两级证据制」· PRD §7 trial ledger 记账义务
@@ -85,9 +86,50 @@ AND text 非空
 
 预期规模:**≈1365 条记录 → ≈900 条信号**(其中 US 约占 98%,按 E1 实测 US 40 / CN 1 / HK 0)。
 
-### 3.2 排除 qa,及理由
+### 3.1b 🔒 冻结:方案 B(operator 2026-08-12 选定)
 
-**qa 不纳入本批。** 6000 条可用记录换约 187 条信号 —— **成本是 article 路线的 32 倍,增量只有 20%**。
+三个候选方案与实测代价(计时试验数据见 §6):
+
+| 方案 | 记录数 | 预估墙钟(串行) | 外推信号 |
+|---|---|---|---|
+| A · article only | 1055 | ≈2.3 h | ≈790 |
+| **B · article + replay** ✅ **选定** | **1364** | **≈3.8 h** | **≈905** |
+| C · 全量含 qa | 7364 | ≈17 h | ≈1092 |
+
+**选 B 的理由**:信号条数不是瓶颈(A 的 790 已是所需 158 的 5 倍),**有效样本才是** ——
+现有 41 条的集中度是 61% 半导体 / 78% long / 仅 13 个不同时点。
+`record_tickers` 表(777 条标注 · **252 个不同 ticker** · NVDA 仅占 6%)显示
+**多样性集中在 replay**,而该表**只覆盖 replay**。多花 1.5 小时买多样性,直接改善有效样本。
+
+### 3.1c ⚠ 执行绕法:CLI 表达不了本范围,用过滤输入实现
+
+`census --sample-size` **对三个 form 一视同仁**(`build_sampling_plan` 里 `_FORMS` 硬编码为
+`(article, qa, replay)`),因此**无法用 CLI 表达「article+replay 全量、qa 零条」**。
+
+**采用的绕法(零代码改动)**:给 census 喂一份**过滤后的 collection 副本**,其中 qa 记录已删除:
+
+```sql
+-- 派生自 /home/ys/codes/XenoDev/out/collection.db
+DELETE FROM records WHERE form = 'qa';
+```
+
+- 副本路径 **必须**位于 `/home/ys/codes/XenoDev/out/` 下 —— `CollectionReader._checkout_root`
+  取库路径的 `parents[1]` 作原文根,放别处会导致 `raw_ref` 全部解析不到(静默产 `text=''`)
+- 原 `collection.db` **只读、零改动**
+- **本绕法使范围更可审计**:整个提取范围由**一条 SQL** 定义,可复现、可核对
+
+⚠ **副作用与已接受**:census 仍会为 qa 这个 form 走一遍空池(`picked=[]`),verdict 里 qa 相关
+读数恒为 0。**这不代表「qa 无信号」**,只代表本批未纳入。
+
+### 3.2 排除 qa,及理由(实测后更新 · 理由变了但结论更强)
+
+**qa 不纳入本批。**
+
+⚠ **起草时的理由是错的**:原以为 qa 便宜(文本短 · 均 178 字符)。**计时试验推翻了这个假设** ——
+每次 API 调用有约 **8 秒固定开销,与输入长度基本无关**。qa 的代价是
+**6000 次调用 × 8 秒 ≈ 13.3 小时**,换约 187 条信号。
+
+**不是 token 贵,是调用次数贵。** 排除 qa 的结论不变,理由更硬。
 
 ⚠ **这是效率取舍,不是「qa 没有信号」的结论。** 如果日后要纳入 qa,**必须作为独立的新批次
 重新预注册**,不得中途追加进本批(中途追加 = 变相的 optional stopping)。
@@ -195,27 +237,70 @@ excess_return = 标的在 horizon 内的收益 − 基准在同窗口的收益
 
 ---
 
-## 6. 成本(未实测 · 必须先做小规模计时)
+## 6. 成本 —— ✅ 已实测(2026-08-12 计时试验)
 
-**我不知道真实吞吐和花费**,不能凭估计签署。**建议签署前先跑一次计时试验**:
+**试验方式**:真盘副本(`/tmp/pilot-timing.sqlite`)· `--sample-size 10`(每 form)· 真 DeepSeek ·
+**真盘 `out/e1-census-20260718.sqlite` 全程零接触**(试验前后 checksum 均 `00e69d77`,41 行,gold 表全 0)。
+
+| 实测项 | 值 |
+|---|---|
+| census 整跑 | **24 条记录 / 226 秒** · api_failures=0 · parse_failures=0 · **truncation_failures=0** |
+| 单条 57,185 字符长 replay | **42.3 秒** |
+| 单条 813 字符短 replay | **12.5 秒** |
+
+**🔴 成本结构是反直觉的**:
 
 ```
-在 article 池里取 20 条(用同一确定性抽样,取前 20)→ 计时 + 记 token 消耗 → 外推 1365 条
+每次调用固定开销 ≈ 8 秒(与输入长度基本无关)
+长度的边际成本 ≈ 0.0006 秒/字符(57k 字符只比 813 字符多花 30 秒)
 ```
 
-已知参照(不足以外推):07-17 那次失败跑是 61 分钟 / 58 条,但那次几乎全部截断+重试,不代表正常速率。
+⇒ **瓶颈是调用次数,不是 token 量。** 唯一的大杠杆是**并行化**(8 秒里绝大部分是网络等待),
+但那是代码改动,**不在本预注册范围**;本批按串行预估。
+
+**外推**:
+
+| 方案 | 记录数 | 墙钟(串行) | 主导项 |
+|---|---|---|---|
+| article | 1055 | ≈2.3 h | 固定开销 |
+| **+ replay** | +309 | **+1.5 h → 3.8 h** | 一半固定、一半长度 |
+| + qa | +6000 | +13.3 h → 17 h | **全是固定开销** |
+
+**钱**:article+replay ≈ 5.65M 字符 ≈ 400 万 input token。flash 档位下大概率是**个位数美元**。
+⇒ **金钱不是约束,时间是。**
+
+### 6.1 ⚠ 环境层拦路虎(正式跑必带,否则 0.4 秒即崩)
+
+首次尝试直接失败:`ALL_PROXY` / `all_proxy` 是 **socks5** 协议,而 `httpx` 未装 `socksio` 扩展 →
+`ImportError`(被 `_sanitize_llm_exc` 脱敏成裸 `ImportError`,**报错信息看不出真因**)。
+
+**绕法(零代码、零装包)**:命令前缀 `env -u ALL_PROXY -u all_proxy` —— 屏蔽 socks 变量后
+回落到 `HTTPS_PROXY`(http 协议,httpx 原生支持)。连通性已实测(401 = 通,只是探针 key 无效)。
+
+### 6.2 ⚠ `--extractor-variant` 参数被忽略(设计如此,非 bug)
+
+计时试验传入 `pilot_timing_20260812`,DB 实际写入 `llm_extraction_v2_deepseek-v4-flash`。
+查证:这是 **forge v6 条款 (D)** 的设计 —— `variant 身份 = proposer 类型 + prompt 模板版本`
+(修 literal/llm 混用导致的 trial 记账缺口)。
+
+⚠ **后果(正式跑必须处理)**:本批与历史 41 条**在 `extractor_variant` 字段上无法区分**。
+故本批**写入独立的新 DB 文件**(见 §10),不与 `e1-census-20260718.sqlite` 混库。
 
 ---
 
 ## 7. 待 operator 决定的项(签署时逐条填)
 
-| # | 待决项 | 建议 | 影响 |
+| # | 待决项 | 状态 | 取值 / 影响 |
 |---|---|---|---|
-| **7-1** | **超额收益的基准** | 需要讨论 | **会实质改变结论**。SPY = 把「押对半导体」算作本事;SMH = 扣光板块收益只留选股。两者答的是不同问题 |
-| **7-2** | **主 horizon** | 20 交易日 | 另两个降为探索性 |
-| **7-3** | 是否纳入 qa | 否(本批) | 32 倍成本换 20% 增量 |
-| **7-4** | 确认集是否就用 OOS 窗 | 是 | 它是现成的、零接触的 |
-| **7-5** | 先跑计时试验再签署? | 是 | 成本未知不宜承诺 |
+| **7-1** | **超额收益的基准** | 🔴 **未决 · 阻塞回测** | 建议:**主 = SPY**(对应「跟着他操作 vs 拿指数」这个你真会做的决定)· **并列披露板块基准**(诊断收益是选股还是押对板块)。**必须在算出任何收益数字之前定死** |
+| **7-2** | **主 horizon** | 🔴 **未决 · 阻塞回测** | 建议 **20 交易日**;5 / 60 降为探索性,不得单独用于结论 |
+| **7-3** | 是否纳入 qa | ✅ **已决:否** | 实测后理由更硬:13.3 h 换 187 信号,瓶颈是调用次数不是 token |
+| **7-4** | 确认集用 OOS 窗 | ✅ **已决:是** | `[2025-12-01, 2026-02-01)` · census 自设计起从未接触 · 约 171 条记录 |
+| **7-5** | 先跑计时试验 | ✅ **已完成** | 见 §6 —— 并推翻了起草时对 qa 成本的判断 |
+| **7-6** | 提取范围 | ✅ **已决:方案 B** | article + replay 全量(§3.1b)· 用过滤输入实现(§3.1c) |
+
+⚠ **7-1 / 7-2 不阻塞提取,只阻塞回测。** 提取产出的是信号,不含任何收益数字;
+但**在这两项定死之前,不得计算任何收益**。
 
 ---
 
@@ -238,3 +323,50 @@ excess_return = 标的在 horizon 内的收益 − 基准在同窗口的收益
   市场结果反标),但**尚未预注册**,须另文
 - **pre-cutoff 对照模型实验** —— 建议降级为校准工具(②-a lane),不作为本检验的前置
 - **41 条盲标路** —— 已 CLOSED,与本文无关
+
+---
+
+## 10. 执行记录(本批次)
+
+**授权**:operator 2026-08-12 明示「继续按 B。走」。
+**执行位置**:`/home/ys/codes/XenoDev-009/projects/004-pB`(build repo · 本次为**数据生成**,非 spec/build 改动,零代码变更)。
+
+### 10.1 产物路径
+
+| 件 | 路径 | 说明 |
+|---|---|---|
+| **过滤输入**(派生) | `/home/ys/codes/XenoDev/out/collection-article-replay-20260812.db` | `collection.db` 副本删 `form='qa'`;必须在此目录(§3.1c 的 `parents[1]` 约束) |
+| **目标 DB**(新建) | `.../004-pB/out/e1-census-full-20260812.sqlite` | alembic head + preregister v1;**不与历史 41 条混库**(§6.2) |
+| 原 `collection.db` | `/home/ys/codes/XenoDev/out/collection.db` | **只读零改动** |
+| 历史真盘 | `.../out/e1-census-20260718.sqlite` | **零接触**(checksum `00e69d77` 守恒) |
+
+### 10.2 执行命令(含 §6.1 必需的环境前缀)
+
+```bash
+cd /home/ys/codes/XenoDev-009/projects/004-pB
+env -u ALL_PROXY -u all_proxy uv run python -m decision_ledger.extraction.census \
+  --collection-db /home/ys/codes/XenoDev/out/collection-article-replay-20260812.db \
+  --caliber-version v1 \
+  --extractor-variant llm_extraction_v2_deepseek-v4-flash \
+  --db out/e1-census-full-20260812.sqlite \
+  --sample-size 1200 \
+  --proposer llm \
+  --api-key-env DEEPSEEK_API_KEY
+```
+
+`--sample-size 1200` > article 池(1179)与 replay 池(357),故两者**全量**;qa 池经过滤后为空。
+
+### 10.3 完成后必须做的(不做 = 本预注册失效)
+
+1. **核对 `caliber_hash` / `threshold_hash`** 与冻结值一致(`46fbd4b7b46d397b` / `97c58440426f8770`)
+2. **写 `trial_ledger`**:本批 `sampled_source_ids` 全量落库(§5)+ 指向本文件
+3. **产 hand-back 回 IDS**:本批属 build 侧工作产物,须走 §6 通道回流,不得只留在 build repo
+4. **在 7-1 / 7-2 定死之前,不得计算任何收益数字**
+
+### 10.4 运行结果(跑完回填)
+
+- 启动时刻:
+- 结束时刻 / 墙钟:
+- `records=` / `accepted=` / `rejected=` / 三类 failure:
+- verdict:
+- 与 §6 外推(3.8 h / ≈905 信号)的偏差:
