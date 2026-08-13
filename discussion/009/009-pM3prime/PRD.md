@@ -1,6 +1,23 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v0.9(2026-08-12 回写 handback `009-pM3prime-20260811T171735Z`[FU-HB32] 决议 ·
+**Version**: v1.0(2026-08-13 回写 **forge 009-pM3prime v3 verdict** · operator 选 Decision menu **[B]** ·
+`stage-forge-009-pM3prime-v3.md`:**审的是产出信号的那台机器本身**,不是金标。两处改动:
+**① §7 红线 3 改形态** —— 「同文本同版本必须同输出(一致性测试)」**作废**,替换为
+「强制测量 + 申报 + 落库 + 身份绑定,`pass_semantic: none`」。理由不是放松要求,是**去掉一个
+原理上不可满足的要求 + 一个假绿信号**:T=0 非确定性的修复位点在推理引擎 kernel 的 batch invariance
+(实测 1000 次 T=0 补全出 80 个不同结果),而 DeepSeek 官方无 `seed`、无可复现性承诺;
+且该红线的契约测把 proposer 换成 `literal_ticker_proposer`(构造上确定)⇒ **命题恒真却一直给绿信号**;
+实测反证 = 同日同参两跑 Jaccard **0.44**。已登记 `WARN-c4-extraction-stability-report-only`
+(`temporary` · `due_event: forge:009-pM3prime:phase0` · 已接线)。
+**② §6 CN/HK 改判为双态** —— **执行态 `STOP` 不变**(measurement-invalid 下的 fail-closed),
+**认识态改 `UNKNOWN`**;旧「真稀疏」事实断言**作废**(建立在单次读数上,而 per-market 恰是噪声最大的一层:
+CN 1/0/2 · HK 0/0/4,而总量同日方差仅 3%)。**US go 不受影响**(40/73/65 三次均 > 30,不是当初判错)。
+⚠ **不变的**:扩样与 E2 **继续 blocked**(`M1=pass` 也不解锁);41 条盲标路**仍 CLOSED**;
+Layer-1 四项缺角**仍未补**;红线 4(第二源资格)**不动**。
+配套 12+2 条 obligations 见 `framework/obligations/ledger.jsonl`(6 条挂已接线的
+`forge:009-pM3prime:phase0`,下一轮 forge intake 会被硬阻断);
+Hard 契约「恒真替身」普查结论(**C4 是孤例**)见 `HARD-CONTRACT-SWEEP-20260813.md`。
+v0.9 2026-08-12 回写 handback `009-pM3prime-20260811T171735Z`[FU-HB32] 决议 ·
 HANDBACK-LOG 第 33 条:**🔴 41 条盲标机会的 Layer-2 金标路在 v0.1 明确关闭(不是 blocked-待前置,
 是 closed)** —— 三个独立前提同时不成立:① **合格第二源**(KG-42,forge v2 撤销「operator 可自任」后
 至今未解)② **盲标隔离**(IDS 侧实证:约 **19/41** 条的机器答案已经由治理文档通道泄漏,详见
@@ -412,15 +429,15 @@ operator-input 文档 §1)。
   hand-back,**E2 go/no-go 由 operator 依完整密度报告终裁**(阈值 advisory 语义,见 §4-E0);
   金标任一层不过 → 停,不谈回测。
 - ~~E2 历史窗先导~~ / ~~E3 forward 确证线~~ —— **不在本 fork**,gate = E1 数字 + operator
-  另行授权(密度 gate **per-market**:US 已过 · CN/HK STOP,见 §4-E1 2026-07-19 注记;
-  金标两层仍未过,三条件未齐)。
+  另行授权(密度 gate **per-market**:US 已过 · CN/HK STOP,见 §4-E1 2026-07-19 注记
+  ⚠ **该 STOP 的理由已于 2026-08-13 改判 —— 见本节末双态块**;金标两层仍未过,三条件未齐)。
 
   > **🔴 E2/E3 解锁条件修订(2026-07-27 · forge v2 · HANDBACK-LOG 第 29 条 · [C])**
   > 原「解锁三条件」中的**条件 ②(两层金标过)拆为两条**,状态分别判定:
   >
   > | 条件 | 内容 | 状态(2026-07-27) |
   > |---|---|---|
-  > | ① 真密度显著 | per-market | **US ✅**(第 25 条终裁)· CN/HK ❌ STOP |
+  > | ① 真密度显著 | per-market | **US ✅**(第 25 条终裁)· CN/HK ❌ STOP ⚠ **2026-08-13 改判为双态,见本节末「条件 ① 的 CN/HK 改判」块** |
   > | **②-a 诊断 lane** | 产开发证据(口径校准 / failure 分类 / 变体比较) | **⏸ 待定** —— 候选降级面 groundedness 在 [C] 下**挂起**,须先过效力探针(见 §4-E1 D-7 v2 修订块 (e)) |
   > | **②-b 回测 lane** | 历史窗回测,需 **correctness 验收过** | **🔴 v0.1 明确 blocked(非「待跑」)** —— 缺 validity 锚,非缺劳动;**不因换主体或调门槛而解锁** |
   > | ③ operator 显式授权 | — | ❌ |
@@ -446,14 +463,86 @@ operator-input 文档 §1)。
   > **α 的 unit/label 空间、`pred_spans` 定义、frame-type 守卫四项缺角未补前不得冻结 Layer-1 门槛**。
   > **Layer-1 无代码级硬闸(不同于 Layer-2 的授权常量)—— 它是两道门里软的那道。**
 
+### 🔴 条件 ① 的 CN/HK 改判 —— 双态(2026-08-13 · forge v3 verdict (d) · `OB-009-pM3prime-v3-06`)
+
+> **旧判「CN/HK 真稀疏」作废。执行结论不变,理由被换掉了。**
+
+| 市场 | **执行态**(要不要投入) | **认识态**(我们知道什么) | 依据 |
+|---|---|---|---|
+| **US** | **go**(不变) | **已知密度足够** | 40 / 73 / 65 **三次读数均 > 阈值 30**,方向稳健 —— **不是当初判错** |
+| **CN** | **`STOP`**(不变) | 🔴 **`UNKNOWN`**(原为「真稀疏」) | 三次读数 **1 / 0 / 2**;总量只差 3% 时 CN 却在 0↔2 间跳 |
+| **HK** | **`STOP`**(不变) | 🔴 **`UNKNOWN`**(原为「真稀疏」) | 三次读数 **0 / 0 / 4**;总量只差 3% 时 HK 从 0 变 4 |
+
+**为什么执行态不撤销**:`STOP` 现在的含义是 **measurement-invalid 下的 fail-closed** ——
+既然读数不可信,就没有任何**正面证据**支持投入。撤销 `STOP` 会隐含「CN/HK 值得重开」,
+而那需要正面证据,我们没有。**不投入的默认仍然正确,只是它的理由变了。**
+
+**为什么认识态必须改**:原判「CN/HK 真稀疏」是一个**关于世界的事实断言**,
+而它建立在**一次读数**上,且 **per-market 恰是噪声最大的那一层**
+(总量读数同日方差 3%,而 per-market 读数在 0↔4 之间跳)。
+⇒ 该事实断言**没有证据支持**,必须撤回。
+
+**旧理由失效证据**:PREREG §10.5「决定性实验」三次读数对照表 + 分市场噪声一节。
+
+**科学重判触发条件(三者需同时满足)**:
+1. 提取稳定性的**申报机制已落地**(见 §7 红线 3 改形态块)且产出**至少一个** per-market 的跨次一致性读数
+2. per-market 读数的**噪声量级**已被测出,且**小于**该市场的密度阈值裕度
+3. operator 显式授权重判 —— **不得由任何自动化流程或 agent 自行认定条件已满足**
+
+⚠ **范围纪律(承 forge v3 Y 视角约束)**:本条的理由**只许来自科学效度**
+(单次读数能否支撑一个 STOP 裁决)。**不得诉诸市场价值、商业优先级或「CN/HK 值不值得做」**
+—— forge v3 的 Y 视角**未选产品价值**,该维度本轮未审,不得借本条夹带。
+
+⚠ **反自欺条款**:任何文档不得把 `UNKNOWN` 表述为「CN/HK 已确认有信号」,
+也不得把 `STOP` 继续表述为「CN/HK 真稀疏」。**两个方向的漂移都是漂移。**
+
 ## 7. BLOCK 级硬约束(§8 契约测试须覆盖 · forge v5 verdict 定死)
 
 1. **trial ledger**:提取器变体 × 口径版本 × horizon 全部记账(E1 期间试过的每个 prompt/规则
    变体都算 trial,未来 DSR/PBO deflate 的分母)。漏记 = BLOCK。
 2. **文本 PIT**:提取只可使用 published_at ≤ 信号时点的内容(负例测试:构造"未来内容已入库"
    场景断言提取不到)。
-3. **引文锚定 + 提取稳定性**:每条疑似信号必须附原文出处(可复核);温度 0 / 提取器版本化 /
-   同文本同版本必须同输出(一致性测试)。
+3. **引文锚定 + 提取稳定性**:每条疑似信号必须附原文出处(可复核);温度 0 / 提取器版本化。
+
+   > **🔴 2026-08-13 改形态(forge v3 verdict (b) · `OB-009-pM3prime-v3-04`)—— 原文
+   > 「同文本同版本必须同输出(一致性测试)」作废。**
+   >
+   > **作废理由(不是放松要求,是去掉一个不可满足的要求 + 一个假绿信号)**:
+   > - **原理上不可满足**:T=0 非确定性的主因是推理引擎 kernel 缺 **batch invariance**
+   >   (服务端负载 ⇒ batch size ⇒ 归约顺序;实测 1000 次 T=0 补全出 **80 个不同结果**,
+   >   换 batch-invariant kernel 后 1000/1000 相同,代价 ≈2×)。**修复位点在推理引擎内部**,
+   >   我们是第三方 API 消费者,够不着;且 **DeepSeek 官方 Chat schema 无 `seed`、无任何
+   >   可复现性承诺**,`system_fingerprint` 只表示后端配置。
+   > - **它此前从未被真正检验,却一直给正信号**:契约测 `test_same_text_same_version_same_output`
+   >   把 proposer 换成 `literal_ticker_proposer`(构造上确定)⇒ **命题恒真**;
+   >   另一半 `test_should_call_deepseek_with_temperature_zero_and_json_mode` 只断言
+   >   **参数被传给 API**。⇒ **红线的两半各自被测,红线本身落在缝里,而这条缝产出的是绿。**
+   > - **实测反证**:同日同参两跑,按 `(source_id, ticker, direction)` 去重后 **Jaccard 仅 0.44**。
+   >
+   > **替代形态(承 forge v2「数字 vs 形态」判据:这是改形态,不是挪数字)**:
+   >
+   > **提取稳定性 = 强制测量 + 申报 + 落库 + 身份绑定,`pass_semantic: none`。**
+   > - **必须测**:每批普查须产可复核的跨次一致性读数,不得省略
+   > - **必须申报**:读数进产物,不得只留在跑者的终端里
+   > - **必须落库**:与该批语料同库,可 `SELECT`
+   > - **必须绑身份**:`system_fingerprint` / `service_tier` / 语料内容哈希
+   > - **`pass_semantic: none`** —— **不设 pass/fail 阈值**。文献不给阈值与最少 N
+   >   (Atil 10 次 / NER 最多 30 次,均非普适下限),而我们**已经看过 0.44 这个数**,
+   >   此刻自定 τ 落在 forge v2 判过的「看数后动门槛」阴影里。
+   > - ⚠ **`report-only` ≠ `optional`** —— 上述四个「必须」是硬的,只是它们**不阻断**。
+   >
+   > **升级路径(唯一合法路径)**:将来若要设门禁,**必须升 `caliber_version`**,并在
+   > **看相关结果之前**预注册口径、阈值、适用模型与校准样本。**升级判据不得是次数**
+   > (承 forge 006 v10:「复发 ≥N 次」型判据全部作废)。
+   >
+   > **本条已登记为 warn**:`framework/warn-registry/registry.jsonl` →
+   > `WARN-c4-extraction-stability-report-only`(`warn_class: temporary` ·
+   > `due_event: forge:009-pM3prime:phase0` · **已接线**)⇒ 下一轮 forge intake 必须三态裁决。
+   >
+   > **同步三处,漏一处即仍有假绿源**:本条(IDS PRD)· `$XENODEV_ROOT/specs/009-pM3prime/spec.md` C4 ·
+   > 同目录 `SLA.md` E1「提取确定性」行。
+   >
+   > 详见 `forge/v3/stage-forge-009-pM3prime-v3.md` §Verdict (b) + §Verdict rationale。
 4. **金标 gate**:未过两层金标,`extracted_signals` 不得流向任何回测消费方(mutation-killer:
    移除 gate 断言应致测试失败)。**Layer-2 第二源资格红线(2026-07-23 · forge v1 · 见 §4-E1 D-7 改写 ④)**:
    第二 LLM 直接当 Layer-2 终审 = V4 = BLOCK;`second_source_kind != 'human' → raise` 保留
