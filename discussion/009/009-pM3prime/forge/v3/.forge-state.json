@@ -1,0 +1,16 @@
+{
+  "version": "v3",
+  "phase": "1",
+  "convergence_mode": "strong-converge",
+  "x_hash": "d3b0a5bb7ff31f946365f393d5e13868",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": false,
+  "fork_id": "009-pM3prime",
+  "trigger": "2026-08-12 五条实跑证据 · E1 普查提取器测量效度",
+  "inbox_head": "20260813T050145Z-009-pM3prime-forge-v3-p1.md",
+  "obligation_gate": "forge:009-pM3prime:phase0 · COUNT 0 · 静默通过",
+  "warn_gate": "validate-warn-class.sh --due-at forge:009-pM3prime:phase0 · exit 0 · 无到期项",
+  "created": "2026-08-13T04:56:45Z",
+  "last_updated": "2026-08-13T05:01:45Z"
+}
