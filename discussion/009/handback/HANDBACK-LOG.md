@@ -1490,7 +1490,7 @@ frozen PRD **v0.7 (c)** 已裁定「全量五维 Layer-2 作为 correctness gate
 但**变体不同**:这次不是「换个面就默认成立」,是「**换个面就默认不可能**」—— 9 次失败的复算被直接读成「不可复核」,
 而不是「我试的算法可能不对」。**否定性结论同样需要证据,而它比肯定性结论更容易被 9 次失败伪装成已证。**
 
-**Follow-up commits**: pending(本条与第 35 条同批 commit)。
+**Follow-up commits**: `b819bec`(2026-08-13 · 第 34+35 条决议 + PREREG 补算法 + ledger 5 行 + KG-B20/B21 · **未 push**)。
 
 ---
 
@@ -1613,4 +1613,4 @@ in-scope 问题已耗尽,剩下的需 scope 决策)。**该理由 IDS 侧接受*
 (如 `该   d u e _ g a t e   目 前 ...`),JSON 层合法但人读/grep 均失效。本次新追加的行未沿用该形态。
 未修既有行(append-only)。**仅记录,不起动作** —— 若后续要清理,应作为一次显式的 ledger 迁移。
 
-**Follow-up commits**: pending(本条与第 34 条同批 commit)。
+**Follow-up commits**: `b819bec`(2026-08-13 · 第 34+35 条决议 + ledger OB-01/02/03/05 satisfied + OB-07 范围扩充 + KG-B20/B21 · **未 push**)。
