@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-10T06:46:12Z
-last_updated: 2026-08-11T13:25:09Z
-total_decisions: 47
+last_updated: 2026-08-13T07:49:22Z
+total_decisions: 48
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry
 ---
 
@@ -1866,3 +1866,173 @@ journal `--snapshot-file`,改动破坏审计链)。但 consumer 侧实测另有�
 ---
 
 **Follow-up commits**:`41c6a89`(本条决议 + 2 个 hand-back 包入库)
+
+## 2026-08-13T07:49:22Z · 001-radar-pA-20260812T063139Z(FU-HB47-1/2 + P4.1 首次真评估)
+
+**第 48 条**。**类型**:hand-back 决议(单包 · 含四块工作 A/B/C/D)+ **consumer 侧独立复跑发现**。
+
+**Reviewed at**: 2026-08-13T07:49:22Z
+**Handback package**:`001-radar-pA-20260812T063139Z` · task `FU-HB47-2`(含 `FU-HB47-1`)
+**Tags**: feature, drift
+**Severity**: high
+**Validator**:6 约束 + check-7/8 全 PASS
+**verdict-evidence 预检**:跳过(无 `ids_verdict_evidence:` 父键 —— 包内自陈缺口,见 (5))
+
+**Operator decisions**:
+- [x] **历史两条「观望」行从 O1 剔除** —— O1 由 3/5 **退到 2/5**(见 (2))
+- [x] **P4.1 恢复常态化真跑,但先补 O6a 转义表缺口** —— 补完即跑,不再设新前置(见 (3))
+- [x] **语义漂移(scope gate / 关系方向性 / claim-entailment)现在排进下一批 task**(见 (4))
+- [x] **追认 FU-HB47-2 round-5 后 agent 自主停止**(见 (6))
+- [ ] 修 PRD(**本条不改** —— O1 口径变更以本决议脚注为准;若 v1.9 修订另起,须引本条)
+- [ ] 修 SHARED-CONTRACT(**显式不做** —— `ids_verdict_evidence` 归 forge 006 (c),与决议 40/43/47 口径一致)
+
+---
+
+### (1) ✅ consumer 侧独立复跑:两个硬前置确已落地,首次真评估确已发生
+
+**本条是本仓 hand-back 决议史上第一次 consumer 不只读包、而是自己重跑校准。** 逐项核实:
+
+| 核查项 | consumer 侧方法 | 结果 |
+|---|---|---|
+| 6 个 codex 收口 commit | XenoDev worktree `git log` | ✅ `6a024c3`/`0998265`/`4700496`/`80b4ba0`/`a8018fa`/`750844f` 全在 |
+| 词表四元组 + O1 排除 | 读 `journal/cli.py:67,72` + `batch_runner.py:399` | ✅ 属实 |
+| **B2/B4 负对照必须 FAIL** | **consumer 自行重跑 CLI** | ✅ 两份旧产物 `exit=4`,O6a/O6b 双 FAIL |
+| **B3 正对照必须 PASS** | **consumer 自行重跑 CLI** | ✅ 三份新产物 `exit=0` |
+| **O6b 是否空壳(包内未测)** | **consumer 造伪造 artifact 路径探针** | ✅ **有区分力** —— 路径伪造 → O6b FAIL(`exit=3`) |
+| `out/briefing-readable/` 已删 | `ls` | ✅ 不存在(决议 47 §(3) 要求已履行) |
+| REVIEW-LOG 无 HB47 记录 | `rg HB47 .claude/skills/codex-review/` | ✅ 零命中 —— 缺口属实,非托词 |
+| XD-54 已入 backlog | `dogfood-backlog.md:2159` | ✅ 属实 |
+| journal 4 行 / distinct=3 | 读 `out/journal/evaluations.jsonl` | ✅ 属实 |
+
+⇒ 决议 47 §(1) 判定的两个硬前置(缺陷 6 代码侧 + O6 判据校准)**均已真实落地**;Task C 的
+首次真评估**真的发生了**(operator 亲读渲染全文并产出真实投资判断原文)。**不推翻。**
+
+**据实记为正面先例**:决议 47 §(3) 曾判「缺陷 1『已修』没有真跑产物佐证」——本包用**新方向真跑**
+补上了该证据;§(3) 点名的 `out/briefing-readable/` 出处问题也已查明并清理。**决议 47 下发的
+4 项跨仓内容(缺陷 6 落代码 / O6 校准 / 新方向真跑 / 中间产物处置)逐项闭环,无一遗漏。**
+
+### (2) 🔴 O1 计数裁定:历史两行剔除 —— 并**更正包内 §3-1 的算错**
+
+裁定:`run_id=c208444e-bbb5-41e1-b02c-fdb319b2a521` 与 `run_id=e37c92d7-9c6a-49cd-a642-5fbb81bec2a5`
+两行(均 2026-08-11,`rationale` 原文「没法判断,报告的格式…人类无法理解」)**不计入 O1 的
+`distinct_direction_count`**。理由:它们是**缺陷 6 的原始证据**,不是评估样本;把「读不懂」算进
+O1 分母,与缺陷 6 本身要修的问题在精神上矛盾。
+
+采**包内方案 2**:**不改代码、不给 append-only store 引入 amend 语义**,只在本决议记录口径。
+代码规则保持纯机械(只认 `conclusion` 字面值),`summarize_journal_progress` 对这两行仍返回
+字面计数 —— **机器读数与治理口径在此处刻意分叉,以本条为准**。
+
+🔴 **更正包内 §3-1 的算错**:包内写「报告口径按『3 条评估 - 0 条无法判断 = 3』」。**错。**
+consumer 实读 journal 四行,方向分别为 `coding LLMs`(08-02)/ `on-policy distillation`(08-11)/
+`coding LLMs`(08-11)/ `agentic RL for LLMs`(08-12)。那两条 08-11 行是
+**`on-policy distillation` 方向在 journal 中的唯一两条**,剔除后该方向**整个消失**:
+
+```
+剔除前 distinct = {coding LLMs, on-policy distillation, agentic RL for LLMs} = 3/5
+剔除后 distinct = {coding LLMs, agentic RL for LLMs}                        = 2/5
+```
+
+⇒ **方案 2 的真实代价是 O1 从 3/5 退到 2/5,不是「保持 3」。** 包内把剔除写成零代价,是**低估**。
+`decision_delta_count` 仍为 **1**(2026-08-02 那条,未变)。
+
+**⇒ 生效口径:O1 = 2/5 · decision_delta = 1/? · 剩余需 3 次真评估(非 2 次)。**
+下发 XenoDev:P4.1 剩余真跑次数按 **3 次**排,不是包内 §3-5 说的 2 次。
+
+### (3) 🔴 consumer 侧新发现:O6a 转义表是**欠包含的枚举白名单**,校准协议在边界处无区分力
+
+`src/radar/credibility/briefing_readability.py:51`:
+
+```python
+_ESCAPE_LEAK_CHARS: tuple[str, ...] = ("*", "`", "#", "|", "_")   # 五种,不含 `>`
+```
+
+而**被 operator 采纳、已记入 journal、计入 O1 的那份正对照产物**
+`out/briefing/agentic-rl-for-llms-20260812T051207Z.md`,在**位移叙事段(正是 O6a 的扫描区)**内
+含 **3 处 `\>` 转义泄漏**(`--combines--\>`)。它 **O6a PASS**。
+
+⚠ **这不是「有个小 bug」,是校准协议自身的盲区**:
+
+> 正对照的判据是「**必须 PASS**」。于是一份**带着同类缺陷通过**的产物,与一份**干净通过**的产物,
+> 在该协议下**无法区分**。负对照有 92/84 次转义,任何阈值都能抓 ——
+> **校准只证明了极端处有区分力,没证明边界处有。**
+
+形态与决议 47 §(6) 记的「不知道还剩多少同类 CommonMark 构造」**同族**,也与「codex 5 轮 finding
+未收敛到零就停」同族。**「枚举白名单 + 只测极端负例」= 覆盖率未知的门**,本条给它命名并登记。
+
+**严重度据实**:3 处 vs 92 处,**未破坏可读性**,operator 确实形成了真实投资判断 ——
+**⇒ O1 的那 1 次(`agentic RL for LLMs`)是真挣来的,不因本发现作废。**
+
+**下发 XenoDev(P4.1 恢复前的唯一前置,补完即跑,不再设新前置)**:
+1. 补 `_ESCAPE_LEAK_CHARS` 漏项(至少 `>`;并系统过一遍 CommonMark active 字符集,**不要再逐个补**);
+2. **升级 B3 正对照判据**:由「必须 PASS」改为「**必须 PASS 且零转义泄漏残留**」——
+   否则正对照永远无法证伪「checker 欠包含」;
+3. 用本次三份正对照产物重跑校准,`agentic-rl-for-llms-20260812T051207Z.md` 在新判据下**应转 FAIL**
+   (这是新判据有区分力的证明;该产物已 journal,**不因此撤销其 O1 计数**,见上)。
+
+### (4) 检索方向语义漂移 → **现在排进下一批 task**(不攒 backlog)
+
+**触发**:Task C 第一次真跑(方向名「agentic RL」)检索到经典 MARL 文献,operator 亲读后指出
+「你调研的 marl 和我想要的 agentic rl 不是一个东西」。**consumer 复跑确认**该遗留产物
+`out/briefing/agentic-rl-20260812T005131Z.md` **O6a/O6b 双 PASS(exit=0)**
+—— **包内「O6 结构上抓不到语义漂移」的判断,经 consumer 实跑证实,非推演。**
+
+**排 task 而非攒 backlog 的理由**:
+1. 这是 **operator 自己的投资判断原文**点名的「下一步应优先」项(原文:「下一步应优先加强
+   scope gate、关系方向性和 claim-entailment 校验」)—— 需求来自使用者而非开发侧推测;
+2. 已有 1 次实证(换精确方向名才 on-topic),且 **O6a/O6b 双 PASS 已证明现有判据族结构上够不着** ——
+   不是判据调参能解决的,是**缺一层判据**;
+3. operator 的原话把工具定位为「候选信号发现工具,还不足以支撑强判断」,病灶明确列了三层:
+   **对象分类正确 / 关系语义正确 / 结论被原文真正支持**。
+
+⭐ **正面记录 agent 在此处的处置**:识别出 drift 后**没有**自行选结论词,尤其**没有**塞进新增的
+「无法判断」态 —— 包内理由:「读不懂」与「读懂了但检索错了对象」是两种不同性质的失败,折成一个值
+**会重犯缺陷 6 的同型错误**。agent 就地问 operator 而非代决。**这是本仓「不把两个状态折成一个值」
+这条教训第一次被 agent 主动、正确地援引到一个新场景。据实记为正面先例。**
+
+### (5) 🟡 `ids_verdict_evidence` 缺席 —— **第 5 次**复现 · 本条仍不改协议
+
+包内自陈:本次两个 task 确实真跑了 codex review(FU-HB47-1 2 轮 / FU-HB47-2 5 轮),但执行方式是
+在长期 feature 分支直接跑 `node companion.mjs review` 并手工读 stdout,**未执行 codex-review SKILL
+§3.6.2 的 `write_review_log_immutable`** ⇒ REVIEW-LOG 与 `real-review/` 均无本次任何记录。
+**consumer 侧实测复核:`rg HB47 .claude/skills/codex-review/` 零命中 —— 缺口属实,不是托词。**
+
+- 复发计数:决议 47 记「连续第 4 个」⇒ 本包后为 **第 5 次**。
+- 包内已入 XenoDev `dogfood-backlog.md` **`XD-54`**(consumer 实测在 `:2159`),归 forge 006 (c) 攒批。
+- **本条不改 SHARED-CONTRACT** —— 与决议 40/43/47「归 forge 006 (c),现在改 = 抢在 forge 前下结论」
+  口径一致。
+
+⚠ **但据实记一句**:该缺口已连续 5 次「记录 → 攒批 → 等 forge」。**「攒批」本身正在成为一种
+不产生行为的处置** —— 形态与 CLAUDE.md v10 作废「复发 ≥N 次即升级」判据时点名的**同一个病**
+(无计数者、无消费点、无执行者)。**下次 `/expert-forge 006` 若再不裁决 (c),本条要求按 v10
+的三态裁决规则处理:convert / revert / defer,defer 须具名签署 + 理由 + 新 due_event。**
+
+### (6) ✅ 追认 round-5 后 agent 自主停止 · 披露诚实,与决议 47 §(6) 同型
+
+FU-HB47-2 在 round-4 触发 codex-review SKILL §4.2 的 4 轮 hard-stop,沿用 FU-HB46-1/FU-HB46-2/
+FU-KG30 先例跑 round-5 确认后停止。**与先例的唯一差异是本次无 operator 在场确认** —— 包内主动标注
+该差异,并明写「**不得记为『codex 门已过』**」,如实列出 5 轮 12 条 [P2] finding 与逐条修法。
+
+**追认。** 理由:与决议 47 §(6) 认可的正面先例同型(**诚实标注,不是转述漂移**,区别于决议 40 的
+XD-41「不应合入」被转述成「披露即可合」);round-5 finding 严重度未上升,且 12 条**全部集中在判据
+模块自身的扫描精度边界**,不涉生产链路安全边界。
+
+⚠ **但 (3) 的发现给这次追认加一条注脚**:consumer 刚证明该模块**仍有漏项**(`\>` 不在转义表)。
+即「finding 未收敛到零就停」的敞口**是实的、且已兑现了一次**。本次追认是对**决策程序**的追认,
+**不是**对「该模块已无漏项」的背书。(3) 的补漏要求即由此而来。
+
+**⇒ 「谁有权停 codex 门」这一治理问题本身(agent 能否无 operator 在场援引先例停止)不逐包裁决,
+与 `XD-54` / `ids_verdict_evidence` 一并进 forge 006。**
+
+### (7) 遗留产物处置(据实记,防将来误当证据)
+
+- `out/briefing/agentic-rl-20260812T005131Z.md`(+ 同名 graph/corpus):第一次真跑的 **MARL 语义漂移
+  产物**,未删除、未 journal。**consumer 实跑确认其 O6a/O6b 双 PASS** —— 正因为它「判据全过但对象错」,
+  **它是 (4) 那层缺失判据的最佳负样本**,建议 XenoDev 排 (4) 的 task 时**直接拿它当第一个负对照**,
+  不要删。
+- `out/briefing-readable/`:决议 47 §(3) 点名的来路不明中间产物,已查明是修 FU-HB46-1 过程中的手工
+  排查残留(标题用真 `### `,而 shipped 渲染器钳到 `#### `+),**已 `rm -rf` 删除**。consumer 复核
+  确认不存在。**决议 47 §(3) 的遗留项闭环。**
+
+---
+
+**Follow-up commits**:pending(本条决议 + hand-back 包 20260812T063139Z 入库)
