@@ -242,6 +242,21 @@ excess_return = 标的在 horizon 内的收益 − 基准在同窗口的收益
 **试验方式**:真盘副本(`/tmp/pilot-timing.sqlite`)· `--sample-size 10`(每 form)· 真 DeepSeek ·
 **真盘 `out/e1-census-20260718.sqlite` 全程零接触**(试验前后 checksum 均 `00e69d77`,41 行,gold 表全 0)。
 
+> 🔧 **2026-08-13 补记算法(IDS /handback-review 009 第 34 条)**:本文档三处(本行 · §10.1 产物表 ·
+> §10.4 结果表)引用守恒锚 `00e69d77` 时**只记了值、没记算法**,导致 hand-back
+> `009-pM3prime-20260813T072930Z` 试了 9 种通用摘要复算无一命中、误判「该锚无法被任何人复核」。
+> **算法在案**,出处 = hand-back `20260811T171735Z-009-pM3prime-20260811T171735Z.md` 第 104 行:
+>
+> ```python
+> # extracted_signals 全行 checksum · 取前 16 hex
+> sha256(repr(conn.execute("SELECT * FROM extracted_signals ORDER BY id").fetchall()).encode()).hexdigest()[:16]
+> # → 00e69d77df540f5b   (IDS 侧 2026-08-13 直查真盘重算 · 首次即精确命中)
+> ```
+>
+> ⚠ 该式**依赖 Python `repr()` 的稳定性**(sqlite3 row tuple 的 repr),跨语言/跨大版本不保证可复现 ——
+> 它是**同环境守恒比对**用的锚,不是可移植的内容身份。可移植的内容身份走
+> `OB-009-pM3prime-v3-03` 的四元组 `{algorithm, value, computed_at, target}`(T014 已实装,migration `0022`)。
+
 | 实测项 | 值 |
 |---|---|
 | census 整跑 | **24 条记录 / 226 秒** · api_failures=0 · parse_failures=0 · **truncation_failures=0** |
@@ -338,7 +353,7 @@ excess_return = 标的在 horizon 内的收益 − 基准在同窗口的收益
 | **过滤输入**(派生) | `/home/ys/codes/XenoDev/out/collection-article-replay-20260812.db` | `collection.db` 副本删 `form='qa'`;必须在此目录(§3.1c 的 `parents[1]` 约束) |
 | **目标 DB**(新建) | `.../004-pB/out/e1-census-full-20260812.sqlite` | alembic head + preregister v1;**不与历史 41 条混库**(§6.2) |
 | 原 `collection.db` | `/home/ys/codes/XenoDev/out/collection.db` | **只读零改动** |
-| 历史真盘 | `.../out/e1-census-20260718.sqlite` | **零接触**(checksum `00e69d77` 守恒) |
+| 历史真盘 | `.../out/e1-census-20260718.sqlite` | **零接触**(checksum `00e69d77` 守恒 · 算法 = `sha256(repr(SELECT * FROM extracted_signals ORDER BY id))[:16]`,见 §6 补记) |
 
 ### 10.2 执行命令(含 §6.1 必需的环境前缀)
 
@@ -374,7 +389,7 @@ env -u ALL_PROXY -u all_proxy uv run python -m decision_ledger.extraction.census
 | 失败 | **1 条**(`sid=173372`)· api=0 · **parse=1** · truncation=0 |
 | 结果 | 早停(codex R10)→ **全回滚 · 零落库** · exit **2** |
 | 落库核对 | `extracted_signals=0` · `extraction_rejections=0` · 回滚干净 |
-| 历史真盘 | **零接触**(checksum `00e69d77` · 41 行) |
+| 历史真盘 | **零接触**(checksum `00e69d77` · 41 行 · 算法 = `sha256(repr(SELECT * FROM extracted_signals ORDER BY id))[:16]`,见 §6 补记) |
 
 **这不是 bug,是 fail-closed 按设计工作**(KG-40 教训:LLM 静默失败会伪装成真稀疏)。
 

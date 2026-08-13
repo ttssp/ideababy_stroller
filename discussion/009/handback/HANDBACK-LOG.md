@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-08-12T02:26:53Z
-total_decisions: 33
+last_updated: 2026-08-13T09:57:42Z
+total_decisions: 35
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -1417,3 +1417,200 @@ frozen PRD **v0.7 (c)** 已裁定「全量五维 Layer-2 作为 correctness gate
 
 **Follow-up commits**: `0ab6fb5`(2026-08-12 · 本条决议 + PRD v0.9 + hand-back 包入库 · **未 push**)。
 **尚未入库(去向已定)**:KG-51 + **KG-52** → forge 006 攒批 · runbook 状态头 → XenoDev 侧(`/home/ys/codes/XenoDev-009` · `feat/009-spec`)顺手改 · 漏列 commit `ca4f61c` 已在本条 §复核记录。
+
+---
+
+## 2026-08-13T09:57:42Z · 009-pM3prime-20260813T072930Z(08-12 build 活动补回流 + forge v3 契约落地 · **🔴 §2 那条 `drift` 守恒锚发现被证伪** —— 算法在案、重算首次命中、且一天前刚被复核过)
+
+**Reviewed at**: 2026-08-13T09:57:42Z
+**Tags**: practice-stats, drift
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对路径)· check-7 ✅ PASS(三字段齐)· check-8 ✅ PASS
+**verdict-evidence 预检**: n/a(无 `ids_verdict_evidence` 块 —— 但这本身是 KG-B20 的一部分,见第 35 条)
+**通道不规则(producer 已自陈)**: 本包由 **IDS session 代产**,非 XenoDev session 产。理由(08-12 build 活动事实只存在于那次会话上下文,fresh session 只能重跑或猜)IDS 侧接受;三字段如实指向 XenoDev-009 且 check-7 通过。
+
+**Operator decisions**:
+- [ ] 修 PRD(本包 §3 明示不请求 —— PRD v0.9→**v1.0** 已于 2026-08-13 独立落地,IDS 侧已复核属实)
+- [ ] 修 SHARED-CONTRACT
+- [x] 修 IDS 治理产物(PREREG 三处引用点补算法)
+- [x] 无操作 · 入库 practice-stats(批 A 通道欠账,补记即可)
+
+### IDS 侧逐条复核(全部机械核对 · 无一靠转述)
+
+**属实项**:
+
+- **批 B 契约落地属实且完整**:`git show 6d613a2` = `spec.md` +18/-6 · `SLA.md` +2/-2,四处改动逐条可见 ——
+  C4 行改形态(`pass_semantic: none`)· O10 正文改「两条契约测 + 一项落库申报」· O10 验收命令行移除
+  `-k "same_text_same_version_same_output"` · SLA「提取确定性」→「提取稳定性」行。
+  **第五处(SLA 冻结参数表「提取器温度」行)确在同一 commit 内** —— 本包自陈「原以为三处、落地时残留普查才发现第四处」属实,
+  且它主动报了这个自我更正,记一次正分。
+- **PRD v1.0 属实**:`discussion/009/009-pM3prime/PRD.md` frontmatter `Version: v1.0(2026-08-13 回写 forge v3 verdict)`,
+  §7 红线 3 改形态 + §6 CN/HK 双态两处均在。
+- **「零接触」结论属实**:mtime / 41 行 / id 1–41 / gold 表全 0 —— IDS 直查真盘一致。
+
+🔴 **不属实项 · §2 `drift`「守恒锚不可复现」是误报**:
+
+本包称「**根因:记了 checksum 的值,没记算法** ⇒ 该锚**无法被任何人复核,包括记它的人**」。三段实证推翻:
+
+| 检查 | 结果 |
+|---|---|
+| 算法有没有记 | **记了** —— `sha256(repr(ORDER BY id 全字段))`,在 hand-back `20260811T171735Z-009-pM3prime-20260811T171735Z.md` **第 104 行** |
+| 按该式重算 | IDS 直查真盘 `out/e1-census-20260718.sqlite`:`sha256(repr(rows))` = **`00e69d77df540f5b`** —— **首次即精确命中**(41 行 · alembic 0021) |
+| 之前有没有人复核成功过 | **有** —— 本文件**第 33 条** T1 项白纸黑字:「全行 checksum `00e69d77…` 与 hand-back 声称**逐字节相同**」。就在**一天前** |
+
+**误报的形状**:本包试的 9 种摘要(文件级 md5/sha256/sha1/b2/cksum/crc32/adler32 · 内容级 `.dump`|sha256、
+`.dump`|md5、signals 表|sha256、|md5)**全是通用文件/dump/表摘要,无一是在案的那个式子**。
+而本包 §5 **正在引用** `20260811T171735Z` 这个文件(为指出其 `worktree` 字段写成分支名)——
+**引用了那个文件,却没读到同一文件里的算法**;本包又是 **IDS session 代产**的,手里就有本文件第 33 条。
+
+⇒ **真实缺陷比原述窄得多**:PREREG 三处引用点(§6 / §10.1 / §10.4)只写值不写算法。
+**「引用点不完整」≠「锚已死」。** 两者的处置完全不同:前者补一行算法即可,后者要换锚、要重建守恒证据链。
+
+⚠ **该误报已经二次传播**:hand-back `009-pM3prime-20260813T093952Z` §1 OB-03 把它当作「真实事故」引用,
+`framework/obligations/ledger.jsonl` 的 `OB-009-pM3prime-v3-03` 新行 note 也整段照抄了错误根因。
+**再不纠,它就作为事实进语料** —— 与 KG-52(泄漏经治理散文通道跨 8 条决议无人察觉)同形:
+**错误结论沿治理文档通道传播的速度,快于任何机械校验点。**
+
+### 决议动作(已落地)
+
+1. **PREREG 三处引用点补算法**(`discussion/009/009-pM3prime/PREREG-census-scaleup.md`):
+   §6 试验说明处加算法补记块(含可执行 Python 式 + 重算结果 + **可移植性告警**:该式依赖 Python `repr()` 稳定性,
+   是**同环境守恒比对锚**、不是可移植内容身份;可移植身份走 OB-03 四元组);§10.1 / §10.4 两表行内加算法指针。
+2. **ledger `OB-009-pM3prime-v3-03` 追加新行更正**(append-only,不改历史行):撤销错误根因,
+   保留实体要求(四元组落库),动机改为真实缺陷「守恒锚的引用点不记算法」。**该条同时标 satisfied**(见第 35 条)。
+3. **批 A 通道欠账入库 practice-stats**,不另起动作 —— 数据(密度不可复现 → PRD v0.9→v1.0)已被消费,
+   欠的是通道不是内容。⚠ 但本包 §2 自己指出的「通道旁路形状与 KG-52 一样」成立,已随 KG-B20 一并进 forge 006 攒批。
+
+### 元层观察(值得单列)
+
+本条与第 33 条构成一组对照:**第 33 条是「证据在场却被解释掉」,本条是「证据在场却没去读」。**
+后者更基础,也更难防 —— 第 33 条至少交锋过,本条连交锋都没发生。且本包是 **IDS session 代产**,
+即**审查方自己**在做这个动作,与第 33 条「观察者自身在泄漏通道上」同型。
+⇒ 归入第 32 条已命名的门族(「在一个面上验证过了,就默认另一个面也成立」)第 5 个实例,
+但**变体不同**:这次不是「换个面就默认成立」,是「**换个面就默认不可能**」—— 9 次失败的复算被直接读成「不可复核」,
+而不是「我试的算法可能不对」。**否定性结论同样需要证据,而它比肯定性结论更容易被 9 次失败伪装成已证。**
+
+**Follow-up commits**: pending(本条与第 35 条同批 commit)。
+
+---
+
+## 2026-08-13T09:57:42Z · 009-pM3prime-20260813T093952Z(T014 · forge v3 实装落地 · OB-01/02/03/05 全 satisfied · **🔴 9 轮 codex review 零机器可读记录 · singleton pointer stale 成反向正信号**)
+
+**Reviewed at**: 2026-08-13T09:57:42Z
+**Tags**: practice-stats
+**Severity**: medium
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对路径)
+**check-7**: ⏭ **skipped 且该 skip 本身有缺陷** —— 见下方 KG-B21
+**verdict-evidence 预检**: ⏭ 跳过(无 `ids_verdict_evidence` 父键)—— **这不是「正常跳过」,是 KG-B20 的核心现场**
+
+**Operator decisions**:
+- [x] `OB-009-pM3prime-v3-01`/`-02`/`-03`/`-05` 标 **satisfied**,**附证据缺口注记**
+- [x] 两条残留 finding **并入 `OB-009-pM3prime-v3-07`(聚合探针)前置基础设施范围**,不新增条目
+- [x] F1(REVIEW-LOG 绕过 + `ids_verdict_evidence` 从未生效)**归 forge 006 攒批** → 新增 **KG-B20**
+- [x] check-7 跳过判据缺陷 → 新增 **KG-B21**(不新增 warn 条目,并入既有 `WARN-check7-topology-selfattest` 的三态裁决)
+- [ ] 修 PRD / 修 SHARED-CONTRACT(本次不动 —— §6 B-4-IDS 的条款文本没错,错的是消费点判据,归 forge)
+
+### IDS 侧逐条复核
+
+**属实项(数字层自报精度很高,与第 33 条同水准)**:
+
+- **测试基线逐字一致**:IDS 侧独立全量重跑 `uv run python -m pytest -q` →
+  **`1231 passed, 7 skipped, 6 deselected, 1 xfailed, 7 warnings in 122.53s`** —— 与自报**逐字一致**
+  (基线 1209 + 22 新测试 · 0 回归,与第 33 条复核的 1209 基线接得上)。
+- **三个 commit 均存在**于 `XenoDev-009` `feat/009-spec`:`3acee51`(主实装)·`0d9f5cb`(round-7 修)·`82ef616`(round-8 修)。
+- **OB-01 属实**:`census.py` 重试按 `RETRY-CONTRACT-20260813.md` 的「A + 判据 + 证不出则降级 B」形态实装;
+  B 分支未实装符合义务原文(留真跑证明后触发)。
+- **OB-02 属实**:migration `0022` 建 `extraction_attempt_log`;`census.py` 内 `system_fingerprint`/`service_tier` 命中 **20 处**(此前为 0)。
+- **OB-03 属实**:`0022` 给 `trial_ledger` 加 5 个可空列(`run_id` + 四元组),**只 ADD 不改 grain**(逐条 `ALTER TABLE` 可见),
+  符合 forge v3「不宜顺手改 grain,会动 DSR/PBO 分母语义」的明判。
+- **OB-05 属实**:测试改名 `test_literal_proposer_is_deterministic_but_not_evidence_for_c4`
+  (`tests/contract/test_e1_citation_consistency.py:83`),docstring 明确不为 LLM 路径 C4 提供证据。
+- **冻结项零改动**:本包列的 13 项(R10 早停 · `caliber_hash` · `threshold_hash` · `density_threshold` · OOS window ·
+  `_N_PER_STRATUM` · `_N_MAX` · trial_ledger 现有列 grain · RETRY-CONTRACT B 分支 · scale-up/E2/E3 · 41 条盲标路 · T011.md)
+  与 commit diffstat 不冲突。
+
+🔴 **发现 1 · T014 的 9 轮 codex review 没有留下任何机器可读记录,且 canonical pointer 现在是反向正信号**
+
+| 检查 | 结果 |
+|---|---|
+| `real-review/` 有无 T014 immutable 记录 | **无**。最新是 `branch-2026-08-11T171433Z-FU-HB32.md`(**上一个 task**) |
+| `REVIEW-LOG.md` singleton frontmatter | `target_file: FU-HB32-branch-diff-vs-4820539` · **`verdict: approve`** · **`findings_count: 0`** · `ts: 2026-08-11T17:14:33Z` |
+| 最后触碰 `REVIEW-LOG.md` 的 commit | `59d0ed2`(**08-12**)—— **早于** T014 三个 code commit(08-13) |
+| SKILL 是否要求写 | **要求**。XenoDev `codex-review` SKILL §3.6:「真路径**必须** machine-readable yaml frontmatter 写到 `.claude/skills/codex-review/REVIEW-LOG.md`」 |
+| `ids_verdict_evidence` 全语料命中 | `rg -l '^ids_verdict_evidence:' discussion/*/handback/*.md` = **空**(001 + 009 两 fork 全部 hand-back,**零命中**) |
+
+⇒ **canonical singleton 现在对外回答「最近一次 review 结论是什么」= `approve` / 0 findings;
+真实是 `needs-attention` / 2 条残留 finding。** 这是**已知在场的错误正信号**。
+
+**机制链是闭合的,所以它不会被任何环节发现**:
+```
+codex review 真跑了 → 不写 REVIEW-LOG → 无可绑的 review_log_path/sha256
+  → hand-back 不产 ids_verdict_evidence 父键
+    → /handback-review Step 4.3 判据 =「**仅当**含该父键时跑预检」
+      → 缺父键 = 静默通过(**不是 REJECT**)
+        → 以 practice-stats 入库,零报警
+```
+且 producer 侧 `gen-handback.sh` **模板压根不产该键**(IDS grep 实证)。
+⇒ **§6 B-4-IDS 这条 spine 级防伪契约,由被它约束的一方 opt-in。** 判据方向写反了,不是纪律问题。
+
+⚠ **这是 001(forge v4)已诊断过的 R-Q7「immutable REVIEW-LOG 被整条绕过且 pointer stale 成反向正信号」
+在 009 的复发** —— 第二个 fork、约 10 天后。与 KG-B15(warn 判据达成后仍复发到第 4 次)、
+XD-44′(连续 4 次)同族的元层证据:**诊断本身不产生行为**。归 forge 006 → **KG-B20**。
+
+🔴 **发现 2 · check-7 的跳过判据日期盲,且「全缺」比「缺一两个」更安静**
+
+本包 `created: 2026-08-13`、拓扑三字段全缺 → validator 输出
+「⏭ skipped:§6.3.1 拓扑自证三字段全缺(**2026-08-10 前的老包属正常**)」——
+对本包这是**假陈述**(三字段 08-10 进 schema,本包晚 3 天);`created` 就在 frontmatter 里,脚本**从不读**。
+判据 `${#MISSING[@]} -eq 3` → 静默 skip,缺 1–2 个 → WARN ⇒ **全不填反而比填一半安静**;
+而脚本自己的注释写着「部分填写比全不填更可疑」——**判据与其自身的风险判断相反**。
+根因在 producer(`gen-handback.sh` 不产该三字段,同 KG-51 族);同日同 fork 的 `072930Z` 包**有**三字段,
+因为它是 IDS session 手写的。归 forge 006 → **KG-B21**(不新增 warn 条目,并入既有
+`WARN-check7-topology-selfattest` 的 `forge:006:phase0` 三态裁决)。
+
+### 关于 `needs-attention` 收尾的判断
+
+本包在 round 9 停止迭代、以 `needs-attention` 交付,并给了停止理由(round 8→9 的 2 条 finding 内容不变 ⇒
+in-scope 问题已耗尽,剩下的需 scope 决策)。**该理由 IDS 侧接受**,两条残留确属 OB-07 前置基础设施。
+⚠ 但要与 001 的 **XD-41「needs-attention 事实等价于放行」** 划清:本次之所以不算 XD-41 的又一实例,
+是因为 **operator 在 IDS 侧显式裁决了这两条的归属**(下方动作 2),而不是它们被 `needs-attention` 顺势带过。
+**如果没有本条决议,它就是 XD-41。** 这个区别完全依赖 IDS 决议这一步真的发生 —— 而 KG-B20 证明,
+让它必然发生的机械点**当前不存在**。
+
+### 决议动作(已落地)
+
+1. **四条 obligation 标 satisfied + 证据缺口注记**(`framework/obligations/ledger.jsonl` 追加 4 行,append-only):
+   每行 `content_identity` 绑 commit `82ef616` + 真实文件 sha256,`evidence` 记 IDS 侧独立复核内容,
+   并统一附注:**本行 `satisfied` 的依据是 IDS 侧独立机械复核,不是 `xenodev:task-review` 的产物**
+   (该 due_gate `consumer_wired: false`,且本次其证据链缺失 → KG-B20)。
+2. **两条残留 finding 并入 `OB-009-pM3prime-v3-07`**(追加新行,note 扩充范围;**状态仍 pending**,
+   仍受「排在 Hard 契约普查 OB-...-12 之后」的约束):
+   ① [high] 进程崩溃窗口丢审计(run 末尾批量落库;真崩溃可恢复需写穿透 —— 连接管理/幂等/恢复检查;
+   ⚠ 与 census 主数据既有「单原子事务 · 崩溃丢整 run · 可重跑」哲学一致,**非 T014 引入的新退化**);
+   ② [medium] 失败批次无法绑定语料内容身份(`extraction_attempt_log` 只记 `source_id`;四元组只落 `trial_ledger`
+   而 `census_invalid` 会回滚)。
+3. **KG-B20 + KG-B21 写入 `discussion/006/FORGE-006-v10-PENDING.md`**(含与 v9 在审条目的并案关系表两行)。
+4. **§3 item 3(codex-review SKILL 硬编码 macOS 路径 + 钉死 1.0.3)不动** —— 本包自陈非新发现,
+   XenoDev `dogfood-backlog.md` KG-27 已载。IDS 侧确认无需动作。
+
+### 未做的事(显式声明,防被读成已办)
+
+- 🔴 **`REVIEW-LOG.md` 的 stale pointer 本次未修** —— operator 只选「归 forge 006 攒批」,未选「立刻止血」。
+  ⇒ 该文件**现在仍对外答 `approve` / 0 findings**,这条错误正信号在 forge 裁决前**一直有效**。已在 KG-B20 ③ 明记。
+- **T014 的 9 轮 review 记录不补写** —— 事后追述的证据强度存疑,不如让缺口如实留在语料里作 KG-B20 的证据。
+- **扩样与 E2 继续 blocked**,不因本包「有进展」而松口(本包 §4 自己也这么写)。
+- **`OB-009-pM3prime-v3-07` 本轮不起跑**(依赖 OB-01 已 satisfied,但 operator 08-13 选 [B] 的排序约束仍在:OB-12 在前)。
+
+### warn 型 preflight(不阻断 · 留痕)
+
+本次 review session 在 `main` 分支而非 009 worktree —— worktree-per-idea 规约 warn(**第 6 次**)。
+同第 33 条:`handback-review` 决议是 CLAUDE.md 列明的合法 main checkpoint,且该 warn 的裁决被
+`OB-006-v10-06`(规约消歧义)前置阻塞。⚠ **计数已达 6,消歧义任务仍未做。**
+
+### 顺带记录的语料质量观察(非本次决议范围)
+
+`framework/obligations/ledger.jsonl` 中多条 `OB-009-pM3prime-v3-*` 的 `exposure` 字段值被逐字符插入了空格
+(如 `该   d u e _ g a t e   目 前 ...`),JSON 层合法但人读/grep 均失效。本次新追加的行未沿用该形态。
+未修既有行(append-only)。**仅记录,不起动作** —— 若后续要清理,应作为一次显式的 ledger 迁移。
+
+**Follow-up commits**: pending(本条与第 34 条同批 commit)。

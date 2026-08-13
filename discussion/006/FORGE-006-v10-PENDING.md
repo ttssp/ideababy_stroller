@@ -300,6 +300,62 @@
   ③ 与 KG-B17 的 fixture 硬编码、KG-B18 的指令文档陈旧**三条并案**,给出
   「路径类声明在多 worktree / 多主机下如何保持有效」的统一处置。
 
+### KG-B20 · R-Q7「REVIEW-LOG 被整条绕过」在 009 复发,且 `ids_verdict_evidence` 防伪契约**两个 fork 从未生效过一次**
+
+- **来源**:IDS `/handback-review 009` 第 35 条(2026-08-13)· hand-back `009-pM3prime-20260813T093952Z`(T014)
+- **现场(三段实证,均 IDS 侧直查)**:
+  1. **T014 的 9 轮 codex review 零机器可读记录** —— `XenoDev-009/.claude/skills/codex-review/real-review/`
+     最新条目是 `branch-2026-08-11T171433Z-FU-HB32.md`(上一个 task),**无 T014**;
+     而 XenoDev `codex-review` SKILL §3.6 明写「跑完真路径 codex review 后 · 真路径**必须** machine-readable
+     yaml frontmatter 真路径写到 `.claude/skills/codex-review/REVIEW-LOG.md`」。
+  2. 🔴 **canonical singleton pointer stale 成反向正信号** —— `REVIEW-LOG.md` frontmatter 至今是
+     `target_file: FU-HB32-branch-diff-vs-4820539` · `verdict: approve` · `findings_count: 0` ·
+     `ts: 2026-08-11T17:14:33Z`;最后触碰该文件的 commit `59d0ed2`(08-12)**早于** T014 三个 code commit
+     (`3acee51`/`0d9f5cb`/`82ef616`,08-13)。⇒ 任何人或脚本问「最近一次 review 结论」,得到
+     **`approve` / 0 findings**;**真实是 `needs-attention` / 2 条残留 finding**。
+  3. **`ids_verdict_evidence` 从未生效过一次** —— `rg -l '^ids_verdict_evidence:' discussion/*/handback/*.md`
+     = **空**。SHARED-CONTRACT §6 B-4-IDS 把它定为 spine 级 immutable evidence binding、
+     写明「任一字段缺 = consumer REJECT」,changelog 记为 wave 2 T205 已 ship;
+     **实际在 001 与 009 两个 fork 的全部 hand-back 语料里,零命中**。
+- **机制链闭合(这条比现场更重要)**:
+  ```
+  codex review 跑了 → 不写 REVIEW-LOG → 没有可绑的 review_log_path/sha256
+    → hand-back 不产 ids_verdict_evidence 父键
+      → IDS /handback-review Step 4.3 判据是「**仅当**含该父键时跑预检」
+        → 缺父键 = 静默通过(不是 REJECT)
+          → 以 practice-stats 入库,无任何机械点报警
+  ```
+  且 producer 侧 `XenoDev-009/lib/handback-validator/gen-handback.sh` **模板压根不产该键**(IDS grep 实证)。
+  ⇒ **防伪契约由被它约束的一方 opt-in**,这不是纪律问题,是判据方向写反了。
+- **与既有条目的关系**:R-Q7 在 001(forge v4)已诊断过「immutable REVIEW-LOG 被整条绕过且 pointer stale
+  成反向正信号」;**009 是第二个 fork、约 10 天后的复发**。⇒ 与 KG-B15 / XD-44′ 同族的元层证据:
+  **诊断本身不产生行为**。KG-49 给出了绕过的**结构性理由**(写 REVIEW-LOG 必然越 `file_domain`),
+  本条给出**绕过后无人发现的完整链路**,两条应并案。
+- **建议裁决方向(供 forge 定夺,非预判)**:
+  ① IDS `/handback-review` Step 4.3 的判据从「含父键才跑」改为「**build-ship 类包缺父键即 REJECT**」
+     —— 需先定义「build-ship 类包」的机械判据(否则 practice-stats / spec-gap 类包会被误拦);
+  ② `gen-handback.sh` 模板补 `ids_verdict_evidence` + §6.3.1 拓扑三字段(与 KG-51 同源,一并处理);
+  ③ **stale pointer 本次未修**(operator 2026-08-13 只选「归 forge 攒批」,未选「立刻止血」)⇒
+     `REVIEW-LOG.md` 现在仍对外答 `approve / 0 findings`,**这是一条已知在场的错误正信号,裁决前一直有效**。
+
+### KG-B21 · `check-7` 的跳过判据日期盲,且「三字段全缺」比「缺一两个」更安静(激励方向反了)
+
+- **来源**:同上 · hand-back `009-pM3prime-20260813T093952Z` 过 validator 时暴露
+- **现场**:该包 `created: 2026-08-13`、拓扑三字段(`current_idea`/`worktree`/`baseline`)全缺,
+  validator 输出 **「⏭ check-7 skipped:§6.3.1 拓扑自证三字段全缺(2026-08-10 前的老包属正常)」** ——
+  对本包这是一句**假陈述**:三字段 2026-08-10 进 schema,本包晚 3 天。`created` 就在 frontmatter 里,
+  `check-7-topology-selfattest.sh` **从不读它**。
+- **判据形状问题**:脚本逻辑是 `${#MISSING[@]} -eq 3` → 静默 skip;缺 1–2 个 → WARN。
+  ⇒ **全不填的输出比填一半更干净**。而脚本自己的注释恰恰写着「部分填写比全不填更可疑 ——
+  producer 可能只 backfill 了好填的那几个」,**判据与其自身的风险判断相反**。
+- **根因在 producer 不在 validator**:`gen-handback.sh` 模板不产这三字段(同 KG-B20 ② / KG-51)。
+  同日同 fork 的另一个包 `009-pM3prime-20260813T072930Z` **有**三字段,因为它是 IDS session 手写的。
+- **与既有条目的关系**:本 warn 已挂 `WARN-check7-topology-selfattest`(`temporary` ·
+  `due_event: forge:006:phase0` · 已接线),**不需新增 warn 条目**;但「跳过判据日期盲 + 激励反向」
+  是该 warn 登记时未覆盖的**新面**,应在其三态裁决(convert/revert/defer)时一并处置。
+  与 KG-B18(`workspace.source_repo` 声明从未被验 · 47/100 包失真)同构:**自证字段存在但不被验 = 自证等于零**;
+  本条更进一步 —— **不填反而不被验**。
+
 ## 与 v9 的关系(起 v10 时必读)
 
 全部条目都与 v9 正在审的**证据完整性家族**同题,**建议并案而不是另起家族**:
@@ -316,6 +372,8 @@
 | **KG-B18**(声明 source_repo 从未被验 · **47/100 包失真**) | XD-41 / B-4-IDS | **自证字段存在但不被验 = 自证等于零** |
 | **KG-B19**(白名单「只减不增」无工具 + worktree 冲突) | XD-43 / KG-B17 | 指标写在文档里,**实现它的东西没建**;且两条规约互不兼容 |
 | KG-B15(warn 型规约的升级判据 · **已复发 4 次**) | v8 簇② 的 warn 起步设计本身 | warn→block 的升级由谁、在哪触发,至今无 owner |
+| **KG-B20**(R-Q7 在 009 复发 · `ids_verdict_evidence` **两 fork 零命中**) | **R-Q7 + B-4-IDS「缺席即豁免」+ XD-41** | **防伪契约由被约束方 opt-in**:缺父键 = 静默通过而非 REJECT;且 001 已诊断过、009 仍复发 ⇒ 诊断不产生行为 |
+| **KG-B21**(check-7 跳过判据日期盲 · 全缺比部分缺更安静) | KG-B18(自证字段不被验) | **不填反而不被验** —— 判据与脚本自身写下的风险判断相反 |
 
 ⚠ **起 v10 前先读 v9 的 verdict** —— 若 v9 已给出「声明/执行两层校验」的一般条款,
 这些条目可能变成**该条款的实例**而非独立议题,X 应据此重写。
