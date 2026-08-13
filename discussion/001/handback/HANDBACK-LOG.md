@@ -2035,4 +2035,4 @@ XD-41「不应合入」被转述成「披露即可合」);round-5 finding 严重
 
 ---
 
-**Follow-up commits**:pending(本条决议 + hand-back 包 20260812T063139Z 入库)
+**Follow-up commits**:`8f3cb23`(本条决议)· `5b7dbe2`(hand-back 包 20260812T063139Z 入库)
