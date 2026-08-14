@@ -1775,4 +1775,4 @@ validator 仍输出「⏭ skipped:§6.3.1 拓扑自证三字段全缺(**2026-08-
 同第 33/35 条:`handback-review` 决议是 CLAUDE.md 列明的合法 main checkpoint,且该 warn 的裁决被
 `OB-006-v10-06`(规约消歧义)前置阻塞。⚠ **计数已达 7,消歧义任务仍未做。**
 
-**Follow-up commits**: pending
+**Follow-up commits**: `aa02b30`(2026-08-14 · 第 36 条决议 + ledger OB-07 拆账 satisfied + 新立 `OB-...-15`/`-16` · **未 push**)。
