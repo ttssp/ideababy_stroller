@@ -1,6 +1,6 @@
 {
   "version": "v4",
-  "phase": "1",
+  "phase": "2",
   "convergence_mode": "strong-converge",
   "x_hash": "78ce6018a241b92450b93ce7a09a3a62",
   "prefill_used": false,
@@ -13,6 +13,9 @@
   "warn_gate_defect_found": "🔴 fork 域 temporary warn 的『给出新 due_event 的 defer』在当前机制上不可表达:validate-warn-class.sh:114-115 的到期判据不含『是否已裁决』,而 fork 域唯一接线的消费 gate 就是当前 gate ⇒ 指回它即刻再到期;指向 forge:<id>:v<N>:phase4 则永不被消费(admission gate 不做到期裁决)。README §三态裁决明文『defer 合法』⇒ 声明存在而机制不存在。未当场改 validator(框架级走 forge 006)· 已随 WARN-c4 带进 forge:006:phase0(该 gate 负载 3→4)· 已知代价 = 场地错配",
   "obligation_gate_defect_found": "⚠ gate 文档要求本 gate 在 Step 1 intake 之前全部取得终态,但其自陈的 evidence 形态是『该条已并入本轮 X 第 n 项』—— 该形态在定义上要求 X 已存在 ⇒ gate 的先后要求与其自身的 evidence 形态互斥。本轮处置:operator 终态裁决在 intake 前作出,ledger append 在 forge-config.md 落盘 commit 后、Phase 1 实质审阅前。归 forge 006 攒批(与本轮议题⑤同族)",
   "created": "2026-08-14T03:20:00Z",
-  "last_updated": "2026-08-14T03:45:00Z",
-  "inbox_head": "20260814T034500Z-009-pM3prime-forge-v4-p1.md"
+  "last_updated": "2026-08-14T04:20:00Z",
+  "inbox_head": "20260814T042000Z-009-pM3prime-forge-v4-p2.md",
+  "p1_outcome": "双方 CONCERNS · 🔴 四题倾向逐条相同(工程纪律 refactor / 架构 refactor / 测量效度 new / ①refactor ②不可信 ③new ④refactor)= 本 fork 连续第四轮 P1 零分歧收敛 · K 的回声室 binding 警告已触发。互补面:B 侧独立找到第三/第四处弱化传导(OB-09 标题「定形」vs satisfied「上议程」· SLA 提取稳定性行「目标」要求每批跨次读数而「判据」SQL 只验身份/attempt 行 —— IDS 已实读 SLA.md:136 复核属实);A 侧独有 census.py:728-731 docstring 自证 + attempt_log_persist_failed 在 SIGKILL 场景结构性静默 + forge v3 §underweights 3 事先把本次结果定价为「决策上接近于零」。双方独立同时撞到 per-market 缺失",
+  "p2_search_degradation": "🔴 A 侧 WebSearch 环境层故障(后端 400 · output_config.effort xhigh not supported when thinking disabled · 连试三次 · 与查询无关);WebFetch 正常 ⇒ A 侧检索面收窄为 arXiv 结构化 API + 定向抓取,无开放网关键词发现 ⇒ A 侧自评无法承担「双方零重叠检索」中属于它的一半。正交面保证本轮主要落在 B 侧;若 B 侧检索面与 A 高度重叠,本轮 SOTA 对标须共同判为降级",
+  "p2_opus_outcome": "6 条检索(4 arXiv API + 2 工业文档定向)· 其中 3 条否定性结果。四条自我修正:(a) M1=pass 非中性,是朝已知效度风险方向的弱证据(disagreement-as-signal 五篇一致 · 「filtering non-consensus samples results in over-optimistic results」逐字对应 M2 留存口径)—— A 侧 P1 完全没有这一层;(b)「按事件校准」也是 intuitive heuristic(drift #7:provably suboptimal),须补 Chrome 式过程量并以被消费批次计数;(c)「判据形态仓里已有」只对一半(仓内结果型 vs 工业过程型,应合取);(d) 撤回议题① 的外部规范支撑(预注册文献反向:收益被质疑、可能加剧发表偏倚)⇒ ① 只能靠本地机制论证,窄读辩护更值得认真对待。否定性结果抬高本地证据地位:SOTA 不定义 provenance 最小充分集 ⇒ ② 只能由 RETRY-CONTRACT §2 自身判据推,census.py docstring 成为本地唯一判据来源"
 }
