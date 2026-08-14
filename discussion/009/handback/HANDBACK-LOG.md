@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-08-14T02:45:00Z
-total_decisions: 36
+last_updated: 2026-08-14T09:16:53Z
+total_decisions: 37
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -1776,3 +1776,177 @@ validator 仍输出「⏭ skipped:§6.3.1 拓扑自证三字段全缺(**2026-08-
 `OB-006-v10-06`(规约消歧义)前置阻塞。⚠ **计数已达 7,消歧义任务仍未做。**
 
 **Follow-up commits**: `aa02b30`(2026-08-14 · 第 36 条决议 + ledger OB-07 拆账 satisfied + 新立 `OB-...-15`/`-16` · **未 push**)。
+
+---
+
+## 2026-08-14T09:16:53Z · 009-pM3prime-20260814T075550Z(T016 · forge v4 **B/C 两组落地** · 五条义务 **拆账结账(06 保持 pending)** · 🔴 **round-4 实际走的处置不在条款三选项内** · 🟡 **check-7 三字段覆盖率 0→100% 而正确率 0** · 🟢 **gap ① 被 build 自己说重了**)
+
+**Reviewed at**: 2026-08-14T09:16:53Z
+**Tags**: practice-stats
+**Severity**: medium
+**Related task**: T016 · `OB-009-pM3prime-v4-02/03/06/07/08`
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对路径)· check-8 PASS
+**check-7**: ⚠ **WARN ×3 —— 三字段首次全部在场,但三条判据全违反**(见 F2)
+**verdict-evidence 预检**: ✅ 语法 PASS · **binding 由 IDS 补验通过**(sha256 逐字重算一致)
+
+**Operator decisions**:
+- [x] **本包验收 = 接受** —— 9 项复核逐条属实,含 IDS 两项真跑(1304 passed / ruff clean);F1-F4 全落在治理/取景层,非交付物缺陷
+- [x] 决议 #1(前提①/②残留)→ **新立 `OB-009-pM3prime-v4-11`「审阅侧消费点」** + **明记进程外 durable receipt 对 OB-15 原题非必需**(防后续每轮默认重开)
+- [x] 义务结账 **拆账**:`OB-...-v4-02` / `-03`(带 carve-out)/ `-07` / `-08` 记 `satisfied`;**`-06` 保持 `pending`**
+- [x] F1(SKILL §4.2 第四选项)→ **新立 `OB-009-pM3prime-v4-12`**,挂 `forge:009-pM3prime:phase0`
+- [x] F2(check-7 三字段全错)→ 并入既有 **KG-B21**,归 forge 006 攒批(**不当场改 producer/validator/schema**)
+- [x] F3(gap ① 表述失真)→ 记 practice-stats,并作为 `OB-...-v4-11` 的立项依据
+- [ ] 修 PRD / 修 SHARED-CONTRACT(本次不动)
+
+---
+
+### IDS 侧独立复核 —— 9 项逐条
+
+| # | build 自报 | IDS 复核结果 |
+|---|---|---|
+| 1 | 6 约束 PASS | ✅ PASS;check-8 PASS;check-7 **WARN ×3**(见 F2) |
+| 2 | `ids_verdict_evidence` 7 字段 | ✅ 语法 PASS;**深验**:`sha256` 重算 = `cad718d4911b1af74bea42635f0c0cbca05519cd9d8e6c763fa9356ba1600ac3` 与 frontmatter **逐字一致** |
+| 3 | REVIEW-LOG singleton 已更新 | ✅ 头部 frontmatter `target_file: T016-branch-diff-vs-4e39b85` / `verdict: needs-attention` / `findings_count: 1` / `ts: 2026-08-14T07:29:05Z` 与包内**四项全一致** ⇒ **第 35 条的 stale pointer 未复发,KG-B20 连续第二轮兑现** |
+| 4 | 全量回归 1304 passed(基线 1287 · 净增 17) | ✅ **IDS 真跑**:`1304 passed, 7 skipped, 6 deselected, 1 xfailed in 167.71s` —— **逐字一致** |
+| 5 | ruff clean | ✅ **IDS 真跑** `All checks passed!` |
+| 6 | migration `0023` + SLA 新判据 | ✅ 两表 DDL 列与 `SLA.md:136` 新增 SELECT 的 5 列 + `caliber_version`/`status`/`created_at` **逐列对得上**;`status` 有 `CHECK IN ('pending','completed')` ⇒ **判据可跑,不是写了跑不了的假判据** |
+| 7 | D-13 载 `M1=pass` 裁决 | ✅ 在 `spec.md:331`;**两项必载风险输入逐字都在**(OB-02「缺一即不合格」**真达成**);另超额多带一条 per-market 未满足注记 |
+| 8 | C4 三处同步 | ✅ 三处逐处核实:IDS `PRD.md` §7 红线 3(`fac51b5`)· `spec.md:302` C4 行 · `SLA.md` E1 行;四要件 + supersede 语义 + 「具名批准只有一个人 = KG-42 同族」警告**三处都在** |
+| 9 | 未引用 WARN-c4 旧 `due_event` | ✅ grep **零命中**,属实(v4 指令「若引用了旧值一并更正」前提确不成立) |
+
+**⭐ round-4 修复的回归测试有齿(IDS 主动核,非自报项)**:
+`test_should_never_publish_ok_before_completed_mark_resolves_when_process_dies_mid_window` 的断言直接打在被改那一行的语义上
+——首次 JSON 写**只能**是 `pending`,旧(round-3)实装写 `ok` ⇒ 必红。用异常模拟进程终止是**代理**,但被断言的性质
+(「转态确定前落盘的 JSON 里是什么」)正是要保的那条,代理有效。
+
+⚠ **小出入(不影响结论)**:`T016.md` Verification 9 条判据**只勾了 1 条**,其余 8 条是「记录在案但未标记执行」;
+hand-back §1 却称「验收判据全部记入…可独立复核」——**「记入」属实,「已执行」未标**。IDS 重跑了其中 2 条(全量 pytest / ruff),都真绿。
+
+---
+
+### 🔴 F1 · round-4 后实际走的处置,不在条款给的三个选项里(→ `OB-009-pM3prime-v4-12`)
+
+**条款原文**(`XenoDev-009:.claude/skills/codex-review/SKILL.md` §4.2 表格):
+
+| 轮次 | verdict | 处置 |
+|---|---|---|
+| Round 4 | needs-attention | **hard-stop** · operator 决:**接受 finding ship / 升级 forge / 退 task** |
+
+**本次实际走的是第四种**:「**修复 finding 后 ship 且不复核**」。
+
+**区别是实质的,不是措辞**:
+
+| 走法 | 交付出去的是 |
+|---|---|
+| 条款的「接受 finding ship」 | **已被 codex 审过的代码** + 一条已知缺陷(写在案) |
+| 本次的「修复后 ship 不复核」 | **codex 从未看过的代码** + 缺陷据称已修 |
+
+四种走法里,**只有这一种交付未审代码**。hand-back 写「不是审查门被绕开,是 operator 在**门内**做出的显式决定」
+——「门内」这一句经不起对条款原文的核对。
+
+**⚠ 另一半:本 LOG 第 34 条已确立相反先例** —— codex 超 4 轮上限时 IDS 判「**持续收敛非卡死,可接受**」;
+而本轮 build 自陈「**单调收敛**,每轮暴露的缺口范围逐轮收窄,同一物理位置从『逻辑失败未处理』精确到『进程终止窗口未处理』」
+——**正是那个先例覆盖的情形**,却采了「硬顶即停」这一读,**且未标注这是一次口径选择**。
+
+⇒ **与第 36 条 F2 完全同族**(两读并存 · 被执行的是更弱的那一方 · 选择未被标注为选择)。
+**决议**:新立 `OB-009-pM3prime-v4-12`,`due_gate = forge:009-pM3prime:phase0`,到期三选一(增列第四态并写明补偿 /
+「修复即须复核」/ 确认第 34 条先例作废),**裁决须回写 SKILL §4.2 表格正文**,且因条款载体在对岸,须作**授权条目**下发。
+
+⚠ **本条不否定本次 ship** —— 修法有测试且有齿(见上),1304 全绿真跑复证。本条防的是**形态**,不是这一次的结果。
+
+---
+
+### 🟡 F2 · check-7 三字段:覆盖率 0 → 100%,正确率 0(并入 KG-B21)
+
+昨天(第 36 条 F3)三字段**全缺**,validator 还输出「2026-08-10 前的老包属正常」这句**可证伪的假陈述**。
+今天三字段**首次全部在场** —— 而**三条判据全部违反**:
+
+| 字段 | 本包填的 | §6.3.1 判据 | 判定 |
+|---|---|---|---|
+| `current_idea` | `009` | SHOULD == `prd_fork_id`(`009-pM3prime`) | ⚠ 混线嫌疑(实为填了 idea 而非 fork) |
+| `worktree` | `feat/009-spec(…直提交惯例…)` 散文 | MUST == `workspace.working_repo`(**绝对路径**) | ⚠ 自证失真 |
+| `baseline` | `T015 hand-back commit 4e39b85(…)→ HEAD 191cb51` 散文 | `^[0-9a-f]{7,40}$` | ⚠ 形状错 |
+
+**⚠ 附带一条设计层观察(值得随 KG-B21 一起带进 forge 006,不得只当格式问题裁)**:
+`worktree` 的判据是「**必须等于同一份文档里的另一个字段**」⇒ **填对了零信息量**(复述 `workspace.working_repo`),
+而**唯一有信息量的填法(分支名)恰好被判 warn**。§6.3.1 自己的立论是「让产物自证出自哪根**分支**拓扑」,
+判据却查的是**目录路径**;在 XenoDev-009 这种「直提交、无 per-task worktree」的仓里,该路径是个常量
+——**正是 §6.3.1 自己批评过的「填成常量则恰好在它唯一有价值的场景失真」**。清爽的解法是 schema 拆成
+`worktree`(路径)+ `branch`(分支)两字段,但那是**框架级变更,只走 forge**。
+
+**决议**:并入既有 **KG-B21**,复发计数落到 `WARN-check7-topology-selfattest` 的 `forge:006:phase0` 三态裁决;
+**本轮不当场改 producer / validator / schema**(铁律 + KG-B15 的教训:不再造一条「复发够 N 次就升级」的自判据)。
+
+---
+
+### 🟢 F3 · gap ① 被 build 自己说重了(罕见的**保守方向**失真 → 立 `OB-...-v4-11`)
+
+hand-back §3「需 IDS 决议」#1 称观察窗口只做运行级预注册,「operator 可在看过小样本结果后换参数重跑
+而**无机制拦截或留痕**」。
+
+**「无留痕」不成立** —— IDS 复核:本 task **自己交付的** `census_run.declared_sample_size` 就是那个留痕,
+`_start_census_run` 在**读任何 record 之前**写入,且 codex round-1 [high] 修法后**失败即 fail-fast 向上抛**
+(不吞异常),每次重跑留一行。
+
+⇒ gap ① 的真实形状是「**无拦截、但事后完全可查**」,不是「不可查」。
+**处置随之从「架构级 task」降为「审阅侧消费点」** —— 缺的从来不是机制,**是消费者**:表已经在了,今天没有任何环节读它。
+
+⚠ 值得记一笔:本仓过去六轮记录的失真几乎全在**乐观方向**(第 36 条 F4 的取景遗漏、XD-41 族的重新解释);
+这是第一例**把自己的交付物说少了**的失真。**不表扬也不放过** —— 它同样导致了错误的处置建议(架构级 task),
+只是错在保守侧。
+
+---
+
+### 🟢 F4 · 前提②的残差对 `OB-...-15` 的原题其实已充分(分析,非缺陷)
+
+`OB-...-15` 的原题是「**在没有写穿透与内容身份绑定的前提下,跨批次失败率比对是否可信**」。IDS 复核后的答案:
+
+- SIGKILL 丢的是**已被识别为删失**那一跑的明细 —— `census_run` 停在 `started` = **显式删失标记**(不是「零行 = 什么都没发生」的沉默缺失);
+- 「**看起来完整、实际残缺**」的**静默路径不存在** —— attempt log 落库失败 → `attempt_log_persist_failed` → 子跑 exit 3 → `sub_run_diagnostics_incomplete` → 批次级 exit 3;
+- ⇒ 残差落在**保守方向**:少算可用批次,**不会多算**。
+
+**决议**:接受该残差,并**明记进程外 durable receipt 对 OB-15 原题非必需**(理由已写进 `OB-...-v4-03` 的 ledger note),
+以免后续每轮把它当默认待办重开;若将来要立它,须给出**新的**必要性论证,不得复述「前提②未闭合」这一事实。
+
+---
+
+### 义务结账明细(拆账 · 与 hand-back §3 action #3 的请求不同)
+
+| 义务 | hand-back 请求 | 本轮裁定 | 依据 |
+|---|---|---|---|
+| `OB-...-v4-02`(M1=pass 回写落地) | satisfied | ✅ **satisfied** | 两项必载风险输入**逐字在场**,「缺一即不合格」真达成 |
+| `OB-...-v4-03`(四前提 + fallback) | satisfied | ✅ **satisfied · 带 carve-out** | 四前提逐条裁定 + fallback 真落地;前提②残差**具名转出**,不随 satisfied 蒸发 |
+| `OB-...-v4-06`(C4 convert 判据形态) | satisfied | 🔴 **保持 pending** | 见下 |
+| `OB-...-v4-07`(版本化回退语义 · 三处同步) | satisfied | ✅ **satisfied** | 三处 IDS 逐处核实在案 |
+| `OB-...-v4-08`(SLA:136 存在性判据) | satisfied | ✅ **satisfied** | 判据列与 DDL 逐列对得上,可跑 |
+
+🔴 **`OB-...-v4-06` 不结的理由 = 它自己的 note**:「消费点选 `forge:006:phase0` 的理由 =
+`WARN-c4-extraction-stability-report-only` 已三态裁决 defer 至该 gate,**两者必须同场裁,否则又是两处口径**」。
+**按「文本已三处同步」关掉它,正是它自己防的那件事。** 剩余未做的两项已写进 ledger 拆账行:
+① 与该 warn 的**同场三态裁决**;② 四要件中「**具名批准**」的独立性(本仓只有一个人 · **KG-42 同族**)——
+三处同步的文本**只是把这条已知未处置写下来了,没有解决它**。
+
+⚠ 同时明记:`-08` 的 `due_gate` = `xenodev:handoff-intake` **仍未接线**,本次结账**不是该 gate 的产物**,
+而是 IDS `/handback-review` 侧的独立机械复核(同第 35 条 `OB-...-v3-01/05` 先例)⇒ **敞口仍在**。
+
+---
+
+### 本轮明确不做的事
+
+- **不起 forge**(operator 选「归口挂 phase0」而非本轮就起 `/expert-forge`)⇒ F1 的两读消解、`-06` 的同场裁决、
+  `-11` 的审阅侧消费点,**在各自 gate 开火前一直未决**。
+- **不改 producer / validator / SHARED-CONTRACT §6.3.1 schema**(F2 走 forge 006)。
+- **不追认也不驳回 T015 §5 的 defer 论证** —— 第 36 条定性不变(与 IDS 原题**不同题** · XD-41 变体);
+  T016 是**正面执行了 v4 给的 fallback 契约**,与「defer 是否成立」是两件事。
+- **不因本包 ship 而放松任何下游闸门**:扩样与 E2 继续 blocked · 41 条盲标路仍 CLOSED · C6 冻结门槛数字未改
+  (D-13 自陈一致,IDS 复核无异议)。
+- **`OB-009-pM3prime-v4-01`(条款同步)本轮不结账** —— 属 IDS 侧独立条目,本包未请求、也不在其交付范围;
+  不得因 `-02` 结账而连带认为已清。
+
+### warn 型 preflight(不阻断 · 留痕)
+
+本次 review session 在 `main` 分支而非 009 worktree —— worktree-per-idea 规约 warn(**第 8 次**)。
+同第 33/35/36 条:`handback-review` 决议是 CLAUDE.md 列明的合法 main checkpoint,且该 warn 的裁决被
+`OB-006-v10-06`(规约消歧义)前置阻塞。⚠ **计数已达 8,消歧义任务仍未做。**
+
+**Follow-up commits**: pending(本条决议 + ledger 7 行追加待 commit)。
