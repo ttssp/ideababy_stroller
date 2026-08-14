@@ -4,7 +4,7 @@
   "convergence_mode": "strong-converge",
   "x_hash": "2bccb33924b07cd06dc7d32bd4d2146d",
   "prefill_used": false,
-  "opus_done": false,
+  "opus_done": true,
   "codex_done": false,
   "fork_id": "009-pM3prime",
   "trigger": "2026-08-14 IDS /handback-review 009 第 37 条 · T016 ship + 七条 obligation 在 forge:009-pM3prime:phase0 到期",
@@ -12,5 +12,7 @@
   "warn_gate": "forge:009-pM3prime:phase0 · 首查 COUNT 0(WARN-c4 已于 v4 defer 至 forge:006:phase0)",
   "theme": "绑定之后到底绑在哪儿 —— 五条到期义务各暴露一种绑定落空方式:载体缺失(-04)/ 消费者缺失(-11)/ 触发条件不可达(-05)/ 选项集不完备(-12)/ 自我判据到期(-09)",
   "created": "2026-08-14T09:16:53Z",
-  "last_updated": "2026-08-14T09:16:53Z"
+  "last_updated": "2026-08-14T09:30:00Z",
+  "inbox_head": "20260814T093000Z-009-pM3prime-forge-v5-p1.md",
+  "p1_opus_outcome": "A 侧 P1:五题归一为「五条的完成全部定义在产生侧,没有一条定义在消费侧;ledger schema 本身固化了该姿态——有 created_by_gate/due_gate 却无『谁必须做什么动作』字段」。🔴 视角外硬发现(不在 K 五题框内):密度链 per-market 而一致性链零 market 轴 —— census.py 的 meets_threshold/below_threshold_advisory 逐 market 判,而 aggregation_probe.py 全文仅一处 market(:744 注释),_run_batch 零 market 轴 ⇒ PRD §6 条件 2「per-market 噪声量级 < 该市场密度阈值裕度」在当前实现下不可计算(非数据缺,是同一 pipeline 两条链分层粒度不同);且条件 1「至少一个」(存在量词) vs 条件 2「该市场」(特定量词)量词不一致 ⇒ CN 1/0/2 · HK 0/0/4 的条件 2 结构性不可满足,US 满足条件 1 却对 CN/HK 重判零信息 —— 与 forge v2「Layer-2 冻结门槛数学不可达」同族。-12 一般化为「条款枚举 decision,发生的是 decision×follow-up 组合」。三条具名预测已给(-09 规格缺陷 vs 排期 / -04 登记顶替回写 vs W 配额缺形态 / -05 无数字行为形态 vs 代理指标)。§3 自曝:未读 v4 八个 round file 原文 ⇒「登记顶替回写」可能是事后编派;未读 derive_stratification_market 实现 ⇒ per-market 成本判定可能低一档;五题归一本身可能就是第五轮回声的开始"
 }
