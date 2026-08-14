@@ -1,0 +1,16 @@
+{
+  "version": "v5",
+  "phase": "1",
+  "convergence_mode": "strong-converge",
+  "x_hash": "2bccb33924b07cd06dc7d32bd4d2146d",
+  "prefill_used": false,
+  "opus_done": false,
+  "codex_done": false,
+  "fork_id": "009-pM3prime",
+  "trigger": "2026-08-14 IDS /handback-review 009 第 37 条 · T016 ship + 七条 obligation 在 forge:009-pM3prime:phase0 到期",
+  "obligation_gate": "forge:009-pM3prime:phase0 · 首查 COUNT 7(OB-...-v4-01/-04/-05/-09/-10/-11/-12)· operator 裁「全部过表」· -01/-10 属结账型(IDS 现场逐处复核:三处载体在案 / 三 gate 仍全未接线且对岸零接线)· -04/-05/-09/-11/-12 五条并入本轮 X",
+  "warn_gate": "forge:009-pM3prime:phase0 · 首查 COUNT 0(WARN-c4 已于 v4 defer 至 forge:006:phase0)",
+  "theme": "绑定之后到底绑在哪儿 —— 五条到期义务各暴露一种绑定落空方式:载体缺失(-04)/ 消费者缺失(-11)/ 触发条件不可达(-05)/ 选项集不完备(-12)/ 自我判据到期(-09)",
+  "created": "2026-08-14T09:16:53Z",
+  "last_updated": "2026-08-14T09:16:53Z"
+}
