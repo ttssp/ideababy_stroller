@@ -577,9 +577,38 @@ operator-input 文档 §1)。
    > **看相关结果之前**预注册口径、阈值、适用模型与校准样本。**升级判据不得是次数**
    > (承 forge 006 v10:「复发 ≥N 次」型判据全部作废)。
    >
+   > 🔴 **`convert` 判据形态定形(2026-08-14 · forge 009-pM3prime v4 · `OB-009-pM3prime-v4-06`)**
+   >
+   > 上一段只说了「必须升 `caliber_version` + 看结果前预注册」,**没说凭什么判定可以升**。补齐如下 ——
+   > **`report-only` → 门禁的 convert 判据 = 四者合取,缺一不可**:
+   > 1. **过程证据** —— 有一段真实的观察期,且期内**审阅过真实误杀**
+   >    (ModSecurity:「Every Ruleset can have false positives in new environments」,故 DetectionOnly 先行);
+   > 2. **结果证据** —— per-market 噪声量级已测出且**小于该市场的密度阈值裕度**(即 §6 科学重判条件 2 的形状);
+   > 3. **具名批准** —— 具名主体签署,不得由自动化流程或 agent 认定;
+   > 4. **版本化回退** —— convert 前必须已具备可回退形态(见下)。
+   >
+   > ⚠ **只给形态,不给数字。** 三个独立工业先例(OPA Gatekeeper · Chrome/Blink · Kubernetes KEP)
+   > **无一给出数字阈值**;Chrome 原文:「**There is no threshold for which removal is necessarily safe**」,
+   > 改为规定过程量(最少观察期 / Deprecation Trial / 跨引擎协调)。
+   > ⇒ **看完结果再定数字 = 移动球门**(承 forge v2「数字 vs 形态」判据 + 本文 §7 (f))。
+   >
+   > 🔴 **版本化回退语义(`OB-009-pM3prime-v4-07`)**:**历史不可变;授权被后续 `caliber_version` supersede。**
+   > 回退 = 再升一个**新** `caliber_version`,**只撤销旧版的未来消费权**;
+   > 旧阈值、旧证据、当时的裁决**永久保留可查**。**不得**表述为「旧结论作废」——那暗示追改历史,违反 C6。
+   >
+   > ⚠ **已知未处置(v4 §underweights 6)**:四要件中的「**具名批准**」在本仓**只有一个人** ——
+   > operator-chair 与提出 convert 的是同一个人。前三项可机械化,**唯独批准的独立性无法靠机制保证**。
+   > **这与 KG-42(无合格第二源)同族**,断面从「标注的第二源」换成「**批准的第二源**」。
+   > **不得假装 Kubernetes KEP 的 PRR 批准形态可直接移植** —— PRR 的独立性来自组织,本仓没有组织。
+   >
    > **本条已登记为 warn**:`framework/warn-registry/registry.jsonl` →
    > `WARN-c4-extraction-stability-report-only`(`warn_class: temporary` ·
-   > `due_event: forge:009-pM3prime:phase0` · **已接线**)⇒ 下一轮 forge intake 必须三态裁决。
+   > **`due_event: forge:006:phase0`** · **已接线**)⇒ 下一次该 gate intake 必须三态裁决。
+   > ⚠ **2026-08-14 三态裁决 = `defer`(operator-chair 签署)**,`due_event` 由
+   > `forge:009-pM3prime:phase0` 改指 `forge:006:phase0`。**改指理由不是就近**,而是机制缺陷:
+   > `validate-warn-class.sh` 的到期判据**不看是否已裁决**,而 fork 域唯一接线的消费 gate 就是当前 gate
+   > ⇒ 指回它即刻再到期、指向 `v<N>:phase4` 则永不被消费 ⇒ **fork 域 `temporary` warn 的 defer 在当前机制上不可表达**。
+   > 该缺陷已随本 warn 带进 forge 006。**已知代价 = 场地错配**:fork 域语义在框架场裁,裁决者需 009 上下文。
    >
    > **同步三处,漏一处即仍有假绿源**:本条(IDS PRD)· `$XENODEV_ROOT/specs/009-pM3prime/spec.md` C4 ·
    > 同目录 `SLA.md` E1「提取确定性」行。
