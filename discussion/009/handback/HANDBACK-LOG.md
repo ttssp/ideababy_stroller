@@ -1,8 +1,8 @@
 ---
 doc_type: handback-decision-log
 first_created: 2026-07-02T02:32:43Z
-last_updated: 2026-08-13T09:57:42Z
-total_decisions: 35
+last_updated: 2026-08-14T02:45:00Z
+total_decisions: 36
 note: append-only;每条决议追加一段 ## entry;不删除 / 不修改既有 entry(既有 entry 的 Follow-up commits 字段随决议落地更新,非新增决议)。2026-07-05 F6 条撤销 2026-07-03 batch-T010 的 F6 采纳决议(前提证伪),撤销以新增 entry 记录,不改原 entry
 ---
 
@@ -1614,3 +1614,165 @@ in-scope 问题已耗尽,剩下的需 scope 决策)。**该理由 IDS 侧接受*
 未修既有行(append-only)。**仅记录,不起动作** —— 若后续要清理,应作为一次显式的 ledger 迁移。
 
 **Follow-up commits**: `b819bec`(2026-08-13 · 第 34+35 条决议 + ledger OB-01/02/03/05 satisfied + OB-07 范围扩充 + KG-B20/B21 · **未 push**)。
+
+## 2026-08-14T02:45:00Z · 009-pM3prime-20260813T155648Z(T015 聚合探针 · **M1=pass 真实结果** · OB-07 **拆账结账** · 🔴 **第 35 条并入的前置被 build 侧单方 defer** · 🔴 **「三态必须回 forge」在 pass 分支上没有消费点**)
+
+**Reviewed at**: 2026-08-14T02:45:00Z
+**Tags**: practice-stats
+**Severity**: medium
+**Related task**: T015 · `OB-009-pM3prime-v3-07`(聚合探针)
+**6 约束自检**: ✅ all 6 PASS(consumer mode · 绝对路径)
+**check-7**: ⏭ **skipped —— 且该 skip 是 KG-B21 的原样复发**(见 F3)
+**verdict-evidence 预检**: ✅ PASS(语法层)· **binding 由 IDS 补验通过**(见下)
+
+**Operator decisions**:
+- [x] `OB-009-pM3prime-v3-07` **拆账**:交付物层标 `satisfied`,两项 carve-out 具名转出(不随 satisfied 蒸发)
+- [x] T014 两条残留 finding → **新立 `OB-009-pM3prime-v3-15`**(架构级)承接,**不**追认 T015 的 defer 论证
+- [x] 「结果三态必须回 forge 裁决」→ **登记为未兑现**,新立 `OB-009-pM3prime-v3-16`,挂 `forge:009-pM3prime:phase0`
+- [x] F3(check-7 复发)→ 并入既有 **KG-B21**,归 forge 006 攒批(**不当场改 producer/validator**)
+- [x] F4(§1 漏报 `census_verdict`)→ 记 practice-stats + 对后续 hand-back 摘要提出取景要求
+- [ ] 修 PRD / 修 SHARED-CONTRACT(本次不动)
+
+---
+
+### IDS 侧独立复核 —— 属实项(自报精度延续第 33/35 条水准)
+
+| 自报 | IDS 实跑复核结果 |
+|---|---|
+| 全量回归 `1287 passed / 7 skipped / 1 xfailed`,0 回归 | **逐字一致**:`1287 passed, 7 skipped, 6 deselected, 1 xfailed, 7 warnings in 157.65s`(基线 1231 + 新增 56,与第 35 条复核的 1231 基线接得上) |
+| 25 单测 + 31 集成测 | **56 passed**(两文件合跑 11.54s)· ruff `All checks passed!` |
+| `ids_verdict_evidence.review_log_sha256` | **精确匹配** `28669f9af0515242572d45e9d0fe4d8c598181b0cf1ce263fa76b45ce984968c`。⚠ 该 binding 按 §6 B-4-IDS known-gap 属 **producer-side 校验、consumer 本不可达**;本次因 `XenoDev-009` 在本机故 IDS 主动补验 —— **这是运气,不是机制** |
+| 结果矩阵数字 | 内部算术自洽:`J_agg = 42/61 = 0.68852` · 留存 `51/52`、`52/54` · M3 分层求和(29+22=51 · 34+18=52)与留存数吻合 · 硬上限 6 尝试/6 有效跑 · 10412.7s < 12600s · `cost_cap_triggered: false` |
+| 6 个 variant 语料身份一致 | `corpus_consistency` 哈希 `6efa012d…` 在案 · `population_provenance` 记 120 条真实抽样 → 102 条过滤后全集 |
+
+**⭐ 反 p-hacking 成立(IDS 主动核,非自报项)**:`specs/009-pM3prime/tasks/T015.md` 最后一次提交
+`5ae27cc`(08-13 20:57 本地),真实验墙钟约 21:00 起跑、23:53 结束(10412.7s ≈ 2h53m)⇒
+**设计与预注册结果矩阵在实验前定稿,事后零改动**。这是本 fork 首次拿到「预注册未被事后改」的时间戳级证据。
+
+**⭐ KG-B20(第 35 条 F1)已真兑现,不是口头整改**:`REVIEW-LOG.md` singleton 头部 frontmatter 现为
+`target_file: T015-branch-diff-vs-3868521` / `verdict: needs-attention` / `findings_count: 2` /
+`ts: 2026-08-13T12:43:49Z` / `codex_model: gpt-5.6-sol`,与 hand-back `ids_verdict_evidence` **逐字一致**;
+immutable `real-review/T015-branch-diff-vs-3868521-2026-08-13T124349Z.md` 在案且含 9 轮逐轮 finding + round-9 完整原文。
+**第 35 条记录的「stale 假 approve 反向正信号」已消除。**
+
+小出入:自报「12 个直接提交」实为 `3868521..HEAD` **15 个**(含 red 测试 commit `730a02a`),全部在案 —— 低报,不影响结论。
+
+---
+
+### 🔴 F1 · OB-07 的 scope 被 build 侧单方收窄,同时请求标 `satisfied`
+
+**事实链**:
+
+1. 第 35 条(08-13)裁定:T014 两条残留 finding「**并入 `OB-009-pM3prime-v3-07` 前置基础设施范围**,不新增条目」;
+   ledger 追加行写明「两条**均为本条跨批次比对的前置**,故并入而非另起。**本条仍 pending**」。
+2. `specs/009-pM3prime/tasks/T015.md` §「授权来源」**#3 逐字引用了这条 IDS 决议作为本 task 的合同**
+   (「不重开已决问题,逐条照做 —— 这是本 task 的合同」)。
+3. 同一份 T015.md §5 把两条**全部 defer**;hand-back §2 写「**T015 侧现已给出明确结论:不归入**」;
+   §3 action #3 请求把 OB-07 标 `satisfied`。
+
+**⚠ 关键不是「defer 了」,而是「defer 的驳论不同题」**:
+IDS 并入两条的理由是「**跨批次比对**的前置」;T015 §5 的论证**全部**围绕
+「本次 6 跑运行时间短 / 有人值守 / 隔离专用 `data.sqlite` / 不影响本批统计正确性」——
+回答的是「本批统计是否受影响」,而不是「跨批次比对是否可信」。**两条论证从未相交,却被当作已驳倒。**
+且 hand-back §3 action #1 把这一推翻表述为既成事实(「T015 已明确判定两条不属于 OB-07 scope;
+IDS 只需决要不要另立」),把一个**推翻 IDS 决议的动作**降格成了一个待补的行政选项。
+
+**⚠ 这正是第 35 条预警过的那一步**:第 35 条原文「本次之所以不算 XD-41 的又一实例,是因为
+**operator 在 IDS 侧显式裁决了这两条的归属**……**如果没有本条决议,它就是 XD-41**」。
+现在决议在场,但被 build 侧解释掉了 ⇒ **XD-41 的新变体:不是「没有决议」,是「决议在场却被下游重新解释」**。
+与第 33 条 KG-52(红线只守 DB/文件通道、散文通道零覆盖)、001 的
+「codex『不应合入』被转述成『披露即可合』」(XD-41 第二实例)同族 ——
+**治理结论一旦离开产生它的文档、进入下游转述,就会被重新协商。**
+
+**决议**:采「拆账」——
+- OB-07 **交付物层** `satisfied`(三件交付物实证完成,IDS 逐条复核属实,不否认真实工作量);
+- **两条前置转 `OB-009-pM3prime-v3-15`**(新立架构级条目),该行 note 明记
+  「**不追认 T015 的 defer 论证**」,并把裁决时必须回答的问题写死为 IDS 原本的那一题:
+  **没有这两条,未来任何跨批次(41/73/71 ↔ 聚合语料)失败率比对是否可信**;
+- 并明禁「以 T015 已 ship 且回归全绿作为可关闭依据」(全绿证明本批统计正确性,与跨批次误判无交集)。
+
+---
+
+### 🔴 F2 · 「结果三态必须回 forge 裁决」在 pass 分支上没有消费点
+
+**条款歧义(本轮首次显式记录)**:同一份 forge v3 产物内并存两种口径 ——
+
+| 载体 | 口径 |
+|---|---|
+| forge v3 正文 §「⚠ 接受本项即同时接受」 | 「…其**结果三态必须**回到 forge v4 裁决」(**广读:三态皆欠**) |
+| forge v3 #decision-matrix 聚合探针行 | 「结果三态须在下轮 intake 裁决 · **已接线**」(due_gate `forge:009-pM3prime:phase0`)(**广读**) |
+| `OB-...-07` **标题** | 「**结果三态必须回 forge 裁决**」(**广读**) |
+| `OB-...-07` **note** + forge v3 结果矩阵表 | 只写「`M1=fail` 或 `indeterminate` ⇒ 触发 forge v4」;pass 行只写「不证明效度、不外推、不解锁 E2」(**窄读:pass 不欠裁决**) |
+
+hand-back §3 action #2 采了**窄读**(「M1=pass **不**自动触发任何操作」)**且未标注这是一次口径选择** ——
+读起来像事实陈述,实为在两读之间做了选择并只呈现结果。
+
+**⚠ 元层形态(值得单独消费)**:**义务写在标题里、消费点判据写在 note 里,两者不一致时被执行的永远是更弱的那一方。**
+这与 KG-B15(warn 判据达成后仍复发到第 4 次)、KG-B20(spine 级防伪契约由被约束方 opt-in)、XD-44′ 同族。
+
+**决议**:采**广读** —— 登记为未兑现,新立 `OB-009-pM3prime-v3-16`,`due_gate = forge:009-pM3prime:phase0`。
+该条义务 = 在下轮 forge intake 对 M1=pass 的真实结果矩阵作**显式三态裁决**(而非默认「pass 即无事发生」),
+并在同场消解上述条款歧义、把结论写回条款正文。明禁静默 defer(参照 `WARN-worktree-preflight` v10:
+**被遗忘的 defer 不是 defer,是缺席**)。
+
+---
+
+### 🟡 F3 · check-7 拓扑三字段又全缺 —— KG-B21 隔一天原样复发
+
+本包 `created: 2026-08-13`、拓扑自证三字段(`current_idea` / `worktree` / `baseline`)**全缺** →
+validator 仍输出「⏭ skipped:§6.3.1 拓扑自证三字段全缺(**2026-08-10 前的老包属正常**)」。
+
+**⚠ 本轮补充一条第 35 条未拆开的区分**:这不是「漏检」一种失败,是**两种量级不同的失败**——
+
+| 层次 | 性质 | 污染对象 |
+|---|---|---|
+| producer `gen-handback.sh` 不产三字段 | **漏检**(同 KG-51 族) | 覆盖率 |
+| validator 对 08-13 的包宣称「2026-08-10 前的老包属正常」 | **输出了一句可证伪的假陈述** | **审计记录本身** |
+
+第二条更重:漏检留下的是空白,假陈述留下的是**看起来已核验过的错误记录**。
+`created` 就在 frontmatter 里、脚本从不读;且判据 `${#MISSING[@]} -eq 3` 使
+**全不填比填一半更安静**,与脚本自身注释「部分填写比全不填更可疑」相反。
+
+**决议**:**不当场改 producer / validator** —— 框架级变更走 forge 是铁律,
+且 KG-B15 的教训正是「复发够 N 次就升级」这类自判据从不产生行为,不应再造一个。
+并入既有 **KG-B21** 归 forge 006 攒批,复发计数落到 `WARN-check7-topology-selfattest` 的
+`forge:006:phase0` 三态裁决;**上表两层区分随之带入,裁决时不得合并看待**。
+⚠ 现状留痕:同 fork 前一天的 `072930Z` 包**有**三字段,只因它是 IDS session 手写的 —— 机器通道至今零覆盖。
+
+---
+
+### 🟡 F4 · §1 摘要漏报:6 个跑的 `census_verdict` 全部 `below_threshold_advisory`
+
+结果 JSON 的 `per_run_summary` 里,6 个 variant 的 `census_verdict` **无一例外**为
+`below_threshold_advisory`(语义:连上界都 < 阈值 = **确凿低** · advisory 非自动毙刀)。
+该字段本身是 codex round-2 finding ④ 要求补进结果矩阵的,**数据完整、无隐瞒**;
+但操作者面向的 §1 执行摘要通篇未出现这一层,标题位给的是「M1 = pass」。
+
+**密度正是 E2 的闸门变量**(E1 真普查终裁 = US 分市场 go / CN·HK STOP 就建立在密度读数上)。
+「聚合把跨次一致性从 41% 提到 69%」与「6 次跑的密度普查全部确凿低于阈值」是同一份结果的两面,
+只呈现前者会让读者对下游可能性形成偏乐观的印象。**非造假,是取景遗漏。**
+
+**决议**:记 practice-stats;并对后续 hand-back 提出取景要求 ——
+**结果摘要不得省略与下游闸门直接相关的已申报字段**,即使该字段不属本 task 的判据。
+
+---
+
+### 本轮明确不做的事
+
+- **不起 forge**(operator 选「登记为未兑现,挂 phase0」而非「本轮就起 /expert-forge 009」)⇒
+  M1=pass 的三态裁决与 F1/F2 的治理冲突**在 `forge:009-pM3prime:phase0` 前一直未决**。
+- **不修 producer / validator / SHARED-CONTRACT**(F3 走 forge)。
+- **不追认也不驳回 T015 的 defer 论证本身** —— 转 `OB-...-15` 由 forge 裁决,IDS 本轮只锁定「必须回答哪一题」。
+- **扩样与 E2 继续 blocked**,不因 M1=pass 松口(forge v3 §237 红线 + 本包 §1 自陈一致)。
+- **`OB-009-pM3prime-v3-13`(O 表交叉引用)本轮不结账** —— IDS 复核确认交付物在案
+  (`XenoDev-009:specs/009-pM3prime/spec.md` §6.3 映射表,C1-C13 逐条指向 O 表行 + 可执行命令),
+  但 hand-back **未请求**结账,且义务原文说「在 spec **O 表**补齐引用」而交付形态是**另起 §6.3 映射表**
+  (实质目标「可机械枚举的映射」已达,形态有出入)。**不代 operator 结账**,列为 phase0 待裁决项。
+
+### warn 型 preflight(不阻断 · 留痕)
+
+本次 review session 在 `main` 分支而非 009 worktree —— worktree-per-idea 规约 warn(**第 7 次**)。
+同第 33/35 条:`handback-review` 决议是 CLAUDE.md 列明的合法 main checkpoint,且该 warn 的裁决被
+`OB-006-v10-06`(规约消歧义)前置阻塞。⚠ **计数已达 7,消歧义任务仍未做。**
+
+**Follow-up commits**: pending
