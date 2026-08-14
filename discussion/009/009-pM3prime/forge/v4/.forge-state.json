@@ -1,0 +1,18 @@
+{
+  "version": "v4",
+  "phase": "1",
+  "convergence_mode": "strong-converge",
+  "x_hash": "78ce6018a241b92450b93ce7a09a3a62",
+  "prefill_used": false,
+  "opus_done": true,
+  "codex_done": false,
+  "fork_id": "009-pM3prime",
+  "trigger": "2026-08-14 IDS /handback-review 009 第 36 条 · T015 M1=pass + 四条 obligation 在 forge:009-pM3prime:phase0 到期",
+  "obligation_gate": "forge:009-pM3prime:phase0 · 首查 COUNT 4(OB-...-09/-13/-15/-16)· operator 四条全裁「过表」· append 4 satisfied 行(绑 commit 3abe1f7 + forge-config.md sha256 5558e1b3)· 复查 COUNT 0",
+  "warn_gate": "forge:009-pM3prime:phase0 · 首查 COUNT 1(WARN-c4-extraction-stability-report-only)· 三态裁决 = defer(operator-chair 签署)· due_event 改指 forge:006:phase0 · 复查 COUNT 0",
+  "warn_gate_defect_found": "🔴 fork 域 temporary warn 的『给出新 due_event 的 defer』在当前机制上不可表达:validate-warn-class.sh:114-115 的到期判据不含『是否已裁决』,而 fork 域唯一接线的消费 gate 就是当前 gate ⇒ 指回它即刻再到期;指向 forge:<id>:v<N>:phase4 则永不被消费(admission gate 不做到期裁决)。README §三态裁决明文『defer 合法』⇒ 声明存在而机制不存在。未当场改 validator(框架级走 forge 006)· 已随 WARN-c4 带进 forge:006:phase0(该 gate 负载 3→4)· 已知代价 = 场地错配",
+  "obligation_gate_defect_found": "⚠ gate 文档要求本 gate 在 Step 1 intake 之前全部取得终态,但其自陈的 evidence 形态是『该条已并入本轮 X 第 n 项』—— 该形态在定义上要求 X 已存在 ⇒ gate 的先后要求与其自身的 evidence 形态互斥。本轮处置:operator 终态裁决在 intake 前作出,ledger append 在 forge-config.md 落盘 commit 后、Phase 1 实质审阅前。归 forge 006 攒批(与本轮议题⑤同族)",
+  "created": "2026-08-14T03:20:00Z",
+  "last_updated": "2026-08-14T03:45:00Z",
+  "inbox_head": "20260814T034500Z-009-pM3prime-forge-v4-p1.md"
+}
