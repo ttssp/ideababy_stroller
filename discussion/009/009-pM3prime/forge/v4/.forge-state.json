@@ -13,7 +13,7 @@
   "warn_gate_defect_found": "🔴 fork 域 temporary warn 的『给出新 due_event 的 defer』在当前机制上不可表达:validate-warn-class.sh:114-115 的到期判据不含『是否已裁决』,而 fork 域唯一接线的消费 gate 就是当前 gate ⇒ 指回它即刻再到期;指向 forge:<id>:v<N>:phase4 则永不被消费(admission gate 不做到期裁决)。README §三态裁决明文『defer 合法』⇒ 声明存在而机制不存在。未当场改 validator(框架级走 forge 006)· 已随 WARN-c4 带进 forge:006:phase0(该 gate 负载 3→4)· 已知代价 = 场地错配",
   "obligation_gate_defect_found": "⚠ gate 文档要求本 gate 在 Step 1 intake 之前全部取得终态,但其自陈的 evidence 形态是『该条已并入本轮 X 第 n 项』—— 该形态在定义上要求 X 已存在 ⇒ gate 的先后要求与其自身的 evidence 形态互斥。本轮处置:operator 终态裁决在 intake 前作出,ledger append 在 forge-config.md 落盘 commit 后、Phase 1 实质审阅前。归 forge 006 攒批(与本轮议题⑤同族)",
   "created": "2026-08-14T03:20:00Z",
-  "last_updated": "2026-08-14T05:40:00Z",
+  "last_updated": "2026-08-14T06:00:00Z",
   "inbox_head": "20260814T051500Z-009-pM3prime-forge-v4-p3r2.md",
   "p1_outcome": "双方 CONCERNS · 🔴 四题倾向逐条相同(工程纪律 refactor / 架构 refactor / 测量效度 new / ①refactor ②不可信 ③new ④refactor)= 本 fork 连续第四轮 P1 零分歧收敛 · K 的回声室 binding 警告已触发。互补面:B 侧独立找到第三/第四处弱化传导(OB-09 标题「定形」vs satisfied「上议程」· SLA 提取稳定性行「目标」要求每批跨次读数而「判据」SQL 只验身份/attempt 行 —— IDS 已实读 SLA.md:136 复核属实);A 侧独有 census.py:728-731 docstring 自证 + attempt_log_persist_failed 在 SIGKILL 场景结构性静默 + forge v3 §underweights 3 事先把本次结果定价为「决策上接近于零」。双方独立同时撞到 per-market 缺失",
   "p2_search_degradation": "🔴 A 侧 WebSearch 环境层故障(后端 400 · output_config.effort xhigh not supported when thinking disabled · 连试三次 · 与查询无关);WebFetch 正常 ⇒ A 侧检索面收窄为 arXiv 结构化 API + 定向抓取,无开放网关键词发现 ⇒ A 侧自评无法承担「双方零重叠检索」中属于它的一半。正交面保证本轮主要落在 B 侧;若 B 侧检索面与 A 高度重叠,本轮 SOTA 对标须共同判为降级",
@@ -29,5 +29,8 @@
   "v02_notes": 3,
   "warn_admission_gate": "validate-warn-class.sh exit 0 · 4 条全 temporary 分型齐全 · 本轮未新增 warn 型机制",
   "quality_bars": "全过:forge-config 完整 · 8 round file 齐(9628 汉字)· 无 BLOCK · strong-converge 双方 verdict 对齐 · K 双侧 P3R2 均引用",
-  "obligations_registered": "pending operator 确认(Step 6.5 不自动 append)"
+  "obligations_registered": "10 条 OB-009-pM3prime-v4-01..10 + OB-...-v3-07 口径追加行(append-only)· 机械自检:未接线且缺 exposure 0 条 · v0.2 note 缺 due_event 0 条 · 下次 forge:009-pM3prime:phase0 将拦 6 条",
+  "operator_decision": "[B] 只做条款同步组(refactor plan A)+ 全量登记义务(10 条)",
+  "refactor_plan_A_landed": "三处载体全落地:① forge/v3 结果矩阵表后加具名 AMENDMENT 块(🔴 落地形态经 v4 ④ 裁决修正——原 decision matrix 写「改 pass 行」,但本轮同时裁定历史不可变 ⇒ 改为原表一字未改 + AMENDMENT supersede 块)② PRD v1.0→v1.1 头部口径 + §6 条件 1 未满足注记 ③ ledger OB-...-v3-07 口径追加行",
+  "refactor_plan_BC_deferred": "B 组(census.py 四前提 + SLA.md:136 判据)与 C 组(C4 三处同步)均在 XenoDev-009,operator 选 [B] 交下一轮 build;对应义务 OB-...-v4-03 / -08 已登记且 consumer_wired: false + exposure 必填"
 }

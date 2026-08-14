@@ -1,6 +1,30 @@
 # PRD · 009-pM3prime · "M3' 信号提取头 · 最小证伪链(E0+E1 期)"
 
-**Version**: v1.0(2026-08-13 回写 **forge 009-pM3prime v3 verdict** · operator 选 Decision menu **[B]** ·
+**Version**: v1.1(2026-08-14 回写 **forge 009-pM3prime v4 verdict** · operator 选 Decision menu **[B]** ·
+`stage-forge-009-pM3prime-v4.md`:**审的是这套治理机制自身** —— 条款、义务、gate 之间的传导,
+不是任何一个技术对象。**converged · 0 unresolved · CONCERNS。**
+本轮**只做条款同步组**(refactor plan A),一处产品级改动 + 一处口径澄清:
+**① §6 科学重判触发条件 1 加「未满足注记」** —— T015 产出的是**全局**跨次一致性读数
+(`J_1=0.4078` / `J_agg=0.6885`),结果矩阵**零 per-market 分解**,而条件 1 要求「至少一个 per-market」;
+⇒ **条件 1 仍未满足**,登记 v0.2(`due_gate: forge:009-pM3prime:phase0`)。
+排除它作本轮硬产出的理由是**判据膨胀(程序性)**,不是它不重要 —— 下次 firing 仍不处置应视为拖延。
+**② §7 红线 3 的 C4 `convert` 判据形态定形** —— 将来若要把 `report-only` 升为门禁,
+判据 = **过程证据 + 结果证据 + 具名批准 + 版本化回退,四者合取,不给数字**
+(三个独立工业先例 OPA / Chrome / Kubernetes KEP **无一给数字阈值**;Chrome 原文
+「There is no threshold for which removal is necessarily safe」);
+回退语义 = **历史不可变,授权被后续 `caliber_version` supersede**(只撤销旧版未来消费权,不改历史)。
+⚠ **M1 = pass 的具名裁决**(本轮补上的欠账):接受为**固定批可比性**证据 ——
+NIST「statistical control can only guarantee comparability among measurements」;
+**不作效度代理 · 不外推 · 不解锁扩样与 E2**。两项必载风险输入:
+(i) 一致率上升**无法区分**噪声去除与**歧义抹除**(「filtering non-consensus samples results in
+over-optimistic results」逐字对应 M2 留存口径);(ii) 6 个跑的 `census_verdict` **全部**
+`below_threshold_advisory`。
+⚠ **不变的**:扩样与 E2 **继续 blocked**;41 条盲标路**仍 CLOSED**;C6 冻结门槛**数字**未改
+(本轮只议其形态中的**可回退性**);未改 `specs/`。
+⚠ **已知未处置**:`convert` 四要件中的「**具名批准**」在本仓只有一个人,
+与 **KG-42(无合格第二源)同族**,只是断面从「标注的第二源」换成「**批准的第二源**」;
+不得假装 KEP 的 PRR 形态可直接移植 —— PRR 的独立性来自组织,本仓没有组织。
+v1.0 2026-08-13 回写 **forge 009-pM3prime v3 verdict** · operator 选 Decision menu **[B]** ·
 `stage-forge-009-pM3prime-v3.md`:**审的是产出信号的那台机器本身**,不是金标。两处改动:
 **① §7 红线 3 改形态** —— 「同文本同版本必须同输出(一致性测试)」**作废**,替换为
 「强制测量 + 申报 + 落库 + 身份绑定,`pass_semantic: none`」。理由不是放松要求,是**去掉一个
@@ -488,6 +512,24 @@ operator-input 文档 §1)。
 1. 提取稳定性的**申报机制已落地**(见 §7 红线 3 改形态块)且产出**至少一个** per-market 的跨次一致性读数
 2. per-market 读数的**噪声量级**已被测出,且**小于**该市场的密度阈值裕度
 3. operator 显式授权重判 —— **不得由任何自动化流程或 agent 自行认定条件已满足**
+
+> 🔴 **条件 1 未满足注记(2026-08-14 · forge 009-pM3prime v4 · operator 选 [B])**
+>
+> **T015 聚合探针(`OB-009-pM3prime-v3-07`)未使条件 1 满足。** 该 task 产出的跨次一致性读数是
+> **全局**读数(`J_1 = 0.4078` · `J_agg = 0.6885`,over 102 条 record 全集),
+> 结果矩阵 `T015-aggregation-probe-result-20260813.json` **零 per-market 分解**
+> (IDS 实证:`'market' in json.dumps(result).lower() == False`)。
+> 而本条要求的是「**至少一个 per-market** 的跨次一致性读数」。⇒ **条件 1 仍未满足,条件 2 更未开始。**
+>
+> ⚠ **成本近零但本轮显式不做**:上游 `trial_ledger` 本就是 `market×horizon` 9 行 grain,
+> 分解所需数据在库。v4 双方裁定**不列为本轮硬产出**,理由是**判据膨胀**(承 forge v3
+> §underweights 4 的教训:防止把「顺手能做」不断塞进判据)—— 这是**程序性**理由,
+> **不是**「它不重要」。登记为 v0.2,`due_gate: forge:009-pM3prime:phase0`,
+> `due_event` = **义务登记后的下一次 firing**(正在发生的这次不计履约);
+> 下次 firing 若仍不处置,**应视为拖延而非节制**。
+>
+> ⚠ **不得据此松动任何执行态**:CN/HK 执行态 `STOP` 不变、认识态 `UNKNOWN` 不变;
+> 本注记只是把「条件 1 未满足」这一事实**写到条件本身旁边**,防止它继续只活在 stage doc 里。
 
 ⚠ **范围纪律(承 forge v3 Y 视角约束)**:本条的理由**只许来自科学效度**
 (单次读数能否支撑一个 STOP 裁决)。**不得诉诸市场价值、商业优先级或「CN/HK 值不值得做」**
