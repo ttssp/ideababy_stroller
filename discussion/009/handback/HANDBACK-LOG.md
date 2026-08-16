@@ -1949,4 +1949,13 @@ hand-back §3「需 IDS 决议」#1 称观察窗口只做运行级预注册,「o
 同第 33/35/36 条:`handback-review` 决议是 CLAUDE.md 列明的合法 main checkpoint,且该 warn 的裁决被
 `OB-006-v10-06`(规约消歧义)前置阻塞。⚠ **计数已达 8,消歧义任务仍未做。**
 
-**Follow-up commits**: pending(本条决议 + ledger 7 行追加待 commit)。
+**Follow-up commits**: `e65be06`(本条决议入库)· `1227632`(七条 gate 终态行 append + forge v5
+Phase 1 Opus + Codex P1 任务下发)。
+
+> **后续(2026-08-16 · forge v5 已收敛并 IDS 侧落地)**:本条转出的五条义务
+> (`OB-...-v4-04` / `-05` / `-09` / `-11` / `-12`)已在 forge v5 得到裁决 ——
+> `stage-forge-009-pM3prime-v5.md`(`21dd32a` · converged · 0 unresolved),
+> 统一形态 = **七问消费契约**;Step 6.5 登记 **13 条**新义务(`2530fef` · operator 裁「全采」),
+> 其中 **6 条落在未接线 gate**(`exposure` 已逐条写明)。
+> 🔴 **本条当时点名的两条仍未解**:① `-06`(C4 `convert` 的「具名批准」)与 v5 的
+> **KG-42 同族**并案挂 `forge:006:phase0`;② 三个 `xenodev:*` gate **仍全部未接线**。

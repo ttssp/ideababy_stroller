@@ -108,7 +108,24 @@ ls "$HANDBACK_DIR"*.md 2>/dev/null | grep -v 'HANDBACK-LOG.md' | sort
    - 即 **consumer 校验深度 < producer**:consumer 只挡"字段缺/enum 错/findings 非整数"这类语法错;伪造/stale 的 path/sha 也会过本预检。完整 consumer-side binding 验证是 **post-P0 backlog**(forge v5 决议)。
    - normative spec: `framework/SHARED-CONTRACT.md` §6 B-4-IDS + known-gap 注记
 4. **Read body**:§1 build-side 上下文 / §2 触发理由(按 tags 列条) / §3 给 IDS 的建议
-5. **Display to operator**:
+5. 🔴 **跨批读数消费契约(`census_run` 硬停点)** —— **仅当**本包或本轮决议要**引用跨批次失败率 /
+   密度 / 一致性读数**时触发;不引用则跳过并在 LOG 写「本轮未引用跨批读数」。
+   - **规范源**:`discussion/009/009-pM3prime/PRD.md` §6「跨批读数的消费契约」
+     (forge v5 · `OB-009-pM3prime-v5-06` / `-07`)
+   - **消费者**:**IDS operator-chair**(书面指派 + 本人正式接受 + 留工作底稿)
+   - **时点**:**在引用该读数之前**,不是之后
+   - **动作**:枚举相关 `census_run` 行,**命中任一即停止该结论与验收签署**:
+     ① 库不可读;② 被引用的那次跑**无对应行**;③ **删失未披露**;
+     ④ 同 `caliber` 下 `declared_sample_size` 变化而**无预注册的选择规则**
+   - **留痕**:命中与否都要在 Step 5 的 LOG entry 里写一行(枚举了哪些 run / 结论是停还是过)
+   - ⚠ **已知未验,不得静默降级**:本步能否在**不改 `framework/SHARED-CONTRACT.md`** 的前提下
+     真正承载**硬停点**,forge v5 P1 §3 已自曝不确定。若实测证不能 ⇒ 本步降级为 v0.2 +
+     登记 `exposure`,**不得当作已生效**。
+   - ⚠ **另一处未解**:`census_run` 与被引用 batch 的**可机械关联性**(是否只能靠 variant 文本匹配)
+     forge v5 未解决 —— 若不可靠,判据 ② 不可执行。
+   - ⚠ **敞口**:`ids:handback-review` **不在 `framework/obligations/README.md` §接线状态表内**
+     ⇒ 本步**没有机器 gate 兜底**,只靠本命令被完整执行。**这是敞口,不是保障。**
+6. **Display to operator**:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    📦 Handback: <handback_id>
@@ -132,7 +149,7 @@ ls "$HANDBACK_DIR"*.md 2>/dev/null | grep -v 'HANDBACK-LOG.md' | sort
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Operator decides which to apply (multiSelect possible) + free-text comment
    ```
-6. **operator 决议**:用 AskUserQuestion 收集勾选 + 自由备注
+7. **operator 决议**:用 AskUserQuestion 收集勾选 + 自由备注
 
 ## Step 5 · 写入 HANDBACK-LOG.md(append-only 决议日志)
 
